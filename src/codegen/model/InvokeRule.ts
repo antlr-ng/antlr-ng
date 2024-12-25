@@ -4,6 +4,7 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
+import { OrderedHashSet } from "antlr4ng";
 import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 import { ModelElement } from "../../misc/ModelElement.js";
 
@@ -21,7 +22,7 @@ import { RuleContextListDecl } from "./decl/RuleContextListDecl.js";
 export class InvokeRule extends RuleElement implements LabeledOp {
     public readonly name: string;
     public readonly escapedName: string;
-    public readonly labels = new Set<Decl>(); // TODO: should need just 1
+    public readonly labels = new OrderedHashSet<Decl>(); // TODO: should need just 1
     public readonly ctxName: string;
 
     @ModelElement
@@ -73,6 +74,6 @@ export class InvokeRule extends RuleElement implements LabeledOp {
     }
 
     public getLabels(): Decl[] {
-        return this.labels.size > 0 ? Array.from(this.labels) : [];
+        return this.labels.toArray();
     }
 }

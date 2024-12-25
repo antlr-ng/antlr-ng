@@ -98,10 +98,10 @@ export class CodeGenerator {
 
     }
 
-    public generateParser(header?: boolean): IST {
+    public generateParser(toolParameters: IToolParameters, header?: boolean): IST {
         header ??= false;
 
-        return this.walk(this.createController().buildParserOutputModel(header), header);
+        return this.walk(this.createController().buildParserOutputModel(header, toolParameters), header);
     }
 
     public generateListener(header?: boolean): IST {

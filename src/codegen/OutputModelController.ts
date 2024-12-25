@@ -92,9 +92,9 @@ export class OutputModelController {
      *  controller as factory in SourceGenTriggers so it triggers codegen
      *  extensions too, not just the factory functions in this factory.
      */
-    public buildParserOutputModel(header: boolean): OutputModelObject {
+    public buildParserOutputModel(header: boolean, toolParameters: IToolParameters): OutputModelObject {
         const gen = this.delegate.getGenerator()!;
-        const file = this.parserFile(gen.getRecognizerFileName(header));
+        const file = this.parserFile(gen.getRecognizerFileName(header), toolParameters);
         this.setRoot(file);
         file.parser = this.parser(file);
 
@@ -144,8 +144,8 @@ export class OutputModelController {
         return new BaseVisitorFile(this.delegate, gen.getBaseVisitorFileName(header));
     }
 
-    public parserFile(fileName: string): ParserFile {
-        let f = this.delegate.parserFile(fileName)!;
+    public parserFile(fileName: string, toolParameters: IToolParameters): ParserFile {
+        let f = this.delegate.parserFile(fileName, toolParameters)!;
         for (const ext of this.extensions) {
             f = ext.parserFile(f);
         }

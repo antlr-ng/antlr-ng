@@ -4,8 +4,17 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-import type { OutputModelController } from "./OutputModelController.js";
+import type { IntervalSet } from "antlr4ng";
+
+import type { IToolParameters } from "../tool-parameters.js";
+import type { Alternative } from "../tool/Alternative.js";
+import type { Grammar } from "../tool/Grammar.js";
+import type { Rule } from "../tool/Rule.js";
+import type { ActionAST } from "../tool/ast/ActionAST.js";
+import type { BlockAST } from "../tool/ast/BlockAST.js";
+import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { CodeGenerator } from "./CodeGenerator.js";
+import type { OutputModelController } from "./OutputModelController.js";
 import type { Choice } from "./model/Choice.js";
 import type { CodeBlockForAlt } from "./model/CodeBlockForAlt.js";
 import type { CodeBlockForOuterMostAlt } from "./model/CodeBlockForOuterMostAlt.js";
@@ -18,13 +27,6 @@ import type { ParserFile } from "./model/ParserFile.js";
 import type { RuleFunction } from "./model/RuleFunction.js";
 import type { SrcOp } from "./model/SrcOp.js";
 import type { CodeBlock } from "./model/decl/CodeBlock.js";
-import type { IntervalSet } from "antlr4ng";
-import type { Alternative } from "../tool/Alternative.js";
-import type { Grammar } from "../tool/Grammar.js";
-import type { Rule } from "../tool/Rule.js";
-import type { ActionAST } from "../tool/ast/ActionAST.js";
-import type { BlockAST } from "../tool/ast/BlockAST.js";
-import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 
 export interface OutputModelFactory {
     getGrammar(): Grammar | undefined;
@@ -35,7 +37,7 @@ export interface OutputModelFactory {
 
     getController(): OutputModelController | undefined;
 
-    parserFile(fileName: string): ParserFile | undefined;
+    parserFile(fileName: string, toolParameters: IToolParameters): ParserFile | undefined;
 
     parser(file: ParserFile): Parser | undefined;
 

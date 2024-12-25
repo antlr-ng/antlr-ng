@@ -21,10 +21,10 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "antlr4ng": "3.0.13",
+        "antlr4ng": "3.0.14",
         "commander": "12.1.0",
         "fast-printf": "1.6.10",
-        "stringtemplate4ts": "1.0.6",
+        "stringtemplate4ts": "1.0.7",
         "unicode-properties": "1.4.1"
     },
     "devDependencies": {
@@ -59,7 +59,8 @@
         "test": "NODE_NO_WARNINGS=1 vitest --no-watch --no-coverage",
         "generate-tool-parsers": "./build/generate-tool-parsers.sh",
         "generate-test-parsers": "./build/generate-test-parsers.sh",
-        "generate-unicode-data": "node --no-warnings  --loader ts-node/esm ./build/generate-unicode-data.ts"
+        "generate-unicode-data": "node --no-warnings  --loader ts-node/esm ./build/generate-unicode-data.ts",
+        "antlr-ng": "antlr-ng"
     },
     "exports": {
         "types": "./dist/src/index.d.ts",

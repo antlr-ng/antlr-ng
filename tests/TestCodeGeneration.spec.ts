@@ -66,7 +66,6 @@ describe("TestCodeGeneration", () => {
     const getEvalInfoForString = (grammarString: string, pattern: string): string[] => {
         const g = new Grammar(grammarString);
         g.tool.process(g, false);
-        g.tool.toolParameters.define = { "language": "Java" };
 
         const evals: string[] = [];
         if (!g.ast.hasErrors) {
@@ -81,7 +80,7 @@ describe("TestCodeGeneration", () => {
             g.atn = factory.createATN();
 
             const gen = new CodeGenerator(g);
-            const outputFileST = gen.generateParser();
+            const outputFileST = gen.generateParser(g.tool.toolParameters);
 
             const debug = false;
             const interp = new DebugInterpreter(outputFileST.groupThatCreatedThisInstance,

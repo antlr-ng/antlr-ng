@@ -9,6 +9,7 @@ import { DecisionState, IntervalSet, PlusLoopbackState, StarLoopEntryState } fro
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
 import { AnalysisPipeline } from "../analysis/AnalysisPipeline.js";
+import type { IToolParameters } from "../tool-parameters.js";
 import { Alternative } from "../tool/Alternative.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { Rule } from "../tool/Rule.js";
@@ -55,8 +56,8 @@ export class ParserFactory extends DefaultOutputModelFactory {
         super(gen);
     }
 
-    public override parserFile(fileName: string): ParserFile {
-        return new ParserFile(this, fileName);
+    public override parserFile(fileName: string, toolParameters: IToolParameters): ParserFile {
+        return new ParserFile(this, fileName, toolParameters);
     }
 
     public override parser(file: ParserFile): Parser {
@@ -337,8 +338,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
     public defineImplicitLabel(ast: GrammarAST, op: LabeledOp): void {
         let d: Decl;
 
-        // TODO: the first test is actually for `notSet` in the original grammar.
-        if (ast.getType() === ANTLRv4Parser.LPAREN || ast.getType() === ANTLRv4Parser.DOT) {
+        if (ast.getType() === ANTLRv4Parser.SET || ast.getType() === ANTLRv4Parser.WILDCARD) {
             const implLabel = this.gen.getTarget().getImplicitSetLabel(String(ast.token!.tokenIndex));
             d = this.getTokenLabelDecl(implLabel);
             (d as TokenDecl).isImplicit = true;

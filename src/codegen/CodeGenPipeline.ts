@@ -39,13 +39,13 @@ export class CodeGenPipeline {
             }
         } else {
             if (this.gen.getTarget().needsHeader()) {
-                const parser = this.gen.generateParser(true);
+                const parser = this.gen.generateParser(toolParameters, true);
                 if (this.g.tool.errorManager.errors === errorCount) {
                     this.writeRecognizer(parser, this.gen, true);
                 }
             }
 
-            const parser = this.gen.generateParser(false);
+            const parser = this.gen.generateParser(toolParameters, false);
             if (this.g.tool.errorManager.errors === errorCount) {
                 this.writeRecognizer(parser, this.gen, false);
             }

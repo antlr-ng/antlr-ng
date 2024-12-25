@@ -38,9 +38,7 @@ describe("TestVocabulary", () => {
                     expect(vocabulary.getSymbolicName(i)).toBe(tokenNames[i]);
                 } else {
                     expect(vocabulary.getLiteralName(i)).toBeNull();
-
-                    // TODO: re-enable once the next antlr4ng version is released.
-                    //expect(vocabulary.getSymbolicName(i)).toBeNull();
+                    expect(vocabulary.getSymbolicName(i)).toBeNull();
                 }
             }
 

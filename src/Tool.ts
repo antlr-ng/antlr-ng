@@ -54,9 +54,6 @@ export class Tool implements ITool {
 
     public readonly toolParameters: IToolParameters = { args: [], encoding: "utf-8" };
 
-    // helper vars for option management
-    protected haveOutputDir = false;
-
     protected grammarFiles = new Array<string>();
 
     private readonly importedGrammars = new Map<string, Grammar>();
@@ -495,13 +492,6 @@ export class Tool implements ITool {
      *  If outputDirectory==null then write a String.
      */
     public getOutputFile(g: Grammar, fileName: string): string {
-        const outputDirectory = this.toolParameters.outputDirectory;
-        if (!outputDirectory) {
-            return "";
-        }
-
-        // output directory is a function of where the grammar file lives
-        // for subDir/T.g4, you get subDir here.  Well, depends on -o etc...
         const outputDir = this.getOutputDirectory(g.fileName);
         const outputFile = path.join(outputDir, fileName);
 
@@ -542,11 +532,22 @@ export class Tool implements ITool {
      * @param fileNameWithPath path to input source
      */
     public getOutputDirectory(fileNameWithPath: string): string {
-        if (this.haveOutputDir) {
-            return this.toolParameters.outputDirectory ?? "";
-        } else {
-            return path.dirname(fileNameWithPath);
+        const dirName = path.dirname(fileNameWithPath);
+        if (this.toolParameters.exactOutputDir && this.toolParameters.outputDirectory) {
+            if (this.toolParameters.outputDirectory) {
+                return this.toolParameters.outputDirectory;
+            }
         }
+
+        if (this.toolParameters.outputDirectory) {
+            if (path.isAbsolute(this.toolParameters.outputDirectory)) {
+                return this.toolParameters.outputDirectory;
+            }
+
+            return path.join(dirName, this.toolParameters.outputDirectory);
+        }
+
+        return dirName;
     }
 
     public logInfo(info: { component?: string, msg: string; }): void {

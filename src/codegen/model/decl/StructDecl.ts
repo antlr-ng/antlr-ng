@@ -64,7 +64,7 @@ export class StructDecl extends Decl {
 
     // Used to generate method signatures in Go target interfaces
     @ModelElement
-    public signatures = new HashSet<Decl>();
+    public signatures = new OrderedHashSet<Decl>();
 
     public constructor(factory: OutputModelFactory, r: Rule, name?: string,) {
         super(factory, name ?? factory.getGenerator()!.getTarget().getRuleFunctionContextStructName(r));

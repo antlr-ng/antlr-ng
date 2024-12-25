@@ -6,6 +6,7 @@
 
 import { IntervalSet } from "antlr4ng";
 
+import type { IToolParameters } from "../tool-parameters.js";
 import { Alternative } from "../tool/Alternative.js";
 import type { Grammar } from "../tool/Grammar.js";
 import { Rule } from "../tool/Rule.js";
@@ -43,7 +44,7 @@ export abstract class BlankOutputModelFactory implements OutputModelFactory {
         return undefined;
     }
 
-    public parserFile(fileName: string): ParserFile | undefined {
+    public parserFile(fileName: string, toolParameters: IToolParameters): ParserFile | undefined {
         return undefined;
     }
 
