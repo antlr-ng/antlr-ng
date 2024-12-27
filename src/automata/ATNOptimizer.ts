@@ -69,7 +69,9 @@ export class ATNOptimizer {
             }
 
             // due to min alt resolution policies, can only collapse sequential alts
-            for (const interval of setTransitions) {
+            const setIntervals = Array.from(setTransitions);
+            for (let i = setIntervals.length - 1; i >= 0; i--) {
+                const interval = setIntervals[i];
                 if (interval.length <= 1) {
                     continue;
                 }

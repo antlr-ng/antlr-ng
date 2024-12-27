@@ -8,10 +8,6 @@ export class OrderedHashMap<K, V> extends Map<K, V> {
     /** Track the elements as they are added to the set */
     private elements: K[] = [];
 
-    public override get(key: K): never {
-        throw new Error("Use getKey and getElement instead.");
-    }
-
     public getKey(i: number): K {
         return this.elements[i];
     }

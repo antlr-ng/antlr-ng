@@ -99,7 +99,7 @@ export class TokenVocabParser {
             // Still not found? Use the grammar's subfolder then.
             name = dirname(this.g.fileName);
             if (name) {
-                name = join(name, vocabName + Constants.VOCAB_FILE_EXTENSION);
+                name = join(name, this.outputDirectory, vocabName + Constants.VOCAB_FILE_EXTENSION);
                 if (existsSync(name)) {
                     return readFileSync(name, "utf8");
                 }
