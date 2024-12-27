@@ -5,8 +5,9 @@
 
 //const packageJson = await import("../package.json", { assert: { type: "json" } });
 
+import { globSync } from "glob";
+
 import { Command, Option } from "commander";
-import { globSync } from "node:fs";
 
 export interface IToolParameters {
     /** The grammar files. */
