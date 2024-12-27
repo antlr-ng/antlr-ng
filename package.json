@@ -43,7 +43,6 @@
         "eslint-plugin-import": "2.31.0",
         "eslint-plugin-jsdoc": "50.6.1",
         "eslint-plugin-prefer-arrow": "1.2.3",
-        "ts-node": "10.9.2",
         "tsx": "4.19.2",
         "typescript": "5.7.2",
         "typescript-eslint": "8.18.1",
@@ -53,13 +52,13 @@
         "build": "npm run generate-tool-parsers && npm run generate-test-parsers && npm run generate-unicode-data && npm run build-mjs && tsc -p tsconfig.json",
         "build-bundle": "esbuild ./src/index.js --main-fields=module,main --bundle --target=esnext --keep-names --platform=node --external:antlr4ng --external:commander --external:fast-printf --external:stringtemplate4ts --external:unicode-properties",
         "build-mjs": "npm run build-bundle -- --outfile=dist/index.mjs --format=esm",
-        "run": "node --no-warnings --loader ts-node/esm src/runner.ts --version",
+        "run": "tsx cli/runner.ts --version",
         "lint": "eslint \"./src/**/*.ts\"",
         "lint:fix": "eslint \"./src/**/*.ts\" --fix",
         "test": "NODE_NO_WARNINGS=1 vitest --no-watch --no-coverage",
         "generate-tool-parsers": "./build/generate-tool-parsers.cmd",
         "generate-test-parsers": "./build/generate-test-parsers.cmd",
-        "generate-unicode-data": "node --no-warnings  --loader ts-node/esm ./build/generate-unicode-data.ts",
+        "generate-unicode-data": "tsx ./build/generate-unicode-data.ts",
         "antlr-ng": "antlr-ng"
     },
     "exports": {

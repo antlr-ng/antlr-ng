@@ -33,11 +33,4 @@
         "tests",
         "vitest.config.ts"
     ],
-    "ts-node": {
-        "esm": true,
-        "compilerOptions": {
-            "sourceMap": true,
-            "module": "ESNext"
-        },
-    },
 }

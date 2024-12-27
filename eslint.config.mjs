@@ -30,9 +30,8 @@ export default tslint.config(
             parser: tslint.parser,
             parserOptions: {
                 projectService: {
-                    //defaultProject: "tsconfig.json",
-                    allowDefaultProject: ["*.mjs", "./build/*.ts"],
-                    project: "eslint.tsconfig.json",
+                    allowDefaultProject: ["eslint.config.mjs", "build/*.ts"],
+                    defaultProject: "tsconfig.json",
                 },
                 tsconfigRootDir: import.meta.dirname,
                 sourceType: "module",
@@ -269,5 +268,5 @@ export default tslint.config(
             ],
 
         },
-    }
+    },
 );
