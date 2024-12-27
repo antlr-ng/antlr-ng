@@ -178,17 +178,19 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return [matchOp, listLabelOp!];
     }
 
-    public override wildcard(ast: GrammarAST, labelAST: GrammarAST): SrcOp[] {
+    public override wildcard(ast: GrammarAST, labelAST: GrammarAST | null): SrcOp[] {
         const wild = new Wildcard(this, ast);
         // TODO: dup with tokenRef
 
-        const label = labelAST.getText();
-        const d = this.getTokenLabelDecl(label);
-        wild.labels.push(d);
-        this.getCurrentRuleFunction()!.addContextDecl(ast.getAltLabel()!, d);
-        if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-            const l = this.getTokenListLabelDecl(label);
-            this.getCurrentRuleFunction()!.addContextDecl(ast.getAltLabel()!, l);
+        if (labelAST) {
+            const label = labelAST.getText();
+            const d = this.getTokenLabelDecl(label);
+            wild.labels.push(d);
+            this.getCurrentRuleFunction()!.addContextDecl(ast.getAltLabel()!, d);
+            if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
+                const l = this.getTokenListLabelDecl(label);
+                this.getCurrentRuleFunction()!.addContextDecl(ast.getAltLabel()!, l);
+            }
         }
 
         if (this.controller.needsImplicitLabel(ast, wild)) {
