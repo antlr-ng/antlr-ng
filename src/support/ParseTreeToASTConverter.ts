@@ -23,7 +23,7 @@ import {
     type TerminalDefContext, type TokensSpecContext, type WildcardContext
 } from "../generated/ANTLRv4Parser.js";
 
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
 import type { Constructor } from "../misc/Utils.js";
 import { Grammar } from "../tool/Grammar.js";

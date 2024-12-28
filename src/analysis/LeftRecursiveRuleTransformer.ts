@@ -10,7 +10,7 @@
 
 import { CharStream, CommonTokenStream } from "antlr4ng";
 
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import type { SupportedLanguage } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";

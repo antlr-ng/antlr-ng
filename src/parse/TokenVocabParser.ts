@@ -11,7 +11,7 @@ import { dirname, join } from "path";
 
 import { Token } from "antlr4ng";
 
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import type { IGrammar } from "../types.js";
 

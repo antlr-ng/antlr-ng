@@ -198,7 +198,7 @@ export class SemanticPipeline {
         // first child is the alt itself, subsequent are the actions
         for (let i = 1; i < altActionAst.getChildCount(); i++) {
             const node = altActionAst.getChild(i) as GrammarAST;
-            if (node.getType() === ANTLRv4Parser.LPAREN) { // TODO: check for a functional call style.
+            if (node.getType() === ANTLRv4Parser.LEXER_ACTION_CALL) {
                 if (node.getChild(0)!.getText() === "type") {
                     return true;
                 }

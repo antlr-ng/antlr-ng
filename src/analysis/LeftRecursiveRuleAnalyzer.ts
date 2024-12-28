@@ -9,7 +9,7 @@
 import { CommonToken, IntervalSet, type TokenStream } from "antlr4ng";
 import { STGroupFile, type STGroup } from "stringtemplate4ts";
 
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { CommonTreeNodeStream } from "../antlr3/tree/CommonTreeNodeStream.js";
 import { CodeGenerator, type SupportedLanguage } from "../codegen/CodeGenerator.js";
@@ -22,6 +22,7 @@ import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import { RuleRefAST } from "../tool/ast/RuleRefAST.js";
 import { LeftRecursiveRuleWalker } from "../tree-walkers/LeftRecursiveRuleWalker.js";
 import { LeftRecursiveRuleAltInfo } from "./LeftRecursiveRuleAltInfo.js";
+import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 
 enum Associativity {
     Left = "left",
@@ -35,9 +36,9 @@ enum Associativity {
 export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
 
     public tool: Tool;
-    public binaryAlts = new Map<number, LeftRecursiveRuleAltInfo>();
-    public ternaryAlts = new Map<number, LeftRecursiveRuleAltInfo>();
-    public suffixAlts = new Map<number, LeftRecursiveRuleAltInfo>();
+    public binaryAlts = new OrderedHashMap<number, LeftRecursiveRuleAltInfo>();
+    public ternaryAlts = new OrderedHashMap<number, LeftRecursiveRuleAltInfo>();
+    public suffixAlts = new OrderedHashMap<number, LeftRecursiveRuleAltInfo>();
     public prefixAndOtherAlts = new Array<LeftRecursiveRuleAltInfo>();
 
     /** Pointer to ID node of ^(= ID element) */
@@ -217,7 +218,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         ruleST.add("setResultAction", setResultST);
         ruleST.add("userRetvals", this.retvals);
 
-        const opPrecRuleAlts = new Map<number, LeftRecursiveRuleAltInfo>();
+        const opPrecRuleAlts = new OrderedHashMap<number, LeftRecursiveRuleAltInfo>();
         this.binaryAlts.forEach((value, key) => {
             opPrecRuleAlts.set(key, value);
         });

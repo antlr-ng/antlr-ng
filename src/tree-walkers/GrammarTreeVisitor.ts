@@ -19,7 +19,7 @@ import { TreeParser } from "../antlr3/tree/TreeParser.js";
 import { TreeRuleReturnScope } from "../antlr3/tree/TreeRuleReturnScope.js";
 
 import { ClassFactory } from "../ClassFactory.js";
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import type { ActionAST } from "../tool/ast/ActionAST.js";
 import type { AltAST } from "../tool/ast/AltAST.js";

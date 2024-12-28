@@ -80,7 +80,7 @@ export class Rule implements AttributeResolver, IComparable, IRule {
     public isStartRule = true; // nobody calls us
 
     /** 1..n alts */
-    public alt: Alternative[];
+    public alt: Alternative[] = [];
 
     /** All rules have unique index 0..n-1 */
     public index: number;

@@ -10,7 +10,7 @@ import { CommonToken } from "antlr4ng";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { Character } from "../support/Character.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { AttributeDict } from "../tool/AttributeDict.js";

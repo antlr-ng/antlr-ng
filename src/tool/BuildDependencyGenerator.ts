@@ -13,7 +13,7 @@ import { Tool } from "../Tool.js";
 import { CodeGenerator } from "../codegen/CodeGenerator.js";
 import { GrammarType } from "../support/GrammarType.js";
 import { Grammar } from "./Grammar.js";
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 
 /**
  * Given a grammar file, show the dependencies on .tokens etc...

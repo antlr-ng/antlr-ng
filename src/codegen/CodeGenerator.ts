@@ -10,7 +10,7 @@ import { Token } from "antlr4ng";
 import { writeFileSync } from "fs";
 import { AutoIndentWriter, ST, StringWriter, type IST, type STGroup } from "stringtemplate4ts";
 
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import { Grammar } from "../tool/Grammar.js";

@@ -5,6 +5,7 @@
  */
 
 import { ModelElement } from "../../misc/ModelElement.js";
+import { OrderedHashMap } from "../../misc/OrderedHashMap.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
 import { Action } from "./Action.js";
 import { OutputFile } from "./OutputFile.js";
@@ -28,7 +29,7 @@ export class ListenerFile extends OutputFile {
      * a listener context name to the name of the rule which defines the
      * context.
      */
-    public listenerLabelRuleNames = new Map<string, string>();
+    public listenerLabelRuleNames = new OrderedHashMap<string, string>();
 
     @ModelElement
     public header: Action;

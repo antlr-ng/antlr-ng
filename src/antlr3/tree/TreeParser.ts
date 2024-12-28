@@ -12,7 +12,7 @@ import {
     CommonToken, Token, type BitSet, type IntStream, type RecognitionException,
 } from "antlr4ng";
 
-import { Constants } from "../../Constants1.js";
+import { Constants } from "../../Constants.js";
 import type { CommonTree } from "../../tree/CommonTree.js";
 import { BaseRecognizer } from "../BaseRecognizer.js";
 import type { IRecognizerSharedState } from "../IRecognizerSharedState.js";

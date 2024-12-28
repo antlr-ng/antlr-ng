@@ -11,7 +11,7 @@ import { PlusBlock } from "../codegen/model/PlusBlock.js";
 import type { SrcOp } from "../codegen/model/SrcOp.js";
 import { StarBlock } from "../codegen/model/StarBlock.js";
 import { OutputModelController } from "../codegen/OutputModelController.js";
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
 import type { ActionAST } from "../tool/ast/ActionAST.js";
 import type { AltAST } from "../tool/ast/AltAST.js";

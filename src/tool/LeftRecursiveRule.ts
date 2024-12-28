@@ -7,7 +7,7 @@
 /* eslint-disable jsdoc/require-returns */
 
 import { LeftRecursiveRuleAltInfo } from "../analysis/LeftRecursiveRuleAltInfo.js";
-import type { OrderedHashMap } from "../misc/OrderedHashMap.js";
+import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { Alternative } from "./Alternative.js";
 import { Grammar } from "./Grammar.js";
 import { Rule } from "./Rule.js";
@@ -26,9 +26,8 @@ export class LeftRecursiveRule extends Rule {
     public leftRecursiveRuleRefLabels = new Array<[GrammarAST, string | undefined]>();
 
     public constructor(g: Grammar, name: string, ast: RuleAST) {
-        super(g, name, ast, 1);
+        super(g, name, ast, 1); // always just one
         this.originalAST = ast;
-        this.alt = new Array<Alternative>(this.numberOfAlts + 1); // always just one
         for (let i = 1; i <= this.numberOfAlts; i++) {
             this.alt[i] = new Alternative(this, i);
         }
@@ -116,7 +115,7 @@ export class LeftRecursiveRule extends Rule {
     /** Get -&gt; labels from those alts we deleted for left-recursive rules. */
 
     public override getAltLabels(): Map<string, Array<[number, AltAST]>> | null {
-        const labels = new Map<string, Array<[number, AltAST]>>();
+        const labels = new OrderedHashMap<string, Array<[number, AltAST]>>();
         const normalAltLabels = super.getAltLabels();
         if (normalAltLabels !== null) {
             normalAltLabels.forEach((value, key) => {

@@ -17,7 +17,7 @@ import {
 
 import { CommonTreeNodeStream } from "../antlr3/tree/CommonTreeNodeStream.js";
 import { ClassFactory } from "../ClassFactory.js";
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import type { Constructor } from "../misc/Utils.js";

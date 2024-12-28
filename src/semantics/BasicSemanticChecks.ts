@@ -11,7 +11,7 @@ import type { Token } from "antlr4ng";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { GrammarTreeVisitor } from "../tree-walkers/GrammarTreeVisitor.js";
 
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { Utils } from "../misc/Utils.js";
 import { Character } from "../support/Character.js";
 import { GrammarType } from "../support/GrammarType.js";

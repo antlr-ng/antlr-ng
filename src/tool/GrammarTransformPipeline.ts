@@ -14,7 +14,7 @@ import type { TreeVisitorAction } from "../antlr3/tree/TreeVisitorAction.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { BlockSetTransformer } from "../tree-walkers/BlockSetTransformer.js";
 
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import { GrammarToken } from "../parse/GrammarToken.js";

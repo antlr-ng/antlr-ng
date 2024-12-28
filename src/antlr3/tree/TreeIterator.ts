@@ -8,7 +8,7 @@
 
 import { Token } from "antlr4ng";
 
-import { Constants } from "../../Constants1.js";
+import { Constants } from "../../Constants.js";
 import type { CommonTree } from "../../tree/CommonTree.js";
 import { FastQueue } from "../misc/FastQueue.js";
 import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";

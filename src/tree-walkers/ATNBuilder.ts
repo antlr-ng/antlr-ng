@@ -19,7 +19,7 @@ import type { TreeNodeStream } from "../antlr3/tree/TreeNodeStream.js";
 import { TreeParser } from "../antlr3/tree/TreeParser.js";
 import { TreeRuleReturnScope } from "../antlr3/tree/TreeRuleReturnScope.js";
 import type { IATNFactory, IStatePair } from "../automata/IATNFactory.js";
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
 import type { ActionAST } from "../tool/ast/ActionAST.js";
 import type { BlockAST } from "../tool/ast/BlockAST.js";

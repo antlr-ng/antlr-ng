@@ -22,7 +22,7 @@ import { GrammarTreeVisitor } from "../tree-walkers/GrammarTreeVisitor.js";
 import { ClassFactory } from "../ClassFactory.js";
 
 import { targetLanguages, type SupportedLanguage } from "../codegen/CodeGenerator.js";
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 
 import { CharSupport } from "../misc/CharSupport.js";
 import { Utils } from "../misc/Utils.js";
@@ -31,6 +31,7 @@ import { TokenVocabParser } from "../parse/TokenVocabParser.js";
 import { GrammarType } from "../support/GrammarType.js";
 import type { IGrammar, ITool } from "../types.js";
 
+import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import { ANTLRMessage } from "./ANTLRMessage.js";
 import { ANTLRToolListener } from "./ANTLRToolListener.js";
@@ -150,7 +151,8 @@ export class Grammar implements IGrammar, AttributeResolver {
      * All rules defined in this specific grammar, not imported. Also does
      *  not include lexical rules if combined.
      */
-    public rules = new Map<string, Rule>();
+    public rules = new OrderedHashMap<string, Rule>();
+
     public indexToRule = new Array<Rule>(); // used to invent rule names for 'keyword', ';', ... (0..n-1)
 
     public stateToGrammarRegionMap?: Map<number, Interval>;
@@ -507,8 +509,8 @@ export class Grammar implements IGrammar, AttributeResolver {
 
     /**
      * Define the specified rule in the grammar. This method assigns the rule's
-     * {@link Rule#index} according to the {@link #ruleNumber} field, and adds
-     * the {@link Rule} instance to {@link #rules} and {@link #indexToRule}.
+     * {@link Rule.index} according to the {@link ruleNumber} field, and adds
+     * the {@link Rule} instance to {@link rules} and {@link indexToRule}.
      *
      * @param r The rule to define in the grammar.
      * @returns `true` if the rule was added to the {@link Grammar} instance; otherwise, {@code false} if a rule with

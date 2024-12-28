@@ -22,7 +22,7 @@ import { RewriteRuleSubtreeStream } from "../antlr3/tree/RewriteRuleSubtreeStrea
 import type { TreeNodeStream } from "../antlr3/tree/TreeNodeStream.js";
 import { TreeRewriter } from "../antlr3/tree/TreeRewriter.js";
 import { type ITreeRuleReturnScope } from "../antlr3/tree/TreeRuleReturnScope.js";
-import { Constants } from "../Constants1.js";
+import { Constants } from "../Constants.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import { isTokenName } from "../support/helpers.js";
