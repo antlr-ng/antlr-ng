@@ -206,11 +206,6 @@ public function visit<lname; format="cap">(Context\\<lname; format="cap">Context
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
 \<?php
-
-/*
- * Generated from <grammarFileName> by ANTLR <ANTLRVersion>
- */
-
 >>
 Parser(parser, funcs, atn, sempredFuncs, superClass) ::= <<
 <Parser_(ctor="parser_ctor", ...)>

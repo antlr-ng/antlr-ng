@@ -32,8 +32,6 @@ headerFileExtension() ::= ".h"
 
 fileHeader(grammarFileName, ANTLRVersion, header) ::= <<
 <header>
-
-// Generated from <grammarFileName> by ANTLR <ANTLRVersion>
 >>
 
 LexerFileHeader(file, lexer, namedActions) ::= <<

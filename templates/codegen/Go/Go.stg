@@ -4,7 +4,6 @@ GoTypeMap ::= [
 ]
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
-// Code generated from <grammarFileName> by ANTLR <ANTLRVersion>. DO NOT EDIT.
 >>
 
 ParserFile(file, parser, namedActions, contextSuperClass) ::= <<

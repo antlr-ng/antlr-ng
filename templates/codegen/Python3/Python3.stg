@@ -114,7 +114,6 @@ del <file.parserName>
 
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
-# Generated from <grammarFileName> by ANTLR <ANTLRVersion>
 >>
 
 Parser(parser, funcs, atn, sempredFuncs, superClass) ::= <<

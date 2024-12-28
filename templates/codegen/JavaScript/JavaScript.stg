@@ -103,7 +103,6 @@ export default class <file.grammarName>Visitor extends antlr4.tree.ParseTreeVisi
 
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
-// Generated from <grammarFileName> by ANTLR <ANTLRVersion>
 // jshint ignore: start
 >>
 

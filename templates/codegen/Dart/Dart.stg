@@ -182,7 +182,6 @@ T? visit<lname; format="cap">(<lname; format="cap">Context ctx) => visitChildren
 >>
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
-// Generated from <grammarFileName> by ANTLR <ANTLRVersion>
 // ignore_for_file: unused_import, unused_local_variable, prefer_single_quotes
 >>
 

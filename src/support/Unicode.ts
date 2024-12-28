@@ -18,7 +18,7 @@ export interface ICodePointLookupResult {
     candidates?: string[];
 }
 
-/** Used in ambiguous cases (when a property name value name resolve to multiple entries). */
+/** Used in ambiguous cases (when an isolated property string (or value string) resolves to multiple entries). */
 const defaultCategories = ["block", "general_category"];
 
 /**

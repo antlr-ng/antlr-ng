@@ -217,7 +217,6 @@ public class <file.grammarName>BaseVisitor\<T> extends AbstractParseTreeVisitor\
 >>
 
 fileHeader(grammarFileName, ANTLRVersion) ::= <<
-// Generated from <grammarFileName> by ANTLRng <ANTLRVersion>
 >>
 
 Parser(parser, funcs, atn, sempredFuncs, superClass) ::= <<
