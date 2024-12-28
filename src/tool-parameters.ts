@@ -3,7 +3,7 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 
-//const packageJson = await import("../package.json", { assert: { type: "json" } });
+const packageJson = await import("../package.json", { assert: { type: "json" } });
 
 import { globSync } from "glob";
 
@@ -31,7 +31,7 @@ export interface IToolParameters {
     exactOutputDir?: boolean,
 }
 
-export const antlrVersion = "0.4.0"; //packageJson.default.version;
+export const antlrVersion = packageJson.default.version;
 
 /**
  * Used to parse tool parameters given as string list. Usually, this is used for tests.

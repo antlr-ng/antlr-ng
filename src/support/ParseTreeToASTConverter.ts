@@ -376,7 +376,10 @@ export class ParseTreeToASTConverter {
         if (ebnf.blockSuffix()) {
             const root = this.convertEbnfSuffixToAST(ebnf.blockSuffix()!.ebnfSuffix(), ast);
             if (root) {
-                this.convertBlockToAST(ebnf.block(), root);
+                const blockAST = this.convertBlockToAST(ebnf.block(), root);
+
+                // Make the root node include the block.
+                root.startIndex = blockAST.startIndex;
             }
 
             return root;
@@ -563,7 +566,9 @@ export class ParseTreeToASTConverter {
                 if (ebnfSuffixAST) {
                     const blockAST = this.createVirtualASTNode(BlockAST, ANTLRv4Parser.BLOCK, lexerElement.lexerAtom()!,
                         "BLOCK");
+                    ebnfSuffixAST.startIndex = blockAST.startIndex;
                     ebnfSuffixAST.addChild(blockAST);
+
                     const altAST = this.createVirtualASTNode(AltAST, ANTLRv4Lexer.ALT, lexerElement.lexerAtom()!,
                         "ALT");
                     blockAST.addChild(altAST);
@@ -578,7 +583,8 @@ export class ParseTreeToASTConverter {
             if (lexerElement.ebnfSuffix()) {
                 const ebnfSuffixAST = this.convertEbnfSuffixToAST(lexerElement.ebnfSuffix()!, ast);
                 if (ebnfSuffixAST) {
-                    this.convertLexerBlockToAST(lexerElement.lexerBlock()!, ebnfSuffixAST);
+                    const blockAST = this.convertLexerBlockToAST(lexerElement.lexerBlock()!, ebnfSuffixAST);
+                    ebnfSuffixAST.startIndex = blockAST.startIndex;
                 }
 
                 return ebnfSuffixAST;
@@ -834,6 +840,7 @@ export class ParseTreeToASTConverter {
                 if (ebnfAST) {
                     const blockAST = this.createVirtualASTNode(BlockAST, ANTLRv4Lexer.BLOCK, element.labeledElement()!,
                         "BLOCK");
+                    ebnfAST.startIndex = blockAST.startIndex;
                     ebnfAST.addChild(blockAST);
 
                     const altAST = this.createVirtualASTNode(AltAST, ANTLRv4Lexer.ALT, element.labeledElement()!,
@@ -851,6 +858,7 @@ export class ParseTreeToASTConverter {
                 const ebnfAST = this.convertEbnfSuffixToAST(element.ebnfSuffix()!, ast);
                 if (ebnfAST) {
                     const blockAST = this.createVirtualASTNode(BlockAST, ANTLRv4Lexer.BLOCK, element.atom()!, "BLOCK");
+                    ebnfAST.startIndex = blockAST.startIndex;
                     ebnfAST.addChild(blockAST);
 
                     const altAST = this.createVirtualASTNode(AltAST, ANTLRv4Lexer.ALT, element.atom()!, "ALT");
