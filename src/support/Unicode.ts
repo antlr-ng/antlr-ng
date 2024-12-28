@@ -19,7 +19,7 @@ export interface ICodePointLookupResult {
 }
 
 /** Used in ambiguous cases (when an isolated property string (or value string) resolves to multiple entries). */
-const defaultCategories = ["block", "general_category"];
+const defaultCategories = ["block", "general_category", "binary_property", "script"];
 
 /**
  * Determines the Unicode codepoint range for a given Unicode attribute.

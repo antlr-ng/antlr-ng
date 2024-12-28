@@ -181,8 +181,7 @@ export class OutputModelController {
         ruleFunction.fillNamedActions(this.delegate, r);
 
         if (r instanceof LeftRecursiveRule) {
-            this.buildLeftRecursiveRuleFunction(r,
-                ruleFunction as LeftRecursiveRuleFunction);
+            this.buildLeftRecursiveRuleFunction(r, ruleFunction as LeftRecursiveRuleFunction);
         } else {
             this.buildNormalRuleFunction(r, ruleFunction);
         }

@@ -55,7 +55,8 @@ export class Alternative implements AttributeResolver, IAlternative {
     public actions = new Array<ActionAST>();
 
     public constructor(r: Rule, altNum: number) {
-        this.rule = r; this.altNum = altNum;
+        this.rule = r;
+        this.altNum = altNum;
     }
 
     public resolvesToToken(x: string, node: ActionAST): boolean {

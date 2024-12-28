@@ -137,6 +137,7 @@
     "ignorePaths": [
         ".eslintrc.json",
         "build/PropertyValueAliases.txt",
-        "src/generated/*"
+        "src/generated/*",
+        "templates/*"
     ]
 }

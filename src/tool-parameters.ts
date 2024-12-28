@@ -88,14 +88,18 @@ export const parseToolParameters = (args: string[]): IToolParameters => {
 
     const result = prepared.opts<IToolParameters>();
 
-    const list = globSync(prepared.args);
-    if (list.length > 0) {
-        // When using a glob pattern we cannot have exact output paths.
-        result.exactOutputDir = false;
-        result.args = list;
-    } else {
-        result.args = prepared.args;
-    }
+    result.args = [];
+    prepared.args.forEach((arg) => {
+        if (arg.includes("*")) {
+            const list = globSync(prepared.args);
+
+            // When using a glob pattern we cannot have exact output paths.
+            result.exactOutputDir = false;
+            result.args.push(...list);
+        } else {
+            result.args.push(arg);
+        }
+    });
 
     return result;
 };
