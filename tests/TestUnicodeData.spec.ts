@@ -26,8 +26,8 @@ describe("TestUnicodeData", () => {
 
         // The shortcut "L" is used in multiple categories, which would fail this test.
         // Instead we use an explicit category, to make it work.
-        checkValue("general_category=L", 0x58);
-        checkValue("general_category=L", 0x78);
+        checkValue("L", 0x58);
+        checkValue("L", 0x78);
         checkValue("N", 0x30);
         checkValue("Z", 0x20);
     });
@@ -37,8 +37,8 @@ describe("TestUnicodeData", () => {
         checkValue("Lu", 0x1E96, false);
         checkValue("Ll", 0x1E3B);
         checkValue("Ll", 0x1E00, false);
-        checkValue("general_category=L", 0x1E3A);
-        checkValue("general_category=L", 0x1E3B);
+        checkValue("L", 0x1E3A);
+        checkValue("L", 0x1E3B);
         checkValue("N", 0x1BB0);
         checkValue("N", 0x1E3A, false);
         checkValue("Z", 0x2028);
@@ -50,8 +50,8 @@ describe("TestUnicodeData", () => {
         checkValue("Lu", 0x1D770, false);
         checkValue("Ll", 0x1D770);
         checkValue("Ll", 0x1D5D5, false);
-        checkValue("general_category=L", 0x1D5D4);
-        checkValue("general_category=L", 0x1D770);
+        checkValue("L", 0x1D5D4);
+        checkValue("L", 0x1D770);
         checkValue("N", 0x11C50);
         checkValue("N", 0x1D5D4, false);
     });
@@ -128,8 +128,8 @@ describe("TestUnicodeData", () => {
     });
 
     it("testPropertyCaseInsensitivity", () => {
-        checkValue("general_category=l", 0x78);
-        checkValue("general_category=l", 0x30, false);
+        checkValue("l", 0x78);
+        checkValue("l", 0x30, false);
         checkValue("common", 0x30);
     });
 

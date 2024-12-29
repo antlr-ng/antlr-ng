@@ -4,7 +4,6 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-import { OrderedHashSet } from "antlr4ng";
 import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 import { ModelElement } from "../../misc/ModelElement.js";
 
@@ -22,7 +21,7 @@ import { RuleContextListDecl } from "./decl/RuleContextListDecl.js";
 export class InvokeRule extends RuleElement implements LabeledOp {
     public readonly name: string;
     public readonly escapedName: string;
-    public readonly labels = new OrderedHashSet<Decl>(); // TODO: should need just 1
+    public readonly labels: Decl[] = []; // TODO: should need just 1
     public readonly ctxName: string;
 
     @ModelElement
@@ -54,7 +53,7 @@ export class InvokeRule extends RuleElement implements LabeledOp {
                 decl = new RuleContextListDecl(factory, listLabel, this.ctxName);
             } else {
                 decl = new RuleContextDecl(factory, label, this.ctxName);
-                this.labels.add(decl);
+                this.labels.push(decl);
             }
             rf.addContextDecl(ast.getAltLabel()!, decl);
         }
@@ -68,12 +67,8 @@ export class InvokeRule extends RuleElement implements LabeledOp {
         if (factory.getCurrentOuterMostAlt().ruleRefsInActions.has(identifier)) {
             const label = gen.getTarget().getImplicitRuleLabel(identifier);
             const d = new RuleContextDecl(factory, label, this.ctxName);
-            this.labels.add(d);
+            this.labels.push(d);
             rf.addContextDecl(ast.getAltLabel()!, d);
         }
-    }
-
-    public getLabels(): Decl[] {
-        return this.labels.toArray();
     }
 }

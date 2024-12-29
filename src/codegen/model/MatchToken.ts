@@ -28,8 +28,4 @@ export class MatchToken extends RuleElement implements LabeledOp {
             this.escapedName = target.escapeIfNeeded(this.name);
         }
     }
-
-    public getLabels(): Decl[] {
-        return this.labels;
-    }
 }

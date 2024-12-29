@@ -66,6 +66,9 @@ export class Tool implements ITool {
         this.grammarFiles = this.toolParameters.args;
         this.errorManager = new ErrorManager(this.toolParameters.msgFormat, this.toolParameters.longMessages,
             this.toolParameters.warningsAreErrors);
+        if (this.grammarFiles.length === 0) {
+            this.errorManager.toolError(ErrorType.NO_GRAMMARS_FOUND);
+        }
     }
 
     public static main(args: string[]): void {

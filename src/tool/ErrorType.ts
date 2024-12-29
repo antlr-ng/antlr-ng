@@ -10,9 +10,8 @@ import { antlrVersion } from "../tool-parameters.js";
 import { ErrorSeverity } from "./ErrorSeverity.js";
 
 export class ErrorType {
-    /*
-     * Tool errors
-     */
+    public static readonly NO_GRAMMARS_FOUND = new ErrorType(0, "no grammars found\n",
+        ErrorSeverity.Fatal, "NO_GRAMMARS_FOUND");
 
     /**
      * Compiler Error 1.

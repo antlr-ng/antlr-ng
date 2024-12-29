@@ -278,7 +278,8 @@ export class ErrorManager {
                 // [fall-through]
             }
 
-            case ErrorSeverity.Error: {
+            case ErrorSeverity.Error:
+            case ErrorSeverity.Fatal: {
                 this.error(msg);
                 break;
             }

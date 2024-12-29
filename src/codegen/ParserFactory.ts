@@ -332,7 +332,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
         const actionRefsAsToken = currentOuterMostAlt.tokenRefsInActions.has(id.getText());
         const actionRefsAsRule = currentOuterMostAlt.ruleRefsInActions.has(id.getText());
 
-        return op.getLabels().length === 0 && (actionRefsAsToken || actionRefsAsRule);
+        return op.labels.length === 0 && (actionRefsAsToken || actionRefsAsRule);
     }
 
     // support
@@ -358,7 +358,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
             }
         }
 
-        op.getLabels().push(d);
+        op.labels.push(d);
 
         // all labels must be in scope struct in case we exec action out of context
         this.getCurrentRuleFunction()!.addContextDecl(ast.getAltLabel()!, d);
@@ -370,7 +370,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
             const target = this.gen.getTarget();
             const listLabel = target.getListLabel(label.getText());
             const listRuntimeName = target.escapeIfNeeded(listLabel);
-            labelOp = new AddToLabelList(this, listRuntimeName, op.getLabels()[0]);
+            labelOp = new AddToLabelList(this, listRuntimeName, op.labels[0]);
         }
 
         return labelOp;
