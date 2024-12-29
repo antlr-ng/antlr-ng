@@ -79,8 +79,9 @@ export class LeftRecursiveRuleTransformer {
         }
 
         // update all refs to recursive rules to have [0] argument
-        for (const r of this.ast.getNodesWithType(ANTLRv4Parser.RULE_REF)) {
-            if (r.getParent()!.getType() !== ANTLRv4Parser.RULE) { // must be rule def
+        const ruleRefs = this.ast.getNodesWithType(ANTLRv4Parser.RULE_REF);
+        for (const r of ruleRefs) {
+            if (r.getParent()!.getType() === ANTLRv4Parser.RULE) { // must be rule def
                 continue;
             }
 

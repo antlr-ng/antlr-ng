@@ -99,7 +99,7 @@ export class ParseTreeToASTConverter {
             const ruleAST = this.createVirtualASTNode(RuleAST, ANTLRv4Lexer.RULE, rule, "RULE");
             ast.addChild(ruleAST);
 
-            ruleAST.addChild(this.createVirtualASTNode(RuleRefAST, ANTLRv4Parser.RULE_REF, parserRule.RULE_REF()));
+            ruleAST.addChild(new TerminalAST(this.createToken(ANTLRv4Parser.RULE_REF, parserRule.RULE_REF())));
             if (parserRule.argActionBlock()) {
                 this.convertArgActionBlockToAST(ANTLRv4Lexer.ARG_ACTION, parserRule.argActionBlock()!, ruleAST);
             }

@@ -1342,7 +1342,7 @@ export class SourceGenTriggers extends TreeParser {
     public ruleref(label: GrammarAST | null): SrcOp[] | null {
         let omos = null;
 
-        let RULE_REF27 = null;
+        let RULE_REF27: GrammarAST | null = null;
         let ARG_ACTION28 = null;
 
         try {

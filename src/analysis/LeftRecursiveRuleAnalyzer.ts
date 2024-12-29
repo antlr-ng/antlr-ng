@@ -229,8 +229,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
             opPrecRuleAlts.set(key, value);
         });
 
-        for (const alt of opPrecRuleAlts.keys()) {
-            const altInfo = opPrecRuleAlts.get(alt);
+        for (const [alt, altInfo] of opPrecRuleAlts) {
             const altST = LeftRecursiveRuleAnalyzer.#recRuleTemplates.getInstanceOf("recRuleAlt")!;
             const predST = this.codegenTemplates.getInstanceOf("recRuleAltPredicate")!;
             predST.add("opPrec", this.precedence(alt));
