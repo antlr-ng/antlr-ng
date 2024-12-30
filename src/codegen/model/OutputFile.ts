@@ -4,7 +4,7 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-import { antlrVersion } from "../../tool-parameters.js";
+import { RuntimeMetaData } from "antlr4ng";
 import { Grammar } from "../../tool/Grammar.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
@@ -12,11 +12,21 @@ import { Action } from "./Action.js";
 import { OutputModelObject } from "./OutputModelObject.js";
 
 export abstract class OutputFile extends OutputModelObject {
+    private readonly checkVersion = () => {
+        RuntimeMetaData.checkVersion("4.13.2", RuntimeMetaData.VERSION);
+    };
+
     public readonly fileName: string;
     public readonly grammarFileName: string;
     public readonly TokenLabelType?: string;
     public readonly inputSymbolType?: string;
-    public readonly ANTLRVersion = antlrVersion;
+
+    /**
+     * This is the version the runtimes test against for their compatibility.
+     * We use the version of the old ANTLR4 tool here, until we start implementing the new target
+     * infrastructure.
+     */
+    public readonly ANTLRVersion = "4.13.2"; // antlrVersion;
 
     public constructor(factory: OutputModelFactory, fileName: string) {
         super(factory);
