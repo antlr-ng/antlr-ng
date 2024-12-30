@@ -117,7 +117,7 @@ public getActionTokens(delegate: ActionSplitterListener, refToken?: Token): Toke
                     throw new Error(`Mismatched input '${text}'`);
                 }
 
-                const { x, s1, s2, expr } = match.groups!;
+                const { x, s1 = "", s2 = "", expr } = match.groups!;
 
                 // +2 for the second '$' and the '='.
                 const [xToken, yToken] = this.createTokens(t, x.length + s1.length + s2.length + 2, refToken);
