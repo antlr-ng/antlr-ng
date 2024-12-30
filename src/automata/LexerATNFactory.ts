@@ -7,8 +7,8 @@
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
 import {
-    ActionTransition, ATN, ATNState, AtomTransition, BasicState, CodePointTransitions, CommonToken, IntervalSet,
-    IntStream, Lexer, LexerAction, LexerChannelAction, LexerCustomAction, LexerModeAction, LexerMoreAction,
+    ActionTransition, ATN, ATNState, AtomTransition, BasicState, CodePointTransitions, CommonToken, HashMap,
+    IntervalSet, IntStream, Lexer, LexerAction, LexerChannelAction, LexerCustomAction, LexerModeAction, LexerMoreAction,
     LexerPopModeAction, LexerPushModeAction, LexerSkipAction, LexerTypeAction, NotSetTransition, SetTransition, Token,
     TokensStartState, Transition
 } from "antlr4ng";
@@ -122,7 +122,7 @@ export class LexerATNFactory extends ParserATNFactory {
     /**
      * Maps from a {@link LexerAction} object to the action index.
      */
-    private actionToIndexMap = new Map<LexerAction, number>();
+    private actionToIndexMap = new HashMap<LexerAction, number>();
 
     private readonly ruleCommands = new Array<string>();
 

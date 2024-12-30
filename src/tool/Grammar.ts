@@ -31,7 +31,6 @@ import { TokenVocabParser } from "../parse/TokenVocabParser.js";
 import { GrammarType } from "../support/GrammarType.js";
 import type { IGrammar, ITool } from "../types.js";
 
-import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import { ANTLRMessage } from "./ANTLRMessage.js";
 import { ANTLRToolListener } from "./ANTLRToolListener.js";
@@ -151,7 +150,7 @@ export class Grammar implements IGrammar, AttributeResolver {
      * All rules defined in this specific grammar, not imported. Also does
      *  not include lexical rules if combined.
      */
-    public rules = new OrderedHashMap<string, Rule>();
+    public rules = new Map<string, Rule>();
 
     public indexToRule = new Array<Rule>(); // used to invent rule names for 'keyword', ';', ... (0..n-1)
 

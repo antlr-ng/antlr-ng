@@ -115,7 +115,7 @@ export class LeftRecursiveRule extends Rule {
     /** Get -&gt; labels from those alts we deleted for left-recursive rules. */
 
     public override getAltLabels(): Map<string, Array<[number, AltAST]>> | null {
-        const labels = new OrderedHashMap<string, Array<[number, AltAST]>>();
+        const labels = new Map<string, Array<[number, AltAST]>>();
         const normalAltLabels = super.getAltLabels();
         if (normalAltLabels !== null) {
             normalAltLabels.forEach((value, key) => {

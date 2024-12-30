@@ -36,9 +36,9 @@ enum Associativity {
 export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
 
     public tool: Tool;
-    public binaryAlts = new OrderedHashMap<number, LeftRecursiveRuleAltInfo>();
-    public ternaryAlts = new OrderedHashMap<number, LeftRecursiveRuleAltInfo>();
-    public suffixAlts = new OrderedHashMap<number, LeftRecursiveRuleAltInfo>();
+    public binaryAlts = new Map<number, LeftRecursiveRuleAltInfo>();
+    public ternaryAlts = new Map<number, LeftRecursiveRuleAltInfo>();
+    public suffixAlts = new Map<number, LeftRecursiveRuleAltInfo>();
     public prefixAndOtherAlts = new Array<LeftRecursiveRuleAltInfo>();
 
     /** Pointer to ID node of ^(= ID element) */
