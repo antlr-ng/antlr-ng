@@ -4,7 +4,6 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-import { RuntimeMetaData } from "antlr4ng";
 import { Grammar } from "../../tool/Grammar.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
@@ -12,10 +11,6 @@ import { Action } from "./Action.js";
 import { OutputModelObject } from "./OutputModelObject.js";
 
 export abstract class OutputFile extends OutputModelObject {
-    private readonly checkVersion = () => {
-        RuntimeMetaData.checkVersion("4.13.2", RuntimeMetaData.VERSION);
-    };
-
     public readonly fileName: string;
     public readonly grammarFileName: string;
     public readonly TokenLabelType?: string;
