@@ -50,7 +50,13 @@ export abstract class Recognizer extends OutputModelObject {
 
         const g = factory.getGrammar()!;
         const gen = factory.getGenerator()!;
-        this.grammarFileName = g.fileName;
+
+        let lastSlash = g.fileName.lastIndexOf("/");
+        if (lastSlash === -1) {
+            lastSlash = g.fileName.lastIndexOf("\\");
+        }
+        this.grammarFileName = lastSlash > -1 ? g.fileName.substring(lastSlash + 1) : g.fileName;
+
         this.grammarName = g.name;
         this.name = g.getRecognizerName();
         this.accessLevel = g.getOptionString("accessLevel");
