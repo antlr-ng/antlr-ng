@@ -40,7 +40,7 @@ export class LogManager {
 
     public save(filename?: string): string {
         if (!filename) {
-            filename = join(".", `antlrng-${new Date().toDateString()}.log`);
+            filename = join(".", `antlrng-${Date.now()}.log`);
         }
 
         writeFileSync(filename, this.toString());

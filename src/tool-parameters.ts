@@ -17,7 +17,7 @@ export interface IToolParameters {
 
     outputDirectory?: string,
     libDirectory?: string,
-    generateATNDot?: boolean,
+    atn?: boolean,
     encoding?: string,
     msgFormat?: string,
     longMessages?: boolean;
@@ -63,8 +63,7 @@ export const parseToolParameters = (args: string[]): IToolParameters => {
     const prepared = new Command()
         .option("-o, --output-directory <path>", "specify output directory where all output is generated")
         .option("-lib, --lib-directory <path>", "specify location of grammars, tokens files")
-        .option<boolean>("-atn, --generate-atn-dot [boolean]",
-            "Generate rule augmented transition network diagrams.", parseBoolean, false)
+        .option<boolean>("--atn [boolean]", "Generate rule augmented transition network diagrams.", parseBoolean, false)
         .option("-e, --encoding <string>", "Specify grammar file encoding; e.g., ucs-2.", "utf-8")
         .addOption(new Option("-mf, --message-format [string]", "Specify output style for messages in antlr, gnu, " +
             "vs2005.")

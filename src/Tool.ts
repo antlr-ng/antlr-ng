@@ -220,7 +220,7 @@ export class Tool implements ITool {
         }
 
         g.atn = factory.createATN();
-        if (this.toolParameters.generateATNDot) {
+        if (this.toolParameters.atn) {
             this.generateATNs(g);
         }
 
