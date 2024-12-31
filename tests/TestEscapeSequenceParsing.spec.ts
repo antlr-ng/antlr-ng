@@ -83,7 +83,7 @@ describe("TestEscapeSequenceParsing", () => {
 
     it("testParseUnicodeProperty", () => {
         expect(EscapeSequenceParsing.parseEscape("\\p{Deseret}", 0)).toEqual(
-            expect.objectContaining(createResult(ResultType.Property, -1, IntervalSet.of(66560, 66640), 0, 11)));
+            expect.objectContaining(createResult(ResultType.Property, -1, IntervalSet.of(66560, 66639), 0, 11)));
     });
 
     it("testParseUnicodePropertyInvertedTooShort", () => {
@@ -96,7 +96,7 @@ describe("TestEscapeSequenceParsing", () => {
 
     it("testParseUnicodePropertyInverted", () => {
         const expected = IntervalSet.of(0, 66559);
-        expected.addRange(66641, Character.MAX_CODE_POINT);
+        expected.addRange(66640, Character.MAX_CODE_POINT);
         expect(EscapeSequenceParsing.parseEscape("\\P{Deseret}", 0)).toEqual(
             expect.objectContaining(createResult(ResultType.Property, -1, expected, 0, 11)));
     });

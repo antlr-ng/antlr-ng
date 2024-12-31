@@ -233,7 +233,7 @@ describe("TestATNConstruction", () => {
         const expecting =
             "s0->RuleStart_A_1\n" +
             "RuleStart_A_1->s3\n" +
-            "s3-{66352..66384}->s4\n" +
+            "s3-{66352..66383}->s4\n" +
             "s4->RuleStop_A_2\n";
         checkTokensRule(g, "", expecting);
     });
@@ -247,7 +247,7 @@ describe("TestATNConstruction", () => {
         const expecting =
             "s0->RuleStart_A_1\n" +
             "RuleStart_A_1->s3\n" +
-            "s3-{0..66351, 66385..1114111}->s4\n" +
+            "s3-{0..66351, 66384..1114111}->s4\n" +
             "s4->RuleStop_A_2\n";
         checkTokensRule(g, "", expecting);
     });
@@ -261,7 +261,7 @@ describe("TestATNConstruction", () => {
         const expecting =
             "s0->RuleStart_A_1\n" +
             "RuleStart_A_1->s3\n" +
-            "s3-{66352..66384, 69968..70016}->s4\n" +
+            "s3-{66352..66383, 69968..70015}->s4\n" +
             "s4->RuleStop_A_2\n";
         checkTokensRule(g, "", expecting);
     });
@@ -275,7 +275,7 @@ describe("TestATNConstruction", () => {
         const expecting =
             "s0->RuleStart_A_1\n" +
             "RuleStart_A_1->s3\n" +
-            "s3-{48..58, 65..71, 97..103, 65296..65306, 65313..65319, 65345..65351}->s4\n" +
+            "s3-{48..57, 65..70, 97..102, 65296..65305, 65313..65318, 65345..65350}->s4\n" +
             "s4->RuleStop_A_2\n";
         checkTokensRule(g, "", expecting);
     });
