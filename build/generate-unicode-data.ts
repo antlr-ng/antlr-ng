@@ -48,7 +48,7 @@ const intervalSetFromImport = async (file: string): Promise<IntervalSet> => {
     const content = await import(file) as IDataFileContent;
     const set = new IntervalSet();
     for (const range of content.default) {
-        set.addRange(range.begin, range.end);
+        set.addRange(range.begin, range.end - 1);
     }
 
     return set;
