@@ -79,9 +79,9 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
 
             const altAST = alt;
             if (altAST.getChildCount() === 1 || (altAST.getChildCount() === 2
-                && altAST.getChild(0)!.getType() === ANTLRv4Parser.LT)) {
+                && altAST.getChild(0)!.getType() === ANTLRv4Parser.ELEMENT_OPTIONS)) {
                 const e = altAST.getChild(altAST.getChildCount() - 1)!;
-                if (e.getType() === ANTLRv4Parser.STAR) {
+                if (e.getType() === ANTLRv4Parser.WILDCARD) {
                     return true;
                 }
             }
