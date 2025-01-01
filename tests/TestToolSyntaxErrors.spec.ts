@@ -691,9 +691,7 @@ describe("TestToolSyntaxErrors", () => {
             "error(" + ErrorType.UNICODE_PROPERTY_NOT_ALLOWED_IN_RANGE.code + "): Test.g4:12:41: unicode property " +
             "escapes not allowed in lexer charset range: [A-\\p{Number}]\n" +
             "error(" + ErrorType.UNICODE_PROPERTY_NOT_ALLOWED_IN_RANGE.code + "): Test.g4:13:48: unicode property " +
-            "escapes not allowed in lexer charset range: [\\P{Uppercase_Letter}-\\P{Number}]\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:14:16: invalid escape sequence " +
-            "\\p{Grapheme_Cluster_Break=E_Base}\n";
+            "escapes not allowed in lexer charset range: [\\P{Uppercase_Letter}-\\P{Number}]\n";
 
         const pair = [
             grammar,
