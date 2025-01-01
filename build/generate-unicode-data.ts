@@ -32,6 +32,7 @@ const sourceURL = join(dirname(import.meta.url), `../node_modules/${packageName}
 const propertyAliases = new Map<string, string[]>();
 const shortToLongPropertyNameMap = new Map<string, string>();
 const shortToLongPropertyValueMap = new Map<string, string[]>();
+const binaryPropertyNames = new Set<string>();
 
 const numberToHex = (value: number): string => {
     return value.toString(16).toUpperCase();
@@ -121,13 +122,10 @@ const loadPropertyAliases = async (): Promise<void> => {
                 continue;
             }
 
-            if (parts[0].trim() !== "gc") {
-                // Ignore binary properties, which can only be switched on or off (indicated by true/false and their
-                // aliases). But add a lookup entry for them.
-                if (parts[1].trim().toLowerCase() === "n" || parts[1].trim().toLowerCase() === "y") {
-                    addBinaryPropertyEntry = true;
-                    continue;
-                }
+            if (parts.length >= 5 && (parts[4].trim() === "True" || parts[4].trim() === "False")) {
+                // We have a binary property here. Add a lookup entry for it and add it to the list of binary
+                addBinaryPropertyEntry = true;
+                continue;
             }
 
             // Canonical_Combining_Class is a special cases. It has an additional field in the second position,
@@ -155,6 +153,8 @@ const loadPropertyAliases = async (): Promise<void> => {
         }
 
         if (addBinaryPropertyEntry) {
+            binaryPropertyNames.add(longName);
+
             const list = propertyAliases.get(longName) ?? [];
             list.push(`"binary_property=${longName}"`);
             propertyAliases.set(longName, list);
@@ -269,25 +269,68 @@ await generateMap("Script");
 await generateMap("Script_Extensions");
 await generateMap("Word_Break");
 
-// Finally add the aliases.
-writer.write(`export const propertyAliases = new Map<string, string[]>([ \n`);
+// Manually add a number of values which are not listed in the Unicode package.
+
+// 1. Grapheme cluster break values (from ICU). Not sure why they are here, since they are not code points.
+//    So what's written here are fake values to conform to the old ANTLR tool tests.
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=other", IntervalSet.of(0, 0));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=control", IntervalSet.of(1, 1));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=cr", IntervalSet.of(2, 2));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=extend", IntervalSet.of(3, 3));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=l", IntervalSet.of(4, 4));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=lf", IntervalSet.of(5, 5));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=lv", IntervalSet.of(6, 6));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=lvt", IntervalSet.of(7, 7));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=t", IntervalSet.of(8, 8));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=v", IntervalSet.of(9, 9));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=spacingmark", IntervalSet.of(10, 10));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=prepend", IntervalSet.of(11, 11));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=regional_indicator", IntervalSet.of(12, 12));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=e_base", IntervalSet.of(13, 13));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=e_base_gaz", IntervalSet.of(14, 14));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=e_modifier", IntervalSet.of(15, 15));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=glue_after_zwj", IntervalSet.of(16, 16));\n`);
+writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=zwj", IntervalSet.of(17, 17));\n\n`);
+
+// 2. Emoji presentation code points.
+writer.write(`const emojis = propertyCodePointRanges.get("binary_property=emoji")!;\n`);
+writer.write(`const emojiPresentation = propertyCodePointRanges.get("binary_property=emoji_presentation")!;\n`);
+writer.write(`set = emojis.and(emojiPresentation);\n`);
+writer.write(`propertyCodePointRanges.set("emojipresentation=emojidefault", set);\n\n`);
+
+writer.write(`set = emojis.subtract(emojiPresentation);\n`);
+writer.write(`propertyCodePointRanges.set("emojipresentation=textdefault", set);\n\n`);
+
+writer.write(`const fullSet = IntervalSet.of(0, 0x10FFFF);\n`);
+writer.write(`set = fullSet.subtract(emojis);\n`);
+writer.write(`propertyCodePointRanges.set("emojipresentation=text", set);\n\n`);
+
+// Write the collected values.
 await loadPropertyAliases();
+
+writer.write(`export const binaryPropertyNames = new Set<string>([ \n`);
+binaryPropertyNames.forEach((value) => {
+    writer.write(`    "${value}", \n`);
+});
+writer.write(`]); \n\n`);
+
+writer.write(`export const propertyAliases = new Map<string, string[]>([ \n`);
 propertyAliases.forEach((value, key) => {
     writer.write(`    ["${key}", [${value.join(", ")}]], \n`);
 });
-writer.write(`]); \n`);
+writer.write(`]); \n\n`);
 
 writer.write(`export const shortToLongPropertyNameMap = new Map<string, string>([ \n`);
 shortToLongPropertyNameMap.forEach((value, key) => {
     writer.write(`    ["${key}", "${value}"], \n`);
 });
-writer.write(`]); \n`);
+writer.write(`]); \n\n`);
 
 writer.write(`export const shortToLongPropertyValueMap = new Map<string, string[]>([ \n`);
 shortToLongPropertyValueMap.forEach((value, key) => {
     writer.write(`    ["${key}", [${value.join(", ")}]], \n`);
 });
-writer.write(`]); \n`);
+writer.write(`]); \n\n`);
 
 writer.close();
 

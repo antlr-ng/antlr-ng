@@ -5,11 +5,11 @@
 
 // cspell: ignore ahex inpc insc
 
-import type { IntervalSet } from "antlr4ng";
+import { IntervalSet } from "antlr4ng";
 
 import {
-    propertyAliases,
-    propertyCodePointRanges, shortToLongPropertyNameMap, shortToLongPropertyValueMap
+    propertyAliases, propertyCodePointRanges, shortToLongPropertyNameMap, shortToLongPropertyValueMap,
+    binaryPropertyNames
 } from "../generated/UnicodeData.js";
 
 export interface ICodePointLookupResult {
@@ -131,6 +131,25 @@ export const getPropertyCodePoints = (propertyCodeOrAlias: string): ICodePointLo
 
     if (parts.length === 2) {
         const propertyName = shortToLongPropertyNameMap.get(parts[0]) ?? parts[0];
+
+        // Special handling for binary properties.
+        if (binaryPropertyNames.has(propertyName)) {
+            // Include the code points for this property, if the value is true/yes/t/y.
+            // Otherwise return the full Unicode set, less the values of this binary property.
+            const value = parts[1].toLowerCase();
+            if (value === "true" || value === "yes" || value === "t" || value === "y") {
+                set = propertyCodePointRanges.get(parts[0]);
+
+                return { status: set !== undefined ? "ok" : "not found", codePoints: set };
+            }
+
+            const fullSet = IntervalSet.of(0, 0x10FFFF);
+            set = propertyCodePointRanges.get(parts[0])!;
+            set = fullSet.subtract(set);
+
+            return { status: "ok", codePoints: set };
+        }
+
         let propertyValueList = shortToLongPropertyValueMap.get(parts[1]);
         if (!propertyValueList) {
             // Try to find the property value by alias.
