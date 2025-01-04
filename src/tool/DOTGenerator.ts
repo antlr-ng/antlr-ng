@@ -11,6 +11,7 @@ import {
     DFA, DFAState, DecisionState, NotSetTransition, PlusBlockStartState, PlusLoopbackState,
     RangeTransition, RuleStartState, RuleStopState, RuleTransition, SetTransition, StarBlockStartState,
     StarLoopEntryState, StarLoopbackState,
+    Token,
 } from "antlr4ng";
 import { STGroupFile, IST } from "stringtemplate4ts";
 
@@ -138,7 +139,11 @@ export class DOTGenerator {
 
                     let label = edge.labelValue.toString();
                     if (isLexer) {
-                        label = "'" + this.getEdgeLabel(String.fromCodePoint(edge.labelValue)) + "'";
+                        if (edge.labelValue === Token.EOF) {
+                            label = "EOF";
+                        } else {
+                            label = "'" + this.getEdgeLabel(String.fromCodePoint(edge.labelValue)) + "'";
+                        }
                     } else {
                         label = this.grammar.getTokenDisplayName(edge.labelValue)!;
                     }
