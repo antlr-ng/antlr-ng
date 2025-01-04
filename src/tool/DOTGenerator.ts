@@ -12,9 +12,8 @@ import {
     RangeTransition, RuleStartState, RuleStopState, RuleTransition, SetTransition, StarBlockStartState,
     StarLoopEntryState, StarLoopbackState,
 } from "antlr4ng";
-import { STGroupFile } from "stringtemplate4ts";
+import { STGroupFile, IST } from "stringtemplate4ts";
 
-import type { IST } from "stringtemplate4ts/dist/compiler/common.js";
 import { Utils } from "../misc/Utils.js";
 import { Grammar } from "./Grammar.js";
 
@@ -113,14 +112,14 @@ export class DOTGenerator {
                         throw new Error("no such template: edge");
                     }
 
-                    edgeST.add("label", this.getEdgeLabel(String(edge)));
+                    edgeST.add("label", this.getEdgeLabel(edge.toString()));
                 } else if (edge.isEpsilon) {
                     edgeST = DOTGenerator.stLib.getInstanceOf("epsilon-edge");
                     if (!edgeST) {
                         throw new Error("no such template: epsilon-edge");
                     }
 
-                    edgeST.add("label", this.getEdgeLabel(String(edge)));
+                    edgeST.add("label", this.getEdgeLabel(edge.toString()));
                     let loopback = false;
                     if (edge.target instanceof PlusBlockStartState) {
                         loopback = s.equals((edge.target).loopBackState);
@@ -183,7 +182,7 @@ export class DOTGenerator {
                         throw new Error("no such template: edge");
                     }
 
-                    edgeST.add("label", this.getEdgeLabel(String(edge)));
+                    edgeST.add("label", this.getEdgeLabel(edge.toString()));
                 }
 
                 edgeST.add("src", `s${s.stateNumber}`);
@@ -316,7 +315,7 @@ export class DOTGenerator {
         return Utils.sortLinesInString(output);
     }
 
-    protected getStateLabel(s: DFAState | ATNState): string {
+    private getStateLabel(s: DFAState | ATNState): string {
         if (s instanceof DFAState) {
             let buf = `s${s.stateNumber}`;
 
@@ -401,11 +400,11 @@ export class DOTGenerator {
     /**
      * Fix edge strings so they print out in DOT properly.
      */
-    protected getEdgeLabel(label: string): string {
-        label = label.replace("\\", "\\\\");
-        label = label.replace("\"", "\\\"");
-        label = label.replace("\n", "\\\\n");
-        label = label.replace("\r", "");
+    private getEdgeLabel(label: string): string {
+        label = label.replaceAll("\\", "\\\\");
+        label = label.replaceAll("\"", "\\\"");
+        label = label.replaceAll("\n", "\\\\n");
+        label = label.replaceAll("\r", "");
 
         return label;
     }

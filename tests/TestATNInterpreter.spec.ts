@@ -24,8 +24,6 @@ describe("TestATNInterpreter", () => {
 
         g.importVocab(lg);
 
-        //const f = new ParserATNFactory(g);
-        //const atn = f.createATN();
         const atn = g.atn!;
 
         const input = new MockIntTokenStream(types);
