@@ -15,6 +15,7 @@ import type { Grammar } from "./tool/Grammar.js";
 import type { GrammarParserInterpreter } from "./tool/GrammarParserInterpreter.js";
 import type { LexerGrammar } from "./tool/LexerGrammar.js";
 import type { Rule } from "./tool/Rule.js";
+import type { CommonTree } from "./tree/CommonTree.js";
 
 export interface IAlternative extends Alternative { }
 
@@ -37,3 +38,10 @@ export interface IParserATNFactory extends ParserATNFactory { }
 export interface IGrammarParserInterpreter extends GrammarParserInterpreter { }
 
 export interface ICodeBlockForOuterMostAlt extends CodeBlockForOuterMostAlt { }
+
+/** The result from tree walker rules. */
+export interface ITreeRuleReturnScope<T extends CommonTree> {
+    /** First node or root node of tree matched for this rule. */
+    start?: CommonTree;
+    tree?: T;
+}

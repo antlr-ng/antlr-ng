@@ -51,7 +51,6 @@ export class BlockSetTransformer extends TreeRewriter {
     ];
 
     private currentRuleName?: string;
-    private currentAlt: GrammarAST;
     private g: Grammar;
 
     private adaptor = new CommonTreeAdaptor();
@@ -457,9 +456,6 @@ export class BlockSetTransformer extends TreeRewriter {
                     _first_0 = ALT6;
                 }
 
-                if (this.state.backtracking === 1) {
-                    this.currentAlt = (retval.start as GrammarAST);
-                }
                 if (this.state.backtracking === 1) {
                     retval.tree = _first_0 ?? undefined;
                     if (retval.tree?.getParent()?.isNil()) {
