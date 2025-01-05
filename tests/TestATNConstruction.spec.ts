@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Mike Lischke. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
+ * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
 import { describe, expect, it } from "vitest";
@@ -655,11 +655,11 @@ describe("TestATNConstruction", () => {
     /**
      * Test for https://github.com/antlr/antlr4/issues/1369
      *  Repeated edges:
-     
+
      RuleStop_e_3->BlockEnd_26
      RuleStop_e_3->BlockEnd_26
      RuleStop_e_3->BlockEnd_26
-     
+
      * @throws Exception
      */
     it("testForRepeatedTransitionsToStopState", (): void => {
