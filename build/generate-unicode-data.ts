@@ -123,12 +123,13 @@ const loadPropertyAliases = async (): Promise<void> => {
             }
 
             if (parts.length >= 5 && (parts[4].trim() === "True" || parts[4].trim() === "False")) {
-                // We have a binary property here. Add a lookup entry for it and add it to the list of binary
+                // We have a binary property here. Add a lookup entry for it and add it to the list
+                // of binary properties.
                 addBinaryPropertyEntry = true;
                 continue;
             }
 
-            // Canonical_Combining_Class is a special cases. It has an additional field in the second position,
+            // Canonical_Combining_Class is a special case. It has an additional field in the second position,
             // which we ignore here.
             if (longName === "canonical_combining_class" && parts.length > 3) {
                 parts.splice(1, 1);
