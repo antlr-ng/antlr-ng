@@ -5,8 +5,6 @@
 
 const packageJson = await import("../package.json", { assert: { type: "json" } });
 
-import { globSync } from "glob";
-
 import { Command, Option } from "commander";
 
 export interface IToolParameters {
@@ -80,25 +78,14 @@ export const parseToolParameters = (args: string[]): IToolParameters => {
         .option<boolean>("--log [boolean]", "Dump lots of logging info to antlrng-timestamp.log.", parseBoolean, false)
         .option<boolean>("--exact-output-dir [boolean]", "All output goes into -o dir regardless of paths/package",
             parseBoolean, false)
-        .argument("<grammar...>", "A list of grammar files or a glob pattern.")
+        .argument("<grammar...>", "A list of grammar files.")
         .version(`ANTLRng ${antlrVersion}`);
 
     prepared.parse(args, { from: "user" });
 
     const result = prepared.opts<IToolParameters>();
 
-    result.args = [];
-    prepared.args.forEach((arg) => {
-        if (arg.includes("*")) {
-            const list = globSync(prepared.args);
-
-            // When using a glob pattern we cannot have exact output paths.
-            result.exactOutputDir = false;
-            result.args.push(...list);
-        } else {
-            result.args.push(arg);
-        }
-    });
+    result.args = prepared.args;
 
     return result;
 };
