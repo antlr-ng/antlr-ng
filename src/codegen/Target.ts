@@ -25,6 +25,8 @@ import { CodeGenerator } from "./CodeGenerator.js";
 import { UnicodeEscapes } from "./UnicodeEscapes.js";
 import { RuleFunction } from "./model/RuleFunction.js";
 
+import fileUriToPath from 'file-uri-to-path';
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export type char = number;
 
@@ -653,7 +655,7 @@ export abstract class Target {
         const language = this.getLanguage();
         const url = new URL("../../templates/codegen/" + language + "/" + language + STGroup.GROUP_FILE_EXTENSION,
             import.meta.url);
-        const groupFileName = url.pathname;
+        const groupFileName = fileUriToPath(url.toString());
 
         try {
             return new STGroupFile(groupFileName);

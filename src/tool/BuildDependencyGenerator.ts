@@ -14,6 +14,8 @@ import { GrammarType } from "../support/GrammarType.js";
 import { Grammar } from "./Grammar.js";
 import { Constants } from "../Constants.js";
 
+import fileUriToPath from 'file-uri-to-path';
+
 /**
  * Given a grammar file, show the dependencies on .tokens etc...
  *  Using ST, emit a simple "make compatible" list of dependencies.
@@ -234,7 +236,7 @@ export class BuildDependencyGenerator {
         }
 
         const url = new URL("../../templates/depend.stg", import.meta.url);
-        this.templates = new STGroupFile(url.pathname, "utf-8");
+        this.templates = new STGroupFile(fileUriToPath(url.toString()), "utf-8");
     }
 
     public getGenerator(): CodeGenerator {
