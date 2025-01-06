@@ -2,6 +2,14 @@
 
 # ANTLRng Release Notes
 
+## 0.5.0
+
+First public release, for public testing. Still some way to go.
+
+## 0.4.0
+
+The tool went through intensive testing by Ken Domino, who sent it through the entire grammar-v4 repository. Fixed quite a few bugs that came out of that.
+
 ## 0.3.0
 
 All tool tests have been ported to TypeScript and are now running fine. The tool is now fully functional and can be used to generate parsers and lexers in TypeScript. However, the tests don't cover all features yet (listeners, visitors etc.), so there might still be some issues.

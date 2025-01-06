@@ -4,7 +4,7 @@
  */
 
 import { Option, program } from "commander";
-import { createWriteStream } from "fs";
+import { createWriteStream } from "node:fs";
 import { readFile } from "fs/promises";
 
 import { CharStream, CommonToken, CommonTokenStream, DecisionInfo, ParseInfo } from "antlr4ng";
@@ -135,7 +135,7 @@ export class Interpreter {
                 if (tok instanceof CommonToken) {
                     console.log(tok.toString(lexEngine));
                 } else {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+
                     console.log(tok.toString());
                 }
             }

@@ -4,12 +4,15 @@
     "description": "Next generation ANTLR Tool",
     "type": "module",
     "author": "Mike Lischke",
-    "repository": "https://github.com/mike-lischke/antlr-ng",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mike-lischke/antlr-ng.git"
+    },
     "bugs": {
         "url": "https://github.com/mike-lischke/antlr-ng/issues"
     },
     "bin": {
-        "antlr-ng": "./cli/runner.js"
+        "antlr-ng": "dist/cli/runner.js"
     },
     "keywords": [
         "lexer",
@@ -49,22 +52,21 @@
         "vitest": "2.1.8"
     },
     "scripts": {
-        "build": "npm run generate-tool-parsers && npm run generate-test-parsers && npm run generate-unicode-data && npm run build-mjs && tsc -p tsconfig.json",
-        "build-bundle": "esbuild ./src/index.js --main-fields=module,main --bundle --target=esnext --keep-names --platform=node --external:antlr4ng --external:commander --external:fast-printf --external:stringtemplate4ts --external:unicode-properties",
-        "build-mjs": "npm run build-bundle -- --outfile=dist/index.mjs --format=esm",
+        "prepublishOnly": "npm run build && npm run copy-templates && npm run test",
+        "build": "npm run generate-tool-parsers && npm run generate-test-parsers && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
+        "esbuild": "tsx build/build.ts",
+        "copy-templates": "tsx build/copy-templates.ts",
         "run": "tsx cli/runner.ts --version",
         "lint": "eslint \"./src/**/*.ts\"",
         "lint:fix": "eslint \"./src/**/*.ts\" --fix",
         "test": "NODE_NO_WARNINGS=1 vitest --no-watch --no-coverage",
         "generate-tool-parsers": "./build/generate-tool-parsers.cmd",
         "generate-test-parsers": "./build/generate-test-parsers.cmd",
-        "generate-unicode-data": "tsx ./build/generate-unicode-data.ts",
-        "antlr-ng": "antlr-ng"
+        "generate-unicode-data": "tsx ./build/generate-unicode-data.ts"
     },
     "exports": {
         "types": "./dist/src/index.d.ts",
-        "require": "./dist/index.cjs",
-        "import": "./dist/index.mjs"
+        "import": "./dist/src/index.js"
     },
     "browserslist": [
         "defaults and fully supports es6-module",

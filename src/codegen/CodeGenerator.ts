@@ -5,8 +5,9 @@
 
 /* eslint-disable jsdoc/require-returns */
 
+import { writeFileSync } from "node:fs";
+
 import { Token } from "antlr4ng";
-import { writeFileSync } from "fs";
 import { AutoIndentWriter, ST, StringWriter, type IST, type STGroup } from "stringtemplate4ts";
 
 import { Constants } from "../Constants.js";

@@ -785,12 +785,12 @@ export class Grammar implements IGrammar, AttributeResolver {
             return Grammar.INVALID_TOKEN_NAME;
         }
 
-        if (ttype >= 0 && ttype < this.typeToStringLiteralList.length && this.typeToStringLiteralList[ttype]) {
-            return this.typeToStringLiteralList[ttype];
+        if (ttype >= 0 && ttype < this.typeToStringLiteralList.length && this.typeToStringLiteralList[ttype] != null) {
+            return this.typeToStringLiteralList[ttype] ?? String(ttype);
         }
 
         if (ttype >= 0 && ttype < this.typeToTokenList.length && this.typeToTokenList[ttype] != null) {
-            return this.typeToTokenList[ttype];
+            return this.typeToTokenList[ttype] ?? String(ttype);
         }
 
         return String(ttype);

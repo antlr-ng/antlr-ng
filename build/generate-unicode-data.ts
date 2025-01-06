@@ -1,7 +1,7 @@
 /*
  * Copyright (c) Mike Lischke. All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
-*/
+ * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
+ */
 
 // cspell: ignore inpc, insc
 
@@ -10,9 +10,9 @@
  * with that data. The file is then used by the ANTLR tool to support Unicode properties and categories.
  */
 
-import { createWriteStream } from "fs";
-import { readdir, readFile, stat } from "fs/promises";
-import { dirname, join } from "path";
+import { createWriteStream } from "node:fs";
+import { readdir, readFile, stat } from "node:fs/promises";
+import { dirname, join } from "node:path";
 
 import { IntervalSet } from "antlr4ng";
 
