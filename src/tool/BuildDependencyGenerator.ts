@@ -13,8 +13,8 @@ import { CodeGenerator } from "../codegen/CodeGenerator.js";
 import { GrammarType } from "../support/GrammarType.js";
 import { Grammar } from "./Grammar.js";
 import { Constants } from "../Constants.js";
+import { fileURLToPath } from "node:url";
 
-import fileUriToPath from 'file-uri-to-path';
 
 /**
  * Given a grammar file, show the dependencies on .tokens etc...
@@ -236,7 +236,7 @@ export class BuildDependencyGenerator {
         }
 
         const url = new URL("../../templates/depend.stg", import.meta.url);
-        this.templates = new STGroupFile(fileUriToPath(url.toString()), "utf-8");
+        this.templates = new STGroupFile(fileURLToPath(url.toString()), "utf-8");
     }
 
     public getGenerator(): CodeGenerator {

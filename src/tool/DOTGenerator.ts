@@ -16,8 +16,7 @@ import { STGroupFile, IST } from "stringtemplate4ts";
 
 import { Utils } from "../misc/Utils.js";
 import { Grammar } from "./Grammar.js";
-
-import fileUriToPath from 'file-uri-to-path';
+import { fileURLToPath } from "node:url";
 
 /** The DOT (part of graphviz) generation aspect. */
 export class DOTGenerator {
@@ -26,7 +25,7 @@ export class DOTGenerator {
     /** Library of output templates; use {@code <attrname>} format. */
     private static readonly templateUrl = new URL("../../templates/dot/graphs.stg", import.meta.url);
 
-    private static readonly stLib = new STGroupFile(fileUriToPath(this.templateUrl.toString()));
+    private static readonly stLib = new STGroupFile(fileURLToPath(this.templateUrl.toString()));
 
     protected arrowhead = "normal";
     protected rankdir = "LR";

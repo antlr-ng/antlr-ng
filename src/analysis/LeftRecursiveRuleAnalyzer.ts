@@ -23,7 +23,7 @@ import { LeftRecursiveRuleWalker } from "../tree-walkers/LeftRecursiveRuleWalker
 import { LeftRecursiveRuleAltInfo } from "./LeftRecursiveRuleAltInfo.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 
-import fileUriToPath from 'file-uri-to-path';
+import { fileURLToPath } from "node:url";
 
 enum Associativity {
     Left = "left",
@@ -54,7 +54,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
 
     public altAssociativity = new Map<number, Associativity>();
 
-    static readonly #templateGroupFile = fileUriToPath(new URL("../../templates/LeftRecursiveRules.stg", import.meta.url).toString());
+    static readonly #templateGroupFile = fileURLToPath(new URL("../../templates/LeftRecursiveRules.stg", import.meta.url).toString());
     static readonly #recRuleTemplates = new STGroupFile(LeftRecursiveRuleAnalyzer.#templateGroupFile);
 
     public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage) {
