@@ -5,9 +5,10 @@
 
 import { describe, expect, it } from "vitest";
 
-import { mkdirSync, mkdtempSync, readFileSync, rmdirSync, writeFileSync } from "fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
+
 import { ErrorType } from "../src/tool/ErrorType.js";
 import { GrammarSemanticsMessage } from "../src/tool/GrammarSemanticsMessage.js";
 import { Grammar } from "../src/tool/index.js";

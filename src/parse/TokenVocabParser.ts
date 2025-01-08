@@ -5,8 +5,8 @@
 
 /* eslint-disable jsdoc/require-returns */
 
-import { existsSync, readFileSync } from "fs";
-import { dirname, join } from "path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 import { Token } from "antlr4ng";
 

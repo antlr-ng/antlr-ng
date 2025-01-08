@@ -7,7 +7,7 @@
 
 // cspell: ignore gofmt ioutil wjkohnen
 
-import path from "path";
+import * as path from "path";
 import type { ST } from "stringtemplate4ts";
 import { GrammarType } from "../../support/GrammarType.js";
 import { Grammar } from "../../tool/Grammar.js";

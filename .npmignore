@@ -1,0 +1,21 @@
+@@ -0,0 +1,10 @@
+.github
+.vscode
+tests/
+coverage/
+dist/*.map
+cli/*.ts
+!cli/*.d.ts
+src/
+!dist/src
+build/
+package/
+templates/
+!dist/templates/
+
+eslint.config.mjs
+.project
+tsconfig.json
+cspell.json
+vitest.config.ts
+*.tgz

@@ -6,8 +6,8 @@
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
 import { ATNSerializer, CharStream, CommonTokenStream } from "antlr4ng";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import path, { basename, dirname } from "path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, dirname, isAbsolute, join } from "node:path";
 
 import { ANTLRv4Parser } from "./generated/ANTLRv4Parser.js";
 
@@ -495,7 +495,7 @@ export class Tool implements ITool {
      */
     public getOutputFile(g: Grammar, fileName: string): string {
         const outputDir = this.getOutputDirectory(g.fileName);
-        const outputFile = path.join(outputDir, fileName);
+        const outputFile = join(outputDir, fileName);
 
         if (!existsSync(outputDir)) {
             mkdirSync(outputDir, { recursive: true });
@@ -508,11 +508,11 @@ export class Tool implements ITool {
         let candidate = fileName;
         if (!existsSync(candidate)) {
             const parentDir = dirname(g.fileName); // Check the parent dir of input directory.
-            candidate = path.join(parentDir, fileName);
+            candidate = join(parentDir, fileName);
             if (!existsSync(candidate)) { // try in lib dir
                 const libDirectory = this.toolParameters.libDirectory;
                 if (libDirectory) {
-                    candidate = path.join(libDirectory, fileName);
+                    candidate = join(libDirectory, fileName);
                     if (!existsSync(candidate)) {
                         return undefined;
                     }
@@ -534,7 +534,7 @@ export class Tool implements ITool {
      * @param fileNameWithPath path to input source
      */
     public getOutputDirectory(fileNameWithPath: string): string {
-        const dirName = path.dirname(fileNameWithPath);
+        const dirName = dirname(fileNameWithPath);
         if (this.toolParameters.exactOutputDir && this.toolParameters.outputDirectory) {
             if (this.toolParameters.outputDirectory) {
                 return this.toolParameters.outputDirectory;
@@ -542,11 +542,11 @@ export class Tool implements ITool {
         }
 
         if (this.toolParameters.outputDirectory) {
-            if (path.isAbsolute(this.toolParameters.outputDirectory)) {
+            if (isAbsolute(this.toolParameters.outputDirectory)) {
                 return this.toolParameters.outputDirectory;
             }
 
-            return path.join(dirName, this.toolParameters.outputDirectory);
+            return join(dirName, this.toolParameters.outputDirectory);
         }
 
         return dirName;

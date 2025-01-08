@@ -3,7 +3,9 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-const packageJson = await import("../package.json", { assert: { type: "json" } });
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { Command, Option } from "commander";
 
@@ -29,7 +31,40 @@ export interface IToolParameters {
     exactOutputDir?: boolean,
 }
 
-export const antlrVersion = packageJson.default.version;
+/**
+ * Searches the package.json file in the same folder as this script or any parent folder (up to
+ * a node_modules folder).
+ *
+ * @returns The version of the package.
+ */
+const getPackageVersion = async (): Promise<string> => {
+    const findPackageJson = async (path: string): Promise<string> => {
+        const packageFile = resolve(path, "package.json");
+
+        try {
+            await readFile(packageFile);
+
+            return packageFile;
+        } catch {
+            const parent = dirname(path);
+
+            if (parent.endsWith("node_modules")) {
+                throw new Error("No package.json found.");
+            }
+
+            return findPackageJson(parent);
+        }
+    };
+
+    const fileName = fileURLToPath(import.meta.url);
+    const dirName = dirname(fileName);
+    const packageFile = await findPackageJson(dirName);
+    const packageJson = JSON.parse(await readFile(packageFile, "utf-8")) as { version: string; };
+
+    return packageJson.version;
+};
+
+export const antlrVersion = await getPackageVersion();
 
 /**
  * Used to parse tool parameters given as string list. Usually, this is used for tests.

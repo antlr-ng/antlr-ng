@@ -3,11 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-param, jsdoc/require-returns */
-
-
 /*
-   eslint-disable @typescript-eslint/no-base-to-string , @typescript-eslint/no-unsafe-function-type,
+   eslint-disable @typescript-eslint/no-unsafe-function-type,
    @typescript-eslint/no-unsafe-return
  */
 
@@ -184,5 +181,5 @@ export class TestRig {
     }
 }
 
-const testRig = new TestRig();
-await testRig.run();
+//const testRig = new TestRig();
+//await testRig.run();
