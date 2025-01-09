@@ -29,7 +29,9 @@ interface IDataFileContent {
 
 const packageName = "@unicode/unicode-16.0.0";
 const sourcePath = dirname(fileURLToPath(import.meta.url));
+console.log("Source path: " + sourcePath);
 const dataPath = join(sourcePath, `../node_modules/${packageName}`);
+console.log("Data path: " + dataPath);
 
 const propertyAliases = new Map<string, string[]>();
 const shortToLongPropertyNameMap = new Map<string, string>();
