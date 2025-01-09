@@ -14,8 +14,10 @@ exit 0
 
 echo Generating tool parsers...
 
-antlr4ng -Dlanguage=TypeScript -no-visitor -no-listener -Xexact-output-dir -o src\generated src\grammars\\ActionSplitter.g4
+antlr4ng -Dlanguage=TypeScript -no-visitor -no-listener -Xexact-output-dir -o src\generated src\grammars\ActionSplitter.g4
 antlr4ng -Dlanguage=TypeScript -no-visitor -no-listener -Xexact-output-dir -o src\generated src\grammars\ANTLRv4Lexer.g4
 antlr4ng -Dlanguage=TypeScript -no-visitor -no-listener -Xexact-output-dir -o src\generated src\grammars\ANTLRv4Parser.g4
+
+dir src\generated
 
 echo done

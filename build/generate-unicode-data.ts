@@ -238,7 +238,6 @@ const generateBlocksMap = async (): Promise<void> => {
         const element = elements[i];
 
         const target = pathToFileURL(join(folderPath, element));
-        console.log(`Processing block ${element}...`);
         const s = await stat(target);
         if (!s.isDirectory() || element === "undefined") {
             continue;
