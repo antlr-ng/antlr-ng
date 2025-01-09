@@ -223,7 +223,9 @@ const generateBlocksMap = async (): Promise<void> => {
     console.log(`Collecting Unicode blocks data...`);
 
     const folderPath = join(dataPath, "Block");
-    const elements = await readdir(pathToFileURL(folderPath));
+    const folderURL = pathToFileURL(folderPath);
+    console.log(`Folder URL: ${folderURL}`);
+    const elements = await readdir(folderURL);
 
     const ranges = new Map<string, string>();
     const nameMap = new Map<string, string>();
