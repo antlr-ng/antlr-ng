@@ -3,6 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import { mkdirSync, mkdtempSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
@@ -757,8 +759,8 @@ describe("TestCompositeGrammars", () => {
     it("testImportLargeGrammar", async () => {
         const tempDir = mkdtempSync(join(tmpdir(), "AntlrComposite"));
         try {
-            const sourceURL = new URL("./grammars/Java.g4", import.meta.url);
-            const slave = readFileSync(sourceURL, "utf-8");
+            const sourcePath = fileURLToPath(new URL("./grammars/Java.g4", import.meta.url));
+            const slave = readFileSync(sourcePath, "utf-8");
             const master =
                 "grammar NewJava;\n" +
                 "import Java;\n";

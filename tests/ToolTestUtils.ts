@@ -10,6 +10,7 @@ import { expect } from "vitest";
 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { existsSync, mkdtempSync, readFileSync, rmdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
@@ -440,8 +441,8 @@ export class ToolTestUtils {
 
     /** Generates the TypeScript test file to run the generated parser + lexer files. */
     private static writeTestFile(workDir: string, runOptions: IRunOptions): void {
-        const sourceURL = new URL("helpers/Test.ts.stg", import.meta.url);
-        const text = readFileSync(sourceURL, "utf8");
+        const sourcePath = fileURLToPath(new URL("helpers/Test.ts.stg", import.meta.url));
+        const text = readFileSync(sourcePath, "utf8");
         const outputFileST = new ST(text);
         outputFileST.add("grammarName", runOptions.grammarName);
         outputFileST.add("lexerName", runOptions.lexerName);
@@ -473,7 +474,7 @@ export class ToolTestUtils {
         const antlr4ngTarget = join(workDir, "node_modules/antlr4ng");
 
         if (!existsSync(antlr4ngTarget)) {
-            const antlr4tsSource = new URL("../node_modules/antlr4ng", import.meta.url);
+            const antlr4tsSource = fileURLToPath(new URL("../node_modules/antlr4ng", import.meta.url));
             await mkdir(join(workDir, "node_modules"), { recursive: true });
             symlinkSync(antlr4tsSource, antlr4ngTarget, "dir");
         }

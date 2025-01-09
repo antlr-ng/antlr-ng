@@ -5,6 +5,8 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
+import { fileURLToPath } from "node:url";
+
 import {
     ATNConfig, ATNState, AbstractPredicateTransition, ActionTransition, AtomTransition, BlockEndState, BlockStartState,
     DFA, DFAState, DecisionState, NotSetTransition, PlusBlockStartState, PlusLoopbackState,
@@ -22,9 +24,9 @@ export class DOTGenerator {
     public static readonly STRIP_NONREDUCED_STATES = false;
 
     /** Library of output templates; use {@code <attrname>} format. */
-    private static readonly templateUrl = new URL("../../templates/dot/graphs.stg", import.meta.url);
+    private static readonly templatePath = fileURLToPath(new URL("../../templates/dot/graphs.stg", import.meta.url));
 
-    private static readonly stLib = new STGroupFile(this.templateUrl.pathname);
+    private static readonly stLib = new STGroupFile(this.templatePath);
 
     protected arrowhead = "normal";
     protected rankdir = "LR";

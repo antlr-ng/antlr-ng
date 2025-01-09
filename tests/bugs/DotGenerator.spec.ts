@@ -4,6 +4,7 @@
  */
 
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
@@ -12,8 +13,8 @@ import { LexerGrammar } from "../../src/tool/index.js";
 
 describe("DOTGenerator", () => {
     it("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
-        const sourceURL = new URL("data/abbLexer.g4", import.meta.url);
-        const lexerGrammarText = await readFile(sourceURL, "utf8");
+        const sourcePath = fileURLToPath(new URL("data/abbLexer.g4", import.meta.url));
+        const lexerGrammarText = await readFile(sourcePath, "utf8");
         const lexerGrammar = new LexerGrammar(lexerGrammarText);
         lexerGrammar.tool.process(lexerGrammar, false);
 
@@ -27,8 +28,8 @@ describe("DOTGenerator", () => {
     });
 
     it("Bug #35 Tool crashes with --atn", async () => {
-        const sourceURL = new URL("data/GoLexer.g4", import.meta.url);
-        const lexerGrammarText = await readFile(sourceURL, "utf8");
+        const sourcePath = fileURLToPath(new URL("data/GoLexer.g4", import.meta.url));
+        const lexerGrammarText = await readFile(sourcePath, "utf8");
         const lexerGrammar = new LexerGrammar(lexerGrammarText);
         lexerGrammar.tool.process(lexerGrammar, false);
 

@@ -7,6 +7,8 @@
 
 // cspell: ignore unnnn
 
+import { fileURLToPath } from "node:url";
+
 import { RuntimeMetaData, Token } from "antlr4ng";
 import {
     NumberRenderer, STGroup, STGroupFile, StringRenderer, type IST, type STErrorListener, type STMessage
@@ -651,9 +653,8 @@ export abstract class Target {
 
     private loadTemplatesHelper(reportErrorIfFail: boolean): STGroup | undefined {
         const language = this.getLanguage();
-        const url = new URL("../../templates/codegen/" + language + "/" + language + STGroup.GROUP_FILE_EXTENSION,
-            import.meta.url);
-        const groupFileName = url.pathname;
+        const groupFileName = fileURLToPath(new URL("../../templates/codegen/" + language + "/" + language +
+            STGroup.GROUP_FILE_EXTENSION, import.meta.url));
 
         try {
             return new STGroupFile(groupFileName);

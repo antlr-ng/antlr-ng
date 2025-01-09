@@ -5,6 +5,8 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
+import { fileURLToPath } from "node:url";
+
 import { CommonToken, IntervalSet, type TokenStream } from "antlr4ng";
 import { STGroupFile, type STGroup } from "stringtemplate4ts";
 
@@ -33,6 +35,9 @@ enum Associativity {
  *  our pattern.
  */
 export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
+    private static readonly templateGroupFile = fileURLToPath(new URL("../../templates/LeftRecursiveRules.stg",
+        import.meta.url));
+    private static readonly recRuleTemplates = new STGroupFile(LeftRecursiveRuleAnalyzer.templateGroupFile);
 
     public tool: Tool;
     public binaryAlts = new Map<number, LeftRecursiveRuleAltInfo>();
@@ -51,9 +56,6 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     public readonly language: string;
 
     public altAssociativity = new Map<number, Associativity>();
-
-    static readonly #templateGroupFile = new URL("../../templates/LeftRecursiveRules.stg", import.meta.url);
-    static readonly #recRuleTemplates = new STGroupFile(LeftRecursiveRuleAnalyzer.#templateGroupFile.pathname);
 
     public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage) {
         super(new CommonTreeNodeStream(new GrammarASTAdaptor(ruleAST.token!.inputStream ?? undefined), ruleAST));
@@ -209,7 +211,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     // --------- get transformed rules ----------------
 
     public getArtificialOpPrecRule(): string {
-        const ruleST = LeftRecursiveRuleAnalyzer.#recRuleTemplates.getInstanceOf("recRule")!;
+        const ruleST = LeftRecursiveRuleAnalyzer.recRuleTemplates.getInstanceOf("recRule")!;
         ruleST.add("ruleName", this.ruleName);
         const ruleArgST = this.codegenTemplates.getInstanceOf("recRuleArg");
         ruleST.add("argName", ruleArgST);
@@ -229,7 +231,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         });
 
         for (const [alt, altInfo] of opPrecRuleAlts) {
-            const altST = LeftRecursiveRuleAnalyzer.#recRuleTemplates.getInstanceOf("recRuleAlt")!;
+            const altST = LeftRecursiveRuleAnalyzer.recRuleTemplates.getInstanceOf("recRuleAlt")!;
             const predST = this.codegenTemplates.getInstanceOf("recRuleAltPredicate")!;
             predST.add("opPrec", this.precedence(alt));
             predST.add("ruleName", this.ruleName);

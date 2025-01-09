@@ -3,6 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import { mkdtempSync, readFileSync, rmdirSync } from "node:fs";
@@ -90,8 +92,8 @@ describe.sequential("TestParserExec", () => {
     it("testFailedPredicateExceptionState", async () => {
         const tempDir = mkdtempSync(join(tmpdir(), "AntlrLexerActions"));
         try {
-            const url = new URL("grammars/Psl.g4", import.meta.url);
-            const grammar = readFileSync(url, "utf8");
+            const grammarPath = fileURLToPath(new URL("grammars/Psl.g4", import.meta.url));
+            const grammar = readFileSync(grammarPath, "utf8");
 
             let generationErrors = "";
             const output = await ToolTestUtils.captureTerminalOutput(async () => {

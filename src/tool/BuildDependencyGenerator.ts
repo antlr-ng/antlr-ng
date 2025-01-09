@@ -5,14 +5,16 @@
 
 /* eslint-disable jsdoc/require-returns */
 
-import { STGroupFile, type STGroup } from "stringtemplate4ts";
-import type { IST } from "stringtemplate4ts";
+import { fileURLToPath } from "node:url";
 
+import type { IST } from "stringtemplate4ts";
+import { STGroupFile, type STGroup } from "stringtemplate4ts";
+
+import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { CodeGenerator } from "../codegen/CodeGenerator.js";
 import { GrammarType } from "../support/GrammarType.js";
 import { Grammar } from "./Grammar.js";
-import { Constants } from "../Constants.js";
 
 /**
  * Given a grammar file, show the dependencies on .tokens etc...
@@ -233,8 +235,8 @@ export class BuildDependencyGenerator {
             return;
         }
 
-        const url = new URL("../../templates/depend.stg", import.meta.url);
-        this.templates = new STGroupFile(url.pathname, "utf-8");
+        const templatePath = fileURLToPath(new URL("../../templates/depend.stg", import.meta.url));
+        this.templates = new STGroupFile(templatePath, "utf-8");
     }
 
     public getGenerator(): CodeGenerator {
