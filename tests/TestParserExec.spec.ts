@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 
 import { mkdtempSync, readFileSync, rmdirSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 
 import { ToolTestUtils } from "./ToolTestUtils.js";
 
@@ -90,7 +90,7 @@ describe.sequential("TestParserExec", () => {
     it("testFailedPredicateExceptionState", async () => {
         const tempDir = mkdtempSync(join(tmpdir(), "AntlrLexerActions"));
         try {
-            const url = join(dirname(import.meta.url), "grammars/Psl.g4").substring("file:".length);
+            const url = new URL("grammars/Psl.g4", import.meta.url);
             const grammar = readFileSync(url, "utf8");
 
             let generationErrors = "";

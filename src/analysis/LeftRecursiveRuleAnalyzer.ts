@@ -13,6 +13,7 @@ import { Tool } from "../Tool.js";
 import { CommonTreeNodeStream } from "../antlr3/tree/CommonTreeNodeStream.js";
 import { CodeGenerator, type SupportedLanguage } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
+import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import { AltAST } from "../tool/ast/AltAST.js";
@@ -21,7 +22,6 @@ import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import { RuleRefAST } from "../tool/ast/RuleRefAST.js";
 import { LeftRecursiveRuleWalker } from "../tree-walkers/LeftRecursiveRuleWalker.js";
 import { LeftRecursiveRuleAltInfo } from "./LeftRecursiveRuleAltInfo.js";
-import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 
 enum Associativity {
     Left = "left",

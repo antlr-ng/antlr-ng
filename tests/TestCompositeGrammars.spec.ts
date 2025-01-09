@@ -7,13 +7,13 @@ import { describe, expect, it } from "vitest";
 
 import { mkdirSync, mkdtempSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, join } from "node:path";
+import { basename, join } from "node:path";
 
+import { convertMapToString } from "../src/support/helpers.js";
 import { ErrorType } from "../src/tool/ErrorType.js";
 import { GrammarSemanticsMessage } from "../src/tool/GrammarSemanticsMessage.js";
 import { Grammar } from "../src/tool/index.js";
 import { ErrorQueue } from "./support/ErrorQueue.js";
-import { convertMapToString } from "../src/support/helpers.js";
 import { ToolTestUtils } from "./ToolTestUtils.js";
 
 describe("TestCompositeGrammars", () => {
@@ -757,7 +757,7 @@ describe("TestCompositeGrammars", () => {
     it("testImportLargeGrammar", async () => {
         const tempDir = mkdtempSync(join(tmpdir(), "AntlrComposite"));
         try {
-            const sourceURL = join(dirname(import.meta.url), "./grammars/Java.g4").substring("file:".length);
+            const sourceURL = new URL("./grammars/Java.g4", import.meta.url);
             const slave = readFileSync(sourceURL, "utf-8");
             const master =
                 "grammar NewJava;\n" +
