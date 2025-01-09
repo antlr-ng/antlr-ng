@@ -66,8 +66,8 @@ You now can import the generated classes and write a full parser application. Th
 
 ```typescript
 import { CharStream, CommonTokenStream }  from 'antlr4ng';
-import HelloWorldLexer from './generated/HelloWorldLexer';
-import HelloWorldParser from './generated/HelloWorldParser';
+import HelloWorldLexer from './generated/HelloWorldLexer.js';
+import HelloWorldParser from './generated/HelloWorldParser.js';
 
 const text = "hello \n \t world\n"
 const input = CharStream.fromString(text);
@@ -79,7 +79,7 @@ const tree = parser.greeting();
 
 Note the use of the `greeting()` method, which was auto generated from the `greeting` parser rule.
 
-More information about target specific topics will follow as this project evolves. You can also use the docs from the old ANTLR4 tool, but keep in mind that there might be differences (especially how to invoke the tool).
+More information about target specific topics will follow as this project evolves. You can also use the [docs from the old ANTLR4 tool](https://github.com/antlr/antlr4/tree/dev/doc), but keep in mind that there might be differences (especially how to invoke the tool).
 
 # Advanced Topics
 

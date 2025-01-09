@@ -5,7 +5,6 @@
 
 // $ANTLR 3.5.3 org/antlr/v4/parse/ATNBuilder.g
 
-/* eslint-disable max-len, @typescript-eslint/naming-convention */
 // cspell: disable
 
 import { RecognitionException } from "antlr4ng";
@@ -75,99 +74,58 @@ export class ATNBuilder extends TreeParser {
     public ruleBlock(ebnfRoot: GrammarAST | null): IStatePair | null {
         let p = null;
 
-        let BLOCK1 = null;
-
         const alts = new Array<IStatePair>();
         let alt = 1;
         this.factory!.setCurrentOuterAlt(alt);
 
         try {
             {
-                BLOCK1 = this.match(this.input, ANTLRv4Lexer.BLOCK, null) as GrammarAST;
+                const block = this.match(this.input, ANTLRv4Lexer.BLOCK, null) as GrammarAST;
                 this.match(this.input, Constants.DOWN, null);
 
-                let alt2 = 2;
-                const LA2_0 = this.input.LA(1);
-                if ((LA2_0 === ANTLRv4Lexer.OPTIONS)) {
-                    alt2 = 1;
-                }
+                if ((this.input.LA(1) === ANTLRv4Lexer.OPTIONS)) {
+                    this.match(this.input, ANTLRv4Lexer.OPTIONS, null);
+                    if (this.input.LA(1) === Constants.DOWN) {
+                        this.match(this.input, Constants.DOWN, null);
 
-                switch (alt2) {
-                    case 1: {
-                        this.match(this.input, ANTLRv4Lexer.OPTIONS, null);
-                        if (this.input.LA(1) === Constants.DOWN) {
-                            this.match(this.input, Constants.DOWN, null);
-
-                            loop1:
-                            while (true) {
-                                let alt1 = 2;
-                                const LA1_0 = this.input.LA(1);
-                                if (((LA1_0 >= ANTLRv4Lexer.ACTION && LA1_0 <= ANTLRv4Lexer.WILDCARD))) {
-                                    alt1 = 1;
-                                } else {
-                                    if ((LA1_0 === Constants.UP)) {
-                                        alt1 = 2;
-                                    }
-                                }
-
-                                switch (alt1) {
-                                    case 1: {
-                                        this.matchAny(this.input);
-
-                                        break;
-                                    }
-
-                                    default: {
-                                        break loop1;
-                                    }
-
+                        while (true) {
+                            const lookahead = this.input.LA(1);
+                            if (((lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD))) {
+                                this.matchAny(this.input);
+                            } else {
+                                if ((lookahead === Constants.UP)) {
+                                    break;
                                 }
                             }
-
-                            this.match(this.input, Constants.UP, null);
                         }
 
-                        break;
+                        this.match(this.input, Constants.UP, null);
                     }
-
-                    default:
-
                 }
 
                 let cnt3 = 0;
 
-                loop3:
                 while (true) {
-                    let alt3 = 2;
-                    const LA3_0 = this.input.LA(1);
-                    if ((LA3_0 === ANTLRv4Lexer.ALT || LA3_0 === ANTLRv4Lexer.LEXER_ALT_ACTION)) {
-                        alt3 = 1;
-                    }
+                    const lookahead = this.input.LA(1);
+                    if ((lookahead === ANTLRv4Lexer.ALT || lookahead === ANTLRv4Lexer.LEXER_ALT_ACTION)) {
+                        const a = this.alternative();
 
-                    switch (alt3) {
-                        case 1: {
-                            const a = this.alternative();
-
-                            alts.push(a!);
-                            this.factory!.setCurrentOuterAlt(++alt);
-
+                        alts.push(a!);
+                        this.factory!.setCurrentOuterAlt(++alt);
+                    } else {
+                        if (cnt3 >= 1) {
                             break;
                         }
 
-                        default: {
-                            if (cnt3 >= 1) {
-                                break loop3;
-                            }
-
-                            throw new EarlyExitException(3, this.input);
-                        }
+                        throw new EarlyExitException(3, this.input);
                     }
+
                     cnt3++;
                 }
 
                 this.match(this.input, Constants.UP, null);
 
-                p = this.factory!.block(BLOCK1 as BlockAST, ebnfRoot, alts);
+                p = this.factory!.block(block as BlockAST, ebnfRoot, alts);
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -183,97 +141,52 @@ export class ATNBuilder extends TreeParser {
     public block(ebnfRoot: GrammarAST | null): IStatePair | null {
         let p = null;
 
-        let BLOCK2 = null;
-
         const alts = new Array<IStatePair>();
         try {
-            {
-                BLOCK2 = this.match(this.input, ANTLRv4Lexer.BLOCK, null) as GrammarAST;
-                this.match(this.input, Constants.DOWN, null);
+            const block = this.match(this.input, ANTLRv4Lexer.BLOCK, null) as GrammarAST;
+            this.match(this.input, Constants.DOWN, null);
 
-                let alt5 = 2;
-                const LA5_0 = this.input.LA(1);
-                if ((LA5_0 === ANTLRv4Lexer.OPTIONS)) {
-                    alt5 = 1;
-                }
+            if ((this.input.LA(1) === ANTLRv4Lexer.OPTIONS)) {
+                this.match(this.input, ANTLRv4Lexer.OPTIONS, null);
 
-                switch (alt5) {
-                    case 1: {
-                        this.match(this.input, ANTLRv4Lexer.OPTIONS, null);
-                        if (this.input.LA(1) === Constants.DOWN) {
-                            this.match(this.input, Constants.DOWN, null);
+                if (this.input.LA(1) === Constants.DOWN) {
+                    this.match(this.input, Constants.DOWN, null);
 
-                            loop4:
-                            while (true) {
-                                let alt4 = 2;
-                                const LA4_0 = this.input.LA(1);
-                                if (((LA4_0 >= ANTLRv4Lexer.ACTION && LA4_0 <= ANTLRv4Lexer.WILDCARD))) {
-                                    alt4 = 1;
-                                } else {
-                                    if ((LA4_0 === Constants.UP)) {
-                                        alt4 = 2;
-                                    }
-                                }
-
-                                switch (alt4) {
-                                    case 1: {
-                                        this.matchAny(this.input);
-
-                                        break;
-                                    }
-
-                                    default: {
-                                        break loop4;
-                                    }
-
-                                }
+                    while (true) {
+                        const lookahead = this.input.LA(1);
+                        if (((lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD))) {
+                            this.matchAny(this.input);
+                        } else {
+                            if ((lookahead === Constants.UP)) {
+                                break;
                             }
-
-                            this.match(this.input, Constants.UP, null);
                         }
+                    }
 
+                    this.match(this.input, Constants.UP, null);
+                }
+            }
+
+            let cnt6 = 0;
+
+            while (true) {
+                const lookahead = this.input.LA(1);
+                if ((lookahead === ANTLRv4Lexer.ALT || lookahead === ANTLRv4Lexer.LEXER_ALT_ACTION)) {
+                    alts.push(this.alternative()!);
+                } else {
+                    if (cnt6 >= 1) {
                         break;
                     }
 
-                    default:
-
+                    throw new EarlyExitException(6, this.input);
                 }
 
-                let cnt6 = 0;
-
-                loop6:
-                while (true) {
-                    let alt6 = 2;
-                    const LA6_0 = this.input.LA(1);
-                    if ((LA6_0 === ANTLRv4Lexer.ALT || LA6_0 === ANTLRv4Lexer.LEXER_ALT_ACTION)) {
-                        alt6 = 1;
-                    }
-
-                    switch (alt6) {
-                        case 1: {
-                            const a = this.alternative();
-
-                            alts.push(a!);
-
-                            break;
-                        }
-
-                        default: {
-                            if (cnt6 >= 1) {
-                                break loop6;
-                            }
-
-                            throw new EarlyExitException(6, this.input);
-                        }
-
-                    }
-                    cnt6++;
-                }
-
-                this.match(this.input, Constants.UP, null);
-
-                p = this.factory!.block(BLOCK2 as BlockAST, ebnfRoot, alts);
+                cnt6++;
             }
+
+            this.match(this.input, Constants.UP, null);
+
+            p = this.factory!.block(block as BlockAST, ebnfRoot, alts);
 
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -289,127 +202,69 @@ export class ATNBuilder extends TreeParser {
     public alternative(): IStatePair | null {
         let p = null;
 
-        let EPSILON4 = null;
-
         const els = new Array<IStatePair>();
         try {
-            let alt10 = 3;
-
             if (this.input.LA(1) === ANTLRv4Lexer.LEXER_ALT_ACTION) {
-                alt10 = 1;
+                this.match(this.input, ANTLRv4Lexer.LEXER_ALT_ACTION, null);
+                this.match(this.input, Constants.DOWN, null);
+                const a = this.alternative();
+
+                const lexerCommands3 = this.lexerCommands();
+                this.match(this.input, Constants.UP, null);
+                p = this.factory!.lexerAltCommands(a!, lexerCommands3!);
             } else {
                 const current = this.input.LT(1)!;
                 if (current.getChild(0)!.getType() === ANTLRv4Lexer.EPSILON) {
-                    alt10 = 2;
-                }
-            }
-
-            switch (alt10) {
-                case 1: {
-                    this.match(this.input, ANTLRv4Lexer.LEXER_ALT_ACTION, null);
-                    this.match(this.input, Constants.DOWN, null);
-                    const a = this.alternative();
-
-                    const lexerCommands3 = this.lexerCommands();
-
-                    this.match(this.input, Constants.UP, null);
-
-                    p = this.factory!.lexerAltCommands(a!, lexerCommands3!);
-
-                    break;
-                }
-
-                case 2: {
                     this.match(this.input, ANTLRv4Lexer.ALT, null);
                     this.match(this.input, Constants.DOWN, null);
 
-                    let alt7 = 2;
-                    const LA7_0 = this.input.LA(1);
-                    if ((LA7_0 === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
-                        alt7 = 1;
+                    if ((this.input.LA(1) === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
+                        this.elementOptions();
                     }
 
-                    switch (alt7) {
-                        case 1: {
-                            this.elementOptions();
-
-                            break;
-                        }
-
-                        default:
-
-                    }
-
-                    EPSILON4 = this.match(this.input, ANTLRv4Lexer.EPSILON, null) as GrammarAST;
+                    const epsilon = this.match(this.input, ANTLRv4Lexer.EPSILON, null) as GrammarAST;
                     this.match(this.input, Constants.UP, null);
-
-                    p = this.factory!.epsilon(EPSILON4);
-
-                    break;
-                }
-
-                case 3: {
+                    p = this.factory!.epsilon(epsilon);
+                } else {
                     this.match(this.input, ANTLRv4Lexer.ALT, null);
                     this.match(this.input, Constants.DOWN, null);
 
-                    let alt8 = 2;
-                    const LA8_0 = this.input.LA(1);
-                    if ((LA8_0 === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
-                        alt8 = 1;
-                    }
-
-                    switch (alt8) {
-                        case 1: {
-                            this.elementOptions();
-
-                            break;
-                        }
-
-                        default:
-
+                    if ((this.input.LA(1) === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
+                        this.elementOptions();
                     }
 
                     let cnt9 = 0;
 
-                    loop9:
                     while (true) {
-                        let alt9 = 2;
-                        const LA9_0 = this.input.LA(1);
-                        if ((LA9_0 === ANTLRv4Lexer.ACTION || LA9_0 === ANTLRv4Lexer.ASSIGN || LA9_0 === ANTLRv4Lexer.DOT || LA9_0 === ANTLRv4Lexer.LEXER_CHAR_SET || LA9_0 === ANTLRv4Lexer.NOT || LA9_0 === ANTLRv4Lexer.PLUS_ASSIGN || LA9_0 === ANTLRv4Lexer.RANGE || LA9_0 === ANTLRv4Lexer.RULE_REF || LA9_0 === ANTLRv4Lexer.SEMPRED || LA9_0 === ANTLRv4Lexer.STRING_LITERAL || LA9_0 === ANTLRv4Lexer.TOKEN_REF || (LA9_0 >= ANTLRv4Lexer.BLOCK && LA9_0 <= ANTLRv4Lexer.CLOSURE) || (LA9_0 >= ANTLRv4Lexer.OPTIONAL && LA9_0 <= ANTLRv4Lexer.POSITIVE_CLOSURE) || (LA9_0 >= ANTLRv4Lexer.SET && LA9_0 <= ANTLRv4Lexer.WILDCARD))) {
-                            alt9 = 1;
-                        }
-
-                        switch (alt9) {
-                            case 1: {
-                                const e = this.element();
-                                if (e.p) {
-                                    els.push(e.p);
-                                }
-
+                        const lookahead = this.input.LA(1);
+                        if ((lookahead === ANTLRv4Lexer.ACTION || lookahead === ANTLRv4Lexer.ASSIGN
+                            || lookahead === ANTLRv4Lexer.DOT || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET
+                            || lookahead === ANTLRv4Lexer.NOT || lookahead === ANTLRv4Lexer.PLUS_ASSIGN
+                            || lookahead === ANTLRv4Lexer.RANGE || lookahead === ANTLRv4Lexer.RULE_REF
+                            || lookahead === ANTLRv4Lexer.SEMPRED || lookahead === ANTLRv4Lexer.STRING_LITERAL ||
+                            lookahead === ANTLRv4Lexer.TOKEN_REF
+                            || (lookahead >= ANTLRv4Lexer.BLOCK && lookahead <= ANTLRv4Lexer.CLOSURE)
+                            || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
+                            || (lookahead >= ANTLRv4Lexer.SET && lookahead <= ANTLRv4Lexer.WILDCARD))) {
+                            const e = this.element();
+                            if (e.p) {
+                                els.push(e.p);
+                            }
+                        } else {
+                            if (cnt9 >= 1) {
                                 break;
                             }
 
-                            default: {
-                                if (cnt9 >= 1) {
-                                    break loop9;
-                                }
-
-                                throw new EarlyExitException(9, this.input);
-                            }
-
+                            throw new EarlyExitException(9, this.input);
                         }
+
                         cnt9++;
                     }
 
                     this.match(this.input, Constants.UP, null);
 
                     p = this.factory!.alt(els);
-
-                    break;
                 }
-
-                default:
-
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -423,109 +278,73 @@ export class ATNBuilder extends TreeParser {
     }
 
     public lexerCommands(): IStatePair | null {
-        let p = null;
-
-        let c = null;
-
         const cmds = new Array<IStatePair>();
         try {
-            let cnt11 = 0;
+            let commandCount = 0;
 
-            loop11:
             while (true) {
-                let alt11 = 2;
-                const LA11_0 = this.input.LA(1);
-                if ((LA11_0 === ANTLRv4Lexer.ID || LA11_0 === ANTLRv4Lexer.LEXER_ACTION_CALL)) {
-                    alt11 = 1;
-                }
+                const lookahead = this.input.LA(1);
+                if ((lookahead === ANTLRv4Lexer.ID || lookahead === ANTLRv4Lexer.LEXER_ACTION_CALL)) {
+                    const c = this.lexerCommand();
 
-                switch (alt11) {
-                    case 1: {
-                        c = this.lexerCommand();
-
-                        if (c !== null) {
-                            cmds.push(c);
-                        }
-
+                    if (c !== null) {
+                        cmds.push(c);
+                    }
+                } else {
+                    if (commandCount >= 1) {
                         break;
                     }
 
-                    default: {
-                        if (cnt11 >= 1) {
-                            break loop11;
-                        }
-
-                        const eee = new EarlyExitException(11, this.input);
-                        throw eee;
-                    }
-
+                    throw new EarlyExitException(11, this.input);
                 }
-                cnt11++;
+
+                commandCount++;
             }
 
-            p = this.factory!.alt(cmds);
+            return this.factory!.alt(cmds);
         } catch (re) {
             if (re instanceof RecognitionException) {
                 this.reportError(re);
+
+                return null;
             } else {
                 throw re;
             }
         }
-
-        return p;
     }
 
     public lexerCommand(): IStatePair | null {
-        let cmd = null;
-
-        let ID5 = null;
-        let ID7 = null;
-
         try {
-            let alt12 = 2;
-            const LA12_0 = this.input.LA(1);
-            if ((LA12_0 === ANTLRv4Lexer.LEXER_ACTION_CALL)) {
-                alt12 = 1;
+            let cmd = null;
+            const lookahead = this.input.LA(1);
+            if ((lookahead === ANTLRv4Lexer.LEXER_ACTION_CALL)) {
+                this.match(this.input, ANTLRv4Lexer.LEXER_ACTION_CALL, null);
+                this.match(this.input, Constants.DOWN, null);
+                const id = this.match(this.input, ANTLRv4Lexer.ID, null) as GrammarAST;
+                const lexerCommandExpr6 = this.lexerCommandExpr();
+
+                this.match(this.input, Constants.UP, null);
+
+                cmd = this.factory!.lexerCallCommand(id, lexerCommandExpr6.start as GrammarAST);
             } else {
-                if ((LA12_0 === ANTLRv4Lexer.ID)) {
-                    alt12 = 2;
+                if ((lookahead === ANTLRv4Lexer.ID)) {
+                    const id = this.match(this.input, ANTLRv4Lexer.ID, null) as GrammarAST;
+                    cmd = this.factory!.lexerCommand(id);
                 } else {
                     throw new NoViableAltException("", 12, 0, this.input);
                 }
             }
 
-            switch (alt12) {
-                case 1: {
-                    this.match(this.input, ANTLRv4Lexer.LEXER_ACTION_CALL, null);
-                    this.match(this.input, Constants.DOWN, null);
-                    ID5 = this.match(this.input, ANTLRv4Lexer.ID, null) as GrammarAST;
-                    const lexerCommandExpr6 = this.lexerCommandExpr();
-
-                    this.match(this.input, Constants.UP, null);
-
-                    cmd = this.factory!.lexerCallCommand(ID5, lexerCommandExpr6.start as GrammarAST);
-
-                    break;
-                }
-
-                case 2: {
-                    ID7 = this.match(this.input, ANTLRv4Lexer.ID, null) as GrammarAST;
-                    cmd = this.factory!.lexerCommand(ID7);
-
-                    break;
-                }
-
-                default:
-            }
+            return cmd;
         } catch (re) {
             if (re instanceof RecognitionException) {
                 this.reportError(re);
+
+                return null;
             } else {
                 throw re;
             }
         }
-
-        return cmd;
     }
 
     public lexerCommandExpr(): ITreeRuleReturnScope<GrammarAST> {
@@ -536,8 +355,7 @@ export class ATNBuilder extends TreeParser {
                 this.input.consume();
                 this.state.errorRecovery = false;
             } else {
-                const mse = new MismatchedSetException(null, this.input);
-                throw mse;
+                throw new MismatchedSetException(null, this.input);
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -594,21 +412,29 @@ export class ATNBuilder extends TreeParser {
                 }
 
                 case ANTLRv4Lexer.ACTION: {
-                    const LA13_4 = this.input.LA(2);
-                    if ((LA13_4 === Constants.DOWN)) {
+                    const lookahead = this.input.LA(2);
+                    if ((lookahead === Constants.DOWN)) {
                         alt13 = 6;
                     } else {
-                        if (((LA13_4 >= Constants.UP && LA13_4 <= ANTLRv4Lexer.ACTION) || LA13_4 === ANTLRv4Lexer.ASSIGN || LA13_4 === ANTLRv4Lexer.DOT || LA13_4 === ANTLRv4Lexer.LEXER_CHAR_SET || LA13_4 === ANTLRv4Lexer.NOT || LA13_4 === ANTLRv4Lexer.PLUS_ASSIGN || LA13_4 === ANTLRv4Lexer.RANGE || LA13_4 === ANTLRv4Lexer.RULE_REF || LA13_4 === ANTLRv4Lexer.SEMPRED || LA13_4 === ANTLRv4Lexer.STRING_LITERAL || LA13_4 === ANTLRv4Lexer.TOKEN_REF || (LA13_4 >= ANTLRv4Lexer.BLOCK && LA13_4 <= ANTLRv4Lexer.CLOSURE) || (LA13_4 >= ANTLRv4Lexer.OPTIONAL && LA13_4 <= ANTLRv4Lexer.POSITIVE_CLOSURE) || (LA13_4 >= ANTLRv4Lexer.SET && LA13_4 <= ANTLRv4Lexer.WILDCARD))) {
+                        if (((lookahead >= Constants.UP && lookahead <= ANTLRv4Lexer.ACTION)
+                            || lookahead === ANTLRv4Lexer.ASSIGN || lookahead === ANTLRv4Lexer.DOT
+                            || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead === ANTLRv4Lexer.NOT
+                            || lookahead === ANTLRv4Lexer.PLUS_ASSIGN || lookahead === ANTLRv4Lexer.RANGE
+                            || lookahead === ANTLRv4Lexer.RULE_REF || lookahead === ANTLRv4Lexer.SEMPRED
+                            || lookahead === ANTLRv4Lexer.STRING_LITERAL || lookahead === ANTLRv4Lexer.TOKEN_REF
+                            || (lookahead >= ANTLRv4Lexer.BLOCK && lookahead <= ANTLRv4Lexer.CLOSURE)
+                            || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
+                            || (lookahead >= ANTLRv4Lexer.SET && lookahead <= ANTLRv4Lexer.WILDCARD))) {
                             alt13 = 4;
                         } else {
-                            const nvaeMark = this.input.mark();
+                            const mark = this.input.mark();
                             const lastIndex = this.input.index;
                             try {
                                 this.input.consume();
                                 throw new NoViableAltException("", 13, 4, this.input);
                             } finally {
                                 this.input.seek(lastIndex);
-                                this.input.release(nvaeMark);
+                                this.input.release(mark);
                             }
                         }
                     }
@@ -617,11 +443,19 @@ export class ATNBuilder extends TreeParser {
                 }
 
                 case ANTLRv4Lexer.SEMPRED: {
-                    const LA13_5 = this.input.LA(2);
-                    if ((LA13_5 === Constants.DOWN)) {
+                    const lookahead = this.input.LA(2);
+                    if ((lookahead === Constants.DOWN)) {
                         alt13 = 7;
                     } else {
-                        if (((LA13_5 >= Constants.UP && LA13_5 <= ANTLRv4Lexer.ACTION) || LA13_5 === ANTLRv4Lexer.ASSIGN || LA13_5 === ANTLRv4Lexer.DOT || LA13_5 === ANTLRv4Lexer.LEXER_CHAR_SET || LA13_5 === ANTLRv4Lexer.NOT || LA13_5 === ANTLRv4Lexer.PLUS_ASSIGN || LA13_5 === ANTLRv4Lexer.RANGE || LA13_5 === ANTLRv4Lexer.RULE_REF || LA13_5 === ANTLRv4Lexer.SEMPRED || LA13_5 === ANTLRv4Lexer.STRING_LITERAL || LA13_5 === ANTLRv4Lexer.TOKEN_REF || (LA13_5 >= ANTLRv4Lexer.BLOCK && LA13_5 <= ANTLRv4Lexer.CLOSURE) || (LA13_5 >= ANTLRv4Lexer.OPTIONAL && LA13_5 <= ANTLRv4Lexer.POSITIVE_CLOSURE) || (LA13_5 >= ANTLRv4Lexer.SET && LA13_5 <= ANTLRv4Lexer.WILDCARD))) {
+                        if (((lookahead >= Constants.UP && lookahead <= ANTLRv4Lexer.ACTION)
+                            || lookahead === ANTLRv4Lexer.ASSIGN || lookahead === ANTLRv4Lexer.DOT
+                            || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead === ANTLRv4Lexer.NOT
+                            || lookahead === ANTLRv4Lexer.PLUS_ASSIGN || lookahead === ANTLRv4Lexer.RANGE
+                            || lookahead === ANTLRv4Lexer.RULE_REF || lookahead === ANTLRv4Lexer.SEMPRED
+                            || lookahead === ANTLRv4Lexer.STRING_LITERAL || lookahead === ANTLRv4Lexer.TOKEN_REF
+                            || (lookahead >= ANTLRv4Lexer.BLOCK && lookahead <= ANTLRv4Lexer.CLOSURE)
+                            || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
+                            || (lookahead >= ANTLRv4Lexer.SET && lookahead <= ANTLRv4Lexer.WILDCARD))) {
                             alt13 = 5;
                         } else {
                             const nvaeMark = this.input.mark();
@@ -750,41 +584,22 @@ export class ATNBuilder extends TreeParser {
         let p: IStatePair | undefined;
 
         try {
-            let alt14 = 2;
-            const LA14_0 = this.input.LA(1);
-            if ((LA14_0 === ANTLRv4Lexer.DOT || LA14_0 === ANTLRv4Lexer.RANGE || LA14_0 === ANTLRv4Lexer.RULE_REF || LA14_0 === ANTLRv4Lexer.STRING_LITERAL || LA14_0 === ANTLRv4Lexer.TOKEN_REF || (LA14_0 >= ANTLRv4Lexer.SET && LA14_0 <= ANTLRv4Lexer.WILDCARD))) {
-                alt14 = 1;
+            const lookahead = this.input.LA(1);
+            if ((lookahead === ANTLRv4Lexer.DOT || lookahead === ANTLRv4Lexer.RANGE
+                || lookahead === ANTLRv4Lexer.RULE_REF || lookahead === ANTLRv4Lexer.STRING_LITERAL
+                || lookahead === ANTLRv4Lexer.TOKEN_REF
+                || (lookahead >= ANTLRv4Lexer.SET && lookahead <= ANTLRv4Lexer.WILDCARD))) {
+                const atom = this.atom();
+                p = atom.p;
+            } else if ((lookahead === ANTLRv4Lexer.NOT)) {
+                this.match(this.input, ANTLRv4Lexer.NOT, null);
+                this.match(this.input, Constants.DOWN, null);
+
+                const block = this.blockSet(true);
+                this.match(this.input, Constants.UP, null);
+                p = block.p;
             } else {
-                if ((LA14_0 === ANTLRv4Lexer.NOT)) {
-                    alt14 = 2;
-                } else {
-                    const nvae =
-                        new NoViableAltException("", 14, 0, this.input);
-                    throw nvae;
-                }
-            }
-
-            switch (alt14) {
-                case 1: {
-                    const atom15 = this.atom();
-                    p = atom15.p;
-
-                    break;
-                }
-
-                case 2: {
-                    this.match(this.input, ANTLRv4Lexer.NOT, null);
-                    this.match(this.input, Constants.DOWN, null);
-                    const blockSet16 = this.blockSet(true);
-
-                    this.match(this.input, Constants.UP, null);
-
-                    p = blockSet16.p;
-
-                    break;
-                }
-
-                default:
+                throw new NoViableAltException("", 14, 0, this.input);
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -801,36 +616,19 @@ export class ATNBuilder extends TreeParser {
         let p = null;
 
         try {
-            let alt15 = 2;
-            const LA15_0 = this.input.LA(1);
-            if ((LA15_0 === ANTLRv4Lexer.ASSIGN)) {
-                alt15 = 1;
+            const lookahead = this.input.LA(1);
+            if ((lookahead === ANTLRv4Lexer.ASSIGN)) {
+                this.match(this.input, ANTLRv4Lexer.ASSIGN, null);
+                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Lexer.ID, null);
+                const element17 = this.element();
+
+                this.match(this.input, Constants.UP, null);
+                if (element17.p) {
+                    p = this.factory!.label(element17.p);
+                }
             } else {
-                if ((LA15_0 === ANTLRv4Lexer.PLUS_ASSIGN)) {
-                    alt15 = 2;
-                } else {
-                    const nvae =
-                        new NoViableAltException("", 15, 0, this.input);
-                    throw nvae;
-                }
-            }
-
-            switch (alt15) {
-                case 1: {
-                    this.match(this.input, ANTLRv4Lexer.ASSIGN, null);
-                    this.match(this.input, Constants.DOWN, null);
-                    this.match(this.input, ANTLRv4Lexer.ID, null);
-                    const element17 = this.element();
-
-                    this.match(this.input, Constants.UP, null);
-                    if (element17.p) {
-                        p = this.factory!.label(element17.p);
-                    }
-
-                    break;
-                }
-
-                case 2: {
+                if ((lookahead === ANTLRv4Lexer.PLUS_ASSIGN)) {
                     this.match(this.input, ANTLRv4Lexer.PLUS_ASSIGN, null);
                     this.match(this.input, Constants.DOWN, null);
                     this.match(this.input, ANTLRv4Lexer.ID, null);
@@ -840,11 +638,9 @@ export class ATNBuilder extends TreeParser {
                     if (element18.p) {
                         p = this.factory!.listLabel(element18.p);
                     }
-
-                    break;
+                } else {
+                    throw new NoViableAltException("", 15, 0, this.input);
                 }
-
-                default:
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -861,28 +657,43 @@ export class ATNBuilder extends TreeParser {
         const retval: IPairedReturnScope = { start: this.input.LT(1) ?? undefined };
 
         try {
-            let alt16 = 4;
             switch (this.input.LA(1)) {
                 case ANTLRv4Lexer.OPTIONAL: {
-                    alt16 = 1;
+                    this.match(this.input, ANTLRv4Lexer.OPTIONAL, null);
+                    this.match(this.input, Constants.DOWN, null);
+
+                    const block = this.block((retval.start as GrammarAST));
+                    this.match(this.input, Constants.UP, null);
+                    retval.p = block!;
 
                     break;
                 }
 
                 case ANTLRv4Lexer.CLOSURE: {
-                    alt16 = 2;
+                    this.match(this.input, ANTLRv4Lexer.CLOSURE, null);
+                    this.match(this.input, Constants.DOWN, null);
+
+                    const block = this.block((retval.start as GrammarAST));
+                    this.match(this.input, Constants.UP, null);
+                    retval.p = block!;
 
                     break;
                 }
 
                 case ANTLRv4Lexer.POSITIVE_CLOSURE: {
-                    alt16 = 3;
+                    this.match(this.input, ANTLRv4Lexer.POSITIVE_CLOSURE, null);
+                    this.match(this.input, Constants.DOWN, null);
+
+                    const block = this.block((retval.start as GrammarAST));
+                    this.match(this.input, Constants.UP, null);
+                    retval.p = block!;
 
                     break;
                 }
 
                 case ANTLRv4Lexer.BLOCK: {
-                    alt16 = 4;
+                    const block = this.block(null);
+                    retval.p = block!;
 
                     break;
                 }
@@ -890,53 +701,6 @@ export class ATNBuilder extends TreeParser {
                 default: {
                     throw new NoViableAltException("", 16, 0, this.input);
                 }
-
-            }
-            switch (alt16) {
-                case 1: {
-                    this.match(this.input, ANTLRv4Lexer.OPTIONAL, null);
-                    this.match(this.input, Constants.DOWN, null);
-                    const block19 = this.block((retval.start as GrammarAST));
-
-                    this.match(this.input, Constants.UP, null);
-
-                    retval.p = block19!;
-
-                    break;
-                }
-
-                case 2: {
-                    this.match(this.input, ANTLRv4Lexer.CLOSURE, null);
-                    this.match(this.input, Constants.DOWN, null);
-                    const block20 = this.block((retval.start as GrammarAST));
-
-                    this.match(this.input, Constants.UP, null);
-
-                    retval.p = block20!;
-
-                    break;
-                }
-
-                case 3: {
-                    this.match(this.input, ANTLRv4Lexer.POSITIVE_CLOSURE, null);
-                    this.match(this.input, Constants.DOWN, null);
-                    const block21 = this.block((retval.start as GrammarAST));
-
-                    this.match(this.input, Constants.UP, null);
-
-                    retval.p = block21!;
-
-                    break;
-                }
-
-                case 4: {
-                    const block22 = this.block(null);
-                    retval.p = block22!;
-
-                    break;
-                }
-
-                default:
 
             }
         } catch (re) {
@@ -964,7 +728,8 @@ export class ATNBuilder extends TreeParser {
             while (true) {
                 let alt17 = 2;
                 const LA17_0 = this.input.LA(1);
-                if ((LA17_0 === ANTLRv4Lexer.LEXER_CHAR_SET || LA17_0 === ANTLRv4Lexer.RANGE || LA17_0 === ANTLRv4Lexer.STRING_LITERAL || LA17_0 === ANTLRv4Lexer.TOKEN_REF)) {
+                if ((LA17_0 === ANTLRv4Lexer.LEXER_CHAR_SET || LA17_0 === ANTLRv4Lexer.RANGE
+                    || LA17_0 === ANTLRv4Lexer.STRING_LITERAL || LA17_0 === ANTLRv4Lexer.TOKEN_REF)) {
                     alt17 = 1;
                 }
 

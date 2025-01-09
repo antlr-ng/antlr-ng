@@ -6,7 +6,7 @@
 import { cp } from "node:fs/promises";
 
 /**
- * This script is to be used after the build process to copy the templates/ folder to the build folder.
+ * This script is to be used after the build process to copy the templates/ folder to the dist folder.
  */
 
 await cp("templates", "dist/templates", { force: true, recursive: true });
