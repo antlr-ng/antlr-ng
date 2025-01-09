@@ -195,7 +195,7 @@ const generateMap = async (basePath: string, alias?: string): Promise<void> => {
     const elements = await readdir(pathToFileURL(folderPath));
     for (const element of elements) {
         // Is the element a folder?
-        const target = join(folderPath, element);
+        const target = pathToFileURL(join(folderPath, element));
         const s = await stat(target);
         if (!s.isDirectory()) {
             continue;
@@ -237,8 +237,9 @@ const generateBlocksMap = async (): Promise<void> => {
     for (let i = 0; i < elements.length; ++i) {
         const element = elements[i];
 
-        const target = join(folderPath, element);
-        const s = await stat(pathToFileURL(target));
+        const target = pathToFileURL(join(folderPath, element));
+        console.log(`Processing block ${element}...`);
+        const s = await stat(target);
         if (!s.isDirectory() || element === "undefined") {
             continue;
         }
