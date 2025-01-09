@@ -5,7 +5,7 @@
 
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { Command, Option } from "commander";
 
@@ -42,7 +42,7 @@ const getPackageVersion = async (): Promise<string> => {
         const packageFile = resolve(path, "package.json");
 
         try {
-            await readFile(packageFile);
+            await readFile(pathToFileURL(packageFile));
 
             return packageFile;
         } catch {
@@ -56,10 +56,9 @@ const getPackageVersion = async (): Promise<string> => {
         }
     };
 
-    const fileName = fileURLToPath(import.meta.url);
-    const dirName = dirname(fileName);
+    const dirName = fileURLToPath(dirname(import.meta.url));
     const packageFile = await findPackageJson(dirName);
-    const packageJson = JSON.parse(await readFile(packageFile, "utf-8")) as { version: string; };
+    const packageJson = JSON.parse(await readFile(pathToFileURL(packageFile), "utf-8")) as { version: string; };
 
     return packageJson.version;
 };
