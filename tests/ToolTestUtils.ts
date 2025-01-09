@@ -474,7 +474,7 @@ export class ToolTestUtils {
         const antlr4ngTarget = join(workDir, "node_modules/antlr4ng");
 
         if (!existsSync(antlr4ngTarget)) {
-            const antlr4tsSource = fileURLToPath(new URL("../node_modules/antlr4ng", import.meta.url));
+            const antlr4tsSource = fileURLToPath(new URL("../node_modules/antlr4ng/", import.meta.url));
             await mkdir(join(workDir, "node_modules"), { recursive: true });
             symlinkSync(antlr4tsSource, antlr4ngTarget, "dir");
         }
