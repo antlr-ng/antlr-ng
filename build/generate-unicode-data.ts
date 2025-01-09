@@ -235,7 +235,7 @@ const generateBlocksMap = async (): Promise<void> => {
         const element = elements[i];
 
         const target = join(folderPath, element);
-        const s = await stat(target);
+        const s = await stat(pathToFileURL(target));
         if (!s.isDirectory() || element === "undefined") {
             continue;
         }
