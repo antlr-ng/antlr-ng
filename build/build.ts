@@ -25,7 +25,6 @@ const build = async () => {
                 format: "esm",
                 platform: "node",
                 target: "es2022",
-                //outExtension: { ".js": ".cjs" },
             }),
         ]);
 

@@ -54,6 +54,7 @@
     "scripts": {
         "prepublishOnly": "npm run build && npm run copy-templates && npm run test",
         "build": "npm run generate-tool-parsers && npm run generate-test-parsers && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
+        "build:win": "npm run generate-tool-parsers:win && npm run generate-test-parsers:win && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
         "esbuild": "tsx build/build.ts",
         "copy-templates": "tsx build/copy-templates.ts",
         "run": "tsx cli/runner.ts --version",
@@ -61,7 +62,9 @@
         "lint:fix": "eslint \"./src/**/*.ts\" --fix",
         "test": "NODE_NO_WARNINGS=1 vitest --no-watch --no-coverage",
         "generate-tool-parsers": "./build/generate-tool-parsers.cmd",
+        "generate-tool-parsers:win": "build\\generate-tool-parsers.cmd",
         "generate-test-parsers": "./build/generate-test-parsers.cmd",
+        "generate-test-parsers:win": "build\\generate-test-parsers.cmd",
         "generate-unicode-data": "tsx ./build/generate-unicode-data.ts"
     },
     "exports": {
