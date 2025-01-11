@@ -2,6 +2,10 @@
 
 # ANTLRng Release Notes
 
+## 0.5.1
+
+Token vocab import handling was fixed and the lib dir parameter finally included in the import path search.
+
 ## 0.5.0
 
 First public release, for public testing. Still some way to go.
