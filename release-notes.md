@@ -2,6 +2,10 @@
 
 # ANTLRng Release Notes
 
+## 0.5.2
+
+Improved action escape handling. A simple search and replace doesn't work well.
+
 ## 0.5.1
 
 Token vocab import handling was fixed and the lib dir parameter finally included in the import path search.
