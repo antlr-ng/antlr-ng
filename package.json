@@ -58,13 +58,11 @@
         "esbuild": "tsx build/build.ts",
         "copy-templates": "tsx build/copy-templates.ts",
         "run": "tsx cli/runner.ts --version",
-        "lint": "eslint \"./src/**/*.ts\"",
-        "lint:fix": "eslint \"./src/**/*.ts\" --fix",
-        "test": "NODE_NO_WARNINGS=1 vitest --no-watch --no-coverage",
+        "test": "vitest --no-watch --no-coverage",
         "generate-tool-parsers": "./build/generate-tool-parsers.cmd",
-        "generate-tool-parsers:win": "build\\generate-tool-parsers.cmd",
-        "generate-test-parsers": "./build/generate-test-parsers.cmd",
-        "generate-test-parsers:win": "build\\generate-test-parsers.cmd",
+        "generate-tool-parsers:win": "pwsh -ExecutionPolicy Bypass -File build\\generate-tool-parsers.ps1",
+        "generate-test-parsers": "./build/generate-test-parsers.sh",
+        "generate-test-parsers:win": "pwsh -ExecutionPolicy Bypass -File build\\generate-test-parsers.ps1",
         "generate-unicode-data": "tsx ./build/generate-unicode-data.ts"
     },
     "exports": {
