@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { mkdtempSync, rmdirSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -33,7 +33,7 @@ describe("TestDollarParser", () => {
             expect(errors.all).toHaveLength(0);
         } finally {
             console.log = orgLog;
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 });

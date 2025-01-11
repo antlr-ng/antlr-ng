@@ -59,7 +59,7 @@
         "copy-templates": "tsx build/copy-templates.ts",
         "run": "tsx cli/runner.ts --version",
         "test": "vitest --no-watch --no-coverage",
-        "generate-tool-parsers": "./build/generate-tool-parsers.cmd",
+        "generate-tool-parsers": "./build/generate-tool-parsers.sh",
         "generate-tool-parsers:win": "pwsh -ExecutionPolicy Bypass -File build\\generate-tool-parsers.ps1",
         "generate-test-parsers": "./build/generate-test-parsers.sh",
         "generate-test-parsers:win": "pwsh -ExecutionPolicy Bypass -File build\\generate-test-parsers.ps1",

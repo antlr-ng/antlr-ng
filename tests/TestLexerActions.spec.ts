@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { mkdtempSync, rmdirSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -35,7 +35,7 @@ describe.sequential("TestLexerActions", () => {
 
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -59,7 +59,7 @@ describe.sequential("TestLexerActions", () => {
                 "[@2,6:5='<EOF>',<-1>,1:6]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -113,7 +113,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@1,12:11='<EOF>',<-1>,2:0]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -139,7 +139,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@2,6:5='<EOF>',<-1>,1:6]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -167,7 +167,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@2,6:5='<EOF>',<-1>,1:6]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -189,7 +189,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@0,5:4='<EOF>',<-1>,1:5]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -215,7 +215,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@2,5:4='<EOF>',<-1>,1:5]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -239,7 +239,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@2,5:4='<EOF>',<-1>,1:5]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -262,7 +262,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@2,3:2='<EOF>',<-1>,1:3]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -286,7 +286,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@2,5:4='<EOF>',<-1>,1:5]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -311,7 +311,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@2,10:9='<EOF>',<-1>,1:10]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -336,7 +336,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@2,10:9='<EOF>',<-1>,1:10]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -361,7 +361,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@2,10:9='<EOF>',<-1>,1:10]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -408,7 +408,7 @@ fragment WS: [ \\r\\t\\n]+ ;
                 "[@6,57:56='<EOF>',<-1>,5:0]\n";
             expect(output.output).toBe(expecting);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 });

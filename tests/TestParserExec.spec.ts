@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { mkdtempSync, readFileSync, rmdirSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -79,7 +79,7 @@ describe.sequential("TestParserExec", () => {
             expect(output.output).toEqual(expecting);
             expect(hasErrors).toBe(false);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -111,7 +111,7 @@ describe.sequential("TestParserExec", () => {
             expect(output.error).toBe("line 1:6 rule floating_constant DEC:A floating-point constant cannot have " +
                 "internal white space\n");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -157,7 +157,7 @@ describe.sequential("TestParserExec", () => {
 
             expect(generationErrors.length).toBe(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -195,7 +195,7 @@ describe.sequential("TestParserExec", () => {
             expect(output.output).toBe("6\n");
             expect(output.error).toBe("");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -226,7 +226,7 @@ describe.sequential("TestParserExec", () => {
             expect(output.output).toBe("");
             expect(output.error).toBe("");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 });

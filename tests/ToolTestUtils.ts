@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { existsSync, mkdtempSync, readFileSync, rmdirSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 
 import {
@@ -149,7 +149,7 @@ export class ToolTestUtils {
 
                 expect(actual).toBe(expected);
             } finally {
-                rmdirSync(tempTestDir, { recursive: true });
+                rmSync(tempTestDir, { recursive: true });
             }
         }
     }

@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { mkdtempSync, rmdirSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -105,7 +105,7 @@ describe("TestParseTreeMatcher", () => {
             expect(convertArrayToString(tokens))
                 .toBe("[ID:3, [@-1,1:1='=',<1>,1:1], expr:7, [@-1,1:1=';',<2>,1:1]]");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -124,7 +124,7 @@ describe("TestParseTreeMatcher", () => {
             const t = m.compile("<ID> = <expr> ;", m.getParser()!.getRuleIndex("s"));
             expect(t.getPatternTree().toStringTree(m.getParser()!)).toBe("(s <ID> = (expr <expr>) ;)");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -143,7 +143,7 @@ describe("TestParseTreeMatcher", () => {
                 m.compile("<ID> = <expr> ; extra", m.getParser()!.getRuleIndex("s"));
             }).toThrow(StartRuleDoesNotConsumeFullPatternError);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -162,7 +162,7 @@ describe("TestParseTreeMatcher", () => {
                 m.compile("<ID> ;", m.getParser()!.getRuleIndex("s"));
             }).toThrow(InputMismatchException);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -181,7 +181,7 @@ describe("TestParseTreeMatcher", () => {
                 m.compile("<ID> <ID> ;", m.getParser()!.getRuleIndex("s"));
             }).toThrow(NoViableAltException);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -200,7 +200,7 @@ describe("TestParseTreeMatcher", () => {
             const t = m.compile("<ID> = <expr> ;", m.getParser()!.getRuleIndex("s"));
             expect(t.getPatternTree().toStringTree(m.getParser()!)).toBe("(s <ID> = (expr <expr>) ;)");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -219,7 +219,7 @@ describe("TestParseTreeMatcher", () => {
             const expected = "(s <ID> = <ID> ;)";
             expect(results).toBe(expected);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -236,7 +236,7 @@ describe("TestParseTreeMatcher", () => {
             const pattern = "<ID>;";
             await checkPatternMatch(grammar, "s", input, pattern, "X3", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -263,7 +263,7 @@ describe("TestParseTreeMatcher", () => {
             expect(m.get("undefined")).toBeNull();
             expect(convertArrayToString(m.getAll("undefined"))).toBe("[]");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -290,7 +290,7 @@ describe("TestParseTreeMatcher", () => {
             expect(m.get("undefined")).toBeNull();
             expect("[]", m.getAll("undefined").toString());
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -322,7 +322,7 @@ describe("TestParseTreeMatcher", () => {
             expect(m.get("undefined")).toBeNull();
             expect(convertArrayToString(m.getAll("undefined"))).toBe("[]");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -341,7 +341,7 @@ describe("TestParseTreeMatcher", () => {
             const pattern = "<ID> = <expr> ;";
             await checkPatternMatch(grammar, "s", input, pattern, "X4", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -376,7 +376,7 @@ describe("TestParseTreeMatcher", () => {
             invertMatch = true;
             await checkPatternMatch(grammar, "s", input, pattern, "X4", tempDir, invertMatch);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -402,7 +402,7 @@ describe("TestParseTreeMatcher", () => {
             const pattern = "<ID> = <expr>;";
             await checkPatternMatch(grammar, "s", input, pattern, "X5", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -427,7 +427,7 @@ describe("TestParseTreeMatcher", () => {
             const pattern = "<expr> * <expr> * <expr>";
             await checkPatternMatch(grammar, "expr", input, pattern, "X6", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 });

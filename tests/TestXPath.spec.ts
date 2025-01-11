@@ -4,7 +4,7 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-import { mkdtempSync, rmdirSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -153,7 +153,7 @@ describe("TestXPath", () => {
                 expect(result, "path " + xpath[i] + " failed").to.equal(expected[i]);
             }
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -166,7 +166,7 @@ describe("TestXPath", () => {
             await testError("Expr.g4", TestXPath.grammar, sampleProgram, path, expected, "prog", "ExprParser",
                 "ExprLexer", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -179,7 +179,7 @@ describe("TestXPath", () => {
             await testError("Expr.g4", TestXPath.grammar, sampleProgram, path, expected, "prog", "ExprParser",
                 "ExprLexer", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -192,7 +192,7 @@ describe("TestXPath", () => {
             await testError("Expr.g4", TestXPath.grammar, sampleProgram, path, expected, "prog", "ExprParser",
                 "ExprLexer", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -205,7 +205,7 @@ describe("TestXPath", () => {
             await testError("Expr.g4", TestXPath.grammar, sampleProgram, path, expected, "prog", "ExprParser",
                 "ExprLexer", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -218,7 +218,7 @@ describe("TestXPath", () => {
             await testError("Expr.g4", TestXPath.grammar, sampleProgram, path, expected, "prog", "ExprParser",
                 "ExprLexer", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -231,7 +231,7 @@ describe("TestXPath", () => {
             await testError("Expr.g4", TestXPath.grammar, sampleProgram, path, expected, "prog", "ExprParser",
                 "ExprLexer", tempDir);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 

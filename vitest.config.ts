@@ -8,7 +8,7 @@ export default defineConfig({
         environment: "node",
         pool: "threads",
         reporters: ["basic"],
-        slowTestThreshold: 52000,
+        slowTestThreshold: 5000,
         sequence: {
             concurrent: true,
         },

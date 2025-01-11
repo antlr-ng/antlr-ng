@@ -14,7 +14,7 @@ import {
 import { Grammar, LexerGrammar } from "../src/tool/index.js";
 import { ToolTestUtils } from "./ToolTestUtils.js";
 import { TestXPath } from "./TestXPath.spec.js";
-import { mkdtempSync, rmdirSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -258,7 +258,7 @@ describe("TestParserProfiler", () => {
             expect(output.output).toBe(expecting);
 
         } finally {
-            rmdirSync(tempDirPath, { recursive: true });
+            rmSync(tempDirPath, { recursive: true });
         }
     });
 

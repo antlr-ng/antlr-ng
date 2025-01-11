@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { mkdirSync, mkdtempSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 
@@ -74,7 +74,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", subdir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -91,7 +91,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -113,7 +113,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -137,7 +137,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -160,7 +160,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -184,7 +184,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -209,7 +209,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -234,7 +234,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -259,7 +259,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -291,7 +291,7 @@ describe("TestCompositeGrammars", () => {
             expect(msg.column).toBe(5);
             expect(basename(msg.fileName)).toBe("M.g4");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -347,7 +347,7 @@ describe("TestCompositeGrammars", () => {
             expect(ToolTestUtils.realElements(g.typeToTokenList).toString()).toBe(expectedTypeToTokenList);
             expect(errors.errors).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -373,7 +373,7 @@ describe("TestCompositeGrammars", () => {
             expect(msg.column).toBe(10);
             expect(basename(msg.fileName)).toBe("S.g4");
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -399,7 +399,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-o", outdir);
             expect(queue.all[0].errorType).toBe(ErrorType.CANNOT_FIND_IMPORTED_GRAMMAR);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -427,7 +427,7 @@ describe("TestCompositeGrammars", () => {
                 subdir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -464,7 +464,7 @@ describe("TestCompositeGrammars", () => {
             queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "MParser.g4", false, "-o", outdir, "-lib", subdir);
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -499,7 +499,7 @@ describe("TestCompositeGrammars", () => {
             expect(queue.errors).toHaveLength(0);
             expect(queue.warnings).toHaveLength(1);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -525,7 +525,7 @@ describe("TestCompositeGrammars", () => {
 
             expect(errors.errors[0].errorType).toBe(ErrorType.SYNTAX_ERROR);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -566,7 +566,7 @@ describe("TestCompositeGrammars", () => {
 
             expect(errors.errors).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -628,7 +628,7 @@ describe("TestCompositeGrammars", () => {
             expect(convertMapToString(g.stringLiteralToTypeMap)).toBe(expectedStringLiteralToTypeMap);
             expect(ToolTestUtils.realElements(g.typeToTokenList).toString()).toBe(expectedTypeToTokenList);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -668,7 +668,7 @@ describe("TestCompositeGrammars", () => {
 
             expect(errors.errors).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -720,7 +720,7 @@ describe("TestCompositeGrammars", () => {
 
             expect(errors.errors).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -746,7 +746,7 @@ describe("TestCompositeGrammars", () => {
 
             expect(queue.all).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -783,7 +783,7 @@ describe("TestCompositeGrammars", () => {
                 console.log = originalLog;
             }
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -825,7 +825,7 @@ describe("TestCompositeGrammars", () => {
                 console.log = originalLog;
             }
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 
@@ -848,7 +848,7 @@ describe("TestCompositeGrammars", () => {
                 tempDir);
             expect(queue.errors).toHaveLength(0);
         } finally {
-            rmdirSync(tempDir, { recursive: true });
+            rmSync(tempDir, { recursive: true });
         }
     });
 });
