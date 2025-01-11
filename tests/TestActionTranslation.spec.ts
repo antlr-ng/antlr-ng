@@ -70,7 +70,7 @@ describe("TestActionTranslation", () => {
             anal.process();
 
             const gen = new CodeGenerator(g);
-            const outputFileST = gen.generateParser(false);
+            const outputFileST = gen.generateParser(g.tool.toolParameters, false);
             const output = outputFileST.render(72);
 
             const b = "#" + actionName + "#";

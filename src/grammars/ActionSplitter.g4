@@ -11,6 +11,7 @@ lexer grammar ActionSplitter;
 @header {/* eslint-disable */
 
 import type { ActionSplitterListener } from "../parse/ActionSplitterListener.js";
+import { Character } from "../support/Character.js";
 
 const attrValueExpr = /[^=][^;]*/;
 const id = /[a-zA-Z_][a-zA-Z0-9_]*/;
@@ -30,9 +31,51 @@ public getActionTokens(delegate: ActionSplitterListener, refToken?: Token): Toke
             case ActionSplitter.COMMENT:
             case ActionSplitter.LINE_COMMENT:
             case ActionSplitter.TEXT: {
-                // Replace $ with $.
-                const text = t.text!.replaceAll("\\$", "$");
-                delegate.text(text);
+                const text = t.text!;
+                let result = "";
+                for (let i = 0; i < text.length; i++) {
+                    switch (text[i]) {
+                        case "\\": {
+                            if (i + 1 >= text.length) {
+                                result += "\\";
+
+                                break;
+                            }
+
+                            if (text[i + 1] === "$") {
+                                result += "$";
+                                i++;
+                            } else {
+                                result += text[i++];
+                                result += text[i];
+                            }
+
+                            break;
+                        }
+
+                        case "$": {
+                            if (i + 1 >= text.length) {
+                                result += "$";
+
+                                break;
+                            }
+
+                            const c = text[i + 1];
+                            if (!(c == '_' || Character.isLetter(c.codePointAt(0)!))) {
+                                result += "$";
+                            }
+
+                            break;
+                        }
+
+                        default: {
+                            result += text[i];
+                            break;
+                        }
+                    }
+                }
+
+                delegate.text(result);
 
                 break;
             }
