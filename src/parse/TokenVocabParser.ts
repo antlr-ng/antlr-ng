@@ -14,8 +14,6 @@ import { Constants } from "../Constants.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import type { IGrammar } from "../types.js";
 
-const linePattern = /(?<tokenID>[^\n]+)[ \\t]*=[ \\t]*?(?<tokenTypeS>[0-9]+)/;
-
 export class TokenVocabParser {
     protected readonly g: IGrammar;
 
@@ -41,9 +39,10 @@ export class TokenVocabParser {
                 continue;
             }
 
-            const match = linePattern.exec(tokenDef);
-            if (match) {
-                const { tokenID, tokenTypeS } = match.groups!;
+            const parts = tokenDef.split("=");
+            if (parts.length === 2) {
+                const tokenID = parts[0].trim();
+                const tokenTypeS = parts[1].trim();
 
                 let tokenType: number;
                 try {
@@ -95,10 +94,10 @@ export class TokenVocabParser {
                 }
             }
 
-            // Still not found? Use the grammar's subfolder then.
+            // Still not found? Use the grammar's soruce folder then.
             name = dirname(this.g.fileName);
             if (name) {
-                name = join(name, this.outputDirectory, vocabName + Constants.VOCAB_FILE_EXTENSION);
+                name = join(name, vocabName + Constants.VOCAB_FILE_EXTENSION);
                 if (existsSync(name)) {
                     return readFileSync(name, "utf8");
                 }
