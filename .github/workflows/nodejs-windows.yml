@@ -23,23 +23,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-
-      - name: Set JAVA_HOME
-        run: echo "JAVA_HOME=$env:JAVA_HOME_11_X64" >> $env:GITHUB_ENV
-
-      - name: Update PATH
-        run: echo "$env:JAVA_HOME\bin" >> $env:GITHUB_PATH
-
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
