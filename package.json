@@ -58,9 +58,14 @@
         "copy-templates": "tsx build/copy-templates.ts",
         "run": "tsx cli/runner.ts --version",
         "test": "vitest --no-watch --no-coverage",
-        "generate-action-splitter": "antlr-ng -Dlanguage=TypeScript --exact-output-dir -o ./src/generated ./src/grammars/ActionSplitter.g4",
-        "generate-antlr-parser": "antlr-ng -Dlanguage=TypeScript --exact-output-dir -o ./src/generated ./src/grammars/ANTLRv4Lexer.g4 ./src/grammars/ANTLRv4Parser.g4",
-        "generate-test-parsers": "antlr-ng -Dlanguage=TypeScript --exact-output-dir -o ./tests/generated ./tests/grammars/*.g4",
+        "generate-action-splitter": "npm run generate-parser -- -o ./src/generated ./src/grammars/ActionSplitter.g4",
+        "generate-antlr-parser": "npm run generate-parser -- -o ./src/generated ./src/grammars/ANTLRv4Lexer.g4 ./src/grammars/ANTLRv4Parser.g4",
+        "generate-test-parsers": "npm run generate-testp1 && npm run generate-testp2 && npm run generate-testp3 && npm run generate-testp4",
+        "generate-testp1": "npm run generate-parser -- -o ./tests/generated ./tests/grammars/Java.g4",
+        "generate-testp2": "npm run generate-parser -- -o ./tests/generated ./tests/grammars/JavaLR.g4",
+        "generate-testp3": "npm run generate-parser -- -o ./tests/generated ./tests/grammars/PositionAdjustingLexer.g4",
+        "generate-testp4": "npm run generate-parser -- -o ./tests/generated ./tests/grammars/Psl.g4",
+        "generate-parser": "antlr-ng -Dlanguage=TypeScript --exact-output-dir",
         "generate-unicode-data": "tsx ./build/generate-unicode-data.ts"
     },
     "exports": {
