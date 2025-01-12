@@ -1,8 +1,7 @@
 /*
-* Copyright (c) 2012-2017 The ANTLR Project. All rights reserved.
-* Use of this file is governed by the BSD 3-clause license that
-* can be found in the LICENSE.txt file in the project root.
-*/
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
+ */
 
 // The string values of this type appear in look up maps.
 // TODO: Change to enum.
