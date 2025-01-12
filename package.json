@@ -1,6 +1,6 @@
 {
     "name": "antlr-ng",
-    "version": "0.5.2",
+    "version": "0.5.3",
     "description": "Next generation ANTLR Tool",
     "type": "module",
     "author": "Mike Lischke",
@@ -40,7 +40,7 @@
         "@typescript-eslint/eslint-plugin": "8.18.1",
         "@typescript-eslint/parser": "8.18.1",
         "@unicode/unicode-16.0.0": "1.6.5",
-        "antlr4ng-cli": "2.0.0",
+        "antlr-ng": "0.5.2",
         "esbuild": "0.24.2",
         "eslint": "9.17.0",
         "eslint-plugin-import": "2.31.0",
@@ -53,16 +53,14 @@
     },
     "scripts": {
         "prepublishOnly": "npm run build && npm run copy-templates && npm run test",
-        "build": "npm run generate-tool-parsers && npm run generate-test-parsers && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
-        "build:win": "npm run generate-tool-parsers:win && npm run generate-test-parsers:win && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
+        "build": "npm run generate-action-splitter && npm run generate-antlr-parser && npm run generate-test-parsers && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
         "esbuild": "tsx build/build.ts",
         "copy-templates": "tsx build/copy-templates.ts",
         "run": "tsx cli/runner.ts --version",
         "test": "vitest --no-watch --no-coverage",
-        "generate-tool-parsers": "./build/generate-tool-parsers.sh",
-        "generate-tool-parsers:win": "pwsh -ExecutionPolicy Bypass -File build\\generate-tool-parsers.ps1",
-        "generate-test-parsers": "./build/generate-test-parsers.sh",
-        "generate-test-parsers:win": "pwsh -ExecutionPolicy Bypass -File build\\generate-test-parsers.ps1",
+        "generate-action-splitter": "antlr-ng -Dlanguage=TypeScript --exact-output-dir -o ./src/generated ./src/grammars/ActionSplitter.g4",
+        "generate-antlr-parser": "antlr-ng -Dlanguage=TypeScript --exact-output-dir -o ./src/generated ./src/grammars/ANTLRv4Lexer.g4 ./src/grammars/ANTLRv4Parser.g4",
+        "generate-test-parsers": "antlr-ng -Dlanguage=TypeScript --exact-output-dir -o ./tests/generated ./tests/grammars/*.g4",
         "generate-unicode-data": "tsx ./build/generate-unicode-data.ts"
     },
     "exports": {

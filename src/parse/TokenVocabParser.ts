@@ -14,6 +14,8 @@ import { Constants } from "../Constants.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import type { IGrammar } from "../types.js";
 
+const linePattern = /\s*(?<tokenID>\w+|'[^']*')\s*=\s*(?<tokenTypeS>\d*)/;
+
 export class TokenVocabParser {
     protected readonly g: IGrammar;
 
@@ -39,10 +41,9 @@ export class TokenVocabParser {
                 continue;
             }
 
-            const parts = tokenDef.split("=");
-            if (parts.length === 2) {
-                const tokenID = parts[0].trim();
-                const tokenTypeS = parts[1].trim();
+            const match = linePattern.exec(tokenDef);
+            if (match) {
+                const { tokenID, tokenTypeS } = match.groups!;
 
                 let tokenType: number;
                 try {
