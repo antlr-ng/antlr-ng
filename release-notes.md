@@ -1,8 +1,8 @@
 <img src="https://raw.githubusercontent.com/mike-lischke/mike-lischke/master/images/ANTLRng2.svg" title="ANTLR Next Generation" alt="ANTLRng" width="96" height="96"/><label style="font-size: 70%">Part of the Next Generation ANTLR Project</label>
 
-# ANTLRng Release Notes
+# antlr-ng Release Notes
 
-## 0.5.3
+## 0.6.0
 
 Fixed two problems in the token vocab parser (key/value parsing and import location).
 
