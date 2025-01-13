@@ -3,37 +3,34 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-// $ANTLR 3.5.3 org/antlr/v4/parse/BlockSetTransformer.g
-
 /* eslint-disable max-len, @typescript-eslint/naming-convention */
-// cspell: disable
 
 import { RecognitionException } from "antlr4ng";
 
-import { EarlyExitException } from "../antlr3/EarlyExitException.js";
-import { FailedPredicateException } from "../antlr3/FailedPredicateException.js";
-import { createRecognizerSharedState, IRecognizerSharedState } from "../antlr3/IRecognizerSharedState.js";
-import { MismatchedSetException } from "../antlr3/MismatchedSetException.js";
-import { NoViableAltException } from "../antlr3/NoViableAltException.js";
-import { CommonTreeAdaptor } from "../antlr3/tree/CommonTreeAdaptor.js";
-import { RewriteRuleNodeStream } from "../antlr3/tree/RewriteRuleNodeStream.js";
-import { RewriteRuleSubtreeStream } from "../antlr3/tree/RewriteRuleSubtreeStream.js";
-import type { TreeNodeStream } from "../antlr3/tree/TreeNodeStream.js";
-import { TreeRewriter } from "../antlr3/tree/TreeRewriter.js";
-import { type ITreeRuleReturnScope } from "../antlr3/tree/TreeRuleReturnScope.js";
-import { Constants } from "../Constants.js";
-import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
-import { CharSupport } from "../misc/CharSupport.js";
-import { isTokenName } from "../support/helpers.js";
-import { AltAST } from "../tool/ast/AltAST.js";
-import { BlockAST } from "../tool/ast/BlockAST.js";
-import { GrammarAST } from "../tool/ast/GrammarAST.js";
-import { Grammar } from "../tool/Grammar.js";
-import { GrammarTransformPipeline } from "../tool/GrammarTransformPipeline.js";
+import { FailedPredicateException } from "../FailedPredicateException.js";
+import { createRecognizerSharedState, IRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
+import { CommonTreeAdaptor } from "../CommonTreeAdaptor.js";
+import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
+import { RewriteRuleNodeStream } from "../RewriteRuleNodeStream.js";
+import { RewriteRuleSubtreeStream } from "../RewriteRuleSubtreeStream.js";
+import { TreeRewriter } from "../TreeRewriter.js";
+import { type ITreeRuleReturnScope } from "../../antlr3/tree/TreeRuleReturnScope.js";
+import { Constants } from "../../Constants.js";
+import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
+import { CharSupport } from "../../misc/CharSupport.js";
+import { isTokenName } from "../../support/helpers.js";
+import { AltAST } from "../../tool/ast/AltAST.js";
+import { BlockAST } from "../../tool/ast/BlockAST.js";
+import { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import { Grammar } from "../../tool/Grammar.js";
+import { GrammarTransformPipeline } from "../../tool/GrammarTransformPipeline.js";
+import { EarlyExitException } from "../EarlyExitException.js";
+import { MismatchedSetException } from "../MismatchedSetException.js";
+import { NoViableAltException } from "../NoViableAltException.js";
 
 export class BlockSetTransformer extends TreeRewriter {
     // Needed for context in the inContext method.
-    public static readonly tokenNames = [
+    private static readonly tokenNames = [
         "<invalid>", "<EOR>", "<DOWN>", "<UP>", "ACTION", "ACTION_CHAR_LITERAL", "ACTION_ESC", "ACTION_STRING_LITERAL",
         "ARG_ACTION", "ARG_OR_CHARSET", "ASSIGN", "AT", "CATCH", "CHANNELS", "COLON", "COLONCOLON", "COMMA", "UNUSED",
         "DOC_COMMENT", "DOLLAR", "DOT", "ERRCHAR", "ESC_SEQ", "FINALLY", "FRAGMENT", "GRAMMAR", "GT", "HEX_DIGIT", "ID",
@@ -54,7 +51,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
     private adaptor = new CommonTreeAdaptor();
 
-    public constructor(input: TreeNodeStream, stateOrGrammar?: IRecognizerSharedState | Grammar) {
+    public constructor(input: CommonTreeNodeStream, stateOrGrammar?: IRecognizerSharedState | Grammar) {
         let state: IRecognizerSharedState | undefined;
         if (!stateOrGrammar) {
             state = createRecognizerSharedState();
@@ -136,7 +133,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                         return retval;
                     }
-                    const nvae = new NoViableAltException("", 3, 0, this.input);
+                    const nvae = new NoViableAltException(3, 0);
                     throw nvae;
                 }
 
@@ -150,7 +147,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             const _save_last_1 = _last;
                             let _first_1 = null;
                             _last = this.input.LT(1) as GrammarAST;
-                            RULE1 = this.match(this.input, ANTLRv4Parser.RULE, null) as GrammarAST;
+                            RULE1 = this.match(this.input, ANTLRv4Parser.RULE)!;
                             if (this.state.failed) {
                                 return retval;
                             }
@@ -159,9 +156,9 @@ export class BlockSetTransformer extends TreeRewriter {
                                 _first_0 = RULE1;
                             }
 
-                            this.match(this.input, Constants.DOWN, null);
+                            this.match(this.input, Constants.DOWN);
 
-                            if (this.state.failed as boolean) { // This is set in this.match().
+                            if (this.state.failed as boolean) {
                                 return retval;
                             }
 
@@ -179,7 +176,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                         return retval;
                                     }
-                                    const nvae = new NoViableAltException("", 1, 0, this.input);
+                                    const nvae = new NoViableAltException(1, 0);
                                     throw nvae;
                                 }
                             }
@@ -189,7 +186,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     // org/antlr/v4/parse/BlockSetTransformer.g:64:15: id= TOKEN_REF
                                     {
                                         _last = this.input.LT(1) as GrammarAST;
-                                        id = this.match(this.input, ANTLRv4Parser.TOKEN_REF, null) as GrammarAST;
+                                        id = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
 
                                         if (this.state.failed as boolean) {
                                             return retval;
@@ -216,7 +213,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     // org/antlr/v4/parse/BlockSetTransformer.g:64:28: id= RULE_REF
                                     {
                                         _last = this.input.LT(1) as GrammarAST;
-                                        id = this.match(this.input, ANTLRv4Parser.RULE_REF, null) as GrammarAST;
+                                        id = this.match(this.input, ANTLRv4Parser.RULE_REF)!;
                                         if (this.state.failed as boolean) {
                                             return retval;
                                         }
@@ -266,7 +263,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                         {
                                             _last = this.input.LT(1) as GrammarAST;
                                             wildcard2 = this.input.LT(1) as GrammarAST;
-                                            this.matchAny(this.input);
+                                            this.matchAny();
 
                                             if (this.state.failed as boolean) {
                                                 return retval;
@@ -303,7 +300,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                             return retval;
                                         }
-                                        const eee = new EarlyExitException(2, this.input);
+                                        const eee = new EarlyExitException(2);
                                         throw eee;
                                     }
 
@@ -311,7 +308,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                 cnt2++;
                             }
 
-                            this.match(this.input, Constants.UP, null);
+                            this.match(this.input, Constants.UP);
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -442,10 +439,10 @@ export class BlockSetTransformer extends TreeRewriter {
 
                         return retval;
                     }
-                    throw new FailedPredicateException(this.input, "setAlt", "inContext(\"RULE BLOCK\")");
+                    throw new FailedPredicateException("setAlt", "inContext(\"RULE BLOCK\")");
                 }
                 const _last = this.input.LT(1) as GrammarAST;
-                ALT6 = this.match(this.input, ANTLRv4Parser.ALT, null) as GrammarAST;
+                ALT6 = this.match(this.input, ANTLRv4Parser.ALT)!;
 
                 if (this.state.failed) {
                     return retval;
@@ -514,7 +511,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         _first_0 = ebnfSuffix7.tree;
                     }
 
-                    this.match(this.input, Constants.DOWN, null);
+                    this.match(this.input, Constants.DOWN);
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -531,7 +528,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         stream_blockSet.add(blockSet8.tree ?? null);
                     }
 
-                    this.match(this.input, Constants.UP, null);
+                    this.match(this.input, Constants.UP);
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -576,7 +573,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     retval.tree = this.adaptor.rulePostProcessing(root_0) as GrammarAST;
-                    this.input.replaceChildren(retval.start?.getParent(),
+                    this.input.replaceChildren(retval.start!.getParent()!,
                         retval.start!.getChildIndex(),
                         _last.getChildIndex(),
                         retval.tree);
@@ -687,7 +684,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 const _save_last_1 = _last;
                 let _first_1 = null;
                 _last = this.input.LT(1) as GrammarAST;
-                BLOCK10 = this.match(this.input, ANTLRv4Parser.BLOCK, null) as GrammarAST;
+                BLOCK10 = this.match(this.input, ANTLRv4Parser.BLOCK)!;
                 if (this.state.failed) {
                     return retval;
                 }
@@ -700,7 +697,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     _first_0 = BLOCK10;
                 }
 
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, Constants.DOWN);
 
                 if (this.state.failed as boolean) {
                     return retval;
@@ -711,7 +708,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     const _save_last_2 = _last;
                     const _first_2 = null;
                     _last = this.input.LT(1) as GrammarAST;
-                    alt = this.match(this.input, ANTLRv4Parser.ALT, null) as GrammarAST;
+                    alt = this.match(this.input, ANTLRv4Parser.ALT)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -725,7 +722,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         _first_1 = alt;
                     }
 
-                    this.match(this.input, Constants.DOWN, null);
+                    this.match(this.input, Constants.DOWN);
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -774,7 +771,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             return retval;
                         }
-                        throw new FailedPredicateException(this.input, "blockSet", "((AltAST)$alt).altLabel==null");
+                        throw new FailedPredicateException("blockSet", "((AltAST)$alt).altLabel==null");
                     }
                     _last = this.input.LT(1) as GrammarAST;
                     setElement12 = this.setElement(inLexer);
@@ -787,7 +784,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         stream_setElement.add(setElement12.tree ?? null);
                     }
 
-                    this.match(this.input, Constants.UP, null);
+                    this.match(this.input, Constants.UP);
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -815,7 +812,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     const _save_last_2 = _last;
                                     const _first_2 = null;
                                     _last = this.input.LT(1) as GrammarAST;
-                                    ALT13 = this.match(this.input, ANTLRv4Parser.ALT, null) as GrammarAST;
+                                    ALT13 = this.match(this.input, ANTLRv4Parser.ALT)!;
 
                                     if (this.state.failed as boolean) {
                                         return retval;
@@ -831,7 +828,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                         }
                                     }
 
-                                    this.match(this.input, Constants.DOWN, null);
+                                    this.match(this.input, Constants.DOWN);
 
                                     if (this.state.failed as boolean) {
                                         return retval;
@@ -886,7 +883,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                         stream_setElement.add(setElement15.tree ?? null);
                                     }
 
-                                    this.match(this.input, Constants.UP, null);
+                                    this.match(this.input, Constants.UP);
 
                                     if (this.state.failed as boolean) {
                                         return retval;
@@ -918,7 +915,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                 return retval;
                             }
-                            const eee = new EarlyExitException(6, this.input);
+                            const eee = new EarlyExitException(6);
                             throw eee;
                         }
 
@@ -926,7 +923,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     cnt6++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
                 if (this.state.failed as boolean) {
                     return retval;
@@ -978,7 +975,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     retval.tree = this.adaptor.rulePostProcessing(root_0) as GrammarAST;
-                    this.input.replaceChildren(retval.start?.getParent(),
+                    this.input.replaceChildren(retval.start!.getParent()!,
                         retval.start!.getChildIndex(),
                         _last.getChildIndex(),
                         retval.tree);
@@ -991,7 +988,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     const _save_last_1 = _last;
                     let _first_1 = null;
                     _last = this.input.LT(1) as GrammarAST;
-                    BLOCK16 = this.match(this.input, ANTLRv4Parser.BLOCK, null) as GrammarAST;
+                    BLOCK16 = this.match(this.input, ANTLRv4Parser.BLOCK)!;
                     if (this.state.failed) {
                         return retval;
                     }
@@ -1004,7 +1001,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         _first_0 = BLOCK16;
                     }
 
-                    this.match(this.input, Constants.DOWN, null);
+                    this.match(this.input, Constants.DOWN);
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -1015,7 +1012,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         const _save_last_2 = _last;
                         const _first_2 = null;
                         _last = this.input.LT(1) as GrammarAST;
-                        ALT17 = this.match(this.input, ANTLRv4Parser.ALT, null) as GrammarAST;
+                        ALT17 = this.match(this.input, ANTLRv4Parser.ALT)!;
 
                         if (this.state.failed as boolean) {
                             return retval;
@@ -1029,7 +1026,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             _first_1 = ALT17;
                         }
 
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, Constants.DOWN);
 
                         if (this.state.failed as boolean) {
                             return retval;
@@ -1084,7 +1081,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             stream_setElement.add(setElement19.tree ?? null);
                         }
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         if (this.state.failed as boolean) {
                             return retval;
@@ -1112,7 +1109,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                         const _save_last_2 = _last;
                                         const _first_2 = null;
                                         _last = this.input.LT(1) as GrammarAST;
-                                        ALT20 = this.match(this.input, ANTLRv4Parser.ALT, null) as GrammarAST;
+                                        ALT20 = this.match(this.input, ANTLRv4Parser.ALT)!;
 
                                         if (this.state.failed as boolean) {
                                             return retval;
@@ -1130,7 +1127,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                         }
 
-                                        this.match(this.input, Constants.DOWN, null);
+                                        this.match(this.input, Constants.DOWN);
 
                                         if (this.state.failed as boolean) {
                                             return retval;
@@ -1185,7 +1182,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                             stream_setElement.add(setElement22.tree ?? null);
                                         }
 
-                                        this.match(this.input, Constants.UP, null);
+                                        this.match(this.input, Constants.UP);
 
                                         if (this.state.failed as boolean) {
                                             return retval;
@@ -1216,7 +1213,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                     return retval;
                                 }
-                                const eee = new EarlyExitException(9, this.input);
+                                const eee = new EarlyExitException(9);
                                 throw eee;
                             }
 
@@ -1224,7 +1221,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         cnt9++;
                     }
 
-                    this.match(this.input, Constants.UP, null);
+                    this.match(this.input, Constants.UP);
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -1263,7 +1260,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     retval.tree = this.adaptor.rulePostProcessing(root_0) as GrammarAST;
-                    this.input.replaceChildren(retval.start?.getParent(),
+                    this.input.replaceChildren(retval.start!.getParent()!,
                         retval.start!.getChildIndex(),
                         _last.getChildIndex(),
                         retval.tree);
@@ -1326,7 +1323,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             const lastIndex = this.input.index;
                             try {
                                 this.input.consume();
-                                const nvae = new NoViableAltException("", 11, 1, this.input);
+                                const nvae = new NoViableAltException(11, 1);
                                 throw nvae;
                             } finally {
                                 this.input.seek(lastIndex);
@@ -1362,7 +1359,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                 const _save_last_1 = _last;
                                 let _first_1 = null;
                                 _last = this.input.LT(1) as GrammarAST;
-                                a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
+                                a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                                 if (this.state.failed) {
                                     return retval;
@@ -1372,7 +1369,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     _first_0 = a;
                                 }
 
-                                this.match(this.input, Constants.DOWN, null);
+                                this.match(this.input, Constants.DOWN);
 
                                 if (this.state.failed as boolean) {
                                     return retval;
@@ -1389,7 +1386,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     _first_1 = elementOptions23.tree!;
                                 }
 
-                                this.match(this.input, Constants.UP, null);
+                                this.match(this.input, Constants.UP);
 
                                 if (this.state.failed as boolean) {
                                     return retval;
@@ -1404,7 +1401,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                     return retval;
                                 }
-                                throw new FailedPredicateException(this.input, "setElement", "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
+                                throw new FailedPredicateException("setElement", "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
                             }
                             if (this.state.backtracking === 1) {
                                 retval.tree = _first_0 ?? undefined;
@@ -1423,7 +1420,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         // org/antlr/v4/parse/BlockSetTransformer.g:110:7: a= STRING_LITERAL {...}?
                         {
                             _last = this.input.LT(1) as GrammarAST;
-                            a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
+                            a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                             if (this.state.failed) {
                                 return retval;
@@ -1439,7 +1436,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                     return retval;
                                 }
-                                throw new FailedPredicateException(this.input, "setElement", "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
+                                throw new FailedPredicateException("setElement", "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
                             }
                             if (this.state.backtracking === 1) {
                                 retval.tree = _first_0 ?? undefined;
@@ -1463,14 +1460,14 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                     return retval;
                                 }
-                                throw new FailedPredicateException(this.input, "setElement", "!inLexer");
+                                throw new FailedPredicateException("setElement", "!inLexer");
                             }
                             _last = this.input.LT(1) as GrammarAST;
                             {
                                 const _save_last_1 = _last;
                                 let _first_1 = null;
                                 _last = this.input.LT(1) as GrammarAST;
-                                TOKEN_REF24 = this.match(this.input, ANTLRv4Parser.TOKEN_REF, null) as GrammarAST;
+                                TOKEN_REF24 = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
 
                                 if (this.state.failed) {
                                     return retval;
@@ -1480,7 +1477,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     _first_0 = TOKEN_REF24;
                                 }
 
-                                this.match(this.input, Constants.DOWN, null);
+                                this.match(this.input, Constants.DOWN);
 
                                 if (this.state.failed as boolean) {
                                     return retval;
@@ -1497,7 +1494,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     _first_1 = elementOptions25.tree!;
                                 }
 
-                                this.match(this.input, Constants.UP, null);
+                                this.match(this.input, Constants.UP);
 
                                 if (this.state.failed as boolean) {
                                     return retval;
@@ -1528,10 +1525,10 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                     return retval;
                                 }
-                                throw new FailedPredicateException(this.input, "setElement", "!inLexer");
+                                throw new FailedPredicateException("setElement", "!inLexer");
                             }
                             _last = this.input.LT(1) as GrammarAST;
-                            TOKEN_REF26 = this.match(this.input, ANTLRv4Parser.TOKEN_REF, null) as GrammarAST;
+                            TOKEN_REF26 = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
 
                             if (this.state.failed) {
                                 return retval;
@@ -1563,14 +1560,14 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                     return retval;
                                 }
-                                throw new FailedPredicateException(this.input, "setElement", "inLexer");
+                                throw new FailedPredicateException("setElement", "inLexer");
                             }
                             _last = this.input.LT(1) as GrammarAST;
                             {
                                 const _save_last_1 = _last;
                                 let _first_1 = null;
                                 _last = this.input.LT(1) as GrammarAST;
-                                RANGE27 = this.match(this.input, ANTLRv4Parser.RANGE, null) as GrammarAST;
+                                RANGE27 = this.match(this.input, ANTLRv4Parser.RANGE)!;
 
                                 if (this.state.failed) {
                                     return retval;
@@ -1580,14 +1577,14 @@ export class BlockSetTransformer extends TreeRewriter {
                                     _first_0 = RANGE27;
                                 }
 
-                                this.match(this.input, Constants.DOWN, null);
+                                this.match(this.input, Constants.DOWN);
 
                                 if (this.state.failed as boolean) {
                                     return retval;
                                 }
 
                                 _last = this.input.LT(1) as GrammarAST;
-                                a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
+                                a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                                 if (this.state.failed as boolean) {
                                     return retval;
@@ -1598,7 +1595,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                 }
 
                                 _last = this.input.LT(1) as GrammarAST;
-                                b = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
+                                b = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                                 if (this.state.failed as boolean) {
                                     return retval;
@@ -1612,7 +1609,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                 }
 
-                                this.match(this.input, Constants.UP, null);
+                                this.match(this.input, Constants.UP);
 
                                 if (this.state.failed as boolean) {
                                     return retval;
@@ -1628,7 +1625,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                     return retval;
                                 }
-                                throw new FailedPredicateException(this.input, "setElement", "CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1 &&\n\t\t\t CharSupport.getCharValueFromGrammarCharLiteral($b.getText())!=-1");
+                                throw new FailedPredicateException("setElement", "CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1 &&\n\t\t\t CharSupport.getCharValueFromGrammarCharLiteral($b.getText())!=-1");
                             }
                             if (this.state.backtracking === 1) {
                                 retval.tree = _first_0 ?? undefined;
@@ -1693,7 +1690,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     const _save_last_1 = _last;
                     let _first_1 = null;
                     _last = this.input.LT(1) as GrammarAST;
-                    ELEMENT_OPTIONS28 = this.match(this.input, ANTLRv4Parser.ELEMENT_OPTIONS, null) as GrammarAST;
+                    ELEMENT_OPTIONS28 = this.match(this.input, ANTLRv4Parser.ELEMENT_OPTIONS)!;
 
                     if (this.state.failed) {
                         return retval;
@@ -1704,7 +1701,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     if (this.input.LA(1) === Constants.DOWN) {
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, Constants.DOWN);
 
                         if (this.state.failed as boolean) {
                             return retval;
@@ -1757,7 +1754,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
                         }
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         if (this.state.failed as boolean) {
                             return retval;
@@ -1861,7 +1858,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                         for (let nvaeConsume = 0; nvaeConsume < 4 - 1; nvaeConsume++) {
                                             this.input.consume();
                                         }
-                                        const nvae = new NoViableAltException("", 13, 4, this.input);
+                                        const nvae = new NoViableAltException(13, 4);
                                         throw nvae;
                                     } finally {
                                         this.input.seek(lastIndex);
@@ -1882,7 +1879,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                 for (let nvaeConsume = 0; nvaeConsume < 3 - 1; nvaeConsume++) {
                                     this.input.consume();
                                 }
-                                const nvae = new NoViableAltException("", 13, 3, this.input);
+                                const nvae = new NoViableAltException(13, 3);
                                 throw nvae;
                             } finally {
                                 this.input.seek(lastIndex);
@@ -1900,7 +1897,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         const lastIndex = this.input.index;
                         try {
                             this.input.consume();
-                            const nvae = new NoViableAltException("", 13, 2, this.input);
+                            const nvae = new NoViableAltException(13, 2);
                             throw nvae;
                         } finally {
                             this.input.seek(lastIndex);
@@ -1914,7 +1911,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                         return retval;
                     }
-                    const nvae = new NoViableAltException("", 13, 0, this.input);
+                    const nvae = new NoViableAltException(13, 0);
                     throw nvae;
                 }
             }
@@ -1925,7 +1922,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     // org/antlr/v4/parse/BlockSetTransformer.g:124:4: ID
                     {
                         _last = this.input.LT(1) as GrammarAST;
-                        ID30 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                        ID30 = this.match(this.input, ANTLRv4Parser.ID)!;
 
                         if (this.state.failed) {
                             return retval;
@@ -1957,7 +1954,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             const _save_last_1 = _last;
                             let _first_1 = null;
                             _last = this.input.LT(1) as GrammarAST;
-                            ASSIGN31 = this.match(this.input, ANTLRv4Parser.ASSIGN, null) as GrammarAST;
+                            ASSIGN31 = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
 
                             if (this.state.failed) {
                                 return retval;
@@ -1967,14 +1964,14 @@ export class BlockSetTransformer extends TreeRewriter {
                                 _first_0 = ASSIGN31;
                             }
 
-                            this.match(this.input, Constants.DOWN, null);
+                            this.match(this.input, Constants.DOWN);
 
                             if (this.state.failed as boolean) {
                                 return retval;
                             }
 
                             _last = this.input.LT(1) as GrammarAST;
-                            id = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                            id = this.match(this.input, ANTLRv4Parser.ID)!;
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -1985,7 +1982,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
 
                             _last = this.input.LT(1) as GrammarAST;
-                            v = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                            v = this.match(this.input, ANTLRv4Parser.ID)!;
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -1999,7 +1996,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             }
 
-                            this.match(this.input, Constants.UP, null);
+                            this.match(this.input, Constants.UP);
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -2030,7 +2027,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             const _save_last_1 = _last;
                             let _first_1 = null;
                             _last = this.input.LT(1) as GrammarAST;
-                            ASSIGN32 = this.match(this.input, ANTLRv4Parser.ASSIGN, null) as GrammarAST;
+                            ASSIGN32 = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
 
                             if (this.state.failed) {
                                 return retval;
@@ -2040,14 +2037,14 @@ export class BlockSetTransformer extends TreeRewriter {
                                 _first_0 = ASSIGN32;
                             }
 
-                            this.match(this.input, Constants.DOWN, null);
+                            this.match(this.input, Constants.DOWN);
 
                             if (this.state.failed as boolean) {
                                 return retval;
                             }
 
                             _last = this.input.LT(1) as GrammarAST;
-                            ID33 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                            ID33 = this.match(this.input, ANTLRv4Parser.ID)!;
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -2058,7 +2055,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
 
                             _last = this.input.LT(1) as GrammarAST;
-                            v = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
+                            v = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -2072,7 +2069,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             }
 
-                            this.match(this.input, Constants.UP, null);
+                            this.match(this.input, Constants.UP);
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -2103,7 +2100,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             const _save_last_1 = _last;
                             let _first_1 = null;
                             _last = this.input.LT(1) as GrammarAST;
-                            ASSIGN34 = this.match(this.input, ANTLRv4Parser.ASSIGN, null) as GrammarAST;
+                            ASSIGN34 = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
 
                             if (this.state.failed) {
                                 return retval;
@@ -2113,14 +2110,14 @@ export class BlockSetTransformer extends TreeRewriter {
                                 _first_0 = ASSIGN34;
                             }
 
-                            this.match(this.input, Constants.DOWN, null);
+                            this.match(this.input, Constants.DOWN);
 
                             if (this.state.failed as boolean) {
                                 return retval;
                             }
 
                             _last = this.input.LT(1) as GrammarAST;
-                            ID35 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                            ID35 = this.match(this.input, ANTLRv4Parser.ID)!;
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -2131,7 +2128,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
 
                             _last = this.input.LT(1) as GrammarAST;
-                            v = this.match(this.input, ANTLRv4Parser.ACTION, null) as GrammarAST;
+                            v = this.match(this.input, ANTLRv4Parser.ACTION)!;
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -2145,7 +2142,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             }
 
-                            this.match(this.input, Constants.UP, null);
+                            this.match(this.input, Constants.UP);
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -2176,7 +2173,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             const _save_last_1 = _last;
                             let _first_1 = null;
                             _last = this.input.LT(1) as GrammarAST;
-                            ASSIGN36 = this.match(this.input, ANTLRv4Parser.ASSIGN, null) as GrammarAST;
+                            ASSIGN36 = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
 
                             if (this.state.failed) {
                                 return retval;
@@ -2186,14 +2183,14 @@ export class BlockSetTransformer extends TreeRewriter {
                                 _first_0 = ASSIGN36;
                             }
 
-                            this.match(this.input, Constants.DOWN, null);
+                            this.match(this.input, Constants.DOWN);
 
                             if (this.state.failed as boolean) {
                                 return retval;
                             }
 
                             _last = this.input.LT(1) as GrammarAST;
-                            ID37 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                            ID37 = this.match(this.input, ANTLRv4Parser.ID)!;
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -2204,7 +2201,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
 
                             _last = this.input.LT(1) as GrammarAST;
-                            v = this.match(this.input, ANTLRv4Parser.INT, null) as GrammarAST;
+                            v = this.match(this.input, ANTLRv4Parser.INT)!;
 
                             if (this.state.failed as boolean) {
                                 return retval;
@@ -2218,7 +2215,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             }
 
-                            this.match(this.input, Constants.UP, null);
+                            this.match(this.input, Constants.UP);
 
                             if (this.state.failed as boolean) {
                                 return retval;

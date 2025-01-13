@@ -9,8 +9,8 @@ import type { IST } from "stringtemplate4ts";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
-import { CommonTreeNodeStream } from "../antlr3/tree/CommonTreeNodeStream.js";
-import { SourceGenTriggers } from "../tree-walkers/SourceGenTriggers.js";
+import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
+import { SourceGenTriggers } from "../tree/walkers/SourceGenTriggers.js";
 
 import { Utils } from "../misc/Utils.js";
 import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";

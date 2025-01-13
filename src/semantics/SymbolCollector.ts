@@ -5,7 +5,7 @@
 
 /* eslint-disable jsdoc/require-param */
 
-import { GrammarTreeVisitor } from "../tree-walkers/GrammarTreeVisitor.js";
+import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { AltAST } from "../tool/ast/AltAST.js";

@@ -7,14 +7,13 @@
 
 import {
     ATN, ATNState, AbstractPredicateTransition, ActionTransition, AtomTransition, BasicBlockStartState,
-    BasicState,
-    BlockEndState, BlockStartState, EpsilonTransition, IntervalSet, LL1Analyzer, LoopEndState,
+    BasicState, BlockEndState, BlockStartState, EpsilonTransition, IntervalSet, LL1Analyzer, LoopEndState,
     NotSetTransition, PlusBlockStartState, PlusLoopbackState, PrecedencePredicateTransition, PredicateTransition,
     RuleStartState, RuleStopState, RuleTransition, SetTransition, StarBlockStartState, StarLoopEntryState,
     StarLoopbackState, Token, WildcardTransition
 } from "antlr4ng";
 
-import { CommonTreeNodeStream } from "../antlr3/tree/CommonTreeNodeStream.js";
+import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 import { ClassFactory } from "../ClassFactory.js";
 import { Constants } from "../Constants.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
@@ -34,7 +33,7 @@ import { ErrorType } from "../tool/ErrorType.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { LexerGrammar } from "../tool/LexerGrammar.js";
 import { Rule } from "../tool/Rule.js";
-import { ATNBuilder } from "../tree-walkers/ATNBuilder.js";
+import { ATNBuilder } from "../tree/walkers/ATNBuilder.js";
 import type { IGrammar, IParserATNFactory } from "../types.js";
 import { ATNOptimizer } from "./ATNOptimizer.js";
 import { IATNFactory, type IStatePair } from "./IATNFactory.js";
@@ -90,7 +89,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
     }
 
     public createATN(): ATN {
-        this._createATN(Array.from(this.g.rules.values()));
+        this.doCreateATN(Array.from(this.g.rules.values()));
 
         this.addRuleFollowLinks();
         this.addEOFTransitionToStartRules();
@@ -344,7 +343,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
      * <p>
      * TODO: Set alt number (1..n) in the states?
      */
-    public block(blkAST: BlockAST, ebnfRoot: GrammarAST | null, alts: IStatePair[]): IStatePair | null {
+    public block(blkAST: BlockAST, ebnfRoot: GrammarAST | null, alts: IStatePair[]): IStatePair | undefined {
         if (ebnfRoot === null) {
             if (alts.length === 1) {
                 const h = alts[0];
@@ -396,7 +395,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
 
         }
 
-        return null;
+        return undefined;
     }
 
     public alt(els: IStatePair[]): IStatePair {
@@ -693,7 +692,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         }
     }
 
-    protected _createATN(rules: Rule[]): void {
+    protected doCreateATN(rules: Rule[]): void {
         this.createRuleStartAndStopATNStates();
 
         const adaptor = new GrammarASTAdaptor();
@@ -704,8 +703,10 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
             const b = new ATNBuilder(nodes, this);
 
             this.setCurrentRuleName(r.name);
-            const h = b.ruleBlock(null)!;
-            this.rule(r.ast, r.name, h);
+            const h = b.ruleBlock(null);
+            if (h) {
+                this.rule(r.ast, r.name, h);
+            }
         }
     }
 

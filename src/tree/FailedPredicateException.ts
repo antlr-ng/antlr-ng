@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { RecognitionException, type IntStream } from "antlr4ng";
+import { RecognitionException } from "antlr4ng";
 
 /**
  * A semantic predicate failed during validation.  Validation of predicates
@@ -15,7 +15,7 @@ export class FailedPredicateException extends RecognitionException {
     public ruleName: string;
     public predicateText: string;
 
-    public constructor(input: IntStream, ruleName: string, predicateText: string) {
+    public constructor(ruleName: string, predicateText: string) {
         super({ message: "", recognizer: null, input: null, ctx: null });
         this.ruleName = ruleName;
         this.predicateText = predicateText;

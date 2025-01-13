@@ -5,20 +5,17 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
-// cspell: disable
-
-import { CommonTree } from "../../tree/CommonTree.js";
+import { CommonTree } from "./CommonTree.js";
 import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
-import type { TreeAdaptor } from "./TreeAdaptor.js";
 import type { TreeVisitorAction } from "./TreeVisitorAction.js";
 
 /**
  * Do a depth first walk of a tree, applying pre() and post() actions as we discover and finish nodes.
  */
 export class TreeVisitor {
-    protected adaptor: TreeAdaptor;
+    protected adaptor: CommonTreeAdaptor;
 
-    public constructor(adaptor?: TreeAdaptor) {
+    public constructor(adaptor?: CommonTreeAdaptor) {
         this.adaptor = adaptor ?? new CommonTreeAdaptor();
     }
 

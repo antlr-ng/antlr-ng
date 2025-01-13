@@ -9,7 +9,7 @@ import { ATNState, CommonToken, IntervalSet, Token, type BitSet } from "antlr4ng
 
 import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 
-import { CommonTreeNodeStream } from "../../antlr3/tree/CommonTreeNodeStream.js";
+import { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 import { CommonTree } from "../../tree/CommonTree.js";
 
 import { ClassFactory } from "../../ClassFactory.js";

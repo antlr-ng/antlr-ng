@@ -7,11 +7,11 @@
 
 import { CommonToken } from "antlr4ng";
 
-import { CommonTreeNodeStream } from "../antlr3/tree/CommonTreeNodeStream.js";
-import { TreeVisitor } from "../antlr3/tree/TreeVisitor.js";
-import type { TreeVisitorAction } from "../antlr3/tree/TreeVisitorAction.js";
+import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
+import { TreeVisitor } from "../tree/TreeVisitor.js";
+import type { TreeVisitorAction } from "../tree/TreeVisitorAction.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
-import { BlockSetTransformer } from "../tree-walkers/BlockSetTransformer.js";
+import { BlockSetTransformer } from "../tree/walkers/BlockSetTransformer.js";
 
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";

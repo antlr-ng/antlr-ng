@@ -13,10 +13,10 @@ import {
 } from "antlr4ng";
 
 import { ANTLRv4Parser } from "..//generated/ANTLRv4Parser.js";
-import { TreeVisitor } from "../antlr3/tree/TreeVisitor.js";
-import { TreeWizard } from "../antlr3/tree/TreeWizard.js";
+import { TreeVisitor } from "../tree/TreeVisitor.js";
+import { TreeWizard } from "../tree/TreeWizard.js";
 
-import { GrammarTreeVisitor } from "../tree-walkers/GrammarTreeVisitor.js";
+import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
 import { ClassFactory } from "../ClassFactory.js";
 
@@ -46,6 +46,7 @@ import type { GrammarParserInterpreter } from "./GrammarParserInterpreter.js";
 import type { IAttribute } from "./IAttribute.js";
 import type { LexerGrammar } from "./LexerGrammar.js";
 import type { Rule } from "./Rule.js";
+import type { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 
 export class Grammar implements IGrammar, AttributeResolver {
     /**
@@ -1279,7 +1280,7 @@ export class Grammar implements IGrammar, AttributeResolver {
             public override stringRef(ref: TerminalAST): void {
                 strings.add(ref.getText());
             }
-        }();
+        }({} as CommonTreeNodeStream);
         collector.visitGrammar(this.ast);
 
         return strings;

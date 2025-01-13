@@ -8,14 +8,12 @@
 
 import { RecognitionException, type TokenStream } from "antlr4ng";
 
-import type { CommonTree } from "../../tree/CommonTree.js";
-import { createRecognizerSharedState, IRecognizerSharedState } from "../IRecognizerSharedState.js";
-import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
+import type { CommonTree } from "./CommonTree.js";
 import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
-import type { TreeAdaptor } from "./TreeAdaptor.js";
-import type { TreeNodeStream } from "./TreeNodeStream.js";
+import { createRecognizerSharedState, IRecognizerSharedState } from "./misc/IRecognizerSharedState.js";
 import { TreeParser } from "./TreeParser.js";
-import type { ITreeRuleReturnScope } from "./TreeRuleReturnScope.js";
+import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
+import type { ITreeRuleReturnScope } from "../antlr3/tree/TreeRuleReturnScope.js";
 import { TreeVisitor } from "./TreeVisitor.js";
 import type { TreeVisitorAction } from "./TreeVisitorAction.js";
 
@@ -23,9 +21,9 @@ export class TreeRewriter extends TreeParser {
 
     protected showTransformations = false;
     protected originalTokenStream: TokenStream;
-    protected originalAdaptor: TreeAdaptor;
+    protected originalAdaptor: CommonTreeAdaptor;
 
-    public constructor(input: TreeNodeStream, state?: IRecognizerSharedState) {
+    public constructor(input: CommonTreeNodeStream, state?: IRecognizerSharedState) {
         state ??= createRecognizerSharedState();
         super(input, state);
         this.originalAdaptor = input.getTreeAdaptor();
@@ -67,11 +65,15 @@ export class TreeRewriter extends TreeParser {
         return undefined;
     };
 
+    protected override getTokenNames(): string[] {
+        return [];
+    }
+
     private applyOnce = (t: CommonTree, whichRule: () => ITreeRuleReturnScope<CommonTree> | undefined): CommonTree => {
         try {
             // share TreeParser object but not parsing-related state
             this.state = createRecognizerSharedState();
-            const input = new CommonTreeNodeStream(this.originalAdaptor as CommonTreeAdaptor, t);
+            const input = new CommonTreeNodeStream(this.originalAdaptor, t);
             input.setTokenStream(this.originalTokenStream);
             this.input = input;
 

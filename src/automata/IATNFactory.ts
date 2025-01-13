@@ -104,7 +104,7 @@ export interface IATNFactory {
      *
      * Set alt number (1..n) in the left-Transition ATNState.
      */
-    block(blockAST: BlockAST, ebnfRoot: GrammarAST | null, alternativeGrips: IStatePair[]): IStatePair | null;
+    block(blockAST: BlockAST, ebnfRoot: GrammarAST | null, alternativeGrips: IStatePair[]): IStatePair | undefined;
 
     /**
      * From (A)? build either:

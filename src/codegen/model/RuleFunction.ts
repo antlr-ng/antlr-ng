@@ -7,7 +7,7 @@
 
 import { ATNState, IntervalSet, OrderedHashSet, RecognitionException } from "antlr4ng";
 
-import { CommonTreeNodeStream } from "../../antlr3/tree/CommonTreeNodeStream.js";
+import { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 import { ANTLRv4Lexer } from "../../generated/ANTLRv4Lexer.js";
 
 import type { CommonTree } from "../../tree/CommonTree.js";

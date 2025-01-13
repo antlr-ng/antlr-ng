@@ -5,7 +5,7 @@
 
 /* eslint-disable jsdoc/require-returns */
 
-import type { CommonTree } from "../../tree/CommonTree.js";
+import type { CommonTree } from "./CommonTree.js";
 import { RewriteRuleElementStream } from "./RewriteRuleElementStream.js";
 
 export class RewriteRuleSubtreeStream extends RewriteRuleElementStream {

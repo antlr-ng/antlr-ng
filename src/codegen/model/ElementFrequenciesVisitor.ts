@@ -3,8 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import type { TreeNodeStream } from "../../antlr3/tree/TreeNodeStream.js";
-import { GrammarTreeVisitor } from "../../tree-walkers/GrammarTreeVisitor.js";
+import { GrammarTreeVisitor } from "../../tree/walkers/GrammarTreeVisitor.js";
 
 import { FrequencySet } from "../../misc/FrequencySet.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
@@ -12,6 +11,7 @@ import { AltAST } from "../../tool/ast/AltAST.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { TerminalAST } from "../../tool/ast/TerminalAST.js";
 import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
+import type { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 
 export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
 
@@ -26,7 +26,7 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
 
     private readonly minFrequencies: Array<FrequencySet<string>>;
 
-    public constructor(input: TreeNodeStream) {
+    public constructor(input: CommonTreeNodeStream) {
         super(input);
         this.frequencies = new Array<FrequencySet<string>>();
         this.frequencies.unshift(new FrequencySet<string>());

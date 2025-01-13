@@ -3,14 +3,13 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { CommonToken, type CharStream, type RecognitionException, type Token, type TokenStream } from "antlr4ng";
+import { CommonToken, type CharStream, type Token } from "antlr4ng";
 
-import { CommonTreeAdaptor } from "../antlr3/tree/CommonTreeAdaptor.js";
+import { CommonTreeAdaptor } from "../tree/CommonTreeAdaptor.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
 import { ClassFactory } from "../ClassFactory.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
-import { GrammarASTErrorNode } from "../tool/ast/GrammarASTErrorNode.js";
 import { RuleAST } from "../tool/ast/RuleAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
 import type { IGrammarASTAdaptor } from "../types.js";
@@ -61,11 +60,6 @@ export class GrammarASTAdaptor extends CommonTreeAdaptor implements IGrammarASTA
 
     public override dupNode(t: GrammarAST): GrammarAST {
         return t.dupNode();
-    }
-
-    public override errorNode(input: TokenStream, start: Token, stop: Token,
-        e: RecognitionException): GrammarASTErrorNode {
-        return new GrammarASTErrorNode(input, start, stop, e);
     }
 
     static {

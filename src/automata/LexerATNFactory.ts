@@ -154,7 +154,7 @@ export class LexerATNFactory extends ParserATNFactory {
         }
 
         // CREATE ATN FOR EACH RULE
-        this._createATN(Array.from(this.g.rules.values()));
+        this.doCreateATN(Array.from(this.g.rules.values()));
 
         this.atn.lexerActions = new Array<LexerAction>(this.indexToActionMap.size);
         for (const [index, value] of this.indexToActionMap.entries()) {

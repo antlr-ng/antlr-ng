@@ -9,9 +9,8 @@
 
 import { Token } from "antlr4ng";
 
-import { CommonTree } from "../../tree/CommonTree.js";
+import { CommonTree } from "./CommonTree.js";
 import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
-import type { TreeAdaptor } from "./TreeAdaptor.js";
 import { TreePatternLexer } from "./TreePatternLexer.js";
 import { TreePatternParser } from "./TreePatternParser.js";
 
@@ -97,7 +96,7 @@ export class TreeWizard {
     public constructor(adaptor: CommonTreeAdaptor, tokenNameToTypeMap: Map<string, number>);
     public constructor(adaptor: CommonTreeAdaptor, tokenNames: Array<string | null>);
     public constructor(...args: unknown[]) {
-        let adaptor: TreeAdaptor;
+        let adaptor: CommonTreeAdaptor;
         let tokenNameToTypeMap: Map<string | null, number> | undefined;
         let tokenNames: Array<string | null>;
 
@@ -106,10 +105,10 @@ export class TreeWizard {
                 adaptor = new CommonTreeAdaptor();
                 tokenNames = args[0] as Array<string | null>;
             } else {
-                adaptor = args[0] as TreeAdaptor;
+                adaptor = args[0] as CommonTreeAdaptor;
             }
         } else {
-            adaptor = args[0] as TreeAdaptor;
+            adaptor = args[0] as CommonTreeAdaptor;
             if (Array.isArray(args[1])) {
                 tokenNames = args[1] as Array<string | null>;
                 tokenNameToTypeMap = this.computeTokenTypes(tokenNames);
@@ -118,7 +117,7 @@ export class TreeWizard {
             }
         }
 
-        this.adaptor = adaptor as CommonTreeAdaptor;
+        this.adaptor = adaptor;
         this.tokenNameToTypeMap = tokenNameToTypeMap;
     }
 

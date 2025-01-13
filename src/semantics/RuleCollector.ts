@@ -5,7 +5,7 @@
 
 // cspell: ignore thrws
 
-import { GrammarTreeVisitor } from "../tree-walkers/GrammarTreeVisitor.js";
+import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
 import { MultiMap } from "stringtemplate4ts";
 import { LeftRecursiveRuleAnalyzer } from "../analysis/LeftRecursiveRuleAnalyzer.js";

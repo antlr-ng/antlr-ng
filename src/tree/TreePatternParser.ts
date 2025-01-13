@@ -6,8 +6,8 @@
 // cspell: disable
 
 import { CommonToken, Token } from "antlr4ng";
-import type { CommonTree } from "../../tree/CommonTree.js";
-import type { TreeAdaptor } from "./TreeAdaptor.js";
+import type { CommonTree } from "./CommonTree.js";
+import type { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import { TreePatternLexer } from "./TreePatternLexer.js";
 import { TreeWizard } from "./TreeWizard.js";
 
@@ -15,9 +15,9 @@ export class TreePatternParser {
     protected tokenizer: TreePatternLexer;
     protected ttype: number;
     protected wizard: TreeWizard;
-    protected adaptor: TreeAdaptor;
+    protected adaptor: CommonTreeAdaptor;
 
-    public constructor(tokenizer: TreePatternLexer, wizard: TreeWizard, adaptor: TreeAdaptor) {
+    public constructor(tokenizer: TreePatternLexer, wizard: TreeWizard, adaptor: CommonTreeAdaptor) {
         this.tokenizer = tokenizer;
         this.wizard = wizard;
         this.adaptor = adaptor;

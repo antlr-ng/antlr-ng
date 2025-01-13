@@ -8,26 +8,25 @@
 
 import { RecognitionException } from "antlr4ng";
 
-import { EarlyExitException } from "../antlr3/EarlyExitException.js";
-import { createRecognizerSharedState, IRecognizerSharedState } from "../antlr3/IRecognizerSharedState.js";
-import { MismatchedSetException } from "../antlr3/MismatchedSetException.js";
-import { NoViableAltException } from "../antlr3/NoViableAltException.js";
-import { CommonTreeNodeStream } from "../antlr3/tree/CommonTreeNodeStream.js";
-import type { TreeNodeStream } from "../antlr3/tree/TreeNodeStream.js";
-import { TreeParser } from "../antlr3/tree/TreeParser.js";
-import { TreeRuleReturnScope } from "../antlr3/tree/TreeRuleReturnScope.js";
+import { EarlyExitException } from "../EarlyExitException.js";
+import { createRecognizerSharedState, IRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
+import { MismatchedSetException } from "../MismatchedSetException.js";
+import { NoViableAltException } from "../NoViableAltException.js";
+import { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
+import { TreeParser } from "../TreeParser.js";
+import { TreeRuleReturnScope } from "../../antlr3/tree/TreeRuleReturnScope.js";
 
-import { ClassFactory } from "../ClassFactory.js";
-import { Constants } from "../Constants.js";
-import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
-import type { ActionAST } from "../tool/ast/ActionAST.js";
-import type { AltAST } from "../tool/ast/AltAST.js";
-import type { GrammarAST } from "../tool/ast/GrammarAST.js";
-import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
-import type { GrammarRootAST } from "../tool/ast/GrammarRootAST.js";
-import type { PredAST } from "../tool/ast/PredAST.js";
-import type { RuleAST } from "../tool/ast/RuleAST.js";
-import type { TerminalAST } from "../tool/ast/TerminalAST.js";
+import { ClassFactory } from "../../ClassFactory.js";
+import { Constants } from "../../Constants.js";
+import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
+import type { ActionAST } from "../../tool/ast/ActionAST.js";
+import type { AltAST } from "../../tool/ast/AltAST.js";
+import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { GrammarASTWithOptions } from "../../tool/ast/GrammarASTWithOptions.js";
+import type { GrammarRootAST } from "../../tool/ast/GrammarRootAST.js";
+import type { PredAST } from "../../tool/ast/PredAST.js";
+import type { RuleAST } from "../../tool/ast/RuleAST.js";
+import type { TerminalAST } from "../../tool/ast/TerminalAST.js";
 
 /**
  * The definitive ANTLR v3 tree grammar to walk/visit ANTLR v4 grammars.
@@ -230,7 +229,7 @@ export class GrammarTreeVisitor extends TreeParser {
     public currentOuterAltNumber = 1; // 1..n
     public rewriteEBNFLevel = 0;
 
-    public constructor(input?: TreeNodeStream, state?: IRecognizerSharedState) {
+    public constructor(input?: CommonTreeNodeStream, state?: IRecognizerSharedState) {
         super(input, state ?? createRecognizerSharedState());
     }
 
@@ -240,10 +239,6 @@ export class GrammarTreeVisitor extends TreeParser {
 
     public override getTokenNames(): string[] {
         return GrammarTreeVisitor.tokenNames;
-    }
-
-    public override getGrammarFileName(): string {
-        return "org/antlr/v4/parse/GrammarTreeVisitor.g";
     }
 
     public visitGrammar(t: GrammarRootAST): void {
@@ -378,7 +373,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                                 }
 
                                                 const nvae =
-                                                    new NoViableAltException("", 55, 4, this.input);
+                                                    new NoViableAltException(55, 4);
                                                 throw nvae;
                                             } finally {
                                                 this.input.release(nvaeMark);
@@ -393,7 +388,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                             this.input.consume();
                                         }
                                         const nvae =
-                                            new NoViableAltException("", 55, 3, this.input);
+                                            new NoViableAltException(55, 3);
                                         throw nvae;
                                     } finally {
                                         this.input.release(nvaeMark);
@@ -404,7 +399,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 try {
                                     this.input.consume();
                                     const nvae =
-                                        new NoViableAltException("", 55, 2, this.input);
+                                        new NoViableAltException(55, 2);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -412,7 +407,7 @@ export class GrammarTreeVisitor extends TreeParser {
                             }
                         } else {
                             const nvae =
-                                new NoViableAltException("", 55, 0, this.input);
+                                new NoViableAltException(55, 0);
                             throw nvae;
                         }
                     }
@@ -421,7 +416,7 @@ export class GrammarTreeVisitor extends TreeParser {
                         case 1: {
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:1015:7: ID
                             {
-                                ID45 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                                ID45 = this.match(this.input, ANTLRv4Parser.ID)!;
                                 this.elementOption(t, ID45, null);
                             }
                             break;
@@ -430,11 +425,11 @@ export class GrammarTreeVisitor extends TreeParser {
                         case 2: {
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:1016:9: ^( ASSIGN id= ID v= ID )
                             {
-                                this.match(this.input, ANTLRv4Parser.ASSIGN, null);
-                                this.match(this.input, Constants.DOWN, null);
-                                id = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
-                                v = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
-                                this.match(this.input, Constants.UP, null);
+                                this.match(this.input, ANTLRv4Parser.ASSIGN);
+                                this.match(this.input, Constants.DOWN);
+                                id = this.match(this.input, ANTLRv4Parser.ID)!;
+                                v = this.match(this.input, ANTLRv4Parser.ID)!;
+                                this.match(this.input, Constants.UP);
 
                                 this.elementOption(t, id, v);
                             }
@@ -444,11 +439,11 @@ export class GrammarTreeVisitor extends TreeParser {
                         case 3: {
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:1017:9: ^( ASSIGN ID v= STRING_LITERAL )
                             {
-                                this.match(this.input, ANTLRv4Parser.ASSIGN, null);
-                                this.match(this.input, Constants.DOWN, null);
-                                ID46 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
-                                v = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
-                                this.match(this.input, Constants.UP, null);
+                                this.match(this.input, ANTLRv4Parser.ASSIGN);
+                                this.match(this.input, Constants.DOWN);
+                                ID46 = this.match(this.input, ANTLRv4Parser.ID)!;
+                                v = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                                this.match(this.input, Constants.UP);
 
                                 this.elementOption(t, ID46, v);
                             }
@@ -458,11 +453,11 @@ export class GrammarTreeVisitor extends TreeParser {
                         case 4: {
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:1018:9: ^( ASSIGN ID v= ACTION )
                             {
-                                this.match(this.input, ANTLRv4Parser.ASSIGN, null);
-                                this.match(this.input, Constants.DOWN, null);
-                                ID47 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
-                                v = this.match(this.input, ANTLRv4Parser.ACTION, null) as GrammarAST;
-                                this.match(this.input, Constants.UP, null);
+                                this.match(this.input, ANTLRv4Parser.ASSIGN);
+                                this.match(this.input, Constants.DOWN);
+                                ID47 = this.match(this.input, ANTLRv4Parser.ID)!;
+                                v = this.match(this.input, ANTLRv4Parser.ACTION)!;
+                                this.match(this.input, Constants.UP);
 
                                 this.elementOption(t, ID47, v);
                             }
@@ -472,11 +467,11 @@ export class GrammarTreeVisitor extends TreeParser {
                         case 5: {
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:1019:9: ^( ASSIGN ID v= INT )
                             {
-                                this.match(this.input, ANTLRv4Parser.ASSIGN, null);
-                                this.match(this.input, Constants.DOWN, null);
-                                ID48 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
-                                v = this.match(this.input, ANTLRv4Parser.INT, null) as GrammarAST;
-                                this.match(this.input, Constants.UP, null);
+                                this.match(this.input, ANTLRv4Parser.ASSIGN);
+                                this.match(this.input, Constants.DOWN);
+                                ID48 = this.match(this.input, ANTLRv4Parser.ID)!;
+                                v = this.match(this.input, ANTLRv4Parser.INT)!;
+                                this.match(this.input, Constants.UP);
 
                                 this.elementOption(t, ID48, v);
                             }
@@ -549,7 +544,7 @@ export class GrammarTreeVisitor extends TreeParser {
                             alt39 = 2;
                         } else {
                             const nvae =
-                                new NoViableAltException("", 39, 0, this.input);
+                                new NoViableAltException(39, 0);
                             throw nvae;
                         }
                     }
@@ -558,12 +553,12 @@ export class GrammarTreeVisitor extends TreeParser {
                         case 1: {
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:803:4: ^( LEXER_ACTION_CALL ID lexerCommandExpr )
                             {
-                                this.match(this.input, ANTLRv4Parser.LEXER_ACTION_CALL, null);
-                                this.match(this.input, Constants.DOWN, null);
-                                ID25 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                                this.match(this.input, ANTLRv4Parser.LEXER_ACTION_CALL);
+                                this.match(this.input, Constants.DOWN);
+                                ID25 = this.match(this.input, ANTLRv4Parser.ID)!;
                                 lexerCommandExpr26 = this.lexerCommandExpr();
 
-                                this.match(this.input, Constants.UP, null);
+                                this.match(this.input, Constants.UP);
 
                                 this.lexerCallCommand(this.currentOuterAltNumber, ID25,
                                     lexerCommandExpr26.start as GrammarAST);
@@ -574,7 +569,7 @@ export class GrammarTreeVisitor extends TreeParser {
                         case 2: {
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:805:4: ID
                             {
-                                ID27 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                                ID27 = this.match(this.input, ANTLRv4Parser.ID)!;
                                 this.lexerCommand(this.currentOuterAltNumber, ID27);
                             }
                             break;
@@ -612,14 +607,6 @@ export class GrammarTreeVisitor extends TreeParser {
         }
     }
 
-    public override traceIn(ruleName: string, ruleIndex: number): void {
-        console.error("enter " + ruleName + ": " + this.input.LT(1));
-    }
-
-    public override traceOut(ruleName: string, ruleIndex: number): void {
-        console.error("exit " + ruleName + ": " + this.input.LT(1));
-    }
-
     // $ANTLR start "grammarSpec"
     // org/antlr/v4/parse/GrammarTreeVisitor.g:341:1: grammarSpec : ^( GRAMMAR ID prequelConstructs rules ( mode )* ) ;
     public grammarSpec(): GrammarTreeVisitor.grammarSpec_return {
@@ -636,9 +623,9 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:348:5: ( ^( GRAMMAR ID prequelConstructs rules ( mode )* ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:348:9: ^( GRAMMAR ID prequelConstructs rules ( mode )* )
             {
-                GRAMMAR2 = this.match(this.input, ANTLRv4Parser.GRAMMAR, null) as GrammarAST | null;
-                this.match(this.input, Constants.DOWN, null);
-                ID1 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST | null;
+                GRAMMAR2 = this.match(this.input, ANTLRv4Parser.GRAMMAR);
+                this.match(this.input, Constants.DOWN);
+                ID1 = this.match(this.input, ANTLRv4Parser.ID);
                 this.grammarName = ID1?.getText() ?? null;
                 this.discoverGrammar(GRAMMAR2 as GrammarRootAST, ID1);
                 prequelConstructs3 = this.prequelConstructs();
@@ -673,7 +660,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 }
 
                 this.finishGrammar(GRAMMAR2 as GrammarRootAST, ID1);
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -711,7 +698,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     alt3 = 2;
                 } else {
                     const nvae =
-                        new NoViableAltException("", 3, 0, this.input);
+                        new NoViableAltException(3, 0);
                     throw nvae;
                 }
             }
@@ -746,7 +733,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                         break loop2;
                                     }
 
-                                    const eee = new EarlyExitException(2, this.input);
+                                    const eee = new EarlyExitException(2);
                                     throw eee;
                                 }
 
@@ -831,7 +818,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 default: {
                     const nvae =
-                        new NoViableAltException("", 4, 0, this.input);
+                        new NoViableAltException(4, 0);
                     throw nvae;
                 }
 
@@ -913,9 +900,9 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:389:2: ( ^( OPTIONS ( option )* ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:389:4: ^( OPTIONS ( option )* )
             {
-                this.match(this.input, ANTLRv4Parser.OPTIONS, null);
+                this.match(this.input, ANTLRv4Parser.OPTIONS);
                 if (this.input.LA(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN, null);
+                    this.match(this.input, Constants.DOWN);
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:389:14: ( option )*
                     loop5:
                     while (true) {
@@ -942,7 +929,7 @@ export class GrammarTreeVisitor extends TreeParser {
                         }
                     }
 
-                    this.match(this.input, Constants.UP, null);
+                    this.match(this.input, Constants.UP);
                 }
 
             }
@@ -979,12 +966,12 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:401:5: ( ^(a= ASSIGN ID v= optionValue ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:401:9: ^(a= ASSIGN ID v= optionValue )
             {
-                this.match(this.input, ANTLRv4Parser.ASSIGN, null) as GrammarAST | null;
-                this.match(this.input, Constants.DOWN, null);
-                ID4 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST | null;
+                this.match(this.input, ANTLRv4Parser.ASSIGN);
+                this.match(this.input, Constants.DOWN);
+                ID4 = this.match(this.input, ANTLRv4Parser.ID);
                 v = this.optionValue();
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
                 if (block) {
                     this.blockOption(ID4, v.start as GrammarAST | null ?? null);
@@ -1033,7 +1020,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     this.input.consume();
                     this.state.errorRecovery = false;
                 } else {
-                    const mse = new MismatchedSetException(null, this.input);
+                    const mse = new MismatchedSetException(null);
                     throw mse;
                 }
             }
@@ -1063,8 +1050,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:429:2: ( ^( IMPORT ( delegateGrammar )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:429:6: ^( IMPORT ( delegateGrammar )+ )
             {
-                this.match(this.input, ANTLRv4Parser.IMPORT, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.IMPORT);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:429:15: ( delegateGrammar )+
                 let cnt6 = 0;
                 loop6:
@@ -1090,7 +1077,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop6;
                             }
 
-                            const eee = new EarlyExitException(6, this.input);
+                            const eee = new EarlyExitException(6);
                             throw eee;
                         }
 
@@ -1098,7 +1085,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt6++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -1139,7 +1126,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     alt7 = 2;
                 } else {
                     const nvae =
-                        new NoViableAltException("", 7, 0, this.input);
+                        new NoViableAltException(7, 0);
                     throw nvae;
                 }
             }
@@ -1148,11 +1135,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 1: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:439:9: ^( ASSIGN label= ID id= ID )
                     {
-                        this.match(this.input, ANTLRv4Parser.ASSIGN, null);
-                        this.match(this.input, Constants.DOWN, null);
-                        label = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
-                        id = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, ANTLRv4Parser.ASSIGN);
+                        this.match(this.input, Constants.DOWN);
+                        label = this.match(this.input, ANTLRv4Parser.ID)!;
+                        id = this.match(this.input, ANTLRv4Parser.ID)!;
+                        this.match(this.input, Constants.UP);
 
                         this.importGrammar(label, id);
                     }
@@ -1162,7 +1149,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 2: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:440:9: id= ID
                     {
-                        id = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                        id = this.match(this.input, ANTLRv4Parser.ID)!;
                         this.importGrammar(null, id);
                     }
                     break;
@@ -1199,8 +1186,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:450:2: ( ^( TOKENS ( tokenSpec )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:450:6: ^( TOKENS ( tokenSpec )+ )
             {
-                this.match(this.input, ANTLRv4Parser.TOKENS, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.TOKENS);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:450:20: ( tokenSpec )+
                 let cnt8 = 0;
                 loop8:
@@ -1226,7 +1213,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop8;
                             }
 
-                            const eee = new EarlyExitException(8, this.input);
+                            const eee = new EarlyExitException(8);
                             throw eee;
                         }
 
@@ -1234,7 +1221,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt8++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -1267,7 +1254,7 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:460:2: ( ID )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:460:4: ID
             {
-                ID5 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                ID5 = this.match(this.input, ANTLRv4Parser.ID)!;
                 this.defineToken(ID5);
             }
 
@@ -1298,8 +1285,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:470:2: ( ^( CHANNELS ( channelSpec )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:470:6: ^( CHANNELS ( channelSpec )+ )
             {
-                this.match(this.input, ANTLRv4Parser.CHANNELS, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.CHANNELS);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:470:17: ( channelSpec )+
                 let cnt9 = 0;
                 loop9:
@@ -1325,7 +1312,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop9;
                             }
 
-                            const eee = new EarlyExitException(9, this.input);
+                            const eee = new EarlyExitException(9);
                             throw eee;
                         }
 
@@ -1333,7 +1320,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt9++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -1366,7 +1353,7 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:480:2: ( ID )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:480:4: ID
             {
-                ID6 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                ID6 = this.match(this.input, ANTLRv4Parser.ID)!;
                 this.defineChannel(ID6);
             }
 
@@ -1401,8 +1388,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:490:2: ( ^( AT (sc= ID )? name= ID ACTION ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:490:4: ^( AT (sc= ID )? name= ID ACTION )
             {
-                this.match(this.input, ANTLRv4Parser.AT, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.AT);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:490:11: (sc= ID )?
                 let alt10 = 2;
                 const LA10_0 = this.input.LA(1);
@@ -1416,7 +1403,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     case 1: {
                         // org/antlr/v4/parse/GrammarTreeVisitor.g:490:11: sc= ID
                         {
-                            sc = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                            sc = this.match(this.input, ANTLRv4Parser.ID)!;
                         }
                         break;
                     }
@@ -1425,9 +1412,9 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 }
 
-                name = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
-                ACTION7 = this.match(this.input, ANTLRv4Parser.ACTION, null) as GrammarAST;
-                this.match(this.input, Constants.UP, null);
+                name = this.match(this.input, ANTLRv4Parser.ID)!;
+                ACTION7 = this.match(this.input, ANTLRv4Parser.ACTION)!;
+                this.match(this.input, Constants.UP);
 
                 this.globalNamedAction(sc, name, ACTION7 as ActionAST);
             }
@@ -1461,10 +1448,10 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:500:5: ( ^( RULES ( rule | lexerRule )* ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:500:7: ^( RULES ( rule | lexerRule )* )
             {
-                RULES8 = this.match(this.input, ANTLRv4Parser.RULES, null) as GrammarAST;
+                RULES8 = this.match(this.input, ANTLRv4Parser.RULES)!;
                 this.discoverRules(RULES8);
                 if (this.input.LA(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN, null);
+                    this.match(this.input, Constants.DOWN);
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:500:40: ( rule | lexerRule )*
                     loop11:
                     while (true) {
@@ -1513,7 +1500,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     }
 
                     this.finishRules(RULES8);
-                    this.match(this.input, Constants.UP, null);
+                    this.match(this.input, Constants.UP);
                 }
 
             }
@@ -1548,9 +1535,9 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:510:2: ( ^( MODE ID ( lexerRule )* ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:510:4: ^( MODE ID ( lexerRule )* )
             {
-                MODE10 = this.match(this.input, ANTLRv4Parser.MODE, null) as GrammarAST | null;
-                this.match(this.input, Constants.DOWN, null);
-                ID9 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST | null;
+                MODE10 = this.match(this.input, ANTLRv4Parser.MODE);
+                this.match(this.input, Constants.DOWN);
+                ID9 = this.match(this.input, ANTLRv4Parser.ID);
                 this.currentModeName = (ID9 !== null ? ID9.getText() : null);
                 this.modeDef(MODE10, ID9);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:510:64: ( lexerRule )*
@@ -1579,7 +1566,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     }
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -1618,9 +1605,9 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:522:2: ( ^( RULE TOKEN_REF ( ^( RULEMODIFIERS m= FRAGMENT ) )? (opts= optionsSpec )* lexerRuleBlock ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:522:4: ^( RULE TOKEN_REF ( ^( RULEMODIFIERS m= FRAGMENT ) )? (opts= optionsSpec )* lexerRuleBlock )
             {
-                RULE12 = this.match(this.input, ANTLRv4Parser.RULE, null) as GrammarAST | null;
-                this.match(this.input, Constants.DOWN, null);
-                TOKEN_REF11 = this.match(this.input, ANTLRv4Parser.TOKEN_REF, null) as GrammarAST | null;
+                RULE12 = this.match(this.input, ANTLRv4Parser.RULE);
+                this.match(this.input, Constants.DOWN);
+                TOKEN_REF11 = this.match(this.input, ANTLRv4Parser.TOKEN_REF);
                 this.currentRuleName = TOKEN_REF11?.getText() ?? null;
                 this.currentRuleAST = RULE12;
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:524:4: ( ^( RULEMODIFIERS m= FRAGMENT ) )?
@@ -1633,11 +1620,11 @@ export class GrammarTreeVisitor extends TreeParser {
                     case 1: {
                         // org/antlr/v4/parse/GrammarTreeVisitor.g:524:5: ^( RULEMODIFIERS m= FRAGMENT )
                         {
-                            this.match(this.input, ANTLRv4Parser.RULEMODIFIERS, null);
-                            this.match(this.input, Constants.DOWN, null);
-                            m = this.match(this.input, ANTLRv4Parser.FRAGMENT, null) as GrammarAST;
+                            this.match(this.input, ANTLRv4Parser.RULEMODIFIERS);
+                            this.match(this.input, Constants.DOWN);
+                            m = this.match(this.input, ANTLRv4Parser.FRAGMENT)!;
                             mods.push(m);
-                            this.match(this.input, Constants.UP, null);
+                            this.match(this.input, Constants.UP);
 
                         }
                         break;
@@ -1681,7 +1668,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     lexerRuleBlock13.start as GrammarAST | null ?? null);
                 this.currentRuleName = null; this.currentRuleAST = null;
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -1726,9 +1713,9 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:545:2: ( ^( RULE RULE_REF ( ^( RULEMODIFIERS (m= ruleModifier )+ ) )? ( ARG_ACTION )? (ret= ruleReturns )? (thr= throwsSpec )? (loc= locals )? (opts= optionsSpec |a= ruleAction )* ruleBlock exceptionGroup ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:545:6: ^( RULE RULE_REF ( ^( RULEMODIFIERS (m= ruleModifier )+ ) )? ( ARG_ACTION )? (ret= ruleReturns )? (thr= throwsSpec )? (loc= locals )? (opts= optionsSpec |a= ruleAction )* ruleBlock exceptionGroup )
             {
-                RULE15 = this.match(this.input, ANTLRv4Parser.RULE, null) as GrammarAST | null;
-                this.match(this.input, Constants.DOWN, null);
-                RULE_REF14 = this.match(this.input, ANTLRv4Parser.RULE_REF, null) as GrammarAST | null;
+                RULE15 = this.match(this.input, ANTLRv4Parser.RULE);
+                this.match(this.input, Constants.DOWN);
+                RULE_REF14 = this.match(this.input, ANTLRv4Parser.RULE_REF);
                 this.currentRuleName = (RULE_REF14 !== null ? RULE_REF14.getText() : null); this.currentRuleAST = RULE15;
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:546:4: ( ^( RULEMODIFIERS (m= ruleModifier )+ ) )?
                 let alt16 = 2;
@@ -1740,8 +1727,8 @@ export class GrammarTreeVisitor extends TreeParser {
                     case 1: {
                         // org/antlr/v4/parse/GrammarTreeVisitor.g:546:5: ^( RULEMODIFIERS (m= ruleModifier )+ )
                         {
-                            this.match(this.input, ANTLRv4Parser.RULEMODIFIERS, null);
-                            this.match(this.input, Constants.DOWN, null);
+                            this.match(this.input, ANTLRv4Parser.RULEMODIFIERS);
+                            this.match(this.input, Constants.DOWN);
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:546:21: (m= ruleModifier )+
                             let cnt15 = 0;
                             loop15:
@@ -1768,7 +1755,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                             break loop15;
                                         }
 
-                                        const eee = new EarlyExitException(15, this.input);
+                                        const eee = new EarlyExitException(15);
                                         throw eee;
                                     }
 
@@ -1776,7 +1763,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 cnt15++;
                             }
 
-                            this.match(this.input, Constants.UP, null);
+                            this.match(this.input, Constants.UP);
 
                         }
                         break;
@@ -1796,7 +1783,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     case 1: {
                         // org/antlr/v4/parse/GrammarTreeVisitor.g:547:4: ARG_ACTION
                         {
-                            ARG_ACTION16 = this.match(this.input, ANTLRv4Parser.ARG_ACTION, null) as GrammarAST;
+                            ARG_ACTION16 = this.match(this.input, ANTLRv4Parser.ARG_ACTION)!;
                         }
                         break;
                     }
@@ -1920,7 +1907,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 this.finishRule(RULE15 as RuleAST | null, RULE_REF14, ruleBlock17.start as GrammarAST);
                 this.currentRuleName = null;
                 this.currentRuleAST = null;
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -2029,11 +2016,11 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:581:2: ( ^( CATCH ARG_ACTION ACTION ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:581:4: ^( CATCH ARG_ACTION ACTION )
             {
-                this.match(this.input, ANTLRv4Parser.CATCH, null);
-                this.match(this.input, Constants.DOWN, null);
-                ARG_ACTION18 = this.match(this.input, ANTLRv4Parser.ARG_ACTION, null) as GrammarAST;
-                ACTION19 = this.match(this.input, ANTLRv4Parser.ACTION, null) as GrammarAST;
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, ANTLRv4Parser.CATCH);
+                this.match(this.input, Constants.DOWN);
+                ARG_ACTION18 = this.match(this.input, ANTLRv4Parser.ARG_ACTION)!;
+                ACTION19 = this.match(this.input, ANTLRv4Parser.ACTION)!;
+                this.match(this.input, Constants.UP);
 
                 this.ruleCatch(ARG_ACTION18, ACTION19 as ActionAST);
             }
@@ -2067,10 +2054,10 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:591:2: ( ^( FINALLY ACTION ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:591:4: ^( FINALLY ACTION )
             {
-                this.match(this.input, ANTLRv4Parser.FINALLY, null);
-                this.match(this.input, Constants.DOWN, null);
-                ACTION20 = this.match(this.input, ANTLRv4Parser.ACTION, null) as GrammarAST;
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, ANTLRv4Parser.FINALLY);
+                this.match(this.input, Constants.DOWN);
+                ACTION20 = this.match(this.input, ANTLRv4Parser.ACTION)!;
+                this.match(this.input, Constants.UP);
 
                 this.finallyAction(ACTION20 as ActionAST);
             }
@@ -2102,10 +2089,10 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:601:2: ( ^( LOCALS ARG_ACTION ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:601:4: ^( LOCALS ARG_ACTION )
             {
-                this.match(this.input, ANTLRv4Parser.LOCALS, null);
-                this.match(this.input, Constants.DOWN, null);
-                this.match(this.input, ANTLRv4Parser.ARG_ACTION, null);
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, ANTLRv4Parser.LOCALS);
+                this.match(this.input, Constants.DOWN);
+                this.match(this.input, ANTLRv4Parser.ARG_ACTION);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -2136,10 +2123,10 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:611:2: ( ^( RETURNS ARG_ACTION ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:611:4: ^( RETURNS ARG_ACTION )
             {
-                this.match(this.input, ANTLRv4Parser.RETURNS, null);
-                this.match(this.input, Constants.DOWN, null);
-                this.match(this.input, ANTLRv4Parser.ARG_ACTION, null);
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, ANTLRv4Parser.RETURNS);
+                this.match(this.input, Constants.DOWN);
+                this.match(this.input, ANTLRv4Parser.ARG_ACTION);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -2170,8 +2157,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:621:5: ( ^( THROWS ( ID )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:621:7: ^( THROWS ( ID )+ )
             {
-                this.match(this.input, ANTLRv4Parser.THROWS, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.THROWS);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:621:16: ( ID )+
                 let cnt24 = 0;
                 loop24:
@@ -2186,7 +2173,7 @@ export class GrammarTreeVisitor extends TreeParser {
                         case 1: {
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:621:16: ID
                             {
-                                this.match(this.input, ANTLRv4Parser.ID, null);
+                                this.match(this.input, ANTLRv4Parser.ID);
                             }
                             break;
                         }
@@ -2196,7 +2183,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop24;
                             }
 
-                            const eee = new EarlyExitException(24, this.input);
+                            const eee = new EarlyExitException(24);
                             throw eee;
                         }
 
@@ -2204,7 +2191,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt24++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -2235,11 +2222,11 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:631:2: ( ^( AT ID ACTION ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:631:4: ^( AT ID ACTION )
             {
-                this.match(this.input, ANTLRv4Parser.AT, null);
-                this.match(this.input, Constants.DOWN, null);
-                this.match(this.input, ANTLRv4Parser.ID, null);
-                this.match(this.input, ANTLRv4Parser.ACTION, null);
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, ANTLRv4Parser.AT);
+                this.match(this.input, Constants.DOWN);
+                this.match(this.input, ANTLRv4Parser.ID);
+                this.match(this.input, ANTLRv4Parser.ACTION);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -2274,7 +2261,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     this.input.consume();
                     this.state.errorRecovery = false;
                 } else {
-                    const mse = new MismatchedSetException(null, this.input);
+                    const mse = new MismatchedSetException(null);
                     throw mse;
                 }
             }
@@ -2306,8 +2293,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:654:5: ( ^( BLOCK ( lexerOuterAlternative )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:654:7: ^( BLOCK ( lexerOuterAlternative )+ )
             {
-                this.match(this.input, ANTLRv4Parser.BLOCK, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.BLOCK);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:655:7: ( lexerOuterAlternative )+
                 let cnt25 = 0;
                 loop25:
@@ -2337,7 +2324,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop25;
                             }
 
-                            const eee = new EarlyExitException(25, this.input);
+                            const eee = new EarlyExitException(25);
                             throw eee;
                         }
 
@@ -2345,7 +2332,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt25++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -2376,8 +2363,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:671:5: ( ^( BLOCK ( outerAlternative )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:671:7: ^( BLOCK ( outerAlternative )+ )
             {
-                this.match(this.input, ANTLRv4Parser.BLOCK, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.BLOCK);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:672:7: ( outerAlternative )+
                 let cnt26 = 0;
                 loop26:
@@ -2407,7 +2394,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop26;
                             }
 
-                            const eee = new EarlyExitException(26, this.input);
+                            const eee = new EarlyExitException(26);
                             throw eee;
                         }
 
@@ -2415,7 +2402,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt26++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -2519,7 +2506,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     alt28 = 2;
                 } else {
                     const nvae =
-                        new NoViableAltException("", 28, 0, this.input);
+                        new NoViableAltException(28, 0);
                     throw nvae;
                 }
             }
@@ -2528,8 +2515,8 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 1: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:713:4: ^( LEXER_ALT_ACTION lexerElements ( lexerCommand )+ )
                     {
-                        this.match(this.input, ANTLRv4Parser.LEXER_ALT_ACTION, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.LEXER_ALT_ACTION);
+                        this.match(this.input, Constants.DOWN);
                         this.lexerElements();
 
                         // org/antlr/v4/parse/GrammarTreeVisitor.g:713:37: ( lexerCommand )+
@@ -2557,7 +2544,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                         break loop27;
                                     }
 
-                                    const eee = new EarlyExitException(27, this.input);
+                                    const eee = new EarlyExitException(27);
                                     throw eee;
                                 }
 
@@ -2565,7 +2552,7 @@ export class GrammarTreeVisitor extends TreeParser {
                             cnt27++;
                         }
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -2611,8 +2598,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:724:5: ( ^( ALT ( lexerElement )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:724:7: ^( ALT ( lexerElement )+ )
             {
-                this.match(this.input, ANTLRv4Parser.ALT, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.ALT);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:724:13: ( lexerElement )+
                 let cnt29 = 0;
                 loop29:
@@ -2638,7 +2625,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop29;
                             }
 
-                            const eee = new EarlyExitException(29, this.input);
+                            const eee = new EarlyExitException(29);
                             throw eee;
                         }
 
@@ -2646,7 +2633,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt29++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -2719,7 +2706,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 try {
                                     this.input.consume();
                                     const nvae =
-                                        new NoViableAltException("", 30, 3, this.input);
+                                        new NoViableAltException(30, 3);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -2744,7 +2731,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 try {
                                     this.input.consume();
                                     const nvae =
-                                        new NoViableAltException("", 30, 4, this.input);
+                                        new NoViableAltException(30, 4);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -2765,7 +2752,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 default: {
                     const nvae =
-                        new NoViableAltException("", 30, 0, this.input);
+                        new NoViableAltException(30, 0);
                     throw nvae;
                 }
 
@@ -2793,7 +2780,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 3: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:736:6: ACTION
                     {
-                        ACTION21 = this.match(this.input, ANTLRv4Parser.ACTION, null) as GrammarAST;
+                        ACTION21 = this.match(this.input, ANTLRv4Parser.ACTION)!;
                         this.actionInAlt(ACTION21 as ActionAST);
                     }
                     break;
@@ -2802,7 +2789,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 4: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:737:6: SEMPRED
                     {
-                        SEMPRED22 = this.match(this.input, ANTLRv4Parser.SEMPRED, null) as GrammarAST;
+                        SEMPRED22 = this.match(this.input, ANTLRv4Parser.SEMPRED)!;
                         this.sempredInAlt(SEMPRED22 as PredAST);
                     }
                     break;
@@ -2811,11 +2798,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 5: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:738:6: ^( ACTION elementOptions )
                     {
-                        ACTION23 = this.match(this.input, ANTLRv4Parser.ACTION, null) as GrammarAST;
-                        this.match(this.input, Constants.DOWN, null);
+                        ACTION23 = this.match(this.input, ANTLRv4Parser.ACTION)!;
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         this.actionInAlt(ACTION23 as ActionAST);
                     }
@@ -2825,11 +2812,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 6: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:739:6: ^( SEMPRED elementOptions )
                     {
-                        SEMPRED24 = this.match(this.input, ANTLRv4Parser.SEMPRED, null) as GrammarAST;
-                        this.match(this.input, Constants.DOWN, null);
+                        SEMPRED24 = this.match(this.input, ANTLRv4Parser.SEMPRED)!;
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         this.sempredInAlt(SEMPRED24 as PredAST);
                     }
@@ -2839,7 +2826,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 7: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:740:4: EPSILON
                     {
-                        this.match(this.input, ANTLRv4Parser.EPSILON, null);
+                        this.match(this.input, ANTLRv4Parser.EPSILON);
                     }
                     break;
                 }
@@ -2875,8 +2862,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:750:3: ( ^( BLOCK ( optionsSpec )? ( lexerAlternative )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:750:5: ^( BLOCK ( optionsSpec )? ( lexerAlternative )+ )
             {
-                this.match(this.input, ANTLRv4Parser.BLOCK, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.BLOCK);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:750:13: ( optionsSpec )?
                 let alt31 = 2;
                 const LA31_0 = this.input.LA(1);
@@ -2922,7 +2909,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop32;
                             }
 
-                            const eee = new EarlyExitException(32, this.input);
+                            const eee = new EarlyExitException(32);
                             throw eee;
                         }
 
@@ -2930,7 +2917,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt32++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -2996,7 +2983,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 try {
                                     this.input.consume();
                                     const nvae =
-                                        new NoViableAltException("", 33, 4, this.input);
+                                        new NoViableAltException(33, 4);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -3031,7 +3018,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 default: {
                     const nvae =
-                        new NoViableAltException("", 33, 0, this.input);
+                        new NoViableAltException(33, 0);
                     throw nvae;
                 }
 
@@ -3049,11 +3036,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 2: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:761:9: ^( NOT blockSet )
                     {
-                        this.match(this.input, ANTLRv4Parser.NOT, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.NOT);
+                        this.match(this.input, Constants.DOWN);
                         this.blockSet();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3071,11 +3058,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 4: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:763:9: ^( WILDCARD elementOptions )
                     {
-                        this.match(this.input, ANTLRv4Parser.WILDCARD, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.WILDCARD);
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3084,7 +3071,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 5: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:764:9: WILDCARD
                     {
-                        this.match(this.input, ANTLRv4Parser.WILDCARD, null);
+                        this.match(this.input, ANTLRv4Parser.WILDCARD);
                     }
                     break;
                 }
@@ -3092,7 +3079,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 6: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:765:7: LEXER_CHAR_SET
                     {
-                        this.match(this.input, ANTLRv4Parser.LEXER_CHAR_SET, null);
+                        this.match(this.input, ANTLRv4Parser.LEXER_CHAR_SET);
                     }
                     break;
                 }
@@ -3158,7 +3145,7 @@ export class GrammarTreeVisitor extends TreeParser {
                         try {
                             this.input.consume();
                             const nvae =
-                                new NoViableAltException("", 34, 1, this.input);
+                                new NoViableAltException(34, 1);
                             throw nvae;
                         } finally {
                             this.input.release(nvaeMark);
@@ -3179,7 +3166,7 @@ export class GrammarTreeVisitor extends TreeParser {
                             try {
                                 this.input.consume();
                                 const nvae =
-                                    new NoViableAltException("", 34, 2, this.input);
+                                    new NoViableAltException(34, 2);
                                 throw nvae;
                             } finally {
                                 this.input.release(nvaeMark);
@@ -3189,7 +3176,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 } else {
                     const nvae =
-                        new NoViableAltException("", 34, 0, this.input);
+                        new NoViableAltException(34, 0);
                     throw nvae;
                 }
             }
@@ -3198,7 +3185,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 1: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:777:4: ACTION
                     {
-                        this.match(this.input, ANTLRv4Parser.ACTION, null);
+                        this.match(this.input, ANTLRv4Parser.ACTION);
                     }
                     break;
                 }
@@ -3206,11 +3193,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 2: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:778:6: ^( ACTION elementOptions )
                     {
-                        this.match(this.input, ANTLRv4Parser.ACTION, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.ACTION);
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3219,7 +3206,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 3: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:779:6: SEMPRED
                     {
-                        this.match(this.input, ANTLRv4Parser.SEMPRED, null);
+                        this.match(this.input, ANTLRv4Parser.SEMPRED);
                     }
                     break;
                 }
@@ -3227,11 +3214,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 4: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:780:6: ^( SEMPRED elementOptions )
                     {
-                        this.match(this.input, ANTLRv4Parser.SEMPRED, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.SEMPRED);
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3277,8 +3264,8 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 1: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:792:4: ^( ALT ( elementOptions )? ( element )+ )
                     {
-                        this.match(this.input, ANTLRv4Parser.ALT, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.ALT);
+                        this.match(this.input, Constants.DOWN);
                         // org/antlr/v4/parse/GrammarTreeVisitor.g:792:10: ( elementOptions )?
                         let alt35 = 2;
                         const LA35_0 = this.input.LA(1);
@@ -3324,7 +3311,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                         break loop36;
                                     }
 
-                                    const eee = new EarlyExitException(36, this.input);
+                                    const eee = new EarlyExitException(36);
                                     throw eee;
                                 }
 
@@ -3332,7 +3319,7 @@ export class GrammarTreeVisitor extends TreeParser {
                             cnt36++;
                         }
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3341,8 +3328,8 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 2: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:793:4: ^( ALT ( elementOptions )? EPSILON )
                     {
-                        this.match(this.input, ANTLRv4Parser.ALT, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.ALT);
+                        this.match(this.input, Constants.DOWN);
                         // org/antlr/v4/parse/GrammarTreeVisitor.g:793:10: ( elementOptions )?
                         let alt37 = 2;
                         const LA37_0 = this.input.LA(1);
@@ -3363,8 +3350,8 @@ export class GrammarTreeVisitor extends TreeParser {
 
                         }
 
-                        this.match(this.input, ANTLRv4Parser.EPSILON, null);
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, ANTLRv4Parser.EPSILON);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3406,7 +3393,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     this.input.consume();
                     this.state.errorRecovery = false;
                 } else {
-                    const mse = new MismatchedSetException(null, this.input);
+                    const mse = new MismatchedSetException(null);
                     throw mse;
                 }
             }
@@ -3484,7 +3471,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 try {
                                     this.input.consume();
                                     const nvae =
-                                        new NoViableAltException("", 40, 4, this.input);
+                                        new NoViableAltException(40, 4);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -3509,7 +3496,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 try {
                                     this.input.consume();
                                     const nvae =
-                                        new NoViableAltException("", 40, 5, this.input);
+                                        new NoViableAltException(40, 5);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -3545,7 +3532,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                             this.input.consume();
                                         }
                                         const nvae =
-                                            new NoViableAltException("", 40, 12, this.input);
+                                            new NoViableAltException(40, 12);
                                         throw nvae;
                                     } finally {
                                         this.input.release(nvaeMark);
@@ -3558,7 +3545,7 @@ export class GrammarTreeVisitor extends TreeParser {
                             try {
                                 this.input.consume();
                                 const nvae =
-                                    new NoViableAltException("", 40, 7, this.input);
+                                    new NoViableAltException(40, 7);
                                 throw nvae;
                             } finally {
                                 this.input.release(nvaeMark);
@@ -3571,7 +3558,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 default: {
                     const nvae =
-                        new NoViableAltException("", 40, 0, this.input);
+                        new NoViableAltException(40, 0);
                     throw nvae;
                 }
 
@@ -3607,7 +3594,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 4: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:830:6: ACTION
                     {
-                        ACTION28 = this.match(this.input, ANTLRv4Parser.ACTION, null) as GrammarAST;
+                        ACTION28 = this.match(this.input, ANTLRv4Parser.ACTION)!;
                         this.actionInAlt(ACTION28 as ActionAST);
                     }
                     break;
@@ -3616,7 +3603,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 5: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:831:6: SEMPRED
                     {
-                        SEMPRED29 = this.match(this.input, ANTLRv4Parser.SEMPRED, null) as GrammarAST;
+                        SEMPRED29 = this.match(this.input, ANTLRv4Parser.SEMPRED)!;
                         this.sempredInAlt(SEMPRED29 as PredAST);
                     }
                     break;
@@ -3625,11 +3612,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 6: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:832:6: ^( ACTION elementOptions )
                     {
-                        ACTION30 = this.match(this.input, ANTLRv4Parser.ACTION, null) as GrammarAST;
-                        this.match(this.input, Constants.DOWN, null);
+                        ACTION30 = this.match(this.input, ANTLRv4Parser.ACTION)!;
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         this.actionInAlt(ACTION30 as ActionAST);
                     }
@@ -3639,11 +3626,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 7: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:833:6: ^( SEMPRED elementOptions )
                     {
-                        SEMPRED31 = this.match(this.input, ANTLRv4Parser.SEMPRED, null) as GrammarAST;
-                        this.match(this.input, Constants.DOWN, null);
+                        SEMPRED31 = this.match(this.input, ANTLRv4Parser.SEMPRED)!;
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         this.sempredInAlt(SEMPRED31 as PredAST);
                     }
@@ -3662,11 +3649,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 9: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:835:4: ^( NOT blockSet )
                     {
-                        this.match(this.input, ANTLRv4Parser.NOT, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.NOT);
+                        this.match(this.input, Constants.DOWN);
                         this.blockSet();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3675,11 +3662,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 10: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:836:4: ^( NOT block )
                     {
-                        this.match(this.input, ANTLRv4Parser.NOT, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.NOT);
+                        this.match(this.input, Constants.DOWN);
                         this.block();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3735,7 +3722,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                         this.input.consume();
                                     }
                                     const nvae =
-                                        new NoViableAltException("", 41, 3, this.input);
+                                        new NoViableAltException(41, 3);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -3748,7 +3735,7 @@ export class GrammarTreeVisitor extends TreeParser {
                         try {
                             this.input.consume();
                             const nvae =
-                                new NoViableAltException("", 41, 2, this.input);
+                                new NoViableAltException(41, 2);
                             throw nvae;
                         } finally {
                             this.input.release(nvaeMark);
@@ -3757,7 +3744,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 } else {
                     const nvae =
-                        new NoViableAltException("", 41, 0, this.input);
+                        new NoViableAltException(41, 0);
                     throw nvae;
                 }
             }
@@ -3775,11 +3762,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 2: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:847:4: ^( NOT blockSet )
                     {
-                        this.match(this.input, ANTLRv4Parser.NOT, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.NOT);
+                        this.match(this.input, Constants.DOWN);
                         this.blockSet();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3788,11 +3775,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 3: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:848:4: ^( NOT block )
                     {
-                        this.match(this.input, ANTLRv4Parser.NOT, null);
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, ANTLRv4Parser.NOT);
+                        this.match(this.input, Constants.DOWN);
                         this.block();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3835,15 +3822,15 @@ export class GrammarTreeVisitor extends TreeParser {
                     this.input.consume();
                     this.state.errorRecovery = false;
                 } else {
-                    const mse = new MismatchedSetException(null, this.input);
+                    const mse = new MismatchedSetException(null);
                     throw mse;
                 }
-                this.match(this.input, Constants.DOWN, null);
-                ID32 = this.match(this.input, ANTLRv4Parser.ID, null) as GrammarAST;
+                this.match(this.input, Constants.DOWN);
+                ID32 = this.match(this.input, ANTLRv4Parser.ID)!;
 
                 const element33 = this.element();
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
                 this.label((retval.start as GrammarAST | null), ID32, element33.start as GrammarAST | null);
             }
@@ -3882,7 +3869,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     alt42 = 2;
                 } else {
                     const nvae =
-                        new NoViableAltException("", 42, 0, this.input);
+                        new NoViableAltException(42, 0);
                     throw nvae;
                 }
             }
@@ -3893,10 +3880,10 @@ export class GrammarTreeVisitor extends TreeParser {
                     {
                         this.blockSuffix();
 
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, Constants.DOWN);
                         this.block();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -3949,7 +3936,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     alt43 = 2;
                 } else {
                     const nvae =
-                        new NoViableAltException("", 43, 0, this.input);
+                        new NoViableAltException(43, 0);
                     throw nvae;
                 }
             }
@@ -3960,10 +3947,10 @@ export class GrammarTreeVisitor extends TreeParser {
                     {
                         this.blockSuffix();
 
-                        this.match(this.input, Constants.DOWN, null);
+                        this.match(this.input, Constants.DOWN);
                         this.lexerBlock();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -4044,7 +4031,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     this.input.consume();
                     this.state.errorRecovery = false;
                 } else {
-                    const mse = new MismatchedSetException(null, this.input);
+                    const mse = new MismatchedSetException(null);
                     throw mse;
                 }
             }
@@ -4098,7 +4085,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                                 this.input.consume();
                                             }
                                             const nvae =
-                                                new NoViableAltException("", 44, 9, this.input);
+                                                new NoViableAltException(44, 9);
                                             throw nvae;
                                         } finally {
                                             this.input.release(nvaeMark);
@@ -4113,7 +4100,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                         this.input.consume();
                                     }
                                     const nvae =
-                                        new NoViableAltException("", 44, 6, this.input);
+                                        new NoViableAltException(44, 6);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -4125,7 +4112,7 @@ export class GrammarTreeVisitor extends TreeParser {
                             try {
                                 this.input.consume();
                                 const nvae =
-                                    new NoViableAltException("", 44, 1, this.input);
+                                    new NoViableAltException(44, 1);
                                 throw nvae;
                             } finally {
                                 this.input.release(nvaeMark);
@@ -4149,7 +4136,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 try {
                                     this.input.consume();
                                     const nvae =
-                                        new NoViableAltException("", 44, 2, this.input);
+                                        new NoViableAltException(44, 2);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -4185,7 +4172,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 default: {
                     const nvae =
-                        new NoViableAltException("", 44, 0, this.input);
+                        new NoViableAltException(44, 0);
                     throw nvae;
                 }
 
@@ -4194,12 +4181,12 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 1: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:912:4: ^( DOT ID terminal )
                     {
-                        this.match(this.input, ANTLRv4Parser.DOT, null);
-                        this.match(this.input, Constants.DOWN, null);
-                        this.match(this.input, ANTLRv4Parser.ID, null);
+                        this.match(this.input, ANTLRv4Parser.DOT);
+                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, ANTLRv4Parser.ID);
                         this.terminal();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -4208,12 +4195,12 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 2: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:913:4: ^( DOT ID ruleref )
                     {
-                        this.match(this.input, ANTLRv4Parser.DOT, null);
-                        this.match(this.input, Constants.DOWN, null);
-                        this.match(this.input, ANTLRv4Parser.ID, null);
+                        this.match(this.input, ANTLRv4Parser.DOT);
+                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, ANTLRv4Parser.ID);
                         this.ruleref();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                     }
                     break;
@@ -4222,11 +4209,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 3: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:914:7: ^( WILDCARD elementOptions )
                     {
-                        WILDCARD34 = this.match(this.input, ANTLRv4Parser.WILDCARD, null) as GrammarAST;
-                        this.match(this.input, Constants.DOWN, null);
+                        WILDCARD34 = this.match(this.input, ANTLRv4Parser.WILDCARD)!;
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         this.wildcardRef(WILDCARD34);
                     }
@@ -4236,7 +4223,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 4: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:915:7: WILDCARD
                     {
-                        WILDCARD35 = this.match(this.input, ANTLRv4Parser.WILDCARD, null) as GrammarAST;
+                        WILDCARD35 = this.match(this.input, ANTLRv4Parser.WILDCARD)!;
                         this.wildcardRef(WILDCARD35);
                     }
                     break;
@@ -4300,8 +4287,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:928:2: ( ^( SET ( setElement )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:928:4: ^( SET ( setElement )+ )
             {
-                this.match(this.input, ANTLRv4Parser.SET, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.SET);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:928:10: ( setElement )+
                 let cnt45 = 0;
                 loop45:
@@ -4327,7 +4314,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop45;
                             }
 
-                            const eee = new EarlyExitException(45, this.input);
+                            const eee = new EarlyExitException(45);
                             throw eee;
                         }
 
@@ -4335,7 +4322,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt45++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -4386,7 +4373,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 try {
                                     this.input.consume();
                                     const nvae =
-                                        new NoViableAltException("", 46, 1, this.input);
+                                        new NoViableAltException(46, 1);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -4411,7 +4398,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 try {
                                     this.input.consume();
                                     const nvae =
-                                        new NoViableAltException("", 46, 2, this.input);
+                                        new NoViableAltException(46, 2);
                                     throw nvae;
                                 } finally {
                                     this.input.release(nvaeMark);
@@ -4439,7 +4426,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 default: {
                     const nvae =
-                        new NoViableAltException("", 46, 0, this.input);
+                        new NoViableAltException(46, 0);
                     throw nvae;
                 }
 
@@ -4448,11 +4435,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 1: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:938:4: ^( STRING_LITERAL elementOptions )
                     {
-                        STRING_LITERAL36 = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
-                        this.match(this.input, Constants.DOWN, null);
+                        STRING_LITERAL36 = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         this.stringRef(STRING_LITERAL36 as TerminalAST);
                     }
@@ -4462,11 +4449,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 2: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:939:4: ^( TOKEN_REF elementOptions )
                     {
-                        TOKEN_REF37 = this.match(this.input, ANTLRv4Parser.TOKEN_REF, null) as GrammarAST;
-                        this.match(this.input, Constants.DOWN, null);
+                        TOKEN_REF37 = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         this.tokenRef(TOKEN_REF37 as TerminalAST);
                     }
@@ -4476,7 +4463,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 3: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:940:4: STRING_LITERAL
                     {
-                        STRING_LITERAL38 = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
+                        STRING_LITERAL38 = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
                         this.stringRef(STRING_LITERAL38 as TerminalAST);
                     }
                     break;
@@ -4485,7 +4472,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 4: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:941:4: TOKEN_REF
                     {
-                        TOKEN_REF39 = this.match(this.input, ANTLRv4Parser.TOKEN_REF, null) as GrammarAST;
+                        TOKEN_REF39 = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
                         this.tokenRef(TOKEN_REF39 as TerminalAST);
                     }
                     break;
@@ -4494,11 +4481,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 5: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:942:4: ^( RANGE a= STRING_LITERAL b= STRING_LITERAL )
                     {
-                        this.match(this.input, ANTLRv4Parser.RANGE, null);
-                        this.match(this.input, Constants.DOWN, null);
-                        a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
-                        b = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, ANTLRv4Parser.RANGE);
+                        this.match(this.input, Constants.DOWN);
+                        a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                        b = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                        this.match(this.input, Constants.UP);
 
                         this.stringRef(a as TerminalAST);
                         this.stringRef(b as TerminalAST);
@@ -4510,7 +4497,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 6: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:947:17: LEXER_CHAR_SET
                     {
-                        this.match(this.input, ANTLRv4Parser.LEXER_CHAR_SET, null);
+                        this.match(this.input, ANTLRv4Parser.LEXER_CHAR_SET);
                     }
                     break;
                 }
@@ -4546,8 +4533,8 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:957:5: ( ^( BLOCK ( optionsSpec )? ( ruleAction )* ( ACTION )? ( alternative )+ ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:957:7: ^( BLOCK ( optionsSpec )? ( ruleAction )* ( ACTION )? ( alternative )+ )
             {
-                this.match(this.input, ANTLRv4Parser.BLOCK, null);
-                this.match(this.input, Constants.DOWN, null);
+                this.match(this.input, ANTLRv4Parser.BLOCK);
+                this.match(this.input, Constants.DOWN);
                 // org/antlr/v4/parse/GrammarTreeVisitor.g:957:15: ( optionsSpec )?
                 let alt47 = 2;
                 const LA47_0 = this.input.LA(1);
@@ -4604,7 +4591,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     case 1: {
                         // org/antlr/v4/parse/GrammarTreeVisitor.g:957:40: ACTION
                         {
-                            this.match(this.input, ANTLRv4Parser.ACTION, null);
+                            this.match(this.input, ANTLRv4Parser.ACTION);
                         }
                         break;
                     }
@@ -4638,7 +4625,7 @@ export class GrammarTreeVisitor extends TreeParser {
                                 break loop50;
                             }
 
-                            const eee = new EarlyExitException(50, this.input);
+                            const eee = new EarlyExitException(50);
                             throw eee;
                         }
 
@@ -4646,7 +4633,7 @@ export class GrammarTreeVisitor extends TreeParser {
                     cnt50++;
                 }
 
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -4680,9 +4667,9 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:967:5: ( ^( RULE_REF (arg= ARG_ACTION )? ( elementOptions )? ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:967:7: ^( RULE_REF (arg= ARG_ACTION )? ( elementOptions )? )
             {
-                RULE_REF40 = this.match(this.input, ANTLRv4Parser.RULE_REF, null) as GrammarAST;
+                RULE_REF40 = this.match(this.input, ANTLRv4Parser.RULE_REF)!;
                 if (this.input.LA(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN, null);
+                    this.match(this.input, Constants.DOWN);
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:967:21: (arg= ARG_ACTION )?
                     let alt51 = 2;
                     const LA51_0 = this.input.LA(1);
@@ -4693,7 +4680,7 @@ export class GrammarTreeVisitor extends TreeParser {
                         case 1: {
                             // org/antlr/v4/parse/GrammarTreeVisitor.g:967:21: arg= ARG_ACTION
                             {
-                                arg = this.match(this.input, ANTLRv4Parser.ARG_ACTION, null) as GrammarAST;
+                                arg = this.match(this.input, ANTLRv4Parser.ARG_ACTION)!;
                             }
                             break;
                         }
@@ -4722,7 +4709,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                     }
 
-                    this.match(this.input, Constants.UP, null);
+                    this.match(this.input, Constants.UP);
                 }
 
                 this.ruleRef(RULE_REF40, arg as ActionAST);
@@ -4759,11 +4746,11 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:981:5: ( ^( RANGE STRING_LITERAL STRING_LITERAL ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:981:7: ^( RANGE STRING_LITERAL STRING_LITERAL )
             {
-                this.match(this.input, ANTLRv4Parser.RANGE, null);
-                this.match(this.input, Constants.DOWN, null);
-                this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null);
-                this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null);
-                this.match(this.input, Constants.UP, null);
+                this.match(this.input, ANTLRv4Parser.RANGE);
+                this.match(this.input, Constants.DOWN);
+                this.match(this.input, ANTLRv4Parser.STRING_LITERAL);
+                this.match(this.input, ANTLRv4Parser.STRING_LITERAL);
+                this.match(this.input, Constants.UP);
 
             }
 
@@ -4811,7 +4798,7 @@ export class GrammarTreeVisitor extends TreeParser {
                         try {
                             this.input.consume();
                             const nvae =
-                                new NoViableAltException("", 53, 1, this.input);
+                                new NoViableAltException(53, 1);
                             throw nvae;
                         } finally {
                             this.input.release(nvaeMark);
@@ -4847,7 +4834,7 @@ export class GrammarTreeVisitor extends TreeParser {
                             try {
                                 this.input.consume();
                                 const nvae =
-                                    new NoViableAltException("", 53, 2, this.input);
+                                    new NoViableAltException(53, 2);
                                 throw nvae;
                             } finally {
                                 this.input.release(nvaeMark);
@@ -4857,7 +4844,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
                 } else {
                     const nvae =
-                        new NoViableAltException("", 53, 0, this.input);
+                        new NoViableAltException(53, 0);
                     throw nvae;
                 }
             }
@@ -4866,11 +4853,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 1: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:991:8: ^( STRING_LITERAL elementOptions )
                     {
-                        STRING_LITERAL41 = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
-                        this.match(this.input, Constants.DOWN, null);
+                        STRING_LITERAL41 = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         this.stringRef(STRING_LITERAL41 as TerminalAST);
                     }
@@ -4880,7 +4867,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 2: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:993:7: STRING_LITERAL
                     {
-                        STRING_LITERAL42 = this.match(this.input, ANTLRv4Parser.STRING_LITERAL, null) as GrammarAST;
+                        STRING_LITERAL42 = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
                         this.stringRef(STRING_LITERAL42 as TerminalAST);
                     }
                     break;
@@ -4889,11 +4876,11 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 3: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:994:7: ^( TOKEN_REF elementOptions )
                     {
-                        TOKEN_REF43 = this.match(this.input, ANTLRv4Parser.TOKEN_REF, null) as GrammarAST;
-                        this.match(this.input, Constants.DOWN, null);
+                        TOKEN_REF43 = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
+                        this.match(this.input, Constants.DOWN);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP, null);
+                        this.match(this.input, Constants.UP);
 
                         this.tokenRef(TOKEN_REF43 as TerminalAST);
                     }
@@ -4903,7 +4890,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 case 4: {
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:995:7: TOKEN_REF
                     {
-                        TOKEN_REF44 = this.match(this.input, ANTLRv4Parser.TOKEN_REF, null) as GrammarAST;
+                        TOKEN_REF44 = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
                         this.tokenRef(TOKEN_REF44 as TerminalAST);
                     }
                     break;
@@ -4940,9 +4927,9 @@ export class GrammarTreeVisitor extends TreeParser {
             // org/antlr/v4/parse/GrammarTreeVisitor.g:1005:5: ( ^( ELEMENT_OPTIONS ( elementOption[(GrammarASTWithOptions)$start.getParent()] )* ) )
             // org/antlr/v4/parse/GrammarTreeVisitor.g:1005:7: ^( ELEMENT_OPTIONS ( elementOption[(GrammarASTWithOptions)$start.getParent()] )* )
             {
-                this.match(this.input, ANTLRv4Parser.ELEMENT_OPTIONS, null);
+                this.match(this.input, ANTLRv4Parser.ELEMENT_OPTIONS);
                 if (this.input.LA(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN, null);
+                    this.match(this.input, Constants.DOWN);
                     // org/antlr/v4/parse/GrammarTreeVisitor.g:1005:25: ( elementOption[(GrammarASTWithOptions)$start.getParent()] )*
                     loop54:
                     while (true) {
@@ -4969,7 +4956,7 @@ export class GrammarTreeVisitor extends TreeParser {
                         }
                     }
 
-                    this.match(this.input, Constants.UP, null);
+                    this.match(this.input, Constants.UP);
                 }
 
             }

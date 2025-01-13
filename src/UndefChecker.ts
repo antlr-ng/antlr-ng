@@ -10,7 +10,7 @@ import type { ActionAST } from "./tool/ast/ActionAST.js";
 import type { GrammarAST } from "./tool/ast/GrammarAST.js";
 import type { RuleAST } from "./tool/ast/RuleAST.js";
 import type { TerminalAST } from "./tool/ast/TerminalAST.js";
-import { GrammarTreeVisitor } from "./tree-walkers/GrammarTreeVisitor.js";
+import { GrammarTreeVisitor } from "./tree/walkers/GrammarTreeVisitor.js";
 
 export class UndefChecker extends GrammarTreeVisitor {
     public badRef = false;
@@ -44,11 +44,6 @@ export class UndefChecker extends GrammarTreeVisitor {
             this.badRef = true;
             this.errorManager.grammarError(ErrorType.UNDEFINED_RULE_REF, fileName, ref.token!, ref.getText());
         }
-    }
-
-    public override emitErrorMessage(msg: string): void {
-        // XXX: we should not arrive here. If the syntax is correct, we should not have any unhandled tree error.
-        console.log(msg);
     }
 
 }

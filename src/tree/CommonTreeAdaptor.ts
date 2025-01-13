@@ -5,16 +5,22 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
-// cspell: disable
+import { CommonToken, isToken, Token } from "antlr4ng";
 
-import { isToken, type RecognitionException, type Token, type TokenStream } from "antlr4ng";
+import { CommonTree } from "./CommonTree.js";
 
-import type { CommonTree } from "../../tree/CommonTree.js";
-import { CommonErrorNode } from "./CommonErrorNode.js";
-import type { TreeAdaptor } from "./TreeAdaptor.js";
-
-/** A TreeAdaptor that works with any Tree implementation. */
-export abstract class BaseTreeAdaptor implements TreeAdaptor {
+/**
+ * A TreeAdaptor that works with any Tree implementation.  It provides
+ *  really just factory methods; all the work is done by BaseTreeAdaptor.
+ *  If you would like to have different tokens created than ClassicToken
+ *  objects, you need to override this and then set the parser tree adaptor to
+ *  use your subclass.
+ *
+ *  To get your parser to build nodes of a different type, override
+ *  create(Token), errorNode(), and to be safe, YourTreeClass.dupNode().
+ *  dupNode is called to duplicate nodes during rewrite operations.
+ */
+export class CommonTreeAdaptor {
     /**
      * System.identityHashCode() is not always unique; we have to
      *  track ourselves.  That's ok, it's only for debugging, though it's
@@ -23,13 +29,25 @@ export abstract class BaseTreeAdaptor implements TreeAdaptor {
     protected treeToUniqueIDMap = new Map<CommonTree, number>();
     protected uniqueNodeID = 1;
 
+    /**
+     * Duplicate a node.  This is part of the factory;
+     *	override if you want another kind of node to be built.
+     *
+     *  I could use reflection to prevent having to override this
+     *  but reflection is slow.
+     */
+    public dupNode(t: CommonTree): CommonTree {
+        return t.dupNode();
+    }
+
     public create(payload?: Token): CommonTree;
     public create(tokenType: number, text: string): CommonTree;
     public create(tokenType: number, fromToken: Token, text?: string): CommonTree;
     public create(...args: unknown[]): CommonTree {
         if (args.length < 2) {
-            // Simulate an abstract method for an overloaded method.
-            throw new Error("Abstract method called: BaseTreeAdaptor.create(Token)");
+            const [payload] = args as [Token | undefined];
+
+            return new CommonTree(payload);
         }
 
         switch (args.length) {
@@ -70,25 +88,46 @@ export abstract class BaseTreeAdaptor implements TreeAdaptor {
         }
     }
 
-    public nil(): CommonTree {
-        return this.create();
+    /**
+     * Tell me how to create a token for use with imaginary token nodes.
+     *  For example, there is probably no input symbol associated with imaginary
+     *  token DECL, but you need to create it as a payload or whatever for
+     *  the DECL node as in ^(DECL type ID).
+     *
+     *  This is a variant of createToken where the new token is derived from
+     *  an actual real input token.  Typically this is for converting '{'
+     *  tokens to BLOCK etc...  You'll see
+     *
+     *    r : lc='{' ID+ '}' -&gt; ^(BLOCK[$lc] ID+) ;
+     *
+     *  If you care what the token payload objects' type is, you should
+     *  override this method and any other createToken variant.
+     */
+    public createToken(fromToken: Token): Token;
+    /**
+     * Tell me how to create a token for use with imaginary token nodes.
+     *  For example, there is probably no input symbol associated with imaginary
+     *  token DECL, but you need to create it as a payload or whatever for
+     *  the DECL node as in ^(DECL type ID).
+     *
+     *  If you care what the token payload objects' type is, you should
+     *  override this method and any other createToken variant.
+     */
+    public createToken(tokenType: number, text: string): Token;
+    public createToken(...args: unknown[]): Token {
+        if (args.length === 1) {
+            const [fromToken] = args as [Token];
+
+            return CommonToken.fromToken(fromToken);
+        }
+
+        const [tokenType, text] = args as [number, string];
+
+        return CommonToken.fromType(tokenType, text);
     }
 
-    /**
-     * create tree node that holds the start and stop tokens associated
-     *  with an error.
-     *
-     *  If you specify your own kind of tree nodes, you will likely have to
-     *  override this method. CommonTree returns Token.INVALID_TOKEN_TYPE
-     *  if no token payload but you might have to set token type for diff
-     *  node type.
-     *
-     *  You don't have to subclass CommonErrorNode; you will likely need to
-     *  subclass your own tree node class to avoid class cast exception.
-     */
-    public errorNode(input: TokenStream, start: Token, stop: Token,
-        e: RecognitionException): CommonTree {
-        return new CommonErrorNode(input, start, stop, e);
+    public nil(): CommonTree {
+        return this.create();
     }
 
     public isNil(tree: CommonTree | null): boolean {
@@ -136,6 +175,31 @@ export abstract class BaseTreeAdaptor implements TreeAdaptor {
     }
 
     /**
+     * Track start/stop token for subtree root created for a rule.
+     *  Only works with Tree nodes.  For rules that match nothing,
+     *  seems like this will yield start=i and stop=i-1 in a nil node.
+     *  Might be useful info so I'll not force to be i..i.
+     */
+    public setTokenBoundaries(t: CommonTree | null, startToken: Token | null, stopToken: Token | null): void {
+        if (t === null) {
+            return;
+        }
+
+        let start = 0;
+        let stop = 0;
+        if (startToken !== null) {
+            start = startToken.tokenIndex;
+        }
+
+        if (stopToken !== null) {
+            stop = stopToken.tokenIndex;
+        }
+
+        t.setTokenStartIndex(start);
+        t.setTokenStopIndex(stop);
+    }
+
+    /**
      * If oldRoot is a nil root, just copy or move the children to newRoot.
      *  If not a nil root, make oldRoot a child of newRoot.
      *
@@ -176,11 +240,8 @@ export abstract class BaseTreeAdaptor implements TreeAdaptor {
             const nc = newRoot.getChildCount();
             if (nc === 1) {
                 newRoot = newRoot.getChild(0)!;
-            } else {
-                if (nc > 1) {
-                    // TODO: make tree run time exceptions hierarchy
-                    throw new Error("more than one node as root (TODO: make exception hierarchy)");
-                }
+            } else if (nc > 1) {
+                throw new Error("more than one node as root (TODO: make exception hierarchy)");
             }
         }
 
@@ -206,97 +267,90 @@ export abstract class BaseTreeAdaptor implements TreeAdaptor {
                 r.setParent(null);
                 r.setChildIndex(-1);
             }
-
         }
 
         return r;
     }
 
-    public getType(t: unknown): number {
-        return (t as CommonTree).getType();
+    public getTokenStartIndex(t: CommonTree | undefined): number {
+        return t?.getTokenStartIndex() ?? -1;
     }
 
-    public setType(t: unknown, type: number): void {
-        throw new Error("don't know enough about Tree node");
+    public getTokenStopIndex(t: CommonTree | undefined): number {
+        return t?.getTokenStopIndex() ?? -1;
     }
 
-    public getText(t: CommonTree): string | null {
+    public getText(t: CommonTree | null): string | null {
+        if (t === null) {
+            return null;
+        }
+
         return t.getText();
     }
 
-    public setText(t: unknown, text: string): void {
-        throw new Error("don't know enough about Tree node");
+    public getType(t: CommonTree | null): number {
+        if (t === null) {
+            return Token.INVALID_TYPE;
+        }
+
+        return t.getType();
     }
 
-    public getChild(t: CommonTree, i: number): CommonTree | null {
+    /**
+     * What is the Token associated with this node?  If
+     *  you are not using CommonTree, then you must
+     *  override this in your own adaptor.
+     */
+    public getToken(t: CommonTree | null): Token | null {
+        if (t) {
+            return t.token ?? null;
+        }
+
+        return null; // no idea what to do
+    }
+
+    public getChild(t: CommonTree | null, i: number): CommonTree | null {
+        if (t === null) {
+            return null;
+        }
+
         return t.getChild(i);
     }
 
-    public setChild(t: unknown, i: number, child: unknown): void {
-        (t as CommonTree).setChild(i, child as CommonTree);
-    }
-
-    public deleteChild(t: CommonTree, i: number): CommonTree | null {
-        return t.deleteChild(i);
-    }
-
-    public getChildCount(t: unknown): number {
-        return (t as CommonTree).getChildCount();
-    }
-
-    public getUniqueID(node: CommonTree): number {
-        const prevID = this.treeToUniqueIDMap.get(node);
-        if (prevID) {
-            return prevID;
+    public getChildCount(t: CommonTree | null): number {
+        if (t === null) {
+            return 0;
         }
 
-        const id = this.uniqueNodeID++;
-        this.treeToUniqueIDMap.set(node, id);
-
-        return id;
+        return t.getChildCount();
     }
 
-    /**
-     * Tell me how to create a token for use with imaginary token nodes.
-     *  For example, there is probably no input symbol associated with imaginary
-     *  token DECL, but you need to create it as a payload or whatever for
-     *  the DECL node as in ^(DECL type ID).
-     *
-     *  If you care what the token payload objects' type is, you should
-     *  override this method and any other createToken variant.
-     */
-    public abstract createToken(tokenType: number, text: string): Token;
+    public getParent(t: CommonTree | null): CommonTree | null {
+        if (t === null) {
+            return null;
+        }
 
-    /**
-     * Tell me how to create a token for use with imaginary token nodes.
-     *  For example, there is probably no input symbol associated with imaginary
-     *  token DECL, but you need to create it as a payload or whatever for
-     *  the DECL node as in ^(DECL type ID).
-     *
-     *  This is a variant of createToken where the new token is derived from
-     *  an actual real input token.  Typically this is for converting '{'
-     *  tokens to BLOCK etc...  You'll see
-     *
-     *    r : lc='{' ID+ '}' -&gt; ^(BLOCK[$lc] ID+) ;
-     *
-     *  If you care what the token payload objects' type is, you should
-     *  override this method and any other createToken variant.
-     */
-    public abstract createToken(fromToken: Token): Token;
+        return (t).getParent();
+    }
 
-    public abstract dupNode(treeNode: CommonTree): CommonTree;
+    public setParent(t: CommonTree | null, parent: CommonTree): void {
+        t?.setParent(parent);
+    }
 
-    public abstract getParent(t: CommonTree | null): CommonTree | null;
-    public abstract setParent(t: CommonTree | null, parent: CommonTree | null): void;
+    public setChild(t: CommonTree, i: number, child: CommonTree): void {
+        (t).setChild(i, child);
+    }
 
-    public abstract getChildIndex(t: CommonTree): number;
-    public abstract setChildIndex(t: CommonTree, index: number): void;
+    public getChildIndex(t: CommonTree | undefined): number {
+        return t?.getChildIndex() ?? 0;
+    }
 
-    public abstract getToken(t: CommonTree): Token | null;
-    public abstract setTokenBoundaries(t: CommonTree, startToken: Token, stopToken: Token): void;
-    public abstract getTokenStartIndex(t: CommonTree): number;
-    public abstract getTokenStopIndex(t: CommonTree): number;
+    public setChildIndex(t: CommonTree | undefined, index: number): void {
+        t?.setChildIndex(index);
+    }
 
-    public abstract replaceChildren(parent: CommonTree, startChildIndex: number, stopChildIndex: number,
-        t: CommonTree): void;
+    public replaceChildren(parent: CommonTree | undefined, startChildIndex: number, stopChildIndex: number,
+        t: CommonTree): void {
+        parent?.replaceChildren(startChildIndex, stopChildIndex, t);
+    }
 }

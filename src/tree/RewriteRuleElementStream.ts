@@ -5,8 +5,8 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
-import type { CommonTree } from "../../tree/CommonTree.js";
-import type { TreeAdaptor } from "./TreeAdaptor.js";
+import type { CommonTree } from "./CommonTree.js";
+import type { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 
 /**
  * A generic list of elements tracked in an alternative to be used in
@@ -51,9 +51,9 @@ export abstract class RewriteRuleElementStream {
      *  the exception would track that info.
      */
     protected elementDescription: string;
-    protected adaptor: TreeAdaptor;
+    protected adaptor: CommonTreeAdaptor;
 
-    public constructor(adaptor: TreeAdaptor, elementDescription: string, elements?: CommonTree[]) {
+    public constructor(adaptor: CommonTreeAdaptor, elementDescription: string, elements?: CommonTree[]) {
         this.elementDescription = elementDescription;
         this.adaptor = adaptor;
         this.elements = elements ?? [];

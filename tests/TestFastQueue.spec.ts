@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { FastQueue } from "../src/antlr3/misc/FastQueue.js";
+import { FastQueue } from "../src/tree/misc/FastQueue.js";
 
 describe("TestFastQueue", () => {
     it("testQueueNoRemove", () => {

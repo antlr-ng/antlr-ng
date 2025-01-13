@@ -9,15 +9,12 @@
 
 import { Token, type TokenStream } from "antlr4ng";
 
-import type { CommonTree } from "../../tree/CommonTree.js";
-import { LookaheadStream } from "../misc/LookaheadStream.js";
+import type { CommonTree } from "./CommonTree.js";
+import { LookaheadStream } from "./misc/LookaheadStream.js";
 import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
-import type { PositionTrackingStream } from "./PositionTrackingStream.js";
 import { TreeIterator } from "./TreeIterator.js";
-import type { TreeNodeStream } from "./TreeNodeStream.js";
 
-export class CommonTreeNodeStream extends LookaheadStream<CommonTree>
-    implements TreeNodeStream, PositionTrackingStream<CommonTree> {
+export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
     public static readonly DEFAULT_INITIAL_BUFFER_SIZE = 100;
     public static readonly INITIAL_CALL_STACK_SIZE = 10;
 
@@ -225,12 +222,6 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree>
     public replaceChildren(parent: CommonTree, startChildIndex: number, stopChildIndex: number, t: CommonTree): void {
         this.adaptor.replaceChildren(parent, startChildIndex, stopChildIndex, t);
     }
-
-    /*public toString(start: CommonTree, stop: CommonTree): string {
-        // we'll have to walk from start to stop in tree; we're not keeping
-        // a complete node stream buffer
-        return "n/a";
-    }*/
 
     /** For debugging; destructive: moves tree iterator to end. */
     public toTokenTypeString(): string {

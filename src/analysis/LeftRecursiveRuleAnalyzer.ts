@@ -12,7 +12,7 @@ import { STGroupFile, type STGroup } from "stringtemplate4ts";
 
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
-import { CommonTreeNodeStream } from "../antlr3/tree/CommonTreeNodeStream.js";
+import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 import { CodeGenerator, type SupportedLanguage } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
@@ -22,7 +22,7 @@ import { AltAST } from "../tool/ast/AltAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import { RuleRefAST } from "../tool/ast/RuleRefAST.js";
-import { LeftRecursiveRuleWalker } from "../tree-walkers/LeftRecursiveRuleWalker.js";
+import { LeftRecursiveRuleWalker } from "../tree/walkers/LeftRecursiveRuleWalker.js";
 import { LeftRecursiveRuleAltInfo } from "./LeftRecursiveRuleAltInfo.js";
 
 enum Associativity {
