@@ -16,9 +16,3 @@ export class TreeRuleReturnScope {
     //public stop: CommonTree | null = null;
     public tree: CommonTree | null = null;
 }
-
-export interface ITreeRuleReturnScope<T extends CommonTree> {
-    /** First node or root node of tree matched for this rule. */
-    start?: CommonTree;
-    tree?: T;
-}

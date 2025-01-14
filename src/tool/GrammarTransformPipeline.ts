@@ -97,9 +97,7 @@ export class GrammarTransformPipeline {
 
     public reduceBlocksToSets(root: CommonTree): void {
         const nodes = new CommonTreeNodeStream(new GrammarASTAdaptor(), root);
-        const adaptor = new GrammarASTAdaptor();
         const transformer = new BlockSetTransformer(nodes, this.g);
-        transformer.setTreeAdaptor(adaptor);
         transformer.downUp(root);
     }
 

@@ -9,11 +9,10 @@
 import { RecognitionException, type TokenStream } from "antlr4ng";
 
 import type { CommonTree } from "./CommonTree.js";
+import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
 import { createRecognizerSharedState, IRecognizerSharedState } from "./misc/IRecognizerSharedState.js";
 import { TreeParser } from "./TreeParser.js";
-import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
-import type { ITreeRuleReturnScope } from "../antlr3/tree/TreeRuleReturnScope.js";
 import { TreeVisitor } from "./TreeVisitor.js";
 import type { TreeVisitorAction } from "./TreeVisitorAction.js";
 
@@ -57,11 +56,11 @@ export class TreeRewriter extends TreeParser {
      *
      * @returns the tree created from applying the down-up rules
      */
-    protected topdown = (): ITreeRuleReturnScope<CommonTree> | undefined => {
+    protected topdown = (): CommonTree | undefined => {
         return undefined;
     };
 
-    protected bottomup = (): ITreeRuleReturnScope<CommonTree> | undefined => {
+    protected bottomup = (): CommonTree | undefined => {
         return undefined;
     };
 
@@ -69,7 +68,7 @@ export class TreeRewriter extends TreeParser {
         return [];
     }
 
-    private applyOnce = (t: CommonTree, whichRule: () => ITreeRuleReturnScope<CommonTree> | undefined): CommonTree => {
+    private applyOnce = (t: CommonTree, whichRule: () => CommonTree | undefined): CommonTree => {
         try {
             // share TreeParser object but not parsing-related state
             this.state = createRecognizerSharedState();
@@ -84,15 +83,15 @@ export class TreeRewriter extends TreeParser {
                 return t;
             }
 
-            if (this.showTransformations && r && t !== r.tree && r.tree) {
-                this.reportTransformation(t, r.tree);
+            if (this.showTransformations && r && t !== r) {
+                this.reportTransformation(t, r);
             }
 
-            if (r?.tree) {
-                return r.tree;
-            } else {
-                return t;
+            if (r) {
+                return r;
             }
+
+            return t;
         } catch (e) {
             if (!(e instanceof RecognitionException)) {
                 throw e;

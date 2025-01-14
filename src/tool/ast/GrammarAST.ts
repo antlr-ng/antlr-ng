@@ -63,10 +63,6 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
         }
     }
 
-    public getChildrenAsArray(): GrammarAST[] {
-        return this.getChildren() as GrammarAST[];
-    }
-
     public getNodesWithType(typeOrTypes: number | IntervalSet | null): GrammarAST[] {
         if (typeof typeOrTypes === "number") {
             return this.getNodesWithType(IntervalSet.of(typeOrTypes, typeOrTypes));
@@ -83,7 +79,7 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
             }
 
             if (t.getChildren().length > 0) {
-                work.push(...t.getChildrenAsArray());
+                work.push(...t.getChildren() as GrammarAST[]);
             }
         }
 
