@@ -29,14 +29,14 @@ export abstract class TreeParser {
     private static dotdot = /.*[^.]\\.\\.[^.].*/g;
     private static doubleEtc = /.*\\.\\.\\.\\s+\\.\\.\\..*/g;
 
-    public input: CommonTreeNodeStream;
+    protected input: CommonTreeNodeStream;
 
     /**
      * State of a lexer, parser, or tree parser are collected into a state object so the state can be shared.
      * This sharing is needed to have one grammar import others and share same error variables and other state
      * variables.  It's a kind of explicit multiple inheritance via delegation of methods and shared state.
      */
-    public state: IRecognizerSharedState;
+    protected state: IRecognizerSharedState;
 
     public constructor(input?: CommonTreeNodeStream, state?: IRecognizerSharedState) {
         this.state = state ?? createRecognizerSharedState();
@@ -201,11 +201,12 @@ export abstract class TreeParser {
      *  to the set of symbols that can follow rule ref.
      */
     public match(input: IntStream, ttype: number): GrammarAST | null {
-        let matchedSymbol = this.getCurrentInputSymbol(input) as GrammarAST;
+        this.state.failed = false;
+
+        const matchedSymbol = this.getCurrentInputSymbol(input) as GrammarAST | null;
         if (input.LA(1) === ttype) {
             input.consume();
             this.state.errorRecovery = false;
-            this.state.failed = false;
 
             return matchedSymbol;
         }
@@ -215,9 +216,8 @@ export abstract class TreeParser {
 
             return matchedSymbol;
         }
-        matchedSymbol = this.recoverFromMismatchedToken(input, ttype)!;
 
-        return matchedSymbol;
+        return this.recoverFromMismatchedToken(input, ttype);
     }
 
     /**

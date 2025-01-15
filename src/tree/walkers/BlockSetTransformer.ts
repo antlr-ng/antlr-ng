@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable max-len, @typescript-eslint/naming-convention */
-
 import { RecognitionException } from "antlr4ng";
 
 import { Constants } from "../../Constants.js";
@@ -60,16 +58,6 @@ export class BlockSetTransformer extends TreeRewriter {
     }
 
     public override topdown = (): GrammarAST | undefined => {
-        let _first_0 = null;
-        let _last = null;
-
-        let id = null;
-        let RULE1 = null;
-        let wildcard2 = null;
-        let setAlt3 = null;
-        let ebnfBlockSet4 = null;
-        let blockSet5 = null;
-
         let result: GrammarAST | undefined;
 
         try {
@@ -114,18 +102,19 @@ export class BlockSetTransformer extends TreeRewriter {
             }
             switch (alt3) {
                 case 1: {
-                    _last = this.input.LT(1) as GrammarAST;
+                    let _last = this.input.LT(1) as GrammarAST;
 
                     const _save_last_1 = _last;
                     let _first_1 = null;
                     _last = this.input.LT(1) as GrammarAST;
-                    RULE1 = this.match(this.input, ANTLRv4Parser.RULE)!;
+                    const rule = this.match(this.input, ANTLRv4Parser.RULE)!;
                     if (this.state.failed) {
                         return result;
                     }
 
+                    let _first_0 = null;
                     if (this.state.backtracking === 1) {
-                        _first_0 = RULE1;
+                        _first_0 = rule;
                     }
 
                     this.match(this.input, Constants.DOWN);
@@ -135,11 +124,11 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     let alt1 = 2;
-                    const LA1_0 = this.input.LA(1);
-                    if ((LA1_0 === ANTLRv4Parser.TOKEN_REF)) {
+                    const lookahead = this.input.LA(1);
+                    if ((lookahead === ANTLRv4Parser.TOKEN_REF)) {
                         alt1 = 1;
                     } else {
-                        if ((LA1_0 === ANTLRv4Parser.RULE_REF)) {
+                        if ((lookahead === ANTLRv4Parser.RULE_REF)) {
                             alt1 = 2;
                         } else {
                             if (this.state.backtracking > 0) {
@@ -152,6 +141,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         }
                     }
 
+                    let id;
                     switch (alt1) {
                         case 1: {
                             _last = this.input.LT(1) as GrammarAST;
@@ -209,17 +199,17 @@ export class BlockSetTransformer extends TreeRewriter {
                     loop2:
                     while (true) {
                         let alt2 = 2;
-                        const LA2_0 = this.input.LA(1);
-                        if (((LA2_0 >= ANTLRv4Parser.ACTION && LA2_0 <= ANTLRv4Parser.WILDCARD))) {
+                        const lookahead = this.input.LA(1);
+                        if (((lookahead >= ANTLRv4Parser.ACTION && lookahead <= ANTLRv4Parser.WILDCARD))) {
                             alt2 = 1;
-                        } else if ((LA2_0 === Constants.UP)) {
+                        } else if ((lookahead === Constants.UP)) {
                             alt2 = 2;
                         }
 
                         switch (alt2) {
                             case 1: {
                                 _last = this.input.LT(1) as GrammarAST;
-                                wildcard2 = this.input.LT(1) as GrammarAST;
+                                const wildcard2 = this.input.LT(1) as GrammarAST;
                                 this.matchAny();
 
                                 if (this.state.failed as boolean) {
@@ -278,18 +268,19 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
 
                 case 2: {
-                    _last = this.input.LT(1) as GrammarAST;
-                    setAlt3 = this.setAlt();
+                    const _last = this.input.LT(1) as GrammarAST;
+                    const setAlt3 = this.setAlt();
                     if (this.state.failed) {
                         return result;
                     }
 
+                    let _first_0;
                     if (this.state.backtracking === 1) {
                         _first_0 = setAlt3.tree!;
                     }
 
                     if (this.state.backtracking === 1) {
-                        result = _first_0 ?? undefined;
+                        result = _first_0;
                         if (result?.getParent()?.isNil()) {
                             result = result.getParent() as GrammarAST;
                         }
@@ -299,12 +290,13 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
 
                 case 3: {
-                    _last = this.input.LT(1) as GrammarAST;
-                    ebnfBlockSet4 = this.ebnfBlockSet();
+                    const _last = this.input.LT(1) as GrammarAST;
+                    const ebnfBlockSet4 = this.ebnfBlockSet();
                     if (this.state.failed) {
                         return result;
                     }
 
+                    let _first_0;
                     if (this.state.backtracking === 1) {
                         _first_0 = ebnfBlockSet4;
                     }
@@ -320,18 +312,19 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
 
                 case 4: {
-                    _last = this.input.LT(1) as GrammarAST;
-                    blockSet5 = this.blockSet();
+                    const _last = this.input.LT(1) as GrammarAST;
+                    const blockSet5 = this.blockSet();
                     if (this.state.failed) {
                         return result;
                     }
 
+                    let _first_0;
                     if (this.state.backtracking === 1) {
                         _first_0 = blockSet5;
                     }
 
                     if (this.state.backtracking === 1) {
-                        result = _first_0?.tree ?? undefined;
+                        result = _first_0?.tree;
                         if (result?.getParent()?.isNil()) {
                             result = result.getParent() as GrammarAST;
                         }
@@ -357,9 +350,6 @@ export class BlockSetTransformer extends TreeRewriter {
         const retval: ITreeRuleReturnScope<GrammarAST> = {};
         retval.start = this.input.LT(1) ?? undefined;
 
-        let _first_0 = null;
-
-        let ALT6 = null;
         try {
             if (!((this.inContext("RULE BLOCK")))) {
                 if (this.state.backtracking > 0) {
@@ -370,18 +360,19 @@ export class BlockSetTransformer extends TreeRewriter {
                 throw new FailedPredicateException("setAlt", "inContext(\"RULE BLOCK\")");
             }
             const _last = this.input.LT(1) as GrammarAST;
-            ALT6 = this.match(this.input, ANTLRv4Parser.ALT)!;
+            const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
 
             if (this.state.failed) {
                 return retval;
             }
 
+            let _first_0;
             if (this.state.backtracking === 1) {
-                _first_0 = ALT6;
+                _first_0 = alt;
             }
 
             if (this.state.backtracking === 1) {
-                retval.tree = _first_0 ?? undefined;
+                retval.tree = _first_0;
                 if (retval.tree?.getParent()?.isNil()) {
 
                     retval.tree = retval.tree.getParent() as GrammarAST;
@@ -402,31 +393,22 @@ export class BlockSetTransformer extends TreeRewriter {
         const retval: ITreeRuleReturnScope<GrammarAST> = {};
         retval.start = this.input.LT(1) ?? undefined;
 
-        let root_0 = null;
-
-        let _first_0 = null;
-        let _last = null;
-
-        let ebnfSuffix7 = null;
-        let blockSet8 = null;
-
-        const stream_blockSet = new RewriteRuleSubtreeStream(this.adaptor, "rule blockSet");
-        const stream_ebnfSuffix = new RewriteRuleSubtreeStream(this.adaptor, "rule ebnfSuffix");
+        const blockSetStream = new RewriteRuleSubtreeStream(this.adaptor, "rule blockSet");
+        const ebnfSuffixStream = new RewriteRuleSubtreeStream(this.adaptor, "rule ebnfSuffix");
 
         try {
-            _last = this.input.LT(1) as GrammarAST;
-            const _save_last_1 = _last;
-            const _first_1 = null;
-            _last = this.input.LT(1) as GrammarAST;
-            ebnfSuffix7 = this.ebnfSuffix();
+            const _save_last_1 = this.input.LT(1) as GrammarAST;
+            const ebnfSuffix7 = this.ebnfSuffix();
+
             if (this.state.failed) {
                 return retval;
             }
 
             if (this.state.backtracking === 1) {
-                stream_ebnfSuffix.add(ebnfSuffix7.tree ?? null);
+                ebnfSuffixStream.add(ebnfSuffix7.tree ?? null);
             }
 
+            let _first_0;
             if (this.state.backtracking === 1) {
                 _first_0 = ebnfSuffix7.tree;
             }
@@ -437,15 +419,15 @@ export class BlockSetTransformer extends TreeRewriter {
                 return retval;
             }
 
-            _last = this.input.LT(1) as GrammarAST;
-            blockSet8 = this.blockSet();
+            let _last = this.input.LT(1) as GrammarAST;
+            const blockSet8 = this.blockSet();
 
             if (this.state.failed as boolean) {
                 return retval;
             }
 
             if (this.state.backtracking === 1) {
-                stream_blockSet.add(blockSet8.tree ?? null);
+                blockSetStream.add(blockSet8.tree ?? null);
             }
 
             this.match(this.input, Constants.UP);
@@ -464,38 +446,18 @@ export class BlockSetTransformer extends TreeRewriter {
             // rule list labels:
             // wildcard labels:
             if (this.state.backtracking === 1) {
-                root_0 = new GrammarAST();
-                // 80:27: -> ^( ebnfSuffix ^( BLOCK ^( ALT blockSet ) ) )
-                {
-                    // org/antlr/v4/parse/BlockSetTransformer.g:80:30: ^( ebnfSuffix ^( BLOCK ^( ALT blockSet ) ) )
-                    {
-                        let root_1 = new GrammarAST();
-                        root_1 = this.adaptor.becomeRoot(stream_ebnfSuffix.nextNode(), root_1) as GrammarAST;
-                        // org/antlr/v4/parse/BlockSetTransformer.g:80:43: ^( BLOCK ^( ALT blockSet ) )
-                        {
-                            let root_2 = new GrammarAST();
-                            root_2 = this.adaptor.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK), root_2) as GrammarAST;
-                            // org/antlr/v4/parse/BlockSetTransformer.g:80:61: ^( ALT blockSet )
-                            {
-                                let root_3 = new GrammarAST();
-                                root_3 = this.adaptor.becomeRoot(new AltAST(ANTLRv4Parser.ALT), root_3) as GrammarAST;
-                                root_3.addChild(stream_blockSet.nextTree());
-                                root_2.addChild(root_3);
-                            }
+                const root0 = new GrammarAST();
+                const root1 = this.adaptor.becomeRoot(ebnfSuffixStream.nextNode(), new GrammarAST()) as GrammarAST;
+                const root2 = this.adaptor.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK), new GrammarAST());
+                const root3 = this.adaptor.becomeRoot(new AltAST(ANTLRv4Parser.ALT), new GrammarAST()) as GrammarAST;
+                root3.addChild(blockSetStream.nextTree());
+                root2.addChild(root3);
+                root1.addChild(root2);
+                root0.addChild(root1);
 
-                            root_1.addChild(root_2);
-                        }
-
-                        root_0.addChild(root_1);
-                    }
-
-                }
-
-                retval.tree = this.adaptor.rulePostProcessing(root_0) as GrammarAST;
-                this.input.replaceChildren(retval.start!.getParent()!,
-                    retval.start!.getChildIndex(),
-                    _last.getChildIndex(),
-                    retval.tree);
+                retval.tree = this.adaptor.rulePostProcessing(root0) as GrammarAST;
+                this.input.replaceChildren(retval.start!.getParent()!, retval.start!.getChildIndex(),
+                    _last.getChildIndex(), retval.tree);
             }
 
             if (this.state.backtracking === 1) {
@@ -517,9 +479,8 @@ export class BlockSetTransformer extends TreeRewriter {
         retval.start = this.input.LT(1) ?? undefined;
 
         try {
-            const _last = this.input.LT(1) as GrammarAST;
-            const _set9 = this.input.LT(1) as GrammarAST;
-            if (this.input.LA(1) === ANTLRv4Parser.CLOSURE || (this.input.LA(1) >= ANTLRv4Parser.OPTIONAL && this.input.LA(1) <= ANTLRv4Parser.POSITIVE_CLOSURE)) {
+            if (this.input.LA(1) === ANTLRv4Parser.CLOSURE
+                || (this.input.LA(1) >= ANTLRv4Parser.OPTIONAL && this.input.LA(1) <= ANTLRv4Parser.POSITIVE_CLOSURE)) {
                 this.input.consume();
                 this.state.errorRecovery = false;
                 this.state.failed = false;
@@ -535,7 +496,6 @@ export class BlockSetTransformer extends TreeRewriter {
 
             if (this.state.backtracking === 1) {
                 if (retval.tree?.getParent()?.isNil()) {
-
                     retval.tree = retval.tree.getParent() as GrammarAST;
                 }
             }
@@ -558,29 +518,10 @@ export class BlockSetTransformer extends TreeRewriter {
         const retval: ITreeRuleReturnScope<GrammarAST> = {};
         retval.start = this.input.LT(1) ?? undefined;
 
-        let root_0 = null;
-
-        let _last = null;
-
-        let alt = null;
-        let BLOCK10 = null;
-        let ALT13 = null;
-        let BLOCK16 = null;
-        let ALT17 = null;
-        let ALT20 = null;
-        let elementOptions11 = null;
-        let setElement12 = null;
-        let elementOptions14 = null;
-        let setElement15 = null;
-        let elementOptions18 = null;
-        let setElement19 = null;
-        let elementOptions21 = null;
-        let setElement22 = null;
-
-        const stream_BLOCK = new RewriteRuleNodeStream(this.adaptor, "token BLOCK");
-        const stream_ALT = new RewriteRuleNodeStream(this.adaptor, "token ALT");
-        const stream_elementOptions = new RewriteRuleSubtreeStream(this.adaptor, "rule elementOptions");
-        const stream_setElement = new RewriteRuleSubtreeStream(this.adaptor, "rule setElement");
+        const blockStream = new RewriteRuleNodeStream(this.adaptor, "token BLOCK");
+        const altStream = new RewriteRuleNodeStream(this.adaptor, "token ALT");
+        const elementOptionsStream = new RewriteRuleSubtreeStream(this.adaptor, "rule elementOptions");
+        const setElementStream = new RewriteRuleSubtreeStream(this.adaptor, "rule setElement");
 
         const inLexer = isTokenName(this.currentRuleName!);
 
@@ -588,21 +529,21 @@ export class BlockSetTransformer extends TreeRewriter {
             let _first_0 = null;
 
             if (this.inContext("RULE")) {
-                _last = this.input.LT(1) as GrammarAST;
+                let _last = this.input.LT(1) as GrammarAST;
                 const _save_last_1 = _last;
                 let _first_1 = null;
                 _last = this.input.LT(1) as GrammarAST;
-                BLOCK10 = this.match(this.input, ANTLRv4Parser.BLOCK)!;
+                const block = this.match(this.input, ANTLRv4Parser.BLOCK)!;
                 if (this.state.failed) {
                     return retval;
                 }
 
                 if (this.state.backtracking === 1) {
-                    stream_BLOCK.add(BLOCK10);
+                    blockStream.add(block);
                 }
 
                 if (this.state.backtracking === 1) {
-                    _first_0 = BLOCK10;
+                    _first_0 = block;
                 }
 
                 this.match(this.input, Constants.DOWN);
@@ -616,14 +557,14 @@ export class BlockSetTransformer extends TreeRewriter {
                     const _save_last_2 = _last;
                     const _first_2 = null;
                     _last = this.input.LT(1) as GrammarAST;
-                    alt = this.match(this.input, ANTLRv4Parser.ALT)!;
+                    const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        stream_ALT.add(alt);
+                        altStream.add(alt);
                     }
 
                     if (this.state.backtracking === 1) {
@@ -637,22 +578,22 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     let alt4 = 2;
-                    const LA4_0 = this.input.LA(1);
-                    if ((LA4_0 === ANTLRv4Parser.ELEMENT_OPTIONS)) {
+                    const lookahead = this.input.LA(1);
+                    if ((lookahead === ANTLRv4Parser.ELEMENT_OPTIONS)) {
                         alt4 = 1;
                     }
 
                     switch (alt4) {
                         case 1: {
                             _last = this.input.LT(1) as GrammarAST;
-                            elementOptions11 = this.elementOptions();
+                            const elementOptions11 = this.elementOptions();
 
                             if (this.state.failed as boolean) {
                                 return retval;
                             }
 
                             if (this.state.backtracking === 1) {
-                                stream_elementOptions.add(elementOptions11.tree!);
+                                elementOptionsStream.add(elementOptions11.tree ?? null);
                             }
 
                             if (this.state.backtracking === 1) {
@@ -660,7 +601,6 @@ export class BlockSetTransformer extends TreeRewriter {
                                 if (retval.tree?.getParent()?.isNil()) {
                                     retval.tree = retval.tree.getParent() as GrammarAST;
                                 }
-
                             }
 
                             break;
@@ -678,14 +618,14 @@ export class BlockSetTransformer extends TreeRewriter {
                         throw new FailedPredicateException("blockSet", "((AltAST)$alt).altLabel==null");
                     }
                     _last = this.input.LT(1) as GrammarAST;
-                    setElement12 = this.setElement(inLexer);
+                    const setElement12 = this.setElement(inLexer);
 
                     if (this.state.failed as boolean) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        stream_setElement.add(setElement12.tree ?? null);
+                        setElementStream.add(setElement12.tree ?? null);
                     }
 
                     this.match(this.input, Constants.UP);
@@ -701,8 +641,8 @@ export class BlockSetTransformer extends TreeRewriter {
                 loop6:
                 while (true) {
                     let alt6 = 2;
-                    const LA6_0 = this.input.LA(1);
-                    if ((LA6_0 === ANTLRv4Parser.ALT)) {
+                    const lookahead = this.input.LA(1);
+                    if ((lookahead === ANTLRv4Parser.ALT)) {
                         alt6 = 1;
                     }
 
@@ -712,19 +652,19 @@ export class BlockSetTransformer extends TreeRewriter {
                             const _save_last_2 = _last;
                             const _first_2 = null;
                             _last = this.input.LT(1) as GrammarAST;
-                            ALT13 = this.match(this.input, ANTLRv4Parser.ALT)!;
+                            const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
 
                             if (this.state.failed as boolean) {
                                 return retval;
                             }
 
                             if (this.state.backtracking === 1) {
-                                stream_ALT.add(ALT13);
+                                altStream.add(alt);
                             }
 
                             if (this.state.backtracking === 1) {
                                 if (_first_1 === null) {
-                                    _first_1 = ALT13;
+                                    _first_1 = alt;
                                 }
                             }
 
@@ -736,8 +676,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             // org/antlr/v4/parse/BlockSetTransformer.g:98:99: ( elementOptions )?
                             let alt5 = 2;
-                            const LA5_0 = this.input.LA(1);
-                            if ((LA5_0 === ANTLRv4Parser.ELEMENT_OPTIONS)) {
+                            const lookahead = this.input.LA(1);
+                            if ((lookahead === ANTLRv4Parser.ELEMENT_OPTIONS)) {
                                 alt5 = 1;
                             }
                             switch (alt5) {
@@ -745,14 +685,14 @@ export class BlockSetTransformer extends TreeRewriter {
                                     // org/antlr/v4/parse/BlockSetTransformer.g:98:99: elementOptions
                                     {
                                         _last = this.input.LT(1) as GrammarAST;
-                                        elementOptions14 = this.elementOptions();
+                                        const elementOptions14 = this.elementOptions();
 
                                         if (this.state.failed as boolean) {
                                             return retval;
                                         }
 
                                         if (this.state.backtracking === 1) {
-                                            stream_elementOptions.add(elementOptions14.tree ?? null);
+                                            elementOptionsStream.add(elementOptions14.tree ?? null);
                                         }
 
                                         if (this.state.backtracking === 1) {
@@ -773,14 +713,14 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
 
                             _last = this.input.LT(1) as GrammarAST;
-                            setElement15 = this.setElement(inLexer);
+                            const setElement15 = this.setElement(inLexer);
 
                             if (this.state.failed as boolean) {
                                 return retval;
                             }
 
                             if (this.state.backtracking === 1) {
-                                stream_setElement.add(setElement15.tree ?? null);
+                                setElementStream.add(setElement15.tree ?? null);
                             }
 
                             this.match(this.input, Constants.UP);
@@ -835,48 +775,47 @@ export class BlockSetTransformer extends TreeRewriter {
                 // rule list labels:
                 // wildcard labels:
                 if (this.state.backtracking === 1) {
-                    root_0 = new GrammarAST();
-                    let root_1 = new GrammarAST();
-                    root_1 = this.adaptor.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK,
-                        BLOCK10.token), root_1) as GrammarAST;
-                    let root_2 = new GrammarAST();
-                    root_2 = this.adaptor.becomeRoot(new AltAST(ANTLRv4Parser.ALT, BLOCK10.token, "ALT"), root_2) as GrammarAST;
-                    let root_3 = new GrammarAST();
-                    root_3 = this.adaptor.becomeRoot(this.adaptor.create(ANTLRv4Parser.SET, BLOCK10.token!, "SET"), root_3) as GrammarAST;
-                    if (!(stream_setElement.hasNext())) {
+                    const root0 = new GrammarAST();
+                    const root1 = this.adaptor.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK,
+                        block.token), new GrammarAST()) as GrammarAST;
+                    const root2 = this.adaptor.becomeRoot(new AltAST(ANTLRv4Parser.ALT, block.token, "ALT"),
+                        new GrammarAST());
+                    const root3 = this.adaptor.becomeRoot(this.adaptor.create(ANTLRv4Parser.SET, block.token!, "SET"),
+                        new GrammarAST());
+
+                    if (!(setElementStream.hasNext())) {
                         throw new Error("RewriteEarlyExitException");
                     }
-                    while (stream_setElement.hasNext()) {
-                        root_3.addChild(stream_setElement.nextTree());
+
+                    while (setElementStream.hasNext()) {
+                        root3.addChild(setElementStream.nextTree());
                     }
 
-                    stream_setElement.reset();
-                    root_2.addChild(root_3);
-                    root_1.addChild(root_2);
+                    setElementStream.reset();
+                    root2.addChild(root3);
+                    root1.addChild(root2);
 
-                    root_0.addChild(root_1);
-                    retval.tree = this.adaptor.rulePostProcessing(root_0) as GrammarAST;
-                    this.input.replaceChildren(retval.start!.getParent()!,
-                        retval.start!.getChildIndex(),
-                        _last.getChildIndex(),
-                        retval.tree);
+                    root0.addChild(root1);
+                    retval.tree = this.adaptor.rulePostProcessing(root0) as GrammarAST;
+                    this.input.replaceChildren(retval.start!.getParent()!, retval.start!.getChildIndex(),
+                        _last.getChildIndex(), retval.tree);
                 }
             } else {
-                _last = this.input.LT(1) as GrammarAST;
+                let _last = this.input.LT(1) as GrammarAST;
                 const _save_last_1 = _last;
                 let _first_1 = null;
                 _last = this.input.LT(1) as GrammarAST;
-                BLOCK16 = this.match(this.input, ANTLRv4Parser.BLOCK)!;
+                const block = this.match(this.input, ANTLRv4Parser.BLOCK)!;
                 if (this.state.failed) {
                     return retval;
                 }
 
                 if (this.state.backtracking === 1) {
-                    stream_BLOCK.add(BLOCK16);
+                    blockStream.add(block);
                 }
 
                 if (this.state.backtracking === 1) {
-                    _first_0 = BLOCK16;
+                    _first_0 = block;
                 }
 
                 this.match(this.input, Constants.DOWN);
@@ -887,20 +826,19 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 _last = this.input.LT(1) as GrammarAST;
                 const _save_last_2 = _last;
-                const _first_2 = null;
                 _last = this.input.LT(1) as GrammarAST;
-                ALT17 = this.match(this.input, ANTLRv4Parser.ALT)!;
+                const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
 
                 if (this.state.failed as boolean) {
                     return retval;
                 }
 
                 if (this.state.backtracking === 1) {
-                    stream_ALT.add(ALT17);
+                    altStream.add(alt);
                 }
 
                 if (this.state.backtracking === 1) {
-                    _first_1 = ALT17;
+                    _first_1 = alt;
                 }
 
                 this.match(this.input, Constants.DOWN);
@@ -910,30 +848,29 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
 
                 let alt7 = 2;
-                const LA7_0 = this.input.LA(1);
-                if ((LA7_0 === ANTLRv4Parser.ELEMENT_OPTIONS)) {
+                const lookahead = this.input.LA(1);
+                if ((lookahead === ANTLRv4Parser.ELEMENT_OPTIONS)) {
                     alt7 = 1;
                 }
+
                 switch (alt7) {
                     case 1: {
                         _last = this.input.LT(1) as GrammarAST;
-                        elementOptions18 = this.elementOptions();
+                        const elementOptions18 = this.elementOptions();
 
                         if (this.state.failed as boolean) {
                             return retval;
                         }
 
                         if (this.state.backtracking === 1) {
-                            stream_elementOptions.add(elementOptions18.tree ?? null);
+                            elementOptionsStream.add(elementOptions18.tree ?? null);
                         }
 
                         if (this.state.backtracking === 1) {
                             retval.tree = _first_0 ?? undefined;
                             if (retval.tree?.getParent()?.isNil()) {
-
                                 retval.tree = retval.tree.getParent() as GrammarAST;
                             }
-
                         }
 
                         break;
@@ -943,14 +880,14 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
 
                 _last = this.input.LT(1) as GrammarAST;
-                setElement19 = this.setElement(inLexer);
+                const setElement19 = this.setElement(inLexer);
 
                 if (this.state.failed as boolean) {
                     return retval;
                 }
 
                 if (this.state.backtracking === 1) {
-                    stream_setElement.add(setElement19.tree ?? null);
+                    setElementStream.add(setElement19.tree ?? null);
                 }
 
                 this.match(this.input, Constants.UP);
@@ -965,8 +902,8 @@ export class BlockSetTransformer extends TreeRewriter {
                 loop9:
                 while (true) {
                     let alt9 = 2;
-                    const LA9_0 = this.input.LA(1);
-                    if ((LA9_0 === ANTLRv4Parser.ALT)) {
+                    const lookahead = this.input.LA(1);
+                    if ((lookahead === ANTLRv4Parser.ALT)) {
                         alt9 = 1;
                     }
 
@@ -977,20 +914,20 @@ export class BlockSetTransformer extends TreeRewriter {
                                 const _save_last_2 = _last;
                                 const _first_2 = null;
                                 _last = this.input.LT(1) as GrammarAST;
-                                ALT20 = this.match(this.input, ANTLRv4Parser.ALT)!;
+                                const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
 
                                 if (this.state.failed as boolean) {
                                     return retval;
                                 }
 
                                 if (this.state.backtracking === 1) {
-                                    stream_ALT.add(ALT20);
+                                    altStream.add(alt);
                                 }
 
                                 if (this.state.backtracking === 1) {
 
                                     if (_first_1 === null) {
-                                        _first_1 = ALT20;
+                                        _first_1 = alt;
                                     }
                                 }
 
@@ -1001,22 +938,22 @@ export class BlockSetTransformer extends TreeRewriter {
                                 }
 
                                 let alt8 = 2;
-                                const LA8_0 = this.input.LA(1);
-                                if ((LA8_0 === ANTLRv4Parser.ELEMENT_OPTIONS)) {
+                                const lookahead = this.input.LA(1);
+                                if ((lookahead === ANTLRv4Parser.ELEMENT_OPTIONS)) {
                                     alt8 = 1;
                                 }
 
                                 switch (alt8) {
                                     case 1: {
                                         _last = this.input.LT(1) as GrammarAST;
-                                        elementOptions21 = this.elementOptions();
+                                        const elementOptions21 = this.elementOptions();
 
                                         if (this.state.failed as boolean) {
                                             return retval;
                                         }
 
                                         if (this.state.backtracking === 1) {
-                                            stream_elementOptions.add(elementOptions21.tree ?? null);
+                                            elementOptionsStream.add(elementOptions21.tree ?? null);
                                         }
 
                                         if (this.state.backtracking === 1) {
@@ -1034,14 +971,14 @@ export class BlockSetTransformer extends TreeRewriter {
                                 }
 
                                 _last = this.input.LT(1) as GrammarAST;
-                                setElement22 = this.setElement(inLexer);
+                                const setElement22 = this.setElement(inLexer);
 
                                 if (this.state.failed as boolean) {
                                     return retval;
                                 }
 
                                 if (this.state.backtracking === 1) {
-                                    stream_setElement.add(setElement22.tree ?? null);
+                                    setElementStream.add(setElement22.tree ?? null);
                                 }
 
                                 this.match(this.input, Constants.UP);
@@ -1097,21 +1034,21 @@ export class BlockSetTransformer extends TreeRewriter {
                 // rule list labels:
                 // wildcard labels:
                 if (this.state.backtracking === 1) {
-                    root_0 = new GrammarAST();
-                    let root_1 = new GrammarAST();
-                    root_1 = this.adaptor.becomeRoot(this.adaptor.create(ANTLRv4Parser.SET,
-                        BLOCK16.token!, "SET"), root_1) as GrammarAST;
-                    if (!(stream_setElement.hasNext())) {
+                    const root0 = new GrammarAST();
+                    const root1 = this.adaptor.becomeRoot(this.adaptor.create(ANTLRv4Parser.SET, block.token!,
+                        "SET"), new GrammarAST());
+                    if (!(setElementStream.hasNext())) {
                         throw new Error("RewriteEarlyExitException");
                     }
-                    while (stream_setElement.hasNext()) {
-                        root_1.addChild(stream_setElement.nextTree());
+
+                    while (setElementStream.hasNext()) {
+                        root1.addChild(setElementStream.nextTree());
                     }
-                    stream_setElement.reset();
+                    setElementStream.reset();
 
-                    root_0.addChild(root_1);
+                    root0.addChild(root1);
 
-                    retval.tree = this.adaptor.rulePostProcessing(root_0) as GrammarAST;
+                    retval.tree = this.adaptor.rulePostProcessing(root0) as GrammarAST;
                     this.input.replaceChildren(retval.start!.getParent()!,
                         retval.start!.getChildIndex(),
                         _last.getChildIndex(),
@@ -1137,25 +1074,14 @@ export class BlockSetTransformer extends TreeRewriter {
         const retval: ITreeRuleReturnScope<GrammarAST> = {};
         retval.start = this.input.LT(1) ?? undefined;
 
-        let _last = null;
-        let _first_0 = null;
-
-        let a = null;
-        let b = null;
-        let TOKEN_REF24 = null;
-        let TOKEN_REF26 = null;
-        let RANGE27 = null;
-        let elementOptions23 = null;
-        let elementOptions25 = null;
-
         try {
             let alt11 = 5;
-            const LA11_0 = this.input.LA(1);
-            if ((LA11_0 === ANTLRv4Parser.STRING_LITERAL)) {
-                const LA11_1 = this.input.LA(2);
-                if ((LA11_1 === Constants.DOWN)) {
+            const lookahead = this.input.LA(1);
+            if ((lookahead === ANTLRv4Parser.STRING_LITERAL)) {
+                const lookahead2 = this.input.LA(2);
+                if ((lookahead2 === Constants.DOWN)) {
                     alt11 = 1;
-                } else if ((LA11_1 === Constants.UP)) {
+                } else if ((lookahead2 === Constants.UP)) {
                     alt11 = 2;
                 } else {
                     if (this.state.backtracking > 0) {
@@ -1176,30 +1102,30 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
                 }
             } else {
-                if ((LA11_0 === ANTLRv4Parser.TOKEN_REF) && !inLexer) {
-                    const LA11_2 = this.input.LA(2);
-                    if ((LA11_2 === Constants.DOWN)) {
+                if ((lookahead === ANTLRv4Parser.TOKEN_REF) && !inLexer) {
+                    const lookahead2 = this.input.LA(2);
+                    if ((lookahead2 === Constants.DOWN)) {
                         alt11 = 3;
                     } else {
-                        if ((LA11_2 === Constants.UP)) {
+                        if ((lookahead2 === Constants.UP)) {
                             alt11 = 4;
                         }
                     }
                 } else {
-                    if ((LA11_0 === ANTLRv4Parser.RANGE) && inLexer) {
+                    if ((lookahead === ANTLRv4Parser.RANGE) && inLexer) {
                         alt11 = 5;
                     }
                 }
 
             }
 
+            let _first_0;
             switch (alt11) {
                 case 1: {
-                    _last = this.input.LT(1) as GrammarAST;
-                    const _save_last_1 = _last;
+                    const _save_last_1 = this.input.LT(1) as GrammarAST;
                     let _first_1 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                    let _last = this.input.LT(1) as GrammarAST;
+                    const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                     if (this.state.failed) {
                         return retval;
@@ -1216,7 +1142,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     _last = this.input.LT(1) as GrammarAST;
-                    elementOptions23 = this.elementOptions();
+                    const elementOptions23 = this.elementOptions();
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -1240,7 +1166,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             return retval;
                         }
-                        throw new FailedPredicateException("setElement", "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
+                        throw new FailedPredicateException("setElement",
+                            "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
                     }
 
                     if (this.state.backtracking === 1) {
@@ -1255,8 +1182,8 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
 
                 case 2: {
-                    _last = this.input.LT(1) as GrammarAST;
-                    a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                    const _last = this.input.LT(1) as GrammarAST;
+                    const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                     if (this.state.failed) {
                         return retval;
@@ -1273,7 +1200,8 @@ export class BlockSetTransformer extends TreeRewriter {
                             return retval;
                         }
 
-                        throw new FailedPredicateException("setElement", "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
+                        throw new FailedPredicateException("setElement",
+                            "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
                     }
 
                     if (this.state.backtracking === 1) {
@@ -1282,7 +1210,6 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             retval.tree = retval.tree.getParent() as GrammarAST;
                         }
-
                     }
 
                     break;
@@ -1298,18 +1225,17 @@ export class BlockSetTransformer extends TreeRewriter {
                         throw new FailedPredicateException("setElement", "!inLexer");
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
-                    const _save_last_1 = _last;
+                    const _save_last_1 = this.input.LT(1) as GrammarAST;
                     let _first_1 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    TOKEN_REF24 = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
+                    let _last = this.input.LT(1) as GrammarAST;
+                    const tokenRef = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
 
                     if (this.state.failed) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_0 = TOKEN_REF24;
+                        _first_0 = tokenRef;
                     }
 
                     this.match(this.input, Constants.DOWN);
@@ -1319,7 +1245,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     _last = this.input.LT(1) as GrammarAST;
-                    elementOptions25 = this.elementOptions();
+                    const elementOptions25 = this.elementOptions();
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -1342,7 +1268,6 @@ export class BlockSetTransformer extends TreeRewriter {
                         if (retval.tree?.getParent()?.isNil()) {
                             retval.tree = retval.tree.getParent() as GrammarAST;
                         }
-
                     }
 
                     break;
@@ -1358,15 +1283,15 @@ export class BlockSetTransformer extends TreeRewriter {
                         throw new FailedPredicateException("setElement", "!inLexer");
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
-                    TOKEN_REF26 = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
+                    const _last = this.input.LT(1) as GrammarAST;
+                    const tokenRef = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
 
                     if (this.state.failed) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_0 = TOKEN_REF26;
+                        _first_0 = tokenRef;
                     }
 
                     if (this.state.backtracking === 1) {
@@ -1389,18 +1314,17 @@ export class BlockSetTransformer extends TreeRewriter {
                         throw new FailedPredicateException("setElement", "inLexer");
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
-                    const _save_last_1 = _last;
+                    const _save_last_1 = this.input.LT(1) as GrammarAST;
                     let _first_1 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    RANGE27 = this.match(this.input, ANTLRv4Parser.RANGE)!;
+                    let _last = this.input.LT(1) as GrammarAST;
+                    const range = this.match(this.input, ANTLRv4Parser.RANGE)!;
 
                     if (this.state.failed) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_0 = RANGE27;
+                        _first_0 = range;
                     }
 
                     this.match(this.input, Constants.DOWN);
@@ -1410,7 +1334,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     _last = this.input.LT(1) as GrammarAST;
-                    a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                    const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -1421,14 +1345,13 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     _last = this.input.LT(1) as GrammarAST;
-                    b = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                    const b = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-
                         if (_first_1 === null) {
                             _first_1 = b;
                         }
@@ -1449,7 +1372,9 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             return retval;
                         }
-                        throw new FailedPredicateException("setElement", "CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1 &&\n\t\t\t CharSupport.getCharValueFromGrammarCharLiteral($b.getText())!=-1");
+                        throw new FailedPredicateException("setElement", "CharSupport.getCharValueFromGrammarChar" +
+                            "Literal($a.getText())!=-1 &&\n\t\t\t CharSupport.getCharValueFromGrammarCharLiteral" +
+                            "($b.getText())!=-1");
                     }
 
                     if (this.state.backtracking === 1) {
@@ -1490,84 +1415,75 @@ export class BlockSetTransformer extends TreeRewriter {
         const retval: ITreeRuleReturnScope<GrammarAST> = {};
         retval.start = this.input.LT(1) ?? undefined;
 
-        let _first_0 = null;
-        let _last = null;
-
-        let ELEMENT_OPTIONS28 = null;
-        let elementOption29 = null;
-
         try {
+            let _last = this.input.LT(1) as GrammarAST;
+            const _save_last_1 = _last;
+            let _first_1 = null;
             _last = this.input.LT(1) as GrammarAST;
-            {
-                const _save_last_1 = _last;
-                let _first_1 = null;
-                _last = this.input.LT(1) as GrammarAST;
-                ELEMENT_OPTIONS28 = this.match(this.input, ANTLRv4Parser.ELEMENT_OPTIONS)!;
+            const elementOptions = this.match(this.input, ANTLRv4Parser.ELEMENT_OPTIONS)!;
 
-                if (this.state.failed) {
+            if (this.state.failed) {
+                return retval;
+            }
+
+            let _first_0;
+            if (this.state.backtracking === 1) {
+                _first_0 = elementOptions;
+            }
+
+            if (this.input.LA(1) === Constants.DOWN) {
+                this.match(this.input, Constants.DOWN);
+                if (this.state.failed as boolean) {
                     return retval;
                 }
 
-                if (this.state.backtracking === 1) {
-                    _first_0 = ELEMENT_OPTIONS28;
-                }
-
-                if (this.input.LA(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
+                loop12:
+                while (true) {
+                    let alt12 = 2;
+                    const lookahead = this.input.LA(1);
+                    if ((lookahead === ANTLRv4Parser.ASSIGN || lookahead === ANTLRv4Parser.ID)) {
+                        alt12 = 1;
                     }
 
-                    loop12:
-                    while (true) {
-                        let alt12 = 2;
-                        const LA12_0 = this.input.LA(1);
-                        if ((LA12_0 === ANTLRv4Parser.ASSIGN || LA12_0 === ANTLRv4Parser.ID)) {
-                            alt12 = 1;
-                        }
+                    switch (alt12) {
+                        case 1: {
+                            _last = this.input.LT(1) as GrammarAST;
+                            const elementOption29 = this.elementOption();
 
-                        switch (alt12) {
-                            case 1: {
-                                _last = this.input.LT(1) as GrammarAST;
-                                elementOption29 = this.elementOption();
-
-                                if (this.state.failed as boolean) {
-                                    return retval;
-                                }
-
-                                if (this.state.backtracking === 1) {
-                                    if (_first_1 === null) {
-                                        _first_1 = elementOption29.tree;
-                                    }
-
-                                }
-
-                                if (this.state.backtracking === 1) {
-                                    retval.tree = _first_0 ?? undefined;
-                                    if (retval.tree?.getParent()?.isNil()) {
-                                        retval.tree = retval.tree.getParent() as GrammarAST;
-                                    }
-                                }
-
-                                break;
+                            if (this.state.failed as boolean) {
+                                return retval;
                             }
 
-                            default: {
-                                break loop12;
+                            if (this.state.backtracking === 1) {
+                                if (_first_1 === null) {
+                                    _first_1 = elementOption29.tree;
+                                }
                             }
 
+                            if (this.state.backtracking === 1) {
+                                retval.tree = _first_0 ?? undefined;
+                                if (retval.tree?.getParent()?.isNil()) {
+                                    retval.tree = retval.tree.getParent() as GrammarAST;
+                                }
+                            }
+
+                            break;
                         }
-                    }
 
-                    this.match(this.input, Constants.UP);
+                        default: {
+                            break loop12;
+                        }
 
-                    if (this.state.failed as boolean) {
-                        return retval;
                     }
                 }
-                _last = _save_last_1;
+
+                this.match(this.input, Constants.UP);
+
+                if (this.state.failed as boolean) {
+                    return retval;
+                }
             }
+            _last = _save_last_1;
 
             if (this.state.backtracking === 1) {
                 retval.tree = _first_0 ?? undefined;
@@ -1590,29 +1506,16 @@ export class BlockSetTransformer extends TreeRewriter {
         const retval: ITreeRuleReturnScope<GrammarAST> = {};
         retval.start = this.input.LT(1) ?? undefined;
 
-        let _last = null;
-
-        let id = null;
-        let v = null;
-        let ID30 = null;
-        let ASSIGN31 = null;
-        let ASSIGN32 = null;
-        let ID33 = null;
-        let ASSIGN34 = null;
-        let ID35 = null;
-        let ASSIGN36 = null;
-        let ID37 = null;
-
         try {
             let alt13 = 5;
-            const LA13_0 = this.input.LA(1);
-            if ((LA13_0 === ANTLRv4Parser.ID)) {
+            const lookahead = this.input.LA(1);
+            if ((lookahead === ANTLRv4Parser.ID)) {
                 alt13 = 1;
-            } else if ((LA13_0 === ANTLRv4Parser.ASSIGN)) {
-                const LA13_2 = this.input.LA(2);
-                if ((LA13_2 === Constants.DOWN)) {
-                    const LA13_3 = this.input.LA(3);
-                    if ((LA13_3 === ANTLRv4Parser.ID)) {
+            } else if ((lookahead === ANTLRv4Parser.ASSIGN)) {
+                const lookahead2 = this.input.LA(2);
+                if ((lookahead2 === Constants.DOWN)) {
+                    const lookahead3 = this.input.LA(3);
+                    if ((lookahead3 === ANTLRv4Parser.ID)) {
                         switch (this.input.LA(4)) {
                             case ANTLRv4Parser.ID: {
                                 alt13 = 2;
@@ -1651,6 +1554,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     for (let nvaeConsume = 0; nvaeConsume < 4 - 1; nvaeConsume++) {
                                         this.input.consume();
                                     }
+
                                     const nvae = new NoViableAltException(13, 4);
                                     throw nvae;
                                 } finally {
@@ -1672,6 +1576,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             for (let nvaeConsume = 0; nvaeConsume < 3 - 1; nvaeConsume++) {
                                 this.input.consume();
                             }
+
                             const nvae = new NoViableAltException(13, 3);
                             throw nvae;
                         } finally {
@@ -1691,6 +1596,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     try {
                         this.input.consume();
+
                         const nvae = new NoViableAltException(13, 2);
                         throw nvae;
                     } finally {
@@ -1704,22 +1610,22 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     return retval;
                 }
+
                 const nvae = new NoViableAltException(13, 0);
                 throw nvae;
             }
 
             switch (alt13) {
                 case 1: {
-                    let _first_0 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    ID30 = this.match(this.input, ANTLRv4Parser.ID)!;
+                    const id = this.match(this.input, ANTLRv4Parser.ID)!;
 
                     if (this.state.failed) {
                         return retval;
                     }
 
+                    let _first_0;
                     if (this.state.backtracking === 1) {
-                        _first_0 = ID30;
+                        _first_0 = id;
                     }
 
                     if (this.state.backtracking === 1) {
@@ -1733,19 +1639,15 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
 
                 case 2: {
-                    let _first_0 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    const _save_last_1 = _last;
-                    let _first_1 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    ASSIGN31 = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
+                    const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
 
                     if (this.state.failed) {
                         return retval;
                     }
 
+                    let _first_0;
                     if (this.state.backtracking === 1) {
-                        _first_0 = ASSIGN31;
+                        _first_0 = assign;
                     }
 
                     this.match(this.input, Constants.DOWN);
@@ -1754,7 +1656,17 @@ export class BlockSetTransformer extends TreeRewriter {
                         return retval;
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
+                    let id = this.match(this.input, ANTLRv4Parser.ID)!;
+
+                    if (this.state.failed as boolean) {
+                        return retval;
+                    }
+
+                    let _first_1;
+                    if (this.state.backtracking === 1) {
+                        _first_1 = id;
+                    }
+
                     id = this.match(this.input, ANTLRv4Parser.ID)!;
 
                     if (this.state.failed as boolean) {
@@ -1762,19 +1674,8 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_1 = id;
-                    }
-
-                    _last = this.input.LT(1) as GrammarAST;
-                    v = this.match(this.input, ANTLRv4Parser.ID)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        if (_first_1 === null) {
-                            _first_1 = v;
+                        if (_first_1 === undefined) {
+                            _first_1 = id;
                         }
                     }
 
@@ -1783,8 +1684,6 @@ export class BlockSetTransformer extends TreeRewriter {
                     if (this.state.failed as boolean) {
                         return retval;
                     }
-
-                    _last = _save_last_1;
 
                     if (this.state.backtracking === 1) {
                         retval.tree = _first_0 ?? undefined;
@@ -1798,18 +1697,15 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 case 3: {
                     let _first_0 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    const _save_last_1 = _last;
                     let _first_1 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    ASSIGN32 = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
+                    const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
 
                     if (this.state.failed) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_0 = ASSIGN32;
+                        _first_0 = assign;
                     }
 
                     this.match(this.input, Constants.DOWN);
@@ -1818,19 +1714,17 @@ export class BlockSetTransformer extends TreeRewriter {
                         return retval;
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
-                    ID33 = this.match(this.input, ANTLRv4Parser.ID)!;
+                    const id = this.match(this.input, ANTLRv4Parser.ID)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_1 = ID33;
+                        _first_1 = id;
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
-                    v = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                    const literal = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -1838,7 +1732,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     if (this.state.backtracking === 1) {
                         if (_first_1 === null) {
-                            _first_1 = v;
+                            _first_1 = literal;
                         }
                     }
 
@@ -1847,8 +1741,6 @@ export class BlockSetTransformer extends TreeRewriter {
                     if (this.state.failed as boolean) {
                         return retval;
                     }
-
-                    _last = _save_last_1;
 
                     if (this.state.backtracking === 1) {
                         retval.tree = _first_0 ?? undefined;
@@ -1862,18 +1754,16 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 case 4: {
                     let _first_0 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    const _save_last_1 = _last;
+                    const _save_last_1 = this.input.LT(1) as GrammarAST;
                     let _first_1 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    ASSIGN34 = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
+                    const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
 
                     if (this.state.failed) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_0 = ASSIGN34;
+                        _first_0 = assign;
                     }
 
                     this.match(this.input, Constants.DOWN);
@@ -1882,19 +1772,17 @@ export class BlockSetTransformer extends TreeRewriter {
                         return retval;
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
-                    ID35 = this.match(this.input, ANTLRv4Parser.ID)!;
+                    const id = this.match(this.input, ANTLRv4Parser.ID)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_1 = ID35;
+                        _first_1 = id;
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
-                    v = this.match(this.input, ANTLRv4Parser.ACTION)!;
+                    const action = this.match(this.input, ANTLRv4Parser.ACTION)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -1902,7 +1790,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     if (this.state.backtracking === 1) {
                         if (_first_1 === null) {
-                            _first_1 = v;
+                            _first_1 = action;
                         }
                     }
 
@@ -1911,8 +1799,6 @@ export class BlockSetTransformer extends TreeRewriter {
                     if (this.state.failed as boolean) {
                         return retval;
                     }
-
-                    _last = _save_last_1;
 
                     if (this.state.backtracking === 1) {
                         retval.tree = _first_0 ?? undefined;
@@ -1926,18 +1812,16 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 case 5: {
                     let _first_0 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    const _save_last_1 = _last;
+                    const _save_last_1 = this.input.LT(1) as GrammarAST;
                     let _first_1 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    ASSIGN36 = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
+                    const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
 
                     if (this.state.failed) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_0 = ASSIGN36;
+                        _first_0 = assign;
                     }
 
                     this.match(this.input, Constants.DOWN);
@@ -1946,19 +1830,17 @@ export class BlockSetTransformer extends TreeRewriter {
                         return retval;
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
-                    ID37 = this.match(this.input, ANTLRv4Parser.ID)!;
+                    const id = this.match(this.input, ANTLRv4Parser.ID)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
                     }
 
                     if (this.state.backtracking === 1) {
-                        _first_1 = ID37;
+                        _first_1 = id;
                     }
 
-                    _last = this.input.LT(1) as GrammarAST;
-                    v = this.match(this.input, ANTLRv4Parser.INT)!;
+                    const int = this.match(this.input, ANTLRv4Parser.INT)!;
 
                     if (this.state.failed as boolean) {
                         return retval;
@@ -1966,7 +1848,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     if (this.state.backtracking === 1) {
                         if (_first_1 === null) {
-                            _first_1 = v;
+                            _first_1 = int;
                         }
                     }
 
@@ -1975,8 +1857,6 @@ export class BlockSetTransformer extends TreeRewriter {
                     if (this.state.failed as boolean) {
                         return retval;
                     }
-
-                    _last = _save_last_1;
 
                     if (this.state.backtracking === 1) {
                         retval.tree = _first_0 ?? undefined;
