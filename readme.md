@@ -51,7 +51,7 @@ npm i -g antlr-ng
 This puts it in the global NPM cache and creates a link to it in a folder which is in your system PATH. Hence you can directly execute it:
 
 ```bash
-antlr-ng -h
+> antlr-ng -h
 Usage: program [options] <grammar...>
 
 Arguments:
@@ -80,7 +80,7 @@ Options:
 The parameter list should look very familiar, except that it defines a short hand version and a long version of each parameter. This is why you have to update your parameter list when replacing ANTLR4 by antlr-ng. A typical invocation looks like this:
 
 ```bash
-antlr-ng -Dlanguage=TypeScript --exact-output-dir -o ./tests/generated ./tests/grammars/Java.g4
+antlr-ng -Dlanguage=CSharp --exact-output-dir -o ./tests/generated ./tests/grammars/Java.g4
 ```
 
 ### Case 2: Using antlr-ng as package in your project
@@ -102,7 +102,7 @@ You can then create an NPM script in your package.json to handle your grammar(s)
 
 Using the generated parser in your project is subject to the target language of it. For TypeScript and JavaScript you need antlr4ng as target runtime. Read its readme file for [an example](https://github.com/mike-lischke/antlr4ng?tab=readme-ov-file#usage) how to use the generated parser. 
 
-Just note: antlr4ng-cli has not been updated to use antlr-ng yet. This will be done as soon as we have a production ready release of the tool. In fact antlr4ng-cli will be replaced by antlr-ng in the future.
+Just note: antlr4ng-cli has **not** been updated to use antlr-ng yet. This will be done as soon as we have a production ready release of the tool. In fact antlr4ng-cli will be replaced by antlr-ng in the future.
 
 ### Case 3: Using antlr-ng in your code
 
