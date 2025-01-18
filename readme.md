@@ -20,7 +20,7 @@ A tool/package that takes a defined language (provided in a grammar file) and ge
 - Swift
 - PHP
 
-This project started as a TypeScript port of the old ANTLR4 tool (originally written in Java) and includes the entire feature set of the the Java version and is constantly enhanced.
+This project started as a TypeScript port of the old ANTLR4 tool 4.13.2 (originally written in Java) and includes the entire feature set of the the Java version and is constantly enhanced.
 
 ## Status
 

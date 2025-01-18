@@ -85,15 +85,14 @@ export abstract class RewriteRuleElementStream {
     public nextTree(): CommonTree {
         const n = this.size();
         if (this.dirty || (this.cursor >= n && n === 1)) {
-            // if out of elements and size is 1, dup
+            // If out of elements and size is 1, duplicate.
             const el = this._next();
 
             return this.dup(el);
         }
-        // test size above then fetch
-        const el = this._next();
 
-        return el;
+        // Test size above then fetch.
+        return this._next();
     }
 
     public hasNext(): boolean {

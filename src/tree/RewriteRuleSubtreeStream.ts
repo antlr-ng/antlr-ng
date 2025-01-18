@@ -40,9 +40,7 @@ export class RewriteRuleSubtreeStream extends RewriteRuleElementStream {
             tree = this.adaptor.getChild(tree, 0)!;
         }
 
-        const el = this.adaptor.dupNode(tree); // dup just the root (want node here)
-
-        return el;
+        return this.adaptor.dupNode(tree); // dup just the root (want node here)
     }
 
     protected dup(el: CommonTree): CommonTree {

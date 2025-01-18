@@ -3,6 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+
 import { RecognitionException } from "antlr4ng";
 
 import { Constants } from "../../Constants.js";
@@ -15,7 +17,6 @@ import { BlockAST } from "../../tool/ast/BlockAST.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { Grammar } from "../../tool/Grammar.js";
 import { GrammarTransformPipeline } from "../../tool/GrammarTransformPipeline.js";
-import type { ITreeRuleReturnScope } from "../../types.js";
 import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
 import { EarlyExitException } from "../EarlyExitException.js";
 import { FailedPredicateException } from "../FailedPredicateException.js";
@@ -61,16 +62,124 @@ export class BlockSetTransformer extends TreeRewriter {
         let result: GrammarAST | undefined;
 
         try {
-            let alt3 = 4;
             switch (this.input.LA(1)) {
                 case ANTLRv4Parser.RULE: {
-                    alt3 = 1;
+                    const rule = this.match(this.input, ANTLRv4Parser.RULE)!;
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    let first;
+                    if (this.state.backtracking === 1) {
+                        first = rule;
+                    }
+
+                    this.match(this.input, Constants.DOWN);
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    const lookahead = this.input.LA(1);
+                    if (lookahead === ANTLRv4Parser.TOKEN_REF) {
+                        const id = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        if (this.state.backtracking === 1) {
+                            this.currentRuleName = id?.getText();
+                            result = first;
+                            if (result?.getParent()?.isNil()) {
+                                result = result.getParent() as GrammarAST;
+                            }
+                        }
+                    } else if (lookahead === ANTLRv4Parser.RULE_REF) {
+                        const id = this.match(this.input, ANTLRv4Parser.RULE_REF)!;
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        if (this.state.backtracking === 1) {
+                            this.currentRuleName = id?.getText();
+                            result = first;
+                            if (result?.getParent()?.isNil()) {
+                                result = result.getParent() as GrammarAST;
+                            }
+                        }
+                    } else {
+                        if (this.state.backtracking > 0) {
+                            this.failed = true;
+
+                            return result;
+                        }
+
+                        throw new NoViableAltException(1, 0);
+                    }
+
+                    let matchCount = 0;
+                    while (true) {
+                        const lookahead = this.input.LA(1);
+                        if (lookahead >= ANTLRv4Parser.ACTION && lookahead <= ANTLRv4Parser.WILDCARD) {
+                            this.matchAny();
+                            if (this.failed) {
+                                return result;
+                            }
+
+                            if (this.state.backtracking === 1) {
+                                result = first;
+                                if (result?.getParent()?.isNil()) {
+                                    result = result.getParent() as GrammarAST;
+                                }
+                            }
+                        } else {
+                            if (matchCount >= 1) {
+                                break;
+                            }
+
+                            if (this.state.backtracking > 0) {
+                                this.failed = true;
+
+                                return result;
+                            }
+
+                            throw new EarlyExitException(2);
+                        }
+
+                        ++matchCount;
+                    }
+
+                    this.match(this.input, Constants.UP);
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    if (this.state.backtracking === 1) {
+                        result = first;
+                        if (result?.getParent()?.isNil()) {
+                            result = result.getParent() as GrammarAST;
+                        }
+                    }
 
                     break;
                 }
 
                 case ANTLRv4Parser.ALT: {
-                    alt3 = 2;
+                    const setAlt = this.setAlt();
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    let first;
+                    if (this.state.backtracking === 1) {
+                        first = setAlt!;
+                    }
+
+                    if (this.state.backtracking === 1) {
+                        result = first;
+                        if (result?.getParent()?.isNil()) {
+                            result = result.getParent() as GrammarAST;
+                        }
+                    }
 
                     break;
                 }
@@ -78,262 +187,46 @@ export class BlockSetTransformer extends TreeRewriter {
                 case ANTLRv4Parser.CLOSURE:
                 case ANTLRv4Parser.OPTIONAL:
                 case ANTLRv4Parser.POSITIVE_CLOSURE: {
-                    alt3 = 3;
+                    const ebnfBlockSet = this.ebnfBlockSet();
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    if (this.state.backtracking === 1) {
+                        result = ebnfBlockSet;
+                        if (result?.getParent()?.isNil()) {
+                            result = result.getParent() as GrammarAST;
+                        }
+                    }
 
                     break;
                 }
 
                 case ANTLRv4Parser.BLOCK: {
-                    alt3 = 4;
+                    const blockSet = this.blockSet();
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    if (this.state.backtracking === 1) {
+                        result = blockSet;
+                        if (result?.getParent()?.isNil()) {
+                            result = result.getParent() as GrammarAST;
+                        }
+                    }
 
                     break;
                 }
 
                 default: {
                     if (this.state.backtracking > 0) {
-                        this.state.failed = true;
+                        this.failed = true;
 
                         return result;
                     }
 
                     throw new NoViableAltException(3, 0);
                 }
-
-            }
-            switch (alt3) {
-                case 1: {
-                    let _last = this.input.LT(1) as GrammarAST;
-
-                    const _save_last_1 = _last;
-                    let _first_1 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    const rule = this.match(this.input, ANTLRv4Parser.RULE)!;
-                    if (this.state.failed) {
-                        return result;
-                    }
-
-                    let _first_0 = null;
-                    if (this.state.backtracking === 1) {
-                        _first_0 = rule;
-                    }
-
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return result;
-                    }
-
-                    let alt1 = 2;
-                    const lookahead = this.input.LA(1);
-                    if ((lookahead === ANTLRv4Parser.TOKEN_REF)) {
-                        alt1 = 1;
-                    } else {
-                        if ((lookahead === ANTLRv4Parser.RULE_REF)) {
-                            alt1 = 2;
-                        } else {
-                            if (this.state.backtracking > 0) {
-                                this.state.failed = true;
-
-                                return result;
-                            }
-
-                            throw new NoViableAltException(1, 0);
-                        }
-                    }
-
-                    let id;
-                    switch (alt1) {
-                        case 1: {
-                            _last = this.input.LT(1) as GrammarAST;
-                            id = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
-
-                            if (this.state.failed as boolean) {
-                                return result;
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                _first_1 = id;
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                result = _first_0 ?? undefined;
-                                if (result?.getParent()?.isNil()) {
-                                    result = result.getParent() as GrammarAST;
-                                }
-
-                            }
-
-                            break;
-                        }
-
-                        case 2: {
-                            _last = this.input.LT(1) as GrammarAST;
-                            id = this.match(this.input, ANTLRv4Parser.RULE_REF)!;
-                            if (this.state.failed as boolean) {
-                                return result;
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                _first_1 = id;
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                result = _first_0 ?? undefined;
-                                if (result?.getParent()?.isNil()) {
-                                    result = result.getParent() as GrammarAST;
-                                }
-                            }
-
-                            break;
-                        }
-
-                        default:
-
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        this.currentRuleName = id?.getText() ?? undefined;
-                    }
-
-                    let cnt2 = 0;
-                    loop2:
-                    while (true) {
-                        let alt2 = 2;
-                        const lookahead = this.input.LA(1);
-                        if (((lookahead >= ANTLRv4Parser.ACTION && lookahead <= ANTLRv4Parser.WILDCARD))) {
-                            alt2 = 1;
-                        } else if ((lookahead === Constants.UP)) {
-                            alt2 = 2;
-                        }
-
-                        switch (alt2) {
-                            case 1: {
-                                _last = this.input.LT(1) as GrammarAST;
-                                const wildcard2 = this.input.LT(1) as GrammarAST;
-                                this.matchAny();
-
-                                if (this.state.failed as boolean) {
-                                    return result;
-                                }
-
-                                if (this.state.backtracking === 1) {
-                                    if (_first_1 === null) {
-                                        _first_1 = wildcard2;
-                                    }
-                                }
-
-                                if (this.state.backtracking === 1) {
-                                    result = _first_0 ?? undefined;
-                                    if (result?.getParent()?.isNil()) {
-                                        result = result.getParent() as GrammarAST;
-                                    }
-                                }
-
-                                break;
-                            }
-
-                            default: {
-                                if (cnt2 >= 1) {
-                                    break loop2;
-                                }
-
-                                if (this.state.backtracking > 0) {
-                                    this.state.failed = true;
-
-                                    return result;
-                                }
-
-                                throw new EarlyExitException(2);
-                            }
-                        }
-                        cnt2++;
-                    }
-
-                    this.match(this.input, Constants.UP);
-
-                    if (this.state.failed as boolean) {
-                        return result;
-                    }
-
-                    _last = _save_last_1;
-
-                    if (this.state.backtracking === 1) {
-                        result = _first_0 ?? undefined;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
-                }
-
-                case 2: {
-                    const _last = this.input.LT(1) as GrammarAST;
-                    const setAlt3 = this.setAlt();
-                    if (this.state.failed) {
-                        return result;
-                    }
-
-                    let _first_0;
-                    if (this.state.backtracking === 1) {
-                        _first_0 = setAlt3.tree!;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        result = _first_0;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
-                }
-
-                case 3: {
-                    const _last = this.input.LT(1) as GrammarAST;
-                    const ebnfBlockSet4 = this.ebnfBlockSet();
-                    if (this.state.failed) {
-                        return result;
-                    }
-
-                    let _first_0;
-                    if (this.state.backtracking === 1) {
-                        _first_0 = ebnfBlockSet4;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        result = _first_0?.tree ?? undefined;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
-                }
-
-                case 4: {
-                    const _last = this.input.LT(1) as GrammarAST;
-                    const blockSet5 = this.blockSet();
-                    if (this.state.failed) {
-                        return result;
-                    }
-
-                    let _first_0;
-                    if (this.state.backtracking === 1) {
-                        _first_0 = blockSet5;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        result = _first_0?.tree;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
-                }
-
-                default:
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -346,37 +239,29 @@ export class BlockSetTransformer extends TreeRewriter {
         return result;
     };
 
-    public setAlt(): ITreeRuleReturnScope<GrammarAST> {
-        const retval: ITreeRuleReturnScope<GrammarAST> = {};
-        retval.start = this.input.LT(1) ?? undefined;
-
+    private setAlt(): GrammarAST | undefined {
         try {
-            if (!((this.inContext("RULE BLOCK")))) {
+            if (!(this.inContext("RULE BLOCK"))) {
                 if (this.state.backtracking > 0) {
-                    this.state.failed = true;
+                    this.failed = true;
 
-                    return retval;
+                    return undefined;
                 }
+
                 throw new FailedPredicateException("setAlt", "inContext(\"RULE BLOCK\")");
             }
-            const _last = this.input.LT(1) as GrammarAST;
+
             const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
-
-            if (this.state.failed) {
-                return retval;
-            }
-
-            let _first_0;
-            if (this.state.backtracking === 1) {
-                _first_0 = alt;
+            if (this.failed) {
+                return undefined;
             }
 
             if (this.state.backtracking === 1) {
-                retval.tree = _first_0;
-                if (retval.tree?.getParent()?.isNil()) {
-
-                    retval.tree = retval.tree.getParent() as GrammarAST;
+                if (alt.getParent()?.isNil()) {
+                    return alt.getParent() as GrammarAST;
                 }
+
+                return alt;
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -386,57 +271,47 @@ export class BlockSetTransformer extends TreeRewriter {
             }
         }
 
-        return retval;
+        return undefined;
     }
 
-    public ebnfBlockSet(): ITreeRuleReturnScope<GrammarAST> {
-        const retval: ITreeRuleReturnScope<GrammarAST> = {};
-        retval.start = this.input.LT(1) ?? undefined;
+    private ebnfBlockSet(): GrammarAST | undefined {
+        let result: GrammarAST | undefined;
+        const start = this.input.LT(1) as GrammarAST;
 
         const blockSetStream = new RewriteRuleSubtreeStream(this.adaptor, "rule blockSet");
         const ebnfSuffixStream = new RewriteRuleSubtreeStream(this.adaptor, "rule ebnfSuffix");
 
         try {
-            const _save_last_1 = this.input.LT(1) as GrammarAST;
-            const ebnfSuffix7 = this.ebnfSuffix();
-
-            if (this.state.failed) {
-                return retval;
+            const ebnfSuffix = this.ebnfSuffix();
+            if (this.failed) {
+                return undefined;
             }
 
             if (this.state.backtracking === 1) {
-                ebnfSuffixStream.add(ebnfSuffix7.tree ?? null);
-            }
-
-            let _first_0;
-            if (this.state.backtracking === 1) {
-                _first_0 = ebnfSuffix7.tree;
+                ebnfSuffixStream.add(ebnfSuffix ?? null);
             }
 
             this.match(this.input, Constants.DOWN);
-
-            if (this.state.failed as boolean) {
-                return retval;
+            if (this.failed) {
+                return undefined;
             }
 
-            let _last = this.input.LT(1) as GrammarAST;
-            const blockSet8 = this.blockSet();
-
-            if (this.state.failed as boolean) {
-                return retval;
+            let last = this.input.LT(1) as GrammarAST;
+            const blockSet = this.blockSet();
+            if (this.failed) {
+                return undefined;
             }
 
             if (this.state.backtracking === 1) {
-                blockSetStream.add(blockSet8.tree ?? null);
+                blockSetStream.add(blockSet ?? null);
             }
 
             this.match(this.input, Constants.UP);
-
-            if (this.state.failed as boolean) {
-                return retval;
+            if (this.failed) {
+                return undefined;
             }
 
-            _last = _save_last_1;
+            last = start;
 
             // AST REWRITE
             // elements:
@@ -455,13 +330,10 @@ export class BlockSetTransformer extends TreeRewriter {
                 root1.addChild(root2);
                 root0.addChild(root1);
 
-                retval.tree = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                this.input.replaceChildren(retval.start!.getParent()!, retval.start!.getChildIndex(),
-                    _last.getChildIndex(), retval.tree);
-            }
+                result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
+                this.input.replaceChildren(start.getParent()!, start.getChildIndex(), last.getChildIndex(), result);
 
-            if (this.state.backtracking === 1) {
-                GrammarTransformPipeline.setGrammarPtr(this.g, retval.tree!);
+                GrammarTransformPipeline.setGrammarPtr(this.g, result);
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -471,37 +343,31 @@ export class BlockSetTransformer extends TreeRewriter {
             }
         }
 
-        return retval;
+        return result;
     }
 
-    public ebnfSuffix(): ITreeRuleReturnScope<GrammarAST> {
-        const retval: ITreeRuleReturnScope<GrammarAST> = {};
-        retval.start = this.input.LT(1) ?? undefined;
+    private ebnfSuffix(): GrammarAST | undefined {
+        const start = this.input.LT(1) ?? undefined;
 
         try {
-            if (this.input.LA(1) === ANTLRv4Parser.CLOSURE
-                || (this.input.LA(1) >= ANTLRv4Parser.OPTIONAL && this.input.LA(1) <= ANTLRv4Parser.POSITIVE_CLOSURE)) {
+            const lookahead = this.input.LA(1);
+            if (lookahead === ANTLRv4Parser.CLOSURE
+                || (lookahead >= ANTLRv4Parser.OPTIONAL && lookahead <= ANTLRv4Parser.POSITIVE_CLOSURE)) {
                 this.input.consume();
                 this.state.errorRecovery = false;
-                this.state.failed = false;
+                this.failed = false;
             } else {
                 if (this.state.backtracking > 0) {
-                    this.state.failed = true;
+                    this.failed = true;
 
-                    return retval;
+                    return undefined;
                 }
-                const mse = new MismatchedSetException(null, this.input);
-                throw mse;
+
+                throw new MismatchedSetException(null, this.input);
             }
 
             if (this.state.backtracking === 1) {
-                if (retval.tree?.getParent()?.isNil()) {
-                    retval.tree = retval.tree.getParent() as GrammarAST;
-                }
-            }
-
-            if (this.state.backtracking === 1) {
-                retval.tree = this.adaptor.dupNode((retval.start as GrammarAST));
+                return this.adaptor.dupNode((start as GrammarAST));
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -511,12 +377,12 @@ export class BlockSetTransformer extends TreeRewriter {
             }
         }
 
-        return retval;
+        return undefined;
     }
 
-    public blockSet(): ITreeRuleReturnScope<GrammarAST> {
-        const retval: ITreeRuleReturnScope<GrammarAST> = {};
-        retval.start = this.input.LT(1) ?? undefined;
+    private blockSet(): GrammarAST | undefined {
+        const start = this.input.LT(1) ?? undefined;
+        let result: GrammarAST | undefined;
 
         const blockStream = new RewriteRuleNodeStream(this.adaptor, "token BLOCK");
         const altStream = new RewriteRuleNodeStream(this.adaptor, "token ALT");
@@ -526,246 +392,159 @@ export class BlockSetTransformer extends TreeRewriter {
         const inLexer = isTokenName(this.currentRuleName!);
 
         try {
-            let _first_0 = null;
+            let first;
 
             if (this.inContext("RULE")) {
-                let _last = this.input.LT(1) as GrammarAST;
-                const _save_last_1 = _last;
-                let _first_1 = null;
-                _last = this.input.LT(1) as GrammarAST;
+                let first2;
                 const block = this.match(this.input, ANTLRv4Parser.BLOCK)!;
-                if (this.state.failed) {
-                    return retval;
+                if (this.failed) {
+                    return undefined;
                 }
 
                 if (this.state.backtracking === 1) {
                     blockStream.add(block);
-                }
-
-                if (this.state.backtracking === 1) {
-                    _first_0 = block;
+                    first = block;
                 }
 
                 this.match(this.input, Constants.DOWN);
-
-                if (this.state.failed as boolean) {
-                    return retval;
+                if (this.failed) {
+                    return undefined;
                 }
 
-                _last = this.input.LT(1) as GrammarAST;
-                {
-                    const _save_last_2 = _last;
-                    const _first_2 = null;
-                    _last = this.input.LT(1) as GrammarAST;
-                    const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        altStream.add(alt);
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_1 = alt;
-                    }
-
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    let alt4 = 2;
-                    const lookahead = this.input.LA(1);
-                    if ((lookahead === ANTLRv4Parser.ELEMENT_OPTIONS)) {
-                        alt4 = 1;
-                    }
-
-                    switch (alt4) {
-                        case 1: {
-                            _last = this.input.LT(1) as GrammarAST;
-                            const elementOptions11 = this.elementOptions();
-
-                            if (this.state.failed as boolean) {
-                                return retval;
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                elementOptionsStream.add(elementOptions11.tree ?? null);
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                retval.tree = _first_0 ?? undefined;
-                                if (retval.tree?.getParent()?.isNil()) {
-                                    retval.tree = retval.tree.getParent() as GrammarAST;
-                                }
-                            }
-
-                            break;
-                        }
-
-                        default:
-                    }
-
-                    if ((alt as AltAST).altLabel) {
-                        if (this.state.backtracking > 0) {
-                            this.state.failed = true;
-
-                            return retval;
-                        }
-                        throw new FailedPredicateException("blockSet", "((AltAST)$alt).altLabel==null");
-                    }
-                    _last = this.input.LT(1) as GrammarAST;
-                    const setElement12 = this.setElement(inLexer);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        setElementStream.add(setElement12.tree ?? null);
-                    }
-
-                    this.match(this.input, Constants.UP);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    _last = _save_last_2;
+                const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
+                if (this.failed) {
+                    return undefined;
                 }
 
-                let cnt6 = 0;
-                loop6:
-                while (true) {
-                    let alt6 = 2;
-                    const lookahead = this.input.LA(1);
-                    if ((lookahead === ANTLRv4Parser.ALT)) {
-                        alt6 = 1;
+                if (this.state.backtracking === 1) {
+                    altStream.add(alt);
+                    first2 = alt;
+                }
+
+                this.match(this.input, Constants.DOWN);
+                if (this.failed) {
+                    return undefined;
+                }
+
+                const lookahead = this.input.LA(1);
+                if (lookahead === ANTLRv4Parser.ELEMENT_OPTIONS) {
+                    const elementOptions = this.elementOptions();
+                    if (this.failed) {
+                        return undefined;
                     }
 
-                    switch (alt6) {
-                        case 1: {
-                            _last = this.input.LT(1) as GrammarAST;
-                            const _save_last_2 = _last;
-                            const _first_2 = null;
-                            _last = this.input.LT(1) as GrammarAST;
-                            const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
-
-                            if (this.state.failed as boolean) {
-                                return retval;
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                altStream.add(alt);
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                if (_first_1 === null) {
-                                    _first_1 = alt;
-                                }
-                            }
-
-                            this.match(this.input, Constants.DOWN);
-
-                            if (this.state.failed as boolean) {
-                                return retval;
-                            }
-
-                            // org/antlr/v4/parse/BlockSetTransformer.g:98:99: ( elementOptions )?
-                            let alt5 = 2;
-                            const lookahead = this.input.LA(1);
-                            if ((lookahead === ANTLRv4Parser.ELEMENT_OPTIONS)) {
-                                alt5 = 1;
-                            }
-                            switch (alt5) {
-                                case 1: {
-                                    // org/antlr/v4/parse/BlockSetTransformer.g:98:99: elementOptions
-                                    {
-                                        _last = this.input.LT(1) as GrammarAST;
-                                        const elementOptions14 = this.elementOptions();
-
-                                        if (this.state.failed as boolean) {
-                                            return retval;
-                                        }
-
-                                        if (this.state.backtracking === 1) {
-                                            elementOptionsStream.add(elementOptions14.tree ?? null);
-                                        }
-
-                                        if (this.state.backtracking === 1) {
-                                            retval.tree = _first_0 ?? undefined;
-                                            if (retval.tree?.getParent()?.isNil()) {
-
-                                                retval.tree = retval.tree.getParent() as GrammarAST;
-                                            }
-
-                                        }
-
-                                    }
-                                    break;
-                                }
-
-                                default:
-
-                            }
-
-                            _last = this.input.LT(1) as GrammarAST;
-                            const setElement15 = this.setElement(inLexer);
-
-                            if (this.state.failed as boolean) {
-                                return retval;
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                setElementStream.add(setElement15.tree ?? null);
-                            }
-
-                            this.match(this.input, Constants.UP);
-
-                            if (this.state.failed as boolean) {
-                                return retval;
-                            }
-
-                            _last = _save_last_2;
-
-                            if (this.state.backtracking === 1) {
-                                retval.tree = _first_0 ?? undefined;
-                                if (retval.tree?.getParent()?.isNil()) {
-                                    retval.tree = retval.tree.getParent() as GrammarAST;
-                                }
-                            }
-
-                            break;
+                    if (this.state.backtracking === 1) {
+                        elementOptionsStream.add(elementOptions ?? null);
+                        result = first;
+                        if (result?.getParent()?.isNil()) {
+                            result = result.getParent() as GrammarAST;
                         }
-
-                        default: {
-                            if (cnt6 >= 1) {
-                                break loop6;
-                            }
-
-                            if (this.state.backtracking > 0) {
-                                this.state.failed = true;
-
-                                return retval;
-                            }
-                            const eee = new EarlyExitException(6);
-                            throw eee;
-                        }
-
                     }
-                    cnt6++;
+                }
+
+                if ((alt as AltAST).altLabel) {
+                    if (this.state.backtracking > 0) {
+                        this.failed = true;
+
+                        return result;
+                    }
+
+                    throw new FailedPredicateException("blockSet", "");
+                }
+
+                const setElement = this.setElement(inLexer);
+                if (this.failed) {
+                    return result;
+                }
+
+                if (this.state.backtracking === 1) {
+                    setElementStream.add(setElement ?? null);
                 }
 
                 this.match(this.input, Constants.UP);
-
-                if (this.state.failed as boolean) {
-                    return retval;
+                if (this.failed) {
+                    return result;
                 }
 
-                _last = _save_last_1;
+                let optionCount = 0;
+                while (true) {
+                    const lookahead = this.input.LA(1);
+                    if (lookahead === ANTLRv4Parser.ALT) {
+                        const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        if (this.state.backtracking === 1) {
+                            altStream.add(alt);
+                            if (first2 === undefined) {
+                                first2 = alt;
+                            }
+                        }
+
+                        this.match(this.input, Constants.DOWN);
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        const lookahead = this.input.LA(1);
+                        if (lookahead === ANTLRv4Parser.ELEMENT_OPTIONS) {
+                            const elementOptions = this.elementOptions();
+                            if (this.failed) {
+                                return result;
+                            }
+
+                            if (this.state.backtracking === 1) {
+                                elementOptionsStream.add(elementOptions ?? null);
+
+                                result = first;
+                                if (result?.getParent()?.isNil()) {
+                                    result = result.getParent() as GrammarAST;
+                                }
+                            }
+                        }
+
+                        const setElement = this.setElement(inLexer);
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        if (this.state.backtracking === 1) {
+                            setElementStream.add(setElement ?? null);
+                        }
+
+                        this.match(this.input, Constants.UP);
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        if (this.state.backtracking === 1) {
+                            result = first;
+                            if (result?.getParent()?.isNil()) {
+                                result = result.getParent() as GrammarAST;
+                            }
+                        }
+                    } else {
+                        if (optionCount >= 1) {
+                            break;
+                        }
+
+                        if (this.state.backtracking > 0) {
+                            this.failed = true;
+
+                            return result;
+                        }
+
+                        throw new EarlyExitException(6);
+                    }
+
+                    ++optionCount;
+                }
+
+                this.match(this.input, Constants.UP);
+                if (this.failed) {
+                    return result;
+                }
 
                 // AST REWRITE
                 // elements:
@@ -796,235 +575,157 @@ export class BlockSetTransformer extends TreeRewriter {
                     root1.addChild(root2);
 
                     root0.addChild(root1);
-                    retval.tree = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                    this.input.replaceChildren(retval.start!.getParent()!, retval.start!.getChildIndex(),
-                        _last.getChildIndex(), retval.tree);
+                    result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
+                    this.input.replaceChildren(result.getParent()!, start!.getChildIndex(), start!.getChildIndex(),
+                        result);
                 }
             } else {
-                let _last = this.input.LT(1) as GrammarAST;
-                const _save_last_1 = _last;
-                let _first_1 = null;
-                _last = this.input.LT(1) as GrammarAST;
+                let first;
+
                 const block = this.match(this.input, ANTLRv4Parser.BLOCK)!;
-                if (this.state.failed) {
-                    return retval;
+                if (this.failed) {
+                    return result;
                 }
 
                 if (this.state.backtracking === 1) {
                     blockStream.add(block);
-                }
-
-                if (this.state.backtracking === 1) {
-                    _first_0 = block;
+                    first = block;
                 }
 
                 this.match(this.input, Constants.DOWN);
-
-                if (this.state.failed as boolean) {
-                    return retval;
+                if (this.failed) {
+                    return result;
                 }
 
-                _last = this.input.LT(1) as GrammarAST;
-                const _save_last_2 = _last;
-                _last = this.input.LT(1) as GrammarAST;
                 const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
-
-                if (this.state.failed as boolean) {
-                    return retval;
+                if (this.failed) {
+                    return result;
                 }
 
                 if (this.state.backtracking === 1) {
                     altStream.add(alt);
-                }
-
-                if (this.state.backtracking === 1) {
-                    _first_1 = alt;
+                    first = alt;
                 }
 
                 this.match(this.input, Constants.DOWN);
-
-                if (this.state.failed as boolean) {
-                    return retval;
+                if (this.failed) {
+                    return result;
                 }
 
-                let alt7 = 2;
                 const lookahead = this.input.LA(1);
-                if ((lookahead === ANTLRv4Parser.ELEMENT_OPTIONS)) {
-                    alt7 = 1;
-                }
+                if (lookahead === ANTLRv4Parser.ELEMENT_OPTIONS) {
+                    const elementOptions = this.elementOptions();
 
-                switch (alt7) {
-                    case 1: {
-                        _last = this.input.LT(1) as GrammarAST;
-                        const elementOptions18 = this.elementOptions();
-
-                        if (this.state.failed as boolean) {
-                            return retval;
-                        }
-
-                        if (this.state.backtracking === 1) {
-                            elementOptionsStream.add(elementOptions18.tree ?? null);
-                        }
-
-                        if (this.state.backtracking === 1) {
-                            retval.tree = _first_0 ?? undefined;
-                            if (retval.tree?.getParent()?.isNil()) {
-                                retval.tree = retval.tree.getParent() as GrammarAST;
-                            }
-                        }
-
-                        break;
+                    if (this.failed) {
+                        return result;
                     }
 
-                    default:
+                    if (this.state.backtracking === 1) {
+                        elementOptionsStream.add(elementOptions ?? null);
+
+                        result = first;
+                        if (result?.getParent()?.isNil()) {
+                            result = result.getParent() as GrammarAST;
+                        }
+                    }
                 }
 
-                _last = this.input.LT(1) as GrammarAST;
-                const setElement19 = this.setElement(inLexer);
-
-                if (this.state.failed as boolean) {
-                    return retval;
+                const setElement = this.setElement(inLexer);
+                if (this.failed) {
+                    return result;
                 }
 
                 if (this.state.backtracking === 1) {
-                    setElementStream.add(setElement19.tree ?? null);
+                    setElementStream.add(setElement ?? null);
                 }
 
                 this.match(this.input, Constants.UP);
-
-                if (this.state.failed as boolean) {
-                    return retval;
+                if (this.failed) {
+                    return result;
                 }
 
-                _last = _save_last_2;
-
-                let cnt9 = 0;
-                loop9:
+                let optionsCount = 0;
                 while (true) {
-                    let alt9 = 2;
                     const lookahead = this.input.LA(1);
-                    if ((lookahead === ANTLRv4Parser.ALT)) {
-                        alt9 = 1;
-                    }
+                    if (lookahead === ANTLRv4Parser.ALT) {
+                        const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
 
-                    switch (alt9) {
-                        case 1: {
-                            _last = this.input.LT(1) as GrammarAST;
-                            {
-                                const _save_last_2 = _last;
-                                const _first_2 = null;
-                                _last = this.input.LT(1) as GrammarAST;
-                                const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
+                        if (this.failed) {
+                            return result;
+                        }
 
-                                if (this.state.failed as boolean) {
-                                    return retval;
-                                }
+                        if (this.state.backtracking === 1) {
+                            altStream.add(alt);
 
-                                if (this.state.backtracking === 1) {
-                                    altStream.add(alt);
-                                }
+                            if (first === null) {
+                                first = alt;
+                            }
+                        }
 
-                                if (this.state.backtracking === 1) {
+                        this.match(this.input, Constants.DOWN);
+                        if (this.failed) {
+                            return result;
+                        }
 
-                                    if (_first_1 === null) {
-                                        _first_1 = alt;
-                                    }
-                                }
+                        const lookahead = this.input.LA(1);
+                        if (lookahead === ANTLRv4Parser.ELEMENT_OPTIONS) {
+                            const elementOptions = this.elementOptions();
 
-                                this.match(this.input, Constants.DOWN);
-
-                                if (this.state.failed as boolean) {
-                                    return retval;
-                                }
-
-                                let alt8 = 2;
-                                const lookahead = this.input.LA(1);
-                                if ((lookahead === ANTLRv4Parser.ELEMENT_OPTIONS)) {
-                                    alt8 = 1;
-                                }
-
-                                switch (alt8) {
-                                    case 1: {
-                                        _last = this.input.LT(1) as GrammarAST;
-                                        const elementOptions21 = this.elementOptions();
-
-                                        if (this.state.failed as boolean) {
-                                            return retval;
-                                        }
-
-                                        if (this.state.backtracking === 1) {
-                                            elementOptionsStream.add(elementOptions21.tree ?? null);
-                                        }
-
-                                        if (this.state.backtracking === 1) {
-                                            retval.tree = _first_0 ?? undefined;
-                                            if (retval.tree?.getParent()?.isNil()) {
-                                                retval.tree = retval.tree.getParent() as GrammarAST;
-                                            }
-                                        }
-
-                                        break;
-                                    }
-
-                                    default:
-
-                                }
-
-                                _last = this.input.LT(1) as GrammarAST;
-                                const setElement22 = this.setElement(inLexer);
-
-                                if (this.state.failed as boolean) {
-                                    return retval;
-                                }
-
-                                if (this.state.backtracking === 1) {
-                                    setElementStream.add(setElement22.tree ?? null);
-                                }
-
-                                this.match(this.input, Constants.UP);
-
-                                if (this.state.failed as boolean) {
-                                    return retval;
-                                }
-
-                                _last = _save_last_2;
+                            if (this.failed) {
+                                return result;
                             }
 
                             if (this.state.backtracking === 1) {
-                                retval.tree = _first_0 ?? undefined;
-                                if (retval.tree?.getParent()?.isNil()) {
-                                    retval.tree = retval.tree.getParent() as GrammarAST;
+                                elementOptionsStream.add(elementOptions ?? null);
+
+                                result = first;
+                                if (result?.getParent()?.isNil()) {
+                                    result = result.getParent() as GrammarAST;
                                 }
                             }
+                        }
 
+                        const setElement = this.setElement(inLexer);
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        if (this.state.backtracking === 1) {
+                            setElementStream.add(setElement ?? null);
+                        }
+
+                        this.match(this.input, Constants.UP);
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        if (this.state.backtracking === 1) {
+                            result = first;
+                            if (result?.getParent()?.isNil()) {
+                                result = result.getParent() as GrammarAST;
+                            }
+                        }
+                    } else {
+                        if (optionsCount >= 1) {
                             break;
                         }
 
-                        default: {
-                            if (cnt9 >= 1) {
-                                break loop9;
-                            }
+                        if (this.state.backtracking > 0) {
+                            this.failed = true;
 
-                            if (this.state.backtracking > 0) {
-                                this.state.failed = true;
-
-                                return retval;
-                            }
-                            const eee = new EarlyExitException(9);
-                            throw eee;
+                            return result;
                         }
 
+                        throw new EarlyExitException(9);
                     }
-                    cnt9++;
+
+                    ++optionsCount;
                 }
 
                 this.match(this.input, Constants.UP);
-
-                if (this.state.failed as boolean) {
-                    return retval;
+                if (this.failed) {
+                    return result;
                 }
-
-                _last = _save_last_1;
 
                 // AST REWRITE
                 // elements:
@@ -1044,20 +745,17 @@ export class BlockSetTransformer extends TreeRewriter {
                     while (setElementStream.hasNext()) {
                         root1.addChild(setElementStream.nextTree());
                     }
+
                     setElementStream.reset();
-
                     root0.addChild(root1);
-
-                    retval.tree = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                    this.input.replaceChildren(retval.start!.getParent()!,
-                        retval.start!.getChildIndex(),
-                        _last.getChildIndex(),
-                        retval.tree);
+                    result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
+                    this.input.replaceChildren(result.getParent()!, start!.getChildIndex(), start!.getChildIndex(),
+                        result);
                 }
             }
 
             if (this.state.backtracking === 1) {
-                GrammarTransformPipeline.setGrammarPtr(this.g, retval.tree!);
+                GrammarTransformPipeline.setGrammarPtr(this.g, result!);
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -1067,35 +765,103 @@ export class BlockSetTransformer extends TreeRewriter {
             }
         }
 
-        return retval;
+        return result;
     }
 
-    public setElement(inLexer: boolean): ITreeRuleReturnScope<GrammarAST> {
-        const retval: ITreeRuleReturnScope<GrammarAST> = {};
-        retval.start = this.input.LT(1) ?? undefined;
+    private setElement(inLexer: boolean): GrammarAST | undefined {
+        let result: GrammarAST | undefined;
 
         try {
-            let alt11 = 5;
+            let first;
+            let doDefault = true;
+
             const lookahead = this.input.LA(1);
-            if ((lookahead === ANTLRv4Parser.STRING_LITERAL)) {
+            if (lookahead === ANTLRv4Parser.STRING_LITERAL) {
                 const lookahead2 = this.input.LA(2);
-                if ((lookahead2 === Constants.DOWN)) {
-                    alt11 = 1;
-                } else if ((lookahead2 === Constants.UP)) {
-                    alt11 = 2;
+                if (lookahead2 === Constants.DOWN) {
+                    const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    if (this.state.backtracking === 1) {
+                        first = a;
+                    }
+
+                    this.match(this.input, Constants.DOWN);
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    this.elementOptions();
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    this.match(this.input, Constants.UP);
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    if (!((!inLexer || CharSupport.getCharValueFromGrammarCharLiteral(a.getText()) !== -1))) {
+                        if (this.state.backtracking > 0) {
+                            this.failed = true;
+
+                            return result;
+                        }
+                        throw new FailedPredicateException("setElement", "");
+                    }
+
+                    if (this.state.backtracking === 1) {
+                        result = first ?? undefined;
+                        if (result?.getParent()?.isNil()) {
+                            result = result.getParent() as GrammarAST;
+                        }
+                    }
+
+                    doDefault = false;
+                } else if (lookahead2 === Constants.UP) {
+                    const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                    if (this.failed) {
+                        return result;
+                    }
+
+                    if (this.state.backtracking === 1) {
+                        first = a;
+                    }
+
+                    if (!((!inLexer || CharSupport.getCharValueFromGrammarCharLiteral(a.getText()) !== -1))) {
+                        if (this.state.backtracking > 0) {
+                            this.failed = true;
+
+                            return result;
+                        }
+
+                        throw new FailedPredicateException("setElement", "");
+                    }
+
+                    if (this.state.backtracking === 1) {
+                        result = first;
+                        if (result?.getParent()?.isNil()) {
+                            result = result.getParent() as GrammarAST;
+                        }
+                    }
+
+                    doDefault = false;
                 } else {
                     if (this.state.backtracking > 0) {
-                        this.state.failed = true;
+                        this.failed = true;
 
-                        return retval;
+                        return result;
                     }
 
                     const nvaeMark = this.input.mark();
                     const lastIndex = this.input.index;
                     try {
                         this.input.consume();
-                        const nvae = new NoViableAltException(11, 1);
-                        throw nvae;
+
+                        throw new NoViableAltException(11, 1);
                     } finally {
                         this.input.seek(lastIndex);
                         this.input.release(nvaeMark);
@@ -1104,301 +870,128 @@ export class BlockSetTransformer extends TreeRewriter {
             } else {
                 if ((lookahead === ANTLRv4Parser.TOKEN_REF) && !inLexer) {
                     const lookahead2 = this.input.LA(2);
-                    if ((lookahead2 === Constants.DOWN)) {
-                        alt11 = 3;
+                    if (lookahead2 === Constants.DOWN) {
+                        const tokenRef = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        if (this.state.backtracking === 1) {
+                            first = tokenRef;
+                        }
+
+                        this.match(this.input, Constants.DOWN);
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        this.elementOptions();
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        this.match(this.input, Constants.UP);
+                        if (this.failed) {
+                            return result;
+                        }
+
+                        if (this.state.backtracking === 1) {
+                            result = first ?? undefined;
+                            if (result?.getParent()?.isNil()) {
+                                result = result.getParent() as GrammarAST;
+                            }
+                        }
+
+                        doDefault = false;
                     } else {
-                        if ((lookahead2 === Constants.UP)) {
-                            alt11 = 4;
+                        if (lookahead2 === Constants.UP) {
+                            const tokenRef = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
+                            if (this.failed) {
+                                return result;
+                            }
+
+                            if (this.state.backtracking === 1) {
+                                first = tokenRef;
+                            }
+
+                            if (this.state.backtracking === 1) {
+                                result = first ?? undefined;
+                                if (result?.getParent()?.isNil()) {
+                                    result = result.getParent() as GrammarAST;
+                                }
+                            }
+
+                            doDefault = false;
                         }
                     }
-                } else {
-                    if ((lookahead === ANTLRv4Parser.RANGE) && inLexer) {
-                        alt11 = 5;
-                    }
                 }
-
             }
 
-            let _first_0;
-            switch (alt11) {
-                case 1: {
-                    const _save_last_1 = this.input.LT(1) as GrammarAST;
-                    let _first_1 = null;
-                    let _last = this.input.LT(1) as GrammarAST;
-                    const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+            if (doDefault) {
+                if (!inLexer) {
+                    if (this.state.backtracking > 0) {
+                        this.failed = true;
 
-                    if (this.state.failed) {
-                        return retval;
+                        return result;
                     }
-
-                    if (this.state.backtracking === 1) {
-                        _first_0 = a;
-                    }
-
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    _last = this.input.LT(1) as GrammarAST;
-                    const elementOptions23 = this.elementOptions();
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_1 = elementOptions23.tree!;
-                    }
-
-                    this.match(this.input, Constants.UP);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    _last = _save_last_1;
-
-                    if (!((!inLexer || CharSupport.getCharValueFromGrammarCharLiteral(a.getText()) !== -1))) {
-                        if (this.state.backtracking > 0) {
-                            this.state.failed = true;
-
-                            return retval;
-                        }
-                        throw new FailedPredicateException("setElement",
-                            "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                    throw new FailedPredicateException("setElement", "inLexer");
                 }
 
-                case 2: {
-                    const _last = this.input.LT(1) as GrammarAST;
-                    const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
-
-                    if (this.state.failed) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_0 = a;
-                    }
-
-                    if (!((!inLexer || CharSupport.getCharValueFromGrammarCharLiteral(a.getText()) !== -1))) {
-                        if (this.state.backtracking > 0) {
-                            this.state.failed = true;
-
-                            return retval;
-                        }
-
-                        throw new FailedPredicateException("setElement",
-                            "!inLexer || CharSupport.getCharValueFromGrammarCharLiteral($a.getText())!=-1");
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                const range = this.match(this.input, ANTLRv4Parser.RANGE)!;
+                if (this.failed) {
+                    return result;
                 }
 
-                case 3: {
-                    if (inLexer) {
-                        if (this.state.backtracking > 0) {
-                            this.state.failed = true;
-
-                            return retval;
-                        }
-                        throw new FailedPredicateException("setElement", "!inLexer");
-                    }
-
-                    const _save_last_1 = this.input.LT(1) as GrammarAST;
-                    let _first_1 = null;
-                    let _last = this.input.LT(1) as GrammarAST;
-                    const tokenRef = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
-
-                    if (this.state.failed) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_0 = tokenRef;
-                    }
-
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    _last = this.input.LT(1) as GrammarAST;
-                    const elementOptions25 = this.elementOptions();
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_1 = elementOptions25.tree!;
-                    }
-
-                    this.match(this.input, Constants.UP);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    _last = _save_last_1;
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                if (this.state.backtracking === 1) {
+                    first = range;
                 }
 
-                case 4: {
-                    if (inLexer) {
-                        if (this.state.backtracking > 0) {
-                            this.state.failed = true;
-
-                            return retval;
-                        }
-                        throw new FailedPredicateException("setElement", "!inLexer");
-                    }
-
-                    const _last = this.input.LT(1) as GrammarAST;
-                    const tokenRef = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
-
-                    if (this.state.failed) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_0 = tokenRef;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                this.match(this.input, Constants.DOWN);
+                if (this.failed) {
+                    return result;
                 }
 
-                case 5: {
-                    if (!inLexer) {
-                        if (this.state.backtracking > 0) {
-                            this.state.failed = true;
-
-                            return retval;
-                        }
-                        throw new FailedPredicateException("setElement", "inLexer");
-                    }
-
-                    const _save_last_1 = this.input.LT(1) as GrammarAST;
-                    let _first_1 = null;
-                    let _last = this.input.LT(1) as GrammarAST;
-                    const range = this.match(this.input, ANTLRv4Parser.RANGE)!;
-
-                    if (this.state.failed) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_0 = range;
-                    }
-
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    _last = this.input.LT(1) as GrammarAST;
-                    const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_1 = a;
-                    }
-
-                    _last = this.input.LT(1) as GrammarAST;
-                    const b = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        if (_first_1 === null) {
-                            _first_1 = b;
-                        }
-                    }
-
-                    this.match(this.input, Constants.UP);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    _last = _save_last_1;
-
-                    if (!((CharSupport.getCharValueFromGrammarCharLiteral(a.getText()) !== -1 &&
-                        CharSupport.getCharValueFromGrammarCharLiteral(b.getText()) !== -1))) {
-                        if (this.state.backtracking > 0) {
-                            this.state.failed = true;
-
-                            return retval;
-                        }
-                        throw new FailedPredicateException("setElement", "CharSupport.getCharValueFromGrammarChar" +
-                            "Literal($a.getText())!=-1 &&\n\t\t\t CharSupport.getCharValueFromGrammarCharLiteral" +
-                            "($b.getText())!=-1");
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                if (this.failed) {
+                    return result;
                 }
 
-                default:
-            }
+                const b = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                if (this.failed) {
+                    return result;
+                }
 
-            if (this.state.backtracking === 1) {
-                retval.tree = _first_0 ?? undefined;
-                if (retval.tree?.getParent()?.isNil()) {
-                    retval.tree = retval.tree.getParent() as GrammarAST;
+                this.match(this.input, Constants.UP);
+                if (this.failed) {
+                    return result;
+                }
+
+                if (!((CharSupport.getCharValueFromGrammarCharLiteral(a.getText()) !== -1 &&
+                    CharSupport.getCharValueFromGrammarCharLiteral(b.getText()) !== -1))) {
+                    if (this.state.backtracking > 0) {
+                        this.failed = true;
+
+                        return result;
+                    }
+
+                    throw new FailedPredicateException("setElement", "");
+                }
+
+                if (this.state.backtracking === 1) {
+                    result = first;
+                    if (result?.getParent()?.isNil()) {
+                        result = result.getParent() as GrammarAST;
+                    }
                 }
             }
 
             if (this.state.backtracking === 1) {
-                GrammarTransformPipeline.setGrammarPtr(this.g, retval.tree!);
+                result = first;
+                if (result?.getParent()?.isNil()) {
+                    result = result.getParent() as GrammarAST;
+                }
+
+                GrammarTransformPipeline.setGrammarPtr(this.g, result!);
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -1408,87 +1001,59 @@ export class BlockSetTransformer extends TreeRewriter {
             }
         }
 
-        return retval;
+        return result;
     }
 
-    public elementOptions(): ITreeRuleReturnScope<GrammarAST> {
-        const retval: ITreeRuleReturnScope<GrammarAST> = {};
-        retval.start = this.input.LT(1) ?? undefined;
+    private elementOptions(): GrammarAST | undefined {
+        let result: GrammarAST | undefined;
 
         try {
-            let _last = this.input.LT(1) as GrammarAST;
-            const _save_last_1 = _last;
-            let _first_1 = null;
-            _last = this.input.LT(1) as GrammarAST;
             const elementOptions = this.match(this.input, ANTLRv4Parser.ELEMENT_OPTIONS)!;
 
-            if (this.state.failed) {
-                return retval;
+            if (this.failed) {
+                return result;
             }
 
-            let _first_0;
+            let first;
             if (this.state.backtracking === 1) {
-                _first_0 = elementOptions;
+                first = elementOptions;
             }
 
             if (this.input.LA(1) === Constants.DOWN) {
                 this.match(this.input, Constants.DOWN);
-                if (this.state.failed as boolean) {
-                    return retval;
+                if (this.failed) {
+                    return result;
                 }
 
-                loop12:
                 while (true) {
-                    let alt12 = 2;
                     const lookahead = this.input.LA(1);
-                    if ((lookahead === ANTLRv4Parser.ASSIGN || lookahead === ANTLRv4Parser.ID)) {
-                        alt12 = 1;
-                    }
-
-                    switch (alt12) {
-                        case 1: {
-                            _last = this.input.LT(1) as GrammarAST;
-                            const elementOption29 = this.elementOption();
-
-                            if (this.state.failed as boolean) {
-                                return retval;
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                if (_first_1 === null) {
-                                    _first_1 = elementOption29.tree;
-                                }
-                            }
-
-                            if (this.state.backtracking === 1) {
-                                retval.tree = _first_0 ?? undefined;
-                                if (retval.tree?.getParent()?.isNil()) {
-                                    retval.tree = retval.tree.getParent() as GrammarAST;
-                                }
-                            }
-
-                            break;
+                    if (lookahead === ANTLRv4Parser.ASSIGN || lookahead === ANTLRv4Parser.ID) {
+                        this.elementOption();
+                        if (this.failed) {
+                            return result;
                         }
 
-                        default: {
-                            break loop12;
+                        if (this.state.backtracking === 1) {
+                            result = first;
+                            if (result?.getParent()?.isNil()) {
+                                result = result.getParent() as GrammarAST;
+                            }
                         }
-
+                    } else {
+                        break;
                     }
                 }
 
                 this.match(this.input, Constants.UP);
-
-                if (this.state.failed as boolean) {
-                    return retval;
+                if (this.failed) {
+                    return result;
                 }
             }
-            _last = _save_last_1;
 
             if (this.state.backtracking === 1) {
-                retval.tree = _first_0 ?? undefined;
-                if (retval.tree?.getParent()?.isNil()) {
-                    retval.tree = retval.tree.getParent() as GrammarAST;
+                result = first;
+                if (result?.getParent()?.isNil()) {
+                    result = result.getParent() as GrammarAST;
                 }
             }
         } catch (re) {
@@ -1499,64 +1064,179 @@ export class BlockSetTransformer extends TreeRewriter {
             }
         }
 
-        return retval;
+        return result;
     }
 
-    public elementOption(): ITreeRuleReturnScope<GrammarAST> {
-        const retval: ITreeRuleReturnScope<GrammarAST> = {};
-        retval.start = this.input.LT(1) ?? undefined;
+    private elementOption(): GrammarAST | undefined {
+        let result: GrammarAST | undefined;
 
         try {
-            let alt13 = 5;
+            let doDefault = true;
+
             const lookahead = this.input.LA(1);
-            if ((lookahead === ANTLRv4Parser.ID)) {
-                alt13 = 1;
-            } else if ((lookahead === ANTLRv4Parser.ASSIGN)) {
+            if (lookahead === ANTLRv4Parser.ID) {
+                const id = this.match(this.input, ANTLRv4Parser.ID)!;
+                if (this.failed) {
+                    return result;
+                }
+
+                if (this.state.backtracking === 1) {
+                    result = id;
+                    if (result.getParent()?.isNil()) {
+                        result = result.getParent() as GrammarAST;
+                    }
+                }
+
+                doDefault = false;
+            } else if (lookahead === ANTLRv4Parser.ASSIGN) {
                 const lookahead2 = this.input.LA(2);
-                if ((lookahead2 === Constants.DOWN)) {
+                if (lookahead2 === Constants.DOWN) {
                     const lookahead3 = this.input.LA(3);
-                    if ((lookahead3 === ANTLRv4Parser.ID)) {
+                    if (lookahead3 === ANTLRv4Parser.ID) {
+                        doDefault = false;
+
                         switch (this.input.LA(4)) {
                             case ANTLRv4Parser.ID: {
-                                alt13 = 2;
+                                const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, Constants.DOWN);
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, ANTLRv4Parser.ID)!;
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, ANTLRv4Parser.ID)!;
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, Constants.UP);
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                if (this.state.backtracking === 1) {
+                                    result = assign;
+                                    if (result.getParent()?.isNil()) {
+                                        result = result.getParent() as GrammarAST;
+                                    }
+                                }
 
                                 break;
                             }
 
                             case ANTLRv4Parser.STRING_LITERAL: {
-                                alt13 = 3;
+                                let first;
+                                const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
+
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                if (this.state.backtracking === 1) {
+                                    first = assign;
+                                }
+
+                                this.match(this.input, Constants.DOWN);
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, ANTLRv4Parser.ID)!;
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, Constants.UP);
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                if (this.state.backtracking === 1) {
+                                    result = first;
+                                    if (result?.getParent()?.isNil()) {
+                                        result = result.getParent() as GrammarAST;
+                                    }
+                                }
 
                                 break;
                             }
 
                             case ANTLRv4Parser.ACTION: {
-                                alt13 = 4;
+                                let first;
+                                const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
+
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                if (this.state.backtracking === 1) {
+                                    first = assign;
+                                }
+
+                                this.match(this.input, Constants.DOWN);
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, ANTLRv4Parser.ID)!;
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, ANTLRv4Parser.ACTION)!;
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                this.match(this.input, Constants.UP);
+                                if (this.failed) {
+                                    return result;
+                                }
+
+                                if (this.state.backtracking === 1) {
+                                    result = first;
+                                    if (result?.getParent()?.isNil()) {
+                                        result = result.getParent() as GrammarAST;
+                                    }
+                                }
 
                                 break;
                             }
 
                             case ANTLRv4Parser.INT: {
-                                alt13 = 5;
+                                doDefault = true;
 
                                 break;
                             }
 
                             default: {
                                 if (this.state.backtracking > 0) {
-                                    this.state.failed = true;
+                                    this.failed = true;
 
-                                    return retval;
+                                    return result;
                                 }
 
                                 const nvaeMark = this.input.mark();
                                 const lastIndex = this.input.index;
                                 try {
-                                    for (let nvaeConsume = 0; nvaeConsume < 4 - 1; nvaeConsume++) {
-                                        this.input.consume();
-                                    }
+                                    this.input.consume();
+                                    this.input.consume();
+                                    this.input.consume();
 
-                                    const nvae = new NoViableAltException(13, 4);
-                                    throw nvae;
+                                    throw new NoViableAltException(13, 4);
                                 } finally {
                                     this.input.seek(lastIndex);
                                     this.input.release(nvaeMark);
@@ -1565,20 +1245,18 @@ export class BlockSetTransformer extends TreeRewriter {
                         }
                     } else {
                         if (this.state.backtracking > 0) {
-                            this.state.failed = true;
+                            this.failed = true;
 
-                            return retval;
+                            return result;
                         }
 
                         const nvaeMark = this.input.mark();
                         const lastIndex = this.input.index;
                         try {
-                            for (let nvaeConsume = 0; nvaeConsume < 3 - 1; nvaeConsume++) {
-                                this.input.consume();
-                            }
+                            this.input.consume();
+                            this.input.consume();
 
-                            const nvae = new NoViableAltException(13, 3);
-                            throw nvae;
+                            throw new NoViableAltException(13, 3);
                         } finally {
                             this.input.seek(lastIndex);
                             this.input.release(nvaeMark);
@@ -1586,9 +1264,9 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
                 } else {
                     if (this.state.backtracking > 0) {
-                        this.state.failed = true;
+                        this.failed = true;
 
-                        return retval;
+                        return result;
                     }
 
                     const nvaeMark = this.input.mark();
@@ -1597,8 +1275,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     try {
                         this.input.consume();
 
-                        const nvae = new NoViableAltException(13, 2);
-                        throw nvae;
+                        throw new NoViableAltException(13, 2);
                     } finally {
                         this.input.seek(lastIndex);
                         this.input.release(nvaeMark);
@@ -1606,269 +1283,55 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
             } else {
                 if (this.state.backtracking > 0) {
-                    this.state.failed = true;
+                    this.failed = true;
 
-                    return retval;
+                    return result;
                 }
 
-                const nvae = new NoViableAltException(13, 0);
-                throw nvae;
+                throw new NoViableAltException(13, 0);
             }
 
-            switch (alt13) {
-                case 1: {
-                    const id = this.match(this.input, ANTLRv4Parser.ID)!;
+            if (doDefault) {
+                let first;
+                let _first_1;
+                const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
 
-                    if (this.state.failed) {
-                        return retval;
-                    }
-
-                    let _first_0;
-                    if (this.state.backtracking === 1) {
-                        _first_0 = id;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                if (this.failed) {
+                    return result;
                 }
 
-                case 2: {
-                    const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
-
-                    if (this.state.failed) {
-                        return retval;
-                    }
-
-                    let _first_0;
-                    if (this.state.backtracking === 1) {
-                        _first_0 = assign;
-                    }
-
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    let id = this.match(this.input, ANTLRv4Parser.ID)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    let _first_1;
-                    if (this.state.backtracking === 1) {
-                        _first_1 = id;
-                    }
-
-                    id = this.match(this.input, ANTLRv4Parser.ID)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        if (_first_1 === undefined) {
-                            _first_1 = id;
-                        }
-                    }
-
-                    this.match(this.input, Constants.UP);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                if (this.state.backtracking === 1) {
+                    first = assign;
                 }
 
-                case 3: {
-                    let _first_0 = null;
-                    let _first_1 = null;
-                    const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
+                this.match(this.input, Constants.DOWN);
 
-                    if (this.state.failed) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_0 = assign;
-                    }
-
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    const id = this.match(this.input, ANTLRv4Parser.ID)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_1 = id;
-                    }
-
-                    const literal = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        if (_first_1 === null) {
-                            _first_1 = literal;
-                        }
-                    }
-
-                    this.match(this.input, Constants.UP);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                if (this.failed) {
+                    return result;
                 }
 
-                case 4: {
-                    let _first_0 = null;
-                    const _save_last_1 = this.input.LT(1) as GrammarAST;
-                    let _first_1 = null;
-                    const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
-
-                    if (this.state.failed) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_0 = assign;
-                    }
-
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    const id = this.match(this.input, ANTLRv4Parser.ID)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_1 = id;
-                    }
-
-                    const action = this.match(this.input, ANTLRv4Parser.ACTION)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        if (_first_1 === null) {
-                            _first_1 = action;
-                        }
-                    }
-
-                    this.match(this.input, Constants.UP);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                this.match(this.input, ANTLRv4Parser.ID)!;
+                if (this.failed) {
+                    return result;
                 }
 
-                case 5: {
-                    let _first_0 = null;
-                    const _save_last_1 = this.input.LT(1) as GrammarAST;
-                    let _first_1 = null;
-                    const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
-
-                    if (this.state.failed) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_0 = assign;
-                    }
-
-                    this.match(this.input, Constants.DOWN);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    const id = this.match(this.input, ANTLRv4Parser.ID)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        _first_1 = id;
-                    }
-
-                    const int = this.match(this.input, ANTLRv4Parser.INT)!;
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        if (_first_1 === null) {
-                            _first_1 = int;
-                        }
-                    }
-
-                    this.match(this.input, Constants.UP);
-
-                    if (this.state.failed as boolean) {
-                        return retval;
-                    }
-
-                    if (this.state.backtracking === 1) {
-                        retval.tree = _first_0 ?? undefined;
-                        if (retval.tree?.getParent()?.isNil()) {
-                            retval.tree = retval.tree.getParent() as GrammarAST;
-                        }
-                    }
-
-                    break;
+                this.match(this.input, ANTLRv4Parser.INT)!;
+                if (this.failed) {
+                    return result;
                 }
 
-                default:
+                this.match(this.input, Constants.UP);
+
+                if (this.failed) {
+                    return result;
+                }
+
+                if (this.state.backtracking === 1) {
+                    result = first;
+                    if (result?.getParent()?.isNil()) {
+                        result = result.getParent() as GrammarAST;
+                    }
+                }
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -1878,6 +1341,6 @@ export class BlockSetTransformer extends TreeRewriter {
             }
         }
 
-        return retval;
+        return result;
     }
 }

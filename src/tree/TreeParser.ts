@@ -329,8 +329,12 @@ export abstract class TreeParser {
     }
 
     /** Return whether or not a backtracking attempt failed. */
-    protected failed(): boolean {
+    protected get failed(): boolean {
         return this.state.failed;
+    }
+
+    protected set failed(value: boolean) {
+        this.state.failed = value;
     }
 
     /**

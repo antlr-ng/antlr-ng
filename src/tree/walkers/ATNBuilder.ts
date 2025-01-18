@@ -5,12 +5,11 @@
 
 import { RecognitionException } from "antlr4ng";
 
-import { TreeParser } from "../TreeParser.js";
 import { EarlyExitException } from "../EarlyExitException.js";
 import { MismatchedSetException } from "../MismatchedSetException.js";
 import { NoViableAltException } from "../NoViableAltException.js";
+import { TreeParser } from "../TreeParser.js";
 
-import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
 import type { IATNFactory, IStatePair } from "../../automata/IATNFactory.js";
 import { Constants } from "../../Constants.js";
 import { ANTLRv4Lexer } from "../../generated/ANTLRv4Lexer.js";
@@ -19,11 +18,7 @@ import type { BlockAST } from "../../tool/ast/BlockAST.js";
 import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import type { PredAST } from "../../tool/ast/PredAST.js";
 import type { TerminalAST } from "../../tool/ast/TerminalAST.js";
-import type { ITreeRuleReturnScope } from "../../types.js";
-
-interface IPairedReturnScope extends ITreeRuleReturnScope<GrammarAST> {
-    p?: IStatePair;
-}
+import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
 
 export class ATNBuilder extends TreeParser {
     private static readonly tokenNames = [
@@ -226,8 +221,8 @@ export class ATNBuilder extends TreeParser {
                             || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
                             || (lookahead >= ANTLRv4Lexer.SET && lookahead <= ANTLRv4Lexer.WILDCARD)) {
                             const e = this.element();
-                            if (e.p) {
-                                els.push(e.p);
+                            if (e) {
+                                els.push(e);
                             }
                         } else {
                             if (cnt9 >= 1) {
@@ -347,14 +342,15 @@ export class ATNBuilder extends TreeParser {
         return result as GrammarAST;
     }
 
-    private element(): IPairedReturnScope {
-        const result: IPairedReturnScope = { start: this.input.LT(1) ?? undefined };
+    private element(): IStatePair | undefined {
+        let result: IStatePair | undefined;
+        const start = this.input.LT(1);
 
         try {
             switch (this.input.LA(1)) {
                 case ANTLRv4Lexer.ASSIGN:
                 case ANTLRv4Lexer.PLUS_ASSIGN: {
-                    result.p = this.labeledElement()!;
+                    result = this.labeledElement()!;
 
                     break;
                 }
@@ -366,7 +362,7 @@ export class ATNBuilder extends TreeParser {
                 case ANTLRv4Lexer.TOKEN_REF:
                 case ANTLRv4Lexer.SET:
                 case ANTLRv4Lexer.WILDCARD: {
-                    result.p = this.atom();
+                    result = this.atom();
 
                     break;
                 }
@@ -375,7 +371,7 @@ export class ATNBuilder extends TreeParser {
                 case ANTLRv4Lexer.CLOSURE:
                 case ANTLRv4Lexer.OPTIONAL:
                 case ANTLRv4Lexer.POSITIVE_CLOSURE: {
-                    result.p = this.subrule().p;
+                    result = this.subrule();
 
                     break;
                 }
@@ -388,7 +384,7 @@ export class ATNBuilder extends TreeParser {
                         this.matchAny();
                         this.match(this.input, Constants.UP);
 
-                        result.p = this.factory.action(action as ActionAST);
+                        result = this.factory.action(action as ActionAST);
                     } else if ((lookahead >= Constants.UP && lookahead <= ANTLRv4Lexer.ACTION)
                         || lookahead === ANTLRv4Lexer.ASSIGN || lookahead === ANTLRv4Lexer.DOT
                         || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead === ANTLRv4Lexer.NOT
@@ -399,7 +395,7 @@ export class ATNBuilder extends TreeParser {
                         || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
                         || (lookahead >= ANTLRv4Lexer.SET && lookahead <= ANTLRv4Lexer.WILDCARD)) {
                         const action = this.match(this.input, ANTLRv4Lexer.ACTION)!;
-                        result.p = this.factory.action(action as ActionAST);
+                        result = this.factory.action(action as ActionAST);
                     } else {
                         const mark = this.input.mark();
                         const lastIndex = this.input.index;
@@ -424,7 +420,7 @@ export class ATNBuilder extends TreeParser {
                         this.matchAny();
                         this.match(this.input, Constants.UP);
 
-                        result.p = this.factory.sempred(sempred as PredAST);
+                        result = this.factory.sempred(sempred as PredAST);
                     } else if ((lookahead >= Constants.UP && lookahead <= ANTLRv4Lexer.ACTION)
                         || lookahead === ANTLRv4Lexer.ASSIGN || lookahead === ANTLRv4Lexer.DOT
                         || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead === ANTLRv4Lexer.NOT
@@ -435,7 +431,7 @@ export class ATNBuilder extends TreeParser {
                         || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
                         || (lookahead >= ANTLRv4Lexer.SET && lookahead <= ANTLRv4Lexer.WILDCARD)) {
                         const sempred = this.match(this.input, ANTLRv4Lexer.SEMPRED)!;
-                        result.p = this.factory.sempred(sempred as PredAST);
+                        result = this.factory.sempred(sempred as PredAST);
                     } else {
                         const mark = this.input.mark();
                         const lastIndex = this.input.index;
@@ -457,7 +453,7 @@ export class ATNBuilder extends TreeParser {
                     this.match(this.input, ANTLRv4Lexer.NOT);
                     this.match(this.input, Constants.DOWN);
 
-                    result.p = this.blockSet(true);
+                    result = this.blockSet(true);
                     this.match(this.input, Constants.UP);
 
                     break;
@@ -465,7 +461,7 @@ export class ATNBuilder extends TreeParser {
 
                 case ANTLRv4Lexer.LEXER_CHAR_SET: {
                     this.match(this.input, ANTLRv4Lexer.LEXER_CHAR_SET);
-                    result.p = this.factory.charSetLiteral((result.start as GrammarAST))!;
+                    result = this.factory.charSetLiteral((start as GrammarAST))!;
 
                     break;
                 }
@@ -495,8 +491,8 @@ export class ATNBuilder extends TreeParser {
 
                 const element = this.element();
                 this.match(this.input, Constants.UP);
-                if (element.p) {
-                    return this.factory.label(element.p);
+                if (element) {
+                    return this.factory.label(element);
                 }
 
                 return undefined;
@@ -508,8 +504,8 @@ export class ATNBuilder extends TreeParser {
 
                     const element = this.element();
                     this.match(this.input, Constants.UP);
-                    if (element.p) {
-                        return this.factory.listLabel(element.p);
+                    if (element) {
+                        return this.factory.listLabel(element);
                     }
 
                     return undefined;
@@ -528,8 +524,9 @@ export class ATNBuilder extends TreeParser {
         }
     }
 
-    private subrule(): IPairedReturnScope {
-        const result: IPairedReturnScope = { start: this.input.LT(1) ?? undefined };
+    private subrule(): IStatePair | undefined {
+        let result: IStatePair | undefined;
+        const start = this.input.LT(1) as GrammarAST;
 
         try {
             switch (this.input.LA(1)) {
@@ -537,7 +534,7 @@ export class ATNBuilder extends TreeParser {
                     this.match(this.input, ANTLRv4Lexer.OPTIONAL);
                     this.match(this.input, Constants.DOWN);
 
-                    result.p = this.block((result.start as GrammarAST));
+                    result = this.block(start);
                     this.match(this.input, Constants.UP);
 
                     break;
@@ -547,7 +544,7 @@ export class ATNBuilder extends TreeParser {
                     this.match(this.input, ANTLRv4Lexer.CLOSURE);
                     this.match(this.input, Constants.DOWN);
 
-                    result.p = this.block((result.start as GrammarAST));
+                    result = this.block(start);
                     this.match(this.input, Constants.UP);
 
                     break;
@@ -557,14 +554,14 @@ export class ATNBuilder extends TreeParser {
                     this.match(this.input, ANTLRv4Lexer.POSITIVE_CLOSURE);
                     this.match(this.input, Constants.DOWN);
 
-                    result.p = this.block((result.start as GrammarAST));
+                    result = this.block(start);
                     this.match(this.input, Constants.UP);
 
                     break;
                 }
 
                 case ANTLRv4Lexer.BLOCK: {
-                    result.p = this.block(null);
+                    result = this.block(null);
 
                     break;
                 }

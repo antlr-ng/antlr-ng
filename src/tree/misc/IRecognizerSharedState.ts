@@ -41,7 +41,7 @@ export interface IRecognizerSharedState {
 
     /**
      * If 0, no backtracking is going on.  Safe to exec actions etc...
-     * If &gt;0 then it's the level of backtracking.
+     * If > 0 then it's the level of backtracking.
      */
     backtracking: number;
 

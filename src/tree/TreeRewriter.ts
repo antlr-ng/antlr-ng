@@ -79,7 +79,7 @@ export class TreeRewriter extends TreeParser {
             this.setBacktrackingLevel(1);
             const r = whichRule();
             this.setBacktrackingLevel(0);
-            if (this.failed()) {
+            if (this.failed) {
                 return t;
             }
 
