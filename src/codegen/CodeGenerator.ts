@@ -24,6 +24,7 @@ import { Target } from "./Target.js";
 import type { IToolParameters } from "../tool-parameters.js";
 import { CppTarget } from "./target/CppTarget.js";
 import { CSharpTarget } from "./target/CSharpTarget.js";
+import { DartTarget } from "./target/DartTarget.js";
 import { GoTarget } from "./target/GoTarget.js";
 import { JavaScriptTarget } from "./target/JavaScriptTarget.js";
 import { JavaTarget } from "./target/JavaTarget.js";
@@ -33,7 +34,7 @@ import { SwiftTarget } from "./target/SwiftTarget.js";
 import { TypeScriptTarget } from "./target/TypeScriptTarget.js";
 
 export const targetLanguages = [
-    "Cpp", "CSharp", "Go", "JavaScript", "Java", "PHP", "Python3", "Swift", "TypeScript"
+    "Cpp", "CSharp", "Dart", "Go", "JavaScript", "Java", "PHP", "Python3", "Swift", "TypeScript"
 ] as const;
 
 export type SupportedLanguage = typeof targetLanguages[number];
@@ -57,6 +58,7 @@ export class CodeGenerator {
     static #languageMap = new Map<SupportedLanguage, new (generator: CodeGenerator) => Target>([
         ["Cpp", CppTarget],
         ["CSharp", CSharpTarget],
+        ["Dart", DartTarget],
         ["Go", GoTarget],
         ["JavaScript", JavaScriptTarget],
         ["Java", JavaTarget],
