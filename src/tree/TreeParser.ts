@@ -200,10 +200,10 @@ export abstract class TreeParser {
      *  immediate exit from rule.  Rule would recover by resynchronizing
      *  to the set of symbols that can follow rule ref.
      */
-    public match(input: IntStream, ttype: number): GrammarAST | null {
+    public match<T extends GrammarAST = GrammarAST>(input: IntStream, ttype: number): T | null {
         this.state.failed = false;
 
-        const matchedSymbol = this.getCurrentInputSymbol(input) as GrammarAST | null;
+        const matchedSymbol = this.getCurrentInputSymbol(input) as T | null;
         if (input.LA(1) === ttype) {
             input.consume();
             this.state.errorRecovery = false;
@@ -217,7 +217,7 @@ export abstract class TreeParser {
             return matchedSymbol;
         }
 
-        return this.recoverFromMismatchedToken(input, ttype);
+        return this.recoverFromMismatchedToken(input, ttype) as T;
     }
 
     /**

@@ -42,8 +42,8 @@ export class RuleCollector extends GrammarTreeVisitor {
         this.visitGrammar(ast);
     }
 
-    public override discoverRule(rule: RuleAST, id: GrammarAST, modifiers: GrammarAST[], arg: ActionAST | null,
-        returns: ActionAST | null, thrws: GrammarAST, options: GrammarAST, locals: ActionAST | null,
+    public override discoverRule(rule: RuleAST, id: GrammarAST, modifiers: GrammarAST[], arg: ActionAST | undefined,
+        returns: ActionAST | undefined, thrws: GrammarAST, options: GrammarAST, locals: ActionAST | undefined,
         actions: GrammarAST[], block: GrammarAST): void {
         const numAlts = block.getChildCount();
         let r: Rule;
@@ -54,20 +54,20 @@ export class RuleCollector extends GrammarTreeVisitor {
         }
         this.nameToRuleMap.set(r.name, r);
 
-        if (arg !== null) {
+        if (arg !== undefined) {
             r.args = ScopeParser.parseTypedArgList(arg, arg.getText(), this.g);
             r.args.type = DictType.Argument;
             r.args.ast = arg;
             arg.resolver = r.alt[this.currentOuterAltNumber];
         }
 
-        if (returns !== null) {
+        if (returns !== undefined) {
             r.retvals = ScopeParser.parseTypedArgList(returns, returns.getText(), this.g);
             r.retvals.type = DictType.Return;
             r.retvals.ast = returns;
         }
 
-        if (locals !== null) {
+        if (locals !== undefined) {
             r.locals = ScopeParser.parseTypedArgList(locals, locals.getText(), this.g);
             r.locals.type = DictType.Local;
             r.locals.ast = locals;
@@ -82,11 +82,11 @@ export class RuleCollector extends GrammarTreeVisitor {
     }
 
     public override discoverOuterAlt(alt: AltAST): void {
-        if (alt.altLabel) {
-            this.ruleToAltLabels.map(this.currentRuleName!, alt.altLabel);
+        if (alt.altLabel && this.currentRuleName) {
+            this.ruleToAltLabels.map(this.currentRuleName, alt.altLabel);
             const altLabel = alt.altLabel.getText();
-            this.altLabelToRuleName.set(Utils.capitalize(altLabel), this.currentRuleName!);
-            this.altLabelToRuleName.set(Utils.decapitalize(altLabel), this.currentRuleName!);
+            this.altLabelToRuleName.set(Utils.capitalize(altLabel), this.currentRuleName);
+            this.altLabelToRuleName.set(Utils.decapitalize(altLabel), this.currentRuleName);
         }
     }
 

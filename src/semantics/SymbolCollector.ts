@@ -166,14 +166,8 @@ export class SymbolCollector extends GrammarTreeVisitor {
         this.setActionResolver(valueAST);
     }
 
-    public override elementOption(t: GrammarASTWithOptions): GrammarTreeVisitor.elementOption_return;
-    public override elementOption(t: GrammarASTWithOptions, id: GrammarAST, valueAST: GrammarAST): void;
-    public override elementOption(...args: unknown[]): GrammarTreeVisitor.elementOption_return | void {
-        if (args.length === 3) {
-            this.setActionResolver(args[2] as GrammarAST);
-        } else {
-            return super.elementOption(args[0] as GrammarASTWithOptions);
-        }
+    public override elementOption(t: GrammarASTWithOptions, id: GrammarAST, valueAST: GrammarAST): void {
+        this.setActionResolver(valueAST);
     }
 
     /** In case of option id={...}, set resolve in case they use $foo */

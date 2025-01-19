@@ -186,13 +186,8 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         this.checkChannelDefinition(id.token!);
     }
 
-    public override elementOption(t: GrammarASTWithOptions): GrammarTreeVisitor.elementOption_return;
-    public override elementOption(t: GrammarASTWithOptions, id: GrammarAST, valueAST: GrammarAST): void;
-    public override elementOption(...args: unknown[]): GrammarTreeVisitor.elementOption_return | void {
-        if (args.length === 1) {
-            return super.elementOption(args[0] as GrammarASTWithOptions);
-        }
-        this.checkElementOptions(args[0] as GrammarASTWithOptions, args[1] as GrammarAST, args[2] as GrammarAST);
+    public override elementOption(t: GrammarASTWithOptions, id: GrammarAST, valueAST: GrammarAST): void {
+        this.checkElementOptions(t, id, valueAST);
     }
 
     public override finishRule(rule: RuleAST, _id: GrammarAST, _block: GrammarAST): void {
