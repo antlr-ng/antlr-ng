@@ -8,6 +8,7 @@
         "type": "git",
         "url": "git+https://github.com/mike-lischke/antlr-ng.git"
     },
+    "homepage": "https://www.antlr-ng.org/",
     "bugs": {
         "url": "https://github.com/mike-lischke/antlr-ng/issues"
     },

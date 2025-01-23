@@ -106,7 +106,7 @@ export class LeftRecursiveRuleTransformer {
         const leftRecursiveRuleWalker = new LeftRecursiveRuleAnalyzer(prevRuleAST, this.tool, ruleName, language);
         let isLeftRec: boolean;
         try {
-            isLeftRec = leftRecursiveRuleWalker.rec_rule();
+            isLeftRec = leftRecursiveRuleWalker.recursiveRule();
         } catch {
             isLeftRec = false; // didn't match; oh well
         }
