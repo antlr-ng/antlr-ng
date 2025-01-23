@@ -1,7 +1,7 @@
 [![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/mike-lischke/ANTLRng/nodejs.yml?style=for-the-badge&logo=github)](https://github.com/mike-lischke/antlr-ng/actions/workflows/nodejs.yml)[![Weekly Downloads](https://img.shields.io/npm/dw/antlr-ng?style=for-the-badge&color=blue)](https://www.npmjs.com/package/antlr-ng)
 [![npm version](https://img.shields.io/npm/v/antlr-ng?style=for-the-badge&color=yellow)](https://www.npmjs.com/package/antlr-ng)
 
-<img src="https://raw.githubusercontent.com/mike-lischke/mike-lischke/master/images/ANTLRng2.svg" title="ANTLR Next Generation" alt="ANTLRng" width="96" height="96"/><label style="font-size: 70%">Part of the Next Generation ANTLR Project</label>
+<img src="https://raw.githubusercontent.com/mike-lischke/mike-lischke/master/images/antlr-ng.svg" title="ANTLR Next Generation" alt="antlr-ng" width="96" height="96"/><label style="font-size: 70%">Part of the Next Generation ANTLR Project</label>
 
 
 # antlr-ng - Next Generation ANTLR
