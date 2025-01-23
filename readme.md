@@ -111,6 +111,22 @@ Just note: antlr4ng-cli has **not** been updated to use antlr-ng yet. This will 
 
 This scenario allows you to run the generation process in memory. All unit tests in the package use this approach. Details of that will be laid out in a separate document later.
 
+# What is the ANTLR Next Generation Project?
+
+## History
+
+ANTLR (ANother Tool for Language Recognition) emerged from the Purdue Compiler Construction Tool Set [PCCTS](https://www.antlr2.org/history.html), originating in 1988 when Terence Parr, working under Professor Hank Dietz at Purdue University, began developing a parser generator. Initially called YUCC and released in February 1990, the tool evolved through critical milestones: version 1.00 introduced LL(1) parsing in 1992, version 2.2.0 added grammar inheritance, and subsequent versions expanded language support and parsing capabilities.
+
+Key contributors like Sam Harwell, who co-authored ANTLR 4, and Eric Vergnaud, who developed Python and JavaScript targets, helped transform ANTLR into a robust parser generator (see [Q&A with T. Parr on ANTLR](https://dzone.com/articles/qa-with-terence-parr-on-antlr)). Under Parr's continued leadership, ANTLR has become a widely-used tool for language recognition, supporting multiple programming languages and platforms. The project reached significant maturity with ANTLR 4's Adaptive LL(*) parsing algorithm, representing a sophisticated approach to parsing complex language grammars.
+
+## Future
+
+ANTLR4, the latest major release of the tool, has reached a high level of maturity and development has essentially stopped. At the time of writing, there are over 800 issue reports and nearly 150 pull requests. Most of the reported issues or PRs have nothing to do with the tool itself, but were created for problems in one of the target runtimes included in the ANTLR4 repository. This shows how important it is to make a cut and separate the ANTLR tool from it's runtimes. This is one of the main goals of the **ANTLR Next Generation Project**.
+
+This project is conceived as a biotope of various parts, rooted in a new ANTLR tool (in this repository) and accompanied by various tools made specifically for it (such as IDE plugins, debuggers, command line tools, documents and blogs), as well as individual target runtimes that are no longer part of the ANTLR repository. These are maintained by their owners, who know the language the target is for by heart and are responsible for release and maintenance.
+
+By simplifying the code base, such as removing very old parts of the code, tidying everything up and laying the groundwork for new development, it is hoped that antlr-ng will grow and open doors for future improvements and all those great ideas that the community brought to ANTLR4 but never had a chance to get in.
+
 # Advanced Topics
 
 The sections below are meant for developers working on antlr-ng or are interested in the internals of this project.
