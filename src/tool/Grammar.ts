@@ -1085,7 +1085,7 @@ export class Grammar implements IGrammar, AttributeResolver {
                 return this.stringLiteralToTypeMap.get(lit)!;
             }
 
-            return this.defineStringLiteral(lit, this.getNewTokenType());
+            ttype = this.getNewTokenType();
         }
 
         if (!this.stringLiteralToTypeMap.has(lit)) {
