@@ -27,10 +27,6 @@ export class ATNBuilder extends TreeParser {
         super(errorManager, input, createRecognizerSharedState());
     }
 
-    public override getTokenNames(): string[] {
-        return [];
-    }
-
     public ruleBlock(ebnfRoot: GrammarAST | null): IStatePair | undefined {
         this.factory.setCurrentOuterAlt(1);
 

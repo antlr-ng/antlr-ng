@@ -3,10 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-/* eslint-disable @typescript-eslint/naming-convention */
-// cspell: disable
-
 import { Constants } from "../../Constants.js";
 import { ANTLRv4Lexer } from "../../generated/ANTLRv4Lexer.js";
 import type { AltAST } from "../../tool/ast/AltAST.js";
@@ -18,6 +14,10 @@ import { FailedPredicateException } from "../FailedPredicateException.js";
 import { MismatchedSetException } from "../MismatchedSetException.js";
 import { NoViableAltException } from "../NoViableAltException.js";
 import { TreeParser } from "../TreeParser.js";
+
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+/* eslint-disable @typescript-eslint/naming-convention */
+// cspell: disable
 
 /** Find left-recursive rules */
 export class LeftRecursiveRuleWalker extends TreeParser {
@@ -47,10 +47,6 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
     public constructor(input: CommonTreeNodeStream, errorManager: ErrorManager) {
         super(errorManager, input);
-    }
-
-    public override getTokenNames(): string[] {
-        return [];
     }
 
     public recursiveRule(): boolean {

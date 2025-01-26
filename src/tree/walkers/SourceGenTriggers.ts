@@ -1,6 +1,10 @@
+/*
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
+ */
+
 import { RecognitionException } from "antlr4ng";
 
-import { TreeRuleReturnScope } from "../../antlr3/tree/TreeRuleReturnScope.js";
 import { CodeBlockForAlt } from "../../codegen/model/CodeBlockForAlt.js";
 import { PlusBlock } from "../../codegen/model/PlusBlock.js";
 import type { SrcOp } from "../../codegen/model/SrcOp.js";
@@ -19,13 +23,13 @@ import { IRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
 import { NoViableAltException } from "../NoViableAltException.js";
 import { TreeParser } from "../TreeParser.js";
 
-/*
- * Copyright (c) Mike Lischke. All rights reserved.
- * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
- */
-
 /* eslint-disable max-len, @typescript-eslint/naming-convention */
 // cspell: disable
+
+interface IAltResults {
+    altCodeBlock?: CodeBlockForAlt;
+    ops: SrcOp[];
+}
 
 export class SourceGenTriggers extends TreeParser {
     public static readonly tokenNames = [
@@ -43,18 +47,6 @@ export class SourceGenTriggers extends TreeParser {
         "EPSILON", "LEXER_ACTION_CALL", "LEXER_ALT_ACTION", "OPTIONAL", "POSITIVE_CLOSURE",
         "RULE", "RULEMODIFIERS", "RULES", "SET", "WILDCARD"
     ];
-
-    public static alternative_return = class alternative_return extends TreeRuleReturnScope {
-        public altCodeBlock: CodeBlockForAlt;
-        public ops: SrcOp[];
-    };
-
-    // $ANTLR end "alternative"
-
-    public static alt_return = class alt_return extends TreeRuleReturnScope {
-        public altCodeBlock: CodeBlockForAlt;
-        public ops?: SrcOp[];
-    };
 
     public controller?: OutputModelController;
     public hasLookaheadBlock: boolean;
@@ -76,52 +68,30 @@ export class SourceGenTriggers extends TreeParser {
         this.controller = controller;
     }
 
-    public getDelegates(): TreeParser[] {
-        return [];
-    }
-
     public override getTokenNames(): string[] {
         return SourceGenTriggers.tokenNames;
     }
-
-    // $ANTLR start "dummy"
-    // ./SourceGenTriggers.g:59:1: dummy : block[null, null] ;
     public dummy(): void {
         try {
-            // ./SourceGenTriggers.g:59:7: ( block[null, null] )
-            // ./SourceGenTriggers.g:59:9: block[null, null]
-            {
-                this.block(null, null);
-
-            }
-
+            this.block(null, null);
         } catch (re) {
             if (re instanceof RecognitionException) {
                 this.reportError(re);
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
     }
-    // $ANTLR end "dummy"
 
-    // $ANTLR start "block"
-    // ./SourceGenTriggers.g:61:1: block[GrammarAST label, GrammarAST ebnfRoot] returns [List<? extends SrcOp> omos] : ^(blk= BLOCK ( ^( OPTIONS ( . )+ ) )? ( alternative )+ ) ;
     public block(label: GrammarAST | null, ebnfRoot: GrammarAST | null): SrcOp[] | null {
         let omos = null;
 
         let blk = null;
-        let alternative1 = null;
 
         try {
-            // ./SourceGenTriggers.g:62:5: ( ^(blk= BLOCK ( ^( OPTIONS ( . )+ ) )? ( alternative )+ ) )
-            // ./SourceGenTriggers.g:62:7: ^(blk= BLOCK ( ^( OPTIONS ( . )+ ) )? ( alternative )+ )
             {
                 blk = this.match(this.input, ANTLRv4Lexer.BLOCK)!;
                 this.match(this.input, Constants.DOWN);
-                // ./SourceGenTriggers.g:62:20: ( ^( OPTIONS ( . )+ ) )?
                 let alt2 = 2;
                 const LA2_0 = this.input.LA(1);
                 if ((LA2_0 === ANTLRv4Lexer.OPTIONS)) {
@@ -129,12 +99,10 @@ export class SourceGenTriggers extends TreeParser {
                 }
                 switch (alt2) {
                     case 1: {
-                        // ./SourceGenTriggers.g:62:21: ^( OPTIONS ( . )* )
                         {
                             this.match(this.input, ANTLRv4Lexer.OPTIONS);
                             if (this.input.LA(1) === Constants.DOWN) {
                                 this.match(this.input, Constants.DOWN);
-                                // ./SourceGenTriggers.g:62:31: ( . )+
                                 let cnt1 = 0;
                                 loop1:
                                 while (true) {
@@ -150,7 +118,6 @@ export class SourceGenTriggers extends TreeParser {
 
                                     switch (alt1) {
                                         case 1: {
-                                            // ./SourceGenTriggers.g:62:31: .
                                             {
                                                 this.matchAny();
                                             }
@@ -181,7 +148,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 const alts = new Array<CodeBlockForAlt>();
-                // ./SourceGenTriggers.g:64:7: ( alternative )+
                 let cnt3 = 0;
                 loop3:
                 while (true) {
@@ -193,11 +159,11 @@ export class SourceGenTriggers extends TreeParser {
 
                     switch (alt3) {
                         case 1: {
-                            // ./SourceGenTriggers.g:64:9: alternative
                             {
-                                alternative1 = this.alternative();
-
-                                alts.push(alternative1.altCodeBlock);
+                                const alternative1 = this.alternative();
+                                if (alternative1.altCodeBlock !== undefined) {
+                                    alts.push(alternative1.altCodeBlock);
+                                }
                             }
                             break;
                         }
@@ -237,34 +203,24 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
         return omos;
     }
 
-    // $ANTLR start "alternative"
-    // ./SourceGenTriggers.g:79:1: alternative returns [CodeBlockForAlt altCodeBlock, List<SrcOp> ops] : a= alt[outerMost] ;
-    public alternative(): SourceGenTriggers.alternative_return {
-        const retval = new SourceGenTriggers.alternative_return();
-        retval.start = this.input.LT(1);
-
-        let a = null;
+    public alternative(): IAltResults {
+        const result: IAltResults = { ops: [] };
 
         const outerMost = this.inContext("RULE BLOCK");
 
         try {
-            // ./SourceGenTriggers.g:86:5: (a= alt[outerMost] )
-            // ./SourceGenTriggers.g:86:7: a= alt[outerMost]
             {
-                a = this.alt(outerMost);
-
-                retval.altCodeBlock = a.altCodeBlock;
-                retval.ops = a.ops ?? [];
+                const a = this.alt(outerMost);
+                result.altCodeBlock = a.altCodeBlock;
+                result.ops = a.ops;
             }
 
-            this.controller!.finishAlternative(retval.altCodeBlock, retval.ops, outerMost);
+            this.controller!.finishAlternative(result.altCodeBlock!, result.ops, outerMost);
 
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -272,54 +228,44 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
-        return retval;
+        return result;
     }
 
-    // $ANTLR start "alt"
-    // ./SourceGenTriggers.g:89:1: alt[boolean outerMost] returns [CodeBlockForAlt altCodeBlock, List<SrcOp> ops] : ( ^( ALT ( elementOptions )? ( element )+ ) | ^( ALT ( elementOptions )? EPSILON ) );
-    public alt(outerMost: boolean): SourceGenTriggers.alt_return {
-        const retval = new SourceGenTriggers.alt_return();
-        retval.start = this.input.LT(1);
-
-        let element2 = null;
+    public alt(outerMost: boolean): IAltResults {
+        const result: IAltResults = { ops: [] };
+        const start = this.input.LT(1) as GrammarAST;
 
         // set alt if outer ALT only (the only ones with alt field set to Alternative object)
-        const altAST = retval.start as AltAST;
+        const altAST = start as AltAST;
         if (outerMost) {
             this.controller!.setCurrentOuterMostAlt(altAST.alt);
         }
 
         try {
-            // ./SourceGenTriggers.g:95:2: ( ^( ALT ( elementOptions )? ( element )+ ) | ^( ALT ( elementOptions )? EPSILON ) )
             let alt7 = 1;
 
             let index = 0;
-            if (retval.start!.getChild(index)!.getType() === ANTLRv4Lexer.ELEMENT_OPTIONS) {
+            if (start.getChild(index)!.getType() === ANTLRv4Lexer.ELEMENT_OPTIONS) {
                 ++index;
             }
 
-            if (retval.start!.getChild(index)!.getType() === ANTLRv4Lexer.EPSILON) {
+            if (start.getChild(index)!.getType() === ANTLRv4Lexer.EPSILON) {
                 alt7 = 2;
             }
 
             switch (alt7) {
                 case 1: {
-                    // ./SourceGenTriggers.g:95:4: ^( ALT ( elementOptions )? ( element )+ )
                     {
 
                         const elems = new Array<SrcOp>();
-                        // TODO: shouldn't we pass ((GrammarAST)retval.start) to controller.alternative()?
-                        retval.altCodeBlock = this.controller!.alternative(this.controller!.getCurrentOuterMostAlt(), outerMost);
-                        retval.altCodeBlock.ops = retval.ops = elems;
-                        this.controller!.setCurrentBlock(retval.altCodeBlock);
+                        result.altCodeBlock = this.controller!.alternative(this.controller!.getCurrentOuterMostAlt(), outerMost);
+                        result.altCodeBlock.ops = result.ops = elems;
+                        this.controller!.setCurrentBlock(result.altCodeBlock);
 
                         this.match(this.input, ANTLRv4Lexer.ALT);
                         this.match(this.input, Constants.DOWN);
-                        // ./SourceGenTriggers.g:102:10: ( elementOptions )?
                         let alt4 = 2;
                         const LA4_0 = this.input.LA(1);
                         if ((LA4_0 === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
@@ -327,7 +273,6 @@ export class SourceGenTriggers extends TreeParser {
                         }
                         switch (alt4) {
                             case 1: {
-                                // ./SourceGenTriggers.g:102:10: elementOptions
                                 {
                                     this.elementOptions();
 
@@ -339,7 +284,6 @@ export class SourceGenTriggers extends TreeParser {
 
                         }
 
-                        // ./SourceGenTriggers.g:102:26: ( element )+
                         let cnt5 = 0;
                         loop5:
                         while (true) {
@@ -351,10 +295,8 @@ export class SourceGenTriggers extends TreeParser {
 
                             switch (alt5) {
                                 case 1: {
-                                    // ./SourceGenTriggers.g:102:28: element
                                     {
-                                        element2 = this.element();
-
+                                        const element2 = this.element();
                                         if (element2 !== null) {
                                             element2.forEach((element: SrcOp | null) => {
                                                 if (element) {
@@ -387,11 +329,9 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 2: {
-                    // ./SourceGenTriggers.g:104:4: ^( ALT ( elementOptions )? EPSILON )
                     {
                         this.match(this.input, ANTLRv4Lexer.ALT);
                         this.match(this.input, Constants.DOWN);
-                        // ./SourceGenTriggers.g:104:10: ( elementOptions )?
                         let alt6 = 2;
                         const LA6_0 = this.input.LA(1);
                         if ((LA6_0 === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
@@ -399,7 +339,6 @@ export class SourceGenTriggers extends TreeParser {
                         }
                         switch (alt6) {
                             case 1: {
-                                // ./SourceGenTriggers.g:104:10: elementOptions
                                 {
                                     this.elementOptions();
 
@@ -414,7 +353,7 @@ export class SourceGenTriggers extends TreeParser {
                         this.match(this.input, ANTLRv4Lexer.EPSILON);
                         this.match(this.input, Constants.UP);
 
-                        retval.altCodeBlock = this.controller!.epsilon(this.controller!.getCurrentOuterMostAlt(), outerMost);
+                        result.altCodeBlock = this.controller!.epsilon(this.controller!.getCurrentOuterMostAlt(), outerMost);
                     }
                     break;
                 }
@@ -428,16 +367,11 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
-        return retval;
+        return result;
     }
-    // $ANTLR end "alt"
 
-    // $ANTLR start "element"
-    // ./SourceGenTriggers.g:108:1: element returns [List<? extends SrcOp> omos] : ( labeledElement | atom[null,false] | subrule | ACTION | SEMPRED | ^( ACTION elementOptions ) | ^( SEMPRED elementOptions ) );
     public element(): SrcOp[] | null {
         let omos = null;
 
@@ -450,7 +384,6 @@ export class SourceGenTriggers extends TreeParser {
         let subrule5 = null;
 
         try {
-            // ./SourceGenTriggers.g:109:2: ( labeledElement | atom[null,false] | subrule | ACTION | SEMPRED | ^( ACTION elementOptions ) | ^( SEMPRED elementOptions ) )
             let alt8 = 7;
             switch (this.input.LA(1)) {
                 case ANTLRv4Lexer.ASSIGN:
@@ -546,7 +479,6 @@ export class SourceGenTriggers extends TreeParser {
             }
             switch (alt8) {
                 case 1: {
-                    // ./SourceGenTriggers.g:109:4: labeledElement
                     {
                         labeledElement3 = this.labeledElement();
 
@@ -556,7 +488,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 2: {
-                    // ./SourceGenTriggers.g:110:4: atom[null,false]
                     {
                         atom4 = this.atom(null, false);
 
@@ -566,7 +497,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 3: {
-                    // ./SourceGenTriggers.g:111:4: subrule
                     {
                         subrule5 = this.subrule();
 
@@ -576,7 +506,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 4: {
-                    // ./SourceGenTriggers.g:112:6: ACTION
                     {
                         ACTION6 = this.match(this.input, ANTLRv4Lexer.ACTION)!;
                         omos = this.controller!.action(ACTION6 as ActionAST);
@@ -585,7 +514,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 5: {
-                    // ./SourceGenTriggers.g:113:6: SEMPRED
                     {
                         SEMPRED7 = this.match(this.input, ANTLRv4Lexer.SEMPRED)!;
                         omos = this.controller!.sempred(SEMPRED7 as ActionAST);
@@ -594,7 +522,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 6: {
-                    // ./SourceGenTriggers.g:114:4: ^( ACTION elementOptions )
                     {
                         ACTION8 = this.match(this.input, ANTLRv4Lexer.ACTION)!;
                         this.match(this.input, Constants.DOWN);
@@ -608,7 +535,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 7: {
-                    // ./SourceGenTriggers.g:115:6: ^( SEMPRED elementOptions )
                     {
                         SEMPRED9 = this.match(this.input, ANTLRv4Lexer.SEMPRED)!;
                         this.match(this.input, Constants.DOWN);
@@ -630,16 +556,11 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
         return omos;
     }
-    // $ANTLR end "element"
 
-    // $ANTLR start "labeledElement"
-    // ./SourceGenTriggers.g:118:1: labeledElement returns [List<? extends SrcOp> omos] : ( ^( ASSIGN ID atom[$ID,false] ) | ^( PLUS_ASSIGN ID atom[$ID,false] ) | ^( ASSIGN ID block[$ID,null] ) | ^( PLUS_ASSIGN ID block[$ID,null] ) );
     public labeledElement(): SrcOp[] | null {
         let omos = null;
 
@@ -653,7 +574,6 @@ export class SourceGenTriggers extends TreeParser {
         let block17 = null;
 
         try {
-            // ./SourceGenTriggers.g:119:2: ( ^( ASSIGN ID atom[$ID,false] ) | ^( PLUS_ASSIGN ID atom[$ID,false] ) | ^( ASSIGN ID block[$ID,null] ) | ^( PLUS_ASSIGN ID block[$ID,null] ) )
             let alt9 = 4;
             const LA9_0 = this.input.LA(1);
             if ((LA9_0 === ANTLRv4Lexer.ASSIGN)) {
@@ -776,7 +696,6 @@ export class SourceGenTriggers extends TreeParser {
 
             switch (alt9) {
                 case 1: {
-                    // ./SourceGenTriggers.g:119:4: ^( ASSIGN ID atom[$ID,false] )
                     {
                         this.match(this.input, ANTLRv4Lexer.ASSIGN);
                         this.match(this.input, Constants.DOWN);
@@ -791,7 +710,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 2: {
-                    // ./SourceGenTriggers.g:120:4: ^( PLUS_ASSIGN ID atom[$ID,false] )
                     {
                         this.match(this.input, ANTLRv4Lexer.PLUS_ASSIGN);
                         this.match(this.input, Constants.DOWN);
@@ -806,7 +724,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 3: {
-                    // ./SourceGenTriggers.g:121:4: ^( ASSIGN ID block[$ID,null] )
                     {
                         this.match(this.input, ANTLRv4Lexer.ASSIGN);
                         this.match(this.input, Constants.DOWN);
@@ -821,7 +738,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 4: {
-                    // ./SourceGenTriggers.g:122:4: ^( PLUS_ASSIGN ID block[$ID,null] )
                     {
                         this.match(this.input, ANTLRv4Lexer.PLUS_ASSIGN);
                         this.match(this.input, Constants.DOWN);
@@ -844,16 +760,11 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
         return omos;
     }
-    // $ANTLR end "labeledElement"
 
-    // $ANTLR start "subrule"
-    // ./SourceGenTriggers.g:125:1: subrule returns [List<? extends SrcOp> omos] : ( ^( OPTIONAL b= block[null,$OPTIONAL] ) | ( ^(op= CLOSURE b= block[null,null] ) | ^(op= POSITIVE_CLOSURE b= block[null,null] ) ) | block[null, null] );
     public subrule(): SrcOp[] | null {
         let omos = null;
 
@@ -862,7 +773,6 @@ export class SourceGenTriggers extends TreeParser {
         let block19 = null;
 
         try {
-            // ./SourceGenTriggers.g:126:2: ( ^( OPTIONAL b= block[null,$OPTIONAL] ) | ( ^(op= CLOSURE b= block[null,null] ) | ^(op= POSITIVE_CLOSURE b= block[null,null] ) ) | block[null, null] )
             let alt11 = 3;
             switch (this.input.LA(1)) {
                 case ANTLRv4Lexer.OPTIONAL: {
@@ -896,7 +806,6 @@ export class SourceGenTriggers extends TreeParser {
             }
             switch (alt11) {
                 case 1: {
-                    // ./SourceGenTriggers.g:126:4: ^( OPTIONAL b= block[null,$OPTIONAL] )
                     {
                         OPTIONAL18 = this.match(this.input, ANTLRv4Lexer.OPTIONAL)!;
                         this.match(this.input, Constants.DOWN);
@@ -912,9 +821,7 @@ export class SourceGenTriggers extends TreeParser {
 
                 case 2: {
                     let b: SrcOp[] | null = null;
-                    // ./SourceGenTriggers.g:130:4: ( ^(op= CLOSURE b= block[null,null] ) | ^(op= POSITIVE_CLOSURE b= block[null,null] ) )
                     {
-                        // ./SourceGenTriggers.g:130:4: ( ^(op= CLOSURE b= block[null,null] ) | ^(op= POSITIVE_CLOSURE b= block[null,null] ) )
                         let alt10 = 2;
                         const LA10_0 = this.input.LA(1);
                         if ((LA10_0 === ANTLRv4Lexer.CLOSURE)) {
@@ -931,7 +838,6 @@ export class SourceGenTriggers extends TreeParser {
 
                         switch (alt10) {
                             case 1: {
-                                // ./SourceGenTriggers.g:130:6: ^(op= CLOSURE b= block[null,null] )
                                 {
                                     op = this.match(this.input, ANTLRv4Lexer.CLOSURE)!;
                                     this.match(this.input, Constants.DOWN);
@@ -944,7 +850,6 @@ export class SourceGenTriggers extends TreeParser {
                             }
 
                             case 2: {
-                                // ./SourceGenTriggers.g:131:5: ^(op= POSITIVE_CLOSURE b= block[null,null] )
                                 {
                                     op = this.match(this.input, ANTLRv4Lexer.POSITIVE_CLOSURE)!;
                                     this.match(this.input, Constants.DOWN);
@@ -974,7 +879,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 3: {
-                    // ./SourceGenTriggers.g:143:5: block[null, null]
                     {
                         block19 = this.block(null, null);
 
@@ -992,29 +896,20 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
         return omos;
     }
-    // $ANTLR end "subrule"
 
-    // $ANTLR start "blockSet"
-    // ./SourceGenTriggers.g:146:1: blockSet[GrammarAST label, boolean invert] returns [List<SrcOp> omos] : ^( SET ( atom[label,invert] )+ ) ;
     public blockSet(label: GrammarAST | null, invert: boolean): SrcOp[] | null {
         let omos = null;
 
         let SET20 = null;
 
         try {
-            ;
-            // ./SourceGenTriggers.g:147:5: ( ^( SET ( atom[label,invert] )+ ) )
-            // ./SourceGenTriggers.g:147:7: ^( SET ( atom[label,invert] )+ )
             {
                 SET20 = this.match(this.input, ANTLRv4Lexer.SET)!;
                 this.match(this.input, Constants.DOWN);
-                // ./SourceGenTriggers.g:147:13: ( atom[label,invert] )+
                 let cnt12 = 0;
                 loop12:
                 while (true) {
@@ -1026,7 +921,6 @@ export class SourceGenTriggers extends TreeParser {
 
                     switch (alt12) {
                         case 1: {
-                            // ./SourceGenTriggers.g:147:13: atom[label,invert]
                             {
                                 this.atom(label, invert);
 
@@ -1058,16 +952,11 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
         return omos;
     }
-    // $ANTLR end "blockSet"
 
-    // $ANTLR start "atom"
-    // ./SourceGenTriggers.g:160:1: atom[GrammarAST label, boolean invert] returns [List<SrcOp> omos] : ( ^( NOT a= atom[$label, true] ) | range[label] | ^( DOT ID terminal[$label] ) | ^( DOT ID ruleref[$label] ) | ^( WILDCARD . ) | WILDCARD | terminal[label] | ruleref[label] | blockSet[$label, invert] );
     public atom(label: GrammarAST | null, invert: boolean): SrcOp[] | null {
         let omos = null;
 
@@ -1080,7 +969,6 @@ export class SourceGenTriggers extends TreeParser {
         let blockSet26 = null;
 
         try {
-            // ./SourceGenTriggers.g:161:2: ( ^( NOT a= atom[$label, true] ) | range[label] | ^( DOT ID terminal[$label] ) | ^( DOT ID ruleref[$label] ) | ^( WILDCARD . ) | WILDCARD | terminal[label] | ruleref[label] | blockSet[$label, invert] )
             let alt13 = 9;
             switch (this.input.LA(1)) {
                 case ANTLRv4Lexer.NOT: {
@@ -1214,7 +1102,6 @@ export class SourceGenTriggers extends TreeParser {
             }
             switch (alt13) {
                 case 1: {
-                    // ./SourceGenTriggers.g:161:4: ^( NOT a= atom[$label, true] )
                     {
                         this.match(this.input, ANTLRv4Lexer.NOT);
                         this.match(this.input, Constants.DOWN);
@@ -1228,7 +1115,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 2: {
-                    // ./SourceGenTriggers.g:162:4: range[label]
                     {
                         range21 = this.range(label);
 
@@ -1238,7 +1124,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 3: {
-                    // ./SourceGenTriggers.g:163:4: ^( DOT ID terminal[$label] )
                     {
                         this.match(this.input, ANTLRv4Lexer.DOT);
                         this.match(this.input, Constants.DOWN);
@@ -1252,7 +1137,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 4: {
-                    // ./SourceGenTriggers.g:164:4: ^( DOT ID ruleref[$label] )
                     {
                         this.match(this.input, ANTLRv4Lexer.DOT);
                         this.match(this.input, Constants.DOWN);
@@ -1266,7 +1150,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 5: {
-                    // ./SourceGenTriggers.g:165:7: ^( WILDCARD . )
                     {
                         WILDCARD22 = this.match(this.input, ANTLRv4Lexer.WILDCARD)!;
                         this.match(this.input, Constants.DOWN);
@@ -1279,7 +1162,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 6: {
-                    // ./SourceGenTriggers.g:166:7: WILDCARD
                     {
                         WILDCARD23 = this.match(this.input, ANTLRv4Lexer.WILDCARD)!;
                         omos = this.controller!.wildcard(WILDCARD23, label);
@@ -1288,7 +1170,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 7: {
-                    // ./SourceGenTriggers.g:167:9: terminal[label]
                     {
                         terminal24 = this.terminal(label);
 
@@ -1298,7 +1179,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 8: {
-                    // ./SourceGenTriggers.g:168:9: ruleref[label]
                     {
                         ruleref25 = this.ruleref(label);
 
@@ -1308,7 +1188,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 9: {
-                    // ./SourceGenTriggers.g:169:4: blockSet[$label, invert]
                     {
                         blockSet26 = this.blockSet(label, invert);
 
@@ -1326,16 +1205,11 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
         return omos;
     }
-    // $ANTLR end "atom"
 
-    // $ANTLR start "ruleref"
-    // ./SourceGenTriggers.g:172:1: ruleref[GrammarAST label] returns [List<SrcOp> omos] : ^( RULE_REF ( ARG_ACTION )? ( elementOptions )? ) ;
     public ruleref(label: GrammarAST | null): SrcOp[] | null {
         let omos = null;
 
@@ -1343,14 +1217,10 @@ export class SourceGenTriggers extends TreeParser {
         let ARG_ACTION28 = null;
 
         try {
-            ;
-            // ./SourceGenTriggers.g:173:5: ( ^( RULE_REF ( ARG_ACTION )? ( elementOptions )? ) )
-            // ./SourceGenTriggers.g:173:7: ^( RULE_REF ( ARG_ACTION )? ( elementOptions )? )
             {
                 RULE_REF27 = this.match(this.input, ANTLRv4Lexer.RULE_REF)!;
                 if (this.input.LA(1) === Constants.DOWN) {
                     this.match(this.input, Constants.DOWN);
-                    // ./SourceGenTriggers.g:173:18: ( ARG_ACTION )?
                     let alt14 = 2;
                     const LA14_0 = this.input.LA(1);
                     if ((LA14_0 === ANTLRv4Lexer.ARG_ACTION)) {
@@ -1358,7 +1228,6 @@ export class SourceGenTriggers extends TreeParser {
                     }
                     switch (alt14) {
                         case 1: {
-                            // ./SourceGenTriggers.g:173:18: ARG_ACTION
                             {
                                 ARG_ACTION28 = this.match(this.input, ANTLRv4Lexer.ARG_ACTION)!;
                             }
@@ -1369,7 +1238,6 @@ export class SourceGenTriggers extends TreeParser {
 
                     }
 
-                    // ./SourceGenTriggers.g:173:30: ( elementOptions )?
                     let alt15 = 2;
                     const LA15_0 = this.input.LA(1);
                     if ((LA15_0 === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
@@ -1377,7 +1245,6 @@ export class SourceGenTriggers extends TreeParser {
                     }
                     switch (alt15) {
                         case 1: {
-                            // ./SourceGenTriggers.g:173:30: elementOptions
                             {
                                 this.elementOptions();
 
@@ -1401,22 +1268,15 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
         return omos;
     }
-    // $ANTLR end "ruleref"
 
-    // $ANTLR start "range"
-    // ./SourceGenTriggers.g:176:1: range[GrammarAST label] returns [List<SrcOp> omos] : ^( RANGE a= STRING_LITERAL b= STRING_LITERAL ) ;
     public range(label: GrammarAST | null): SrcOp[] | null {
         const omos = null;
 
         try {
-            // ./SourceGenTriggers.g:177:5: ( ^( RANGE a= STRING_LITERAL b= STRING_LITERAL ) )
-            // ./SourceGenTriggers.g:177:7: ^( RANGE a= STRING_LITERAL b= STRING_LITERAL )
             {
                 this.match(this.input, ANTLRv4Lexer.RANGE);
                 this.match(this.input, Constants.DOWN);
@@ -1432,16 +1292,11 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
         return omos;
     }
-    // $ANTLR end "range"
 
-    // $ANTLR start "terminal"
-    // ./SourceGenTriggers.g:180:1: terminal[GrammarAST label] returns [List<SrcOp> omos] : ( ^( STRING_LITERAL . ) | STRING_LITERAL | ^( TOKEN_REF ARG_ACTION . ) | ^( TOKEN_REF . ) | TOKEN_REF );
     public terminal(label: GrammarAST | null): SrcOp[] | null {
         let omos = null;
 
@@ -1453,7 +1308,6 @@ export class SourceGenTriggers extends TreeParser {
         let TOKEN_REF34 = null;
 
         try {
-            // ./SourceGenTriggers.g:181:5: ( ^( STRING_LITERAL . ) | STRING_LITERAL | ^( TOKEN_REF ARG_ACTION . ) | ^( TOKEN_REF . ) | TOKEN_REF )
             let alt16 = 5;
             const LA16_0 = this.input.LA(1);
             if ((LA16_0 === ANTLRv4Lexer.STRING_LITERAL)) {
@@ -1550,7 +1404,6 @@ export class SourceGenTriggers extends TreeParser {
 
             switch (alt16) {
                 case 1: {
-                    // ./SourceGenTriggers.g:181:8: ^( STRING_LITERAL . )
                     {
                         STRING_LITERAL29 = this.match(this.input, ANTLRv4Lexer.STRING_LITERAL)!;
                         this.match(this.input, Constants.DOWN);
@@ -1563,7 +1416,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 2: {
-                    // ./SourceGenTriggers.g:182:7: STRING_LITERAL
                     {
                         STRING_LITERAL30 = this.match(this.input, ANTLRv4Lexer.STRING_LITERAL)!;
                         omos = this.controller!.stringRef(STRING_LITERAL30, label);
@@ -1572,7 +1424,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 3: {
-                    // ./SourceGenTriggers.g:183:7: ^( TOKEN_REF ARG_ACTION . )
                     {
                         TOKEN_REF31 = this.match(this.input, ANTLRv4Lexer.TOKEN_REF)!;
                         this.match(this.input, Constants.DOWN);
@@ -1586,7 +1437,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 4: {
-                    // ./SourceGenTriggers.g:184:7: ^( TOKEN_REF . )
                     {
                         TOKEN_REF33 = this.match(this.input, ANTLRv4Lexer.TOKEN_REF)!;
                         this.match(this.input, Constants.DOWN);
@@ -1599,7 +1449,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 5: {
-                    // ./SourceGenTriggers.g:185:7: TOKEN_REF
                     {
                         TOKEN_REF34 = this.match(this.input, ANTLRv4Lexer.TOKEN_REF)!;
                         omos = this.controller!.tokenRef(TOKEN_REF34, label, null);
@@ -1616,25 +1465,16 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
 
         return omos;
     }
-    // $ANTLR end "terminal"
 
-    // $ANTLR start "elementOptions"
-    // ./SourceGenTriggers.g:188:1: elementOptions : ^( ELEMENT_OPTIONS ( elementOption )+ ) ;
     public elementOptions(): void {
         try {
-            ;
-            // ./SourceGenTriggers.g:189:5: ( ^( ELEMENT_OPTIONS ( elementOption )+ ) )
-            // ./SourceGenTriggers.g:189:7: ^( ELEMENT_OPTIONS ( elementOption )+ )
             {
                 this.match(this.input, ANTLRv4Lexer.ELEMENT_OPTIONS);
                 this.match(this.input, Constants.DOWN);
-                // ./SourceGenTriggers.g:189:25: ( elementOption )+
                 let cnt17 = 0;
                 loop17:
                 while (true) {
@@ -1646,7 +1486,6 @@ export class SourceGenTriggers extends TreeParser {
 
                     switch (alt17) {
                         case 1: {
-                            // ./SourceGenTriggers.g:189:25: elementOption
                             {
                                 this.elementOption();
 
@@ -1677,17 +1516,11 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
     }
-    // $ANTLR end "elementOptions"
 
-    // $ANTLR start "elementOption"
-    // ./SourceGenTriggers.g:192:1: elementOption : ( ID | ^( ASSIGN ID ID ) | ^( ASSIGN ID STRING_LITERAL ) | ^( ASSIGN ID ACTION ) | ^( ASSIGN ID INT ) );
     public elementOption(): void {
         try {
-            // ./SourceGenTriggers.g:193:5: ( ID | ^( ASSIGN ID ID ) | ^( ASSIGN ID STRING_LITERAL ) | ^( ASSIGN ID ACTION ) | ^( ASSIGN ID INT ) )
             let alt18 = 5;
             const LA18_0 = this.input.LA(1);
             if ((LA18_0 === ANTLRv4Lexer.ID)) {
@@ -1780,7 +1613,6 @@ export class SourceGenTriggers extends TreeParser {
 
             switch (alt18) {
                 case 1: {
-                    // ./SourceGenTriggers.g:193:7: ID
                     {
                         this.match(this.input, ANTLRv4Lexer.ID);
                     }
@@ -1788,7 +1620,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 2: {
-                    // ./SourceGenTriggers.g:194:9: ^( ASSIGN ID ID )
                     {
                         this.match(this.input, ANTLRv4Lexer.ASSIGN);
                         this.match(this.input, Constants.DOWN);
@@ -1801,7 +1632,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 3: {
-                    // ./SourceGenTriggers.g:195:9: ^( ASSIGN ID STRING_LITERAL )
                     {
                         this.match(this.input, ANTLRv4Lexer.ASSIGN);
                         this.match(this.input, Constants.DOWN);
@@ -1814,7 +1644,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 4: {
-                    // ./SourceGenTriggers.g:196:9: ^( ASSIGN ID ACTION )
                     {
                         this.match(this.input, ANTLRv4Lexer.ASSIGN);
                         this.match(this.input, Constants.DOWN);
@@ -1827,7 +1656,6 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case 5: {
-                    // ./SourceGenTriggers.g:197:9: ^( ASSIGN ID INT )
                     {
                         this.match(this.input, ANTLRv4Lexer.ASSIGN);
                         this.match(this.input, Constants.DOWN);
@@ -1848,14 +1676,7 @@ export class SourceGenTriggers extends TreeParser {
             } else {
                 throw re;
             }
-        } finally {
-            // do for sure before leaving
         }
-    };;
+    };
 
-}
-
-export namespace SourceGenTriggers {
-    export type alternative_return = InstanceType<typeof SourceGenTriggers.alternative_return>;
-    export type alt_return = InstanceType<typeof SourceGenTriggers.alt_return>;
 }
