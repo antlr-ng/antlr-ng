@@ -44,7 +44,7 @@ export class SymbolCollector extends GrammarTreeVisitor {
     public readonly namedActions = new Array<GrammarAST>();
 
     public constructor(g: Grammar) {
-        super();
+        super(g.tool.errorManager);
 
         this.g = g;
     }

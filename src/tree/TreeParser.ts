@@ -5,31 +5,28 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
-// cspell: disable
+import { Token, type RecognitionException } from "antlr4ng";
 
-import {
-    CommonToken, Token, type BitSet, type IntStream, type RecognitionException,
-} from "antlr4ng";
-
-import type { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import { Constants } from "../Constants.js";
 import type { GrammarAST } from "../tool/ast/GrammarAST.js";
+import type { ErrorManager } from "../tool/ErrorManager.js";
 import { CommonTree } from "./CommonTree.js";
+import type { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
 import { createRecognizerSharedState, type IRecognizerSharedState } from "./misc/IRecognizerSharedState.js";
 import { MismatchedTreeNodeException } from "./MismatchTreeNodeException.js";
+import { ErrorType } from "../tool/ErrorType.js";
 
 /**
- * A parser for a stream of tree nodes.  "tree grammars" result in a subclass
- *  of this.  All the error reporting and recovery is shared with Parser via
- *  the BaseRecognizer superclass.
+ * A parser for a stream of tree nodes. "tree grammars" result in a subclass of this. All the error reporting
+ * and recovery is shared with Parser via the BaseRecognizer superclass.
  */
-export abstract class TreeParser {
-    // precompiled regex used by inContext
+export class TreeParser {
     private static dotdot = /.*[^.]\\.\\.[^.].*/g;
     private static doubleEtc = /.*\\.\\.\\.\\s+\\.\\.\\..*/g;
 
     protected input: CommonTreeNodeStream;
+    protected errorManager: ErrorManager;
 
     /**
      * State of a lexer, parser, or tree parser are collected into a state object so the state can be shared.
@@ -38,7 +35,8 @@ export abstract class TreeParser {
      */
     protected state: IRecognizerSharedState;
 
-    public constructor(input?: CommonTreeNodeStream, state?: IRecognizerSharedState) {
+    public constructor(errorManager: ErrorManager, input?: CommonTreeNodeStream, state?: IRecognizerSharedState) {
+        this.errorManager = errorManager;
         this.state = state ?? createRecognizerSharedState();
         this.input = input ?? new CommonTreeNodeStream(new CommonTree());
     }
@@ -98,7 +96,7 @@ export abstract class TreeParser {
     }
 
     /** Helper for static inContext */
-    protected static getAncestor(adaptor: CommonTreeAdaptor, tokenNames: string[], t: CommonTree | null,
+    private static getAncestor(adaptor: CommonTreeAdaptor, tokenNames: string[], t: CommonTree | null,
         goal: string): CommonTree | null {
         while (t !== null) {
             const name = tokenNames[adaptor.getType(t)];
@@ -112,26 +110,6 @@ export abstract class TreeParser {
         return null;
     }
 
-    public reset(): void {
-        // wack everything related to error recovery
-        this.state.errorRecovery = false;
-        this.state.lastErrorIndex = -1;
-        this.state.failed = false;
-        this.state.syntaxErrors = 0;
-
-        // wack everything related to backtracking and memoization
-        this.state.backtracking = 0;
-        for (let i = 0; this.state.ruleMemo !== null && i < this.state.ruleMemo.length; i++) { // wipe cache
-            this.state.ruleMemo[i] = null;
-        }
-
-        this.input.seek(0); // rewind the input
-    }
-
-    public getSourceName(): string {
-        return this.input.getSourceName();
-    }
-
     /**
      * Match '.' in tree parser has special meaning.  Skip node or
      *  entire tree if node has children.  If children, scan until
@@ -141,24 +119,22 @@ export abstract class TreeParser {
         this.state.errorRecovery = false;
         this.state.failed = false;
 
-        let look = this.input.LT(1);
-        if (look && this.input.getTreeAdaptor().getChildCount(look) === 0) {
-            this.input.consume(); // not subtree, consume 1 node and return
+        let lookAhead = this.input.LT(1);
+        if (lookAhead && this.input.getTreeAdaptor().getChildCount(lookAhead) === 0) {
+            this.input.consume(); // Not subtree, consume 1 node and return.
 
             return;
         }
 
-        // current node is a subtree, skip to corresponding UP.
-        // must count nesting level to get right UP
+        // Current node is a subtree, skip to corresponding UP. Must count nesting level to get right UP
         let level = 0;
-
-        if (look) {
-            let tokenType = this.input.getTreeAdaptor().getType(look);
+        if (lookAhead) {
+            let tokenType = this.input.getTreeAdaptor().getType(lookAhead);
             while (tokenType !== Token.EOF && !(tokenType === Constants.UP && level === 0)) {
                 this.input.consume();
-                look = this.input.LT(1);
-                if (look) {
-                    tokenType = this.input.getTreeAdaptor().getType(look);
+                lookAhead = this.input.LT(1);
+                if (lookAhead) {
+                    tokenType = this.input.getTreeAdaptor().getType(lookAhead);
                     if (tokenType === Constants.DOWN) {
                         level++;
                     } else {
@@ -189,21 +165,13 @@ export abstract class TreeParser {
     }
 
     /**
-     * Match current input symbol against ttype.  Attempt
-     *  single token insertion or deletion error recovery.  If
-     *  that fails, throw MismatchedTokenException.
-     *
-     *  To turn off single token insertion or deletion error
-     *  recovery, override recoverFromMismatchedToken() and have it
-     *  throw an exception. See TreeParser.recoverFromMismatchedToken().
-     *  This way any error in a rule will cause an exception and
-     *  immediate exit from rule.  Rule would recover by resynchronizing
-     *  to the set of symbols that can follow rule ref.
+     * Match current input symbol against ttype. Attempt single token insertion or deletion error recovery. If
+     * that fails, throw MismatchedTokenException.
      */
-    public match<T extends GrammarAST = GrammarAST>(input: IntStream, ttype: number): T | null {
+    public match<T extends GrammarAST = GrammarAST>(input: CommonTreeNodeStream, ttype: number): T | null {
         this.state.failed = false;
 
-        const matchedSymbol = this.getCurrentInputSymbol(input) as T | null;
+        const matchedSymbol = input.LT(1) as T | null;
         if (input.LA(1) === ttype) {
             input.consume();
             this.state.errorRecovery = false;
@@ -217,7 +185,7 @@ export abstract class TreeParser {
             return matchedSymbol;
         }
 
-        return this.recoverFromMismatchedToken(input, ttype) as T;
+        throw new MismatchedTreeNodeException(ttype);
     }
 
     /**
@@ -244,84 +212,7 @@ export abstract class TreeParser {
         this.state.syntaxErrors++;
         this.state.errorRecovery = true;
 
-        this.displayRecognitionError(e);
-    }
-
-    public displayRecognitionError(e: RecognitionException): void {
-        const hdr = this.getErrorHeader(e);
-        const msg = this.getErrorMessage(e);
-
-        // XXX: switch to the error manager.
-        console.error(hdr + " " + msg);
-    }
-
-    /**
-     * Prefix error message with the grammar name because message is
-     *  always intended for the programmer because the parser built
-     *  the input tree not the user.
-     */
-    protected getErrorHeader(e: RecognitionException): string {
-        return this.constructor.name + ": node from line " + e.offendingToken?.line + ":" +
-            e.offendingToken?.column;
-    }
-
-    /**
-     * What error message should be generated for the various
-     *  exception types?
-     *
-     *  Not very object-oriented code, but I like having all error message
-     *  generation within one method rather than spread among all of the
-     *  exception classes. This also makes it much easier for the exception
-     *  handling because the exception classes do not have to have pointers back
-     *  to this object to access utility routines and so on. Also, changing
-     *  the message for an exception type would be difficult because you
-     *  would have to subclassing exception, but then somehow get ANTLR
-     *  to make those kinds of exception objects instead of the default.
-     *  This looks weird, but trust me--it makes the most sense in terms
-     *  of flexibility.
-     *
-     *  For grammar debugging, you will want to override this to add
-     *  more information such as the stack frame with
-     *  getRuleInvocationStack(e, this.getClass().getName()) and,
-     *  for no viable alts, the decision description and state etc...
-     *
-     *  Override this to change the message generated for one or more
-     *  exception types.
-     */
-    protected getErrorMessage(e: RecognitionException): string {
-        let msg = e.message;
-        if (e.offendingToken !== null) {
-            const tokenName = e.offendingToken.text;
-            msg = "extraneous input " + this.getTokenErrorDisplay(e.offendingToken) + " expecting " + tokenName;
-        }
-
-        return msg;
-    }
-
-    /**
-     * How should a token be displayed in an error message? The default
-     *  is to display just the text, but during development you might
-     *  want to have a lot of information spit out.  Override in that case
-     *  to use t.toString() (which, for CommonToken, dumps everything about
-     *  the token). This is better than forcing you to override a method in
-     *  your token objects because you don't have to go modify your lexer
-     *  so that it creates a new Java type.
-     */
-    protected getTokenErrorDisplay(t: Token): string {
-        let s = t.text;
-        if (!s) {
-            if (t.type === Token.EOF) {
-                s = "<EOF>";
-            } else {
-                s = "<" + t.type + ">";
-            }
-        }
-
-        s = s.replaceAll("\n", "\\\\n");
-        s = s.replaceAll("\r", "\\\\r");
-        s = s.replaceAll("\t", "\\\\t");
-
-        return "'" + s + "'";
+        this.errorManager.toolError(ErrorType.INTERNAL_ERROR, e);
     }
 
     protected setBacktrackingLevel(n: number): void {
@@ -338,31 +229,10 @@ export abstract class TreeParser {
     }
 
     /**
-     * We have DOWN/UP nodes in the stream that have no line info; override.
-     *  plus we want to alter the exception type.  Don't try to recover
-     *  from tree parser errors inline...
+     * Used to print out token names like ID during debugging and error reporting.  The generated parsers implement
+     * a method that overrides this to point to their String[] tokenNames.
      */
-    protected recoverFromMismatchedToken(input: IntStream, ttype: number): GrammarAST {
-        throw new MismatchedTreeNodeException(ttype);
+    protected getTokenNames(): string[] {
+        return [];
     }
-
-    protected getCurrentInputSymbol(input: IntStream): CommonTree | null {
-        return (input as CommonTreeNodeStream).LT(1);
-    }
-
-    protected getMissingSymbol(input: CommonTreeNodeStream, e: RecognitionException, expectedTokenType: number,
-        follow: BitSet): CommonTree {
-        const tokenText = "<missing " + this.getTokenNames()[expectedTokenType] + ">";
-        const adaptor = (input).getTreeAdaptor();
-
-        return adaptor.create(CommonToken.fromType(expectedTokenType, tokenText));
-    }
-
-    /**
-     * Used to print out token names like ID during debugging and
-     *  error reporting.  The generated parsers implement a method
-     *  that overrides this to point to their String[] tokenNames.
-     */
-    protected abstract getTokenNames(): string[];
-
 }

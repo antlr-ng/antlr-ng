@@ -16,8 +16,8 @@ export class UndefChecker extends GrammarTreeVisitor {
     public badRef = false;
 
     public constructor(private isLexer: boolean, private ruleToAST: Map<string, RuleAST>,
-        private errorManager: ErrorManager) {
-        super();
+        errorManager: ErrorManager) {
+        super(errorManager);
     }
 
     public override tokenRef(ref: TerminalAST): void {

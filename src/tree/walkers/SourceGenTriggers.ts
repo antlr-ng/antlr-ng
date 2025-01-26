@@ -1,8 +1,5 @@
 import { RecognitionException } from "antlr4ng";
 
-import { IRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
-import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
-import { TreeParser } from "../TreeParser.js";
 import { TreeRuleReturnScope } from "../../antlr3/tree/TreeRuleReturnScope.js";
 import { CodeBlockForAlt } from "../../codegen/model/CodeBlockForAlt.js";
 import { PlusBlock } from "../../codegen/model/PlusBlock.js";
@@ -15,8 +12,12 @@ import type { ActionAST } from "../../tool/ast/ActionAST.js";
 import type { AltAST } from "../../tool/ast/AltAST.js";
 import type { BlockAST } from "../../tool/ast/BlockAST.js";
 import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { ErrorManager } from "../../tool/ErrorManager.js";
+import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
 import { EarlyExitException } from "../EarlyExitException.js";
+import { IRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
 import { NoViableAltException } from "../NoViableAltException.js";
+import { TreeParser } from "../TreeParser.js";
 
 /*
  * Copyright (c) Mike Lischke. All rights reserved.
@@ -58,7 +59,8 @@ export class SourceGenTriggers extends TreeParser {
     public controller?: OutputModelController;
     public hasLookaheadBlock: boolean;
 
-    public constructor(input: CommonTreeNodeStream, stateOrController?: IRecognizerSharedState | OutputModelController) {
+    public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream,
+        stateOrController?: IRecognizerSharedState | OutputModelController) {
         let state: IRecognizerSharedState | undefined;
         let controller: OutputModelController | undefined;
 
@@ -70,7 +72,7 @@ export class SourceGenTriggers extends TreeParser {
             controller = undefined;
         }
 
-        super(input, state);
+        super(errorManager, input, state);
         this.controller = controller;
     }
 

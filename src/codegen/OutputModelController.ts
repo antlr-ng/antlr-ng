@@ -14,7 +14,9 @@ import { SourceGenTriggers } from "../tree/walkers/SourceGenTriggers.js";
 
 import { Utils } from "../misc/Utils.js";
 import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
+import type { IToolParameters } from "../tool-parameters.js";
 import { Alternative } from "../tool/Alternative.js";
+import type { ErrorManager } from "../tool/ErrorManager.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import { Grammar } from "../tool/Grammar.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
@@ -48,7 +50,6 @@ import { SrcOp } from "./model/SrcOp.js";
 import { StarBlock } from "./model/StarBlock.js";
 import { VisitorFile } from "./model/VisitorFile.js";
 import { CodeBlock } from "./model/decl/CodeBlock.js";
-import type { IToolParameters } from "../tool-parameters.js";
 
 /**
  * This receives events from SourceGenTriggers.g and asks factory to do work.
@@ -77,9 +78,11 @@ export class OutputModelController {
     public currentOuterMostAlternativeBlock: CodeBlockForOuterMostAlt;
 
     private currentOuterMostAlt: Alternative;
+    private errorManager: ErrorManager;
 
     public constructor(factory: OutputModelFactory) {
         this.delegate = factory;
+        this.errorManager = factory.getGrammar()!.tool.errorManager;
     }
 
     public addExtension(ext: CodeGeneratorExtension): void {
@@ -279,8 +282,7 @@ export class OutputModelController {
                 altActionST.add("isListLabel", altInfo.isListLabel);
             } else {
                 if (altInfo.isListLabel) {
-                    this.delegate.getGrammar()!.tool.errorManager.toolError(ErrorType.CODE_TEMPLATE_ARG_ISSUE,
-                        templateName, "isListLabel");
+                    this.errorManager.toolError(ErrorType.CODE_TEMPLATE_ARG_ISSUE, templateName, "isListLabel");
                 }
             }
 
@@ -299,7 +301,7 @@ export class OutputModelController {
 
         const blk = r.ast.getFirstChildWithType(ANTLRv4Parser.BLOCK) as GrammarAST;
         const nodes = new CommonTreeNodeStream(adaptor, blk);
-        this.walker = new SourceGenTriggers(nodes, this);
+        this.walker = new SourceGenTriggers(this.errorManager, nodes, this);
 
         // walk AST of rule alts/elements
         ruleFunction.code = this.walker.block(null, null)!;

@@ -1280,7 +1280,7 @@ export class Grammar implements IGrammar, AttributeResolver {
             public override stringRef(ref: TerminalAST): void {
                 strings.add(ref.getText());
             }
-        }({} as CommonTreeNodeStream);
+        }(this.tool.errorManager, {} as CommonTreeNodeStream);
         collector.visitGrammar(this.ast);
 
         return strings;

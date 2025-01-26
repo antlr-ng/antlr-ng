@@ -97,7 +97,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
     private grammarCaseInsensitive = false;
 
     public constructor(g: Grammar, ruleCollector: RuleCollector) {
-        super();
+        super(g.tool.errorManager);
 
         this.g = g;
         this.ruleCollector = ruleCollector;

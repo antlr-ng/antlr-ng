@@ -58,7 +58,8 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     public altAssociativity = new Map<number, Associativity>();
 
     public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage) {
-        super(new CommonTreeNodeStream(new GrammarASTAdaptor(ruleAST.token!.inputStream ?? undefined), ruleAST));
+        super(new CommonTreeNodeStream(new GrammarASTAdaptor(ruleAST.token!.inputStream ?? undefined), ruleAST),
+            tool.errorManager);
         this.tool = tool;
         this.ruleName = ruleName;
         this.language = language;

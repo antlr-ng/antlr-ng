@@ -700,7 +700,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
             // find rule's block
             const blk = r.ast.getFirstChildWithType(ANTLRv4Parser.BLOCK) as GrammarAST;
             const nodes = new CommonTreeNodeStream(adaptor, blk);
-            const b = new ATNBuilder(nodes, this);
+            const b = new ATNBuilder(this.g.tool.errorManager, nodes, this);
 
             this.setCurrentRuleName(r.name);
             const h = b.ruleBlock(null);

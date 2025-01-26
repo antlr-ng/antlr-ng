@@ -33,7 +33,7 @@ export class RuleCollector extends GrammarTreeVisitor {
     private grammarCaseInsensitive = false;
 
     public constructor(g: Grammar) {
-        super();
+        super(g.tool.errorManager);
 
         this.g = g;
     }
@@ -112,7 +112,7 @@ export class RuleCollector extends GrammarTreeVisitor {
         }
 
         const numAlts = block.getChildCount();
-        const r = new Rule(this.g, id.getText(), rule, numAlts, this.currentModeName!, currentCaseInsensitive);
+        const r = new Rule(this.g, id.getText(), rule, numAlts, this.currentModeName, currentCaseInsensitive);
         if (modifiers.length != 0) {
             r.modifiers = modifiers;
         }

@@ -15,6 +15,7 @@ import { isTokenName } from "../../support/helpers.js";
 import { AltAST } from "../../tool/ast/AltAST.js";
 import { BlockAST } from "../../tool/ast/BlockAST.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { ErrorManager } from "../../tool/ErrorManager.js";
 import { Grammar } from "../../tool/Grammar.js";
 import { GrammarTransformPipeline } from "../../tool/GrammarTransformPipeline.js";
 import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
@@ -25,6 +26,7 @@ import { NoViableAltException } from "../NoViableAltException.js";
 import { RewriteRuleNodeStream } from "../RewriteRuleNodeStream.js";
 import { RewriteRuleSubtreeStream } from "../RewriteRuleSubtreeStream.js";
 import { TreeRewriter } from "../TreeRewriter.js";
+import { createRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
 
 export class BlockSetTransformer extends TreeRewriter {
     // Needed for context in the inContext method.
@@ -49,8 +51,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
     private adaptor = new GrammarASTAdaptor();
 
-    public constructor(input: CommonTreeNodeStream, grammar: Grammar) {
-        super(input);
+    public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream, grammar: Grammar) {
+        super(errorManager, input, createRecognizerSharedState());
         this.g = grammar;
     }
 

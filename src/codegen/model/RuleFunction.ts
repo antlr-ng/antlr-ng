@@ -289,11 +289,14 @@ export class RuleFunction extends OutputModelObject {
 
     /** Given list of X and r refs in alt, compute how many of each there are */
     protected getElementFrequenciesForAlt(ast: AltAST): [FrequencySet<string>, FrequencySet<string>] {
+        const errorManager = this.factory!.getGrammar()!.tool.errorManager;
+
         try {
-            const visitor = new ElementFrequenciesVisitor(new CommonTreeNodeStream(new GrammarASTAdaptor(), ast));
+            const visitor = new ElementFrequenciesVisitor(errorManager,
+                new CommonTreeNodeStream(new GrammarASTAdaptor(), ast));
             visitor.outerAlternative();
             if (visitor.frequencies.length !== 1) {
-                this.factory!.getGrammar()!.tool.errorManager.toolError(ErrorType.INTERNAL_ERROR);
+                errorManager.toolError(ErrorType.INTERNAL_ERROR);
 
                 return [new FrequencySet<string>(), new FrequencySet<string>()];
             }
@@ -301,7 +304,7 @@ export class RuleFunction extends OutputModelObject {
             return [visitor.getMinFrequencies(), visitor.frequencies[0]];
         } catch (ex) {
             if (ex instanceof RecognitionException) {
-                this.factory!.getGrammar()!.tool.errorManager.toolError(ErrorType.INTERNAL_ERROR, ex);
+                errorManager.toolError(ErrorType.INTERNAL_ERROR, ex);
 
                 return [new FrequencySet<string>(), new FrequencySet<string>()];
             } else {

@@ -5,12 +5,13 @@
 
 import { GrammarTreeVisitor } from "../../tree/walkers/GrammarTreeVisitor.js";
 
+import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 import { FrequencySet } from "../../misc/FrequencySet.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { AltAST } from "../../tool/ast/AltAST.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { TerminalAST } from "../../tool/ast/TerminalAST.js";
-import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
+import type { ErrorManager } from "../../tool/ErrorManager.js";
 import type { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 
 export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
@@ -26,8 +27,8 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
 
     private readonly minFrequencies: Array<FrequencySet<string>>;
 
-    public constructor(input: CommonTreeNodeStream) {
-        super(input);
+    public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream) {
+        super(errorManager, input);
         this.frequencies = new Array<FrequencySet<string>>();
         this.frequencies.unshift(new FrequencySet<string>());
         this.minFrequencies = new Array<FrequencySet<string>>();

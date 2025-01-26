@@ -8,6 +8,7 @@
 
 import { RecognitionException, type TokenStream } from "antlr4ng";
 
+import type { ErrorManager } from "../tool/ErrorManager.js";
 import type { CommonTree } from "./CommonTree.js";
 import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
@@ -22,9 +23,9 @@ export class TreeRewriter extends TreeParser {
     protected originalTokenStream: TokenStream;
     protected originalAdaptor: CommonTreeAdaptor;
 
-    public constructor(input: CommonTreeNodeStream, state?: IRecognizerSharedState) {
+    public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream, state?: IRecognizerSharedState) {
         state ??= createRecognizerSharedState();
-        super(input, state);
+        super(errorManager, input, state);
         this.originalAdaptor = input.getTreeAdaptor();
         this.originalTokenStream = input.getTokenStream();
     }

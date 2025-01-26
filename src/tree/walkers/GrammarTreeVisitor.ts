@@ -5,11 +5,11 @@
 
 import { RecognitionException } from "antlr4ng";
 
+import { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
 import { EarlyExitException } from "../EarlyExitException.js";
 import { createRecognizerSharedState, IRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
 import { MismatchedSetException } from "../MismatchedSetException.js";
 import { NoViableAltException } from "../NoViableAltException.js";
-import { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
 import { TreeParser } from "../TreeParser.js";
 
 import { ClassFactory } from "../../ClassFactory.js";
@@ -23,6 +23,7 @@ import type { GrammarRootAST } from "../../tool/ast/GrammarRootAST.js";
 import type { PredAST } from "../../tool/ast/PredAST.js";
 import type { RuleAST } from "../../tool/ast/RuleAST.js";
 import type { TerminalAST } from "../../tool/ast/TerminalAST.js";
+import type { ErrorManager } from "../../tool/ErrorManager.js";
 
 /** The tree grammar visitor to walk the AST created from a parsed grammar. */
 export class GrammarTreeVisitor extends TreeParser {
@@ -48,8 +49,8 @@ export class GrammarTreeVisitor extends TreeParser {
 
     protected currentModeName = Constants.DEFAULT_MODE_NAME;
 
-    public constructor(input?: CommonTreeNodeStream, state?: IRecognizerSharedState) {
-        super(input, state ?? createRecognizerSharedState());
+    public constructor(errorManager: ErrorManager, input?: CommonTreeNodeStream, state?: IRecognizerSharedState) {
+        super(errorManager, input, state ?? createRecognizerSharedState());
     }
 
     public override getTokenNames(): string[] {
