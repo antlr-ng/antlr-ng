@@ -5,22 +5,15 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
+import type { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
+import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { CommonTree } from "./CommonTree.js";
-import type { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 
 /**
- * A generic list of elements tracked in an alternative to be used in
- *  a -&gt; rewrite rule.  We need to subclass to fill in the next() method,
- *  which returns either an AST node wrapped around a token payload or
- *  an existing subtree.
+ * A generic list of elements tracked in an alternative to be used in a -> rewrite rule. We need to subclass to fill
+ * in the next() method, which returns either an AST node wrapped around a token payload or an existing subtree.
  *
- *  Once you start next()ing, do not try to add more elements.  It will
- *  break the cursor tracking I believe.
- *
- *  @see org.antlr.runtime.tree.RewriteRuleSubtreeStream
- *  @see org.antlr.runtime.tree.RewriteRuleTokenStream
- *
- *  TODO: add mechanism to detect/puke on modification after reading from stream
+ * Once you start next()ing, do not try to add more elements. It will break the cursor tracking I believe.
  */
 export abstract class RewriteRuleElementStream {
     /**
@@ -30,7 +23,7 @@ export abstract class RewriteRuleElementStream {
     protected cursor = 0;
 
     /** The list of tokens or subtrees we are tracking */
-    protected elements: CommonTree[];
+    protected elements: GrammarAST[];
 
     /**
      * Once a node / subtree has been used in a stream, it must be dup'd
@@ -40,8 +33,6 @@ export abstract class RewriteRuleElementStream {
      *
      *  I wanted to use "naughty bit" here, but couldn't think of a way
      *  to use "naughty".
-     *
-     *  TODO: unused?
      */
     protected dirty = false;
 
@@ -51,9 +42,9 @@ export abstract class RewriteRuleElementStream {
      *  the exception would track that info.
      */
     protected elementDescription: string;
-    protected adaptor: CommonTreeAdaptor;
+    private adaptor: GrammarASTAdaptor;
 
-    public constructor(adaptor: CommonTreeAdaptor, elementDescription: string, elements?: CommonTree[]) {
+    public constructor(adaptor: GrammarASTAdaptor, elementDescription: string, elements?: GrammarAST[]) {
         this.elementDescription = elementDescription;
         this.adaptor = adaptor;
         this.elements = elements ?? [];
@@ -70,7 +61,7 @@ export abstract class RewriteRuleElementStream {
         this.dirty = true;
     }
 
-    public add(el: CommonTree | null): void {
+    public add(el: GrammarAST | null): void {
         if (el) {
             this.elements.push(el);
         }
@@ -86,13 +77,13 @@ export abstract class RewriteRuleElementStream {
         const n = this.size();
         if (this.dirty || (this.cursor >= n && n === 1)) {
             // If out of elements and size is 1, duplicate.
-            const el = this._next();
+            const el = this.getNext();
 
             return this.dup(el);
         }
 
         // Test size above then fetch.
-        return this._next();
+        return this.getNext();
     }
 
     public hasNext(): boolean {
@@ -113,7 +104,7 @@ export abstract class RewriteRuleElementStream {
      *  if the stream is empty or we're out of elements and size > 1.
      *  protected so you can override in a subclass if necessary.
      */
-    protected _next(): CommonTree {
+    protected getNext(): GrammarAST {
         const n = this.size();
         if (n === 0) {
             throw new Error(this.elementDescription);
@@ -145,7 +136,7 @@ export abstract class RewriteRuleElementStream {
      * Ensure stream emits trees; tokens must be converted to AST nodes.
      *  AST nodes can be passed through unmolested.
      */
-    protected toTree(el: CommonTree): CommonTree {
+    protected toTree(el: GrammarAST): GrammarAST {
         return el;
     }
 

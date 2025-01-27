@@ -408,8 +408,8 @@ export class Grammar implements IGrammar, AttributeResolver {
             "(RULE %name:TOKEN_REF (BLOCK (LEXER_ALT_ACTION (ALT %lit:STRING_LITERAL) (LEXER_ACTION_CALL . .) .)))",
             // TODO: allow doc comment in there
         ];
-        const adaptor = ClassFactory.createGrammarASTAdaptor(ast.token!.inputStream!);
-        const wiz = new TreeWizard(adaptor, ANTLRv4Parser.symbolicNames);
+
+        const wiz = new TreeWizard(ANTLRv4Parser.symbolicNames);
         const lexerRuleToStringLiteral = new Array<[GrammarAST, GrammarAST]>();
 
         const ruleNodes = ast.getNodesWithType(ANTLRv4Parser.RULE);

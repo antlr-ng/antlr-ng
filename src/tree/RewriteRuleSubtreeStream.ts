@@ -5,6 +5,8 @@
 
 /* eslint-disable jsdoc/require-returns */
 
+import { dupTree } from "../support/helpers.js";
+import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { CommonTree } from "./CommonTree.js";
 import { RewriteRuleElementStream } from "./RewriteRuleElementStream.js";
 
@@ -24,26 +26,26 @@ export class RewriteRuleSubtreeStream extends RewriteRuleElementStream {
      *  a proper way to refactor.  This needs to always call dup node
      *  and super.next() doesn't know which to call: dup node or dup tree.
      */
-    public nextNode(): CommonTree {
+    public nextNode(): GrammarAST {
         const n = this.size();
         if (this.dirty || (this.cursor >= n && n === 1)) {
             // if out of elements and size is 1, dup (at most a single node
             // since this is for making root nodes).
-            const el = this._next();
+            const el = this.getNext();
 
-            return this.adaptor.dupNode(el);
+            return el.dupNode();
         }
 
         // test size above then fetch
-        let tree = this._next();
-        while (this.adaptor.isNil(tree) && this.adaptor.getChildCount(tree) === 1) {
-            tree = this.adaptor.getChild(tree, 0)!;
+        let tree = this.getNext();
+        while (tree.isNil() && tree.getChildCount() === 1) {
+            tree = tree.getChild(0)! as GrammarAST;
         }
 
-        return this.adaptor.dupNode(tree); // dup just the root (want node here)
+        return tree.dupNode(); // dup just the root (want node here)
     }
 
     protected dup(el: CommonTree): CommonTree {
-        return this.adaptor.dupTree(el);
+        return dupTree(el);
     }
 }

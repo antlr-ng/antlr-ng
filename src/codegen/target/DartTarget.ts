@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { format } from "../../misc/helpers.js";
+import { format } from "../../support/helpers.js";
 import { CodeGenerator } from "../CodeGenerator.js";
 import { Target, type char } from "../Target.js";
 

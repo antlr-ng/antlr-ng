@@ -349,7 +349,7 @@ export class BlockSetTransformer extends TreeRewriter {
     }
 
     private ebnfSuffix(): GrammarAST | undefined {
-        const start = this.input.LT(1) ?? undefined;
+        const start = this.input.LT(1) as GrammarAST;
 
         try {
             const lookahead = this.input.LA(1);
@@ -369,7 +369,7 @@ export class BlockSetTransformer extends TreeRewriter {
             }
 
             if (this.state.backtracking === 1) {
-                return this.adaptor.dupNode((start as GrammarAST));
+                return start.dupNode();
             }
         } catch (re) {
             if (re instanceof RecognitionException) {

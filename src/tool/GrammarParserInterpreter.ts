@@ -12,7 +12,7 @@ import {
 } from "antlr4ng";
 
 import { ClassFactory } from "../ClassFactory.js";
-import type { Constructor } from "../misc/helpers.js";
+import type { Constructor } from "../support/helpers.js";
 import type { IGrammar, IGrammarParserInterpreter } from "../types.js";
 import { GrammarInterpreterRuleContext } from "./GrammarInterpreterRuleContext.js";
 import { LeftRecursiveRule } from "./LeftRecursiveRule.js";

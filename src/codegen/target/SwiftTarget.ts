@@ -5,7 +5,7 @@
 
 // cspell: ignore associatedtype deinit typealias nonmutating
 
-import { format } from "../../misc/helpers.js";
+import { format } from "../../support/helpers.js";
 import { Target, type char } from "../Target.js";
 
 export class SwiftTarget extends Target {

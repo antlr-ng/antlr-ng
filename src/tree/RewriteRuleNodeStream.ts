@@ -3,6 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { CommonTree } from "./CommonTree.js";
 import { RewriteRuleElementStream } from "./RewriteRuleElementStream.js";
 
@@ -13,11 +14,11 @@ import { RewriteRuleElementStream } from "./RewriteRuleElementStream.js";
 export class RewriteRuleNodeStream extends RewriteRuleElementStream {
 
     public nextNode(): CommonTree {
-        return this._next();
+        return this.getNext();
     }
 
-    protected override toTree(el: CommonTree): CommonTree {
-        return this.adaptor.dupNode(el);
+    protected override toTree(el: GrammarAST): GrammarAST {
+        return el.dupNode();
     }
 
     protected dup(el: CommonTree): CommonTree {

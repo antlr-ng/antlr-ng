@@ -5,7 +5,7 @@
 
 // cspell: ignore endswitch endwhile insteadof
 
-import { format } from "../../misc/helpers.js";
+import { format } from "../../support/helpers.js";
 import { CodeGenerator } from "../CodeGenerator.js";
 import { Target, type char } from "../Target.js";
 

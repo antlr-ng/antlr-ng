@@ -17,7 +17,7 @@ import { CodeGenerator } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import { EscapeSequenceParsing, ResultType } from "../misc/EscapeSequenceParsing.js";
-import { format } from "../misc/helpers.js";
+import { format } from "../support/helpers.js";
 import { Character } from "../support/Character.js";
 import { MurmurHash } from "../support/MurmurHash.js";
 import { ErrorType } from "../tool/ErrorType.js";

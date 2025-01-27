@@ -5,32 +5,13 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
-// cspell: disable
-
 import { Token } from "antlr4ng";
 
 import { CommonTree } from "./CommonTree.js";
-import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import type { TreePattern } from "./TreePattern.js";
 import { TreePatternLexer } from "./TreePatternLexer.js";
 import { TreePatternParser } from "./TreePatternParser.js";
 import { WildcardTreePattern } from "./WildcardTreePattern.js";
-
-interface IContextVisitor {
-    visit(t: CommonTree, parent: CommonTree | null, childIndex: number, labels: Map<string, CommonTree> | null): void;
-}
-
-export class Visitor implements IContextVisitor {
-    public visit<T>(t: T): void;
-    public visit<T>(t: T, parent: T, childIndex: number, labels: Map<string, T>): void;
-    public visit<T>(...args: unknown[]): void {
-        if (args.length === 1) {
-            throw Error("visit must be overridden");
-        }
-
-        this.visit(args[0] as T);
-    }
-};
 
 /**
  * Build and navigate trees with this object.  Must know about the names
@@ -40,7 +21,7 @@ export class Visitor implements IContextVisitor {
  *
  *  In order to create nodes and navigate, this class needs a TreeAdaptor.
  *
- *  This class can build a token type &rarr; node index for repeated use or for
+ *  This class can build a token type > node index for repeated use or for
  *  iterating over the various nodes with a particular type.
  *
  *  This class works in conjunction with the TreeAdaptor rather than moving
@@ -50,211 +31,10 @@ export class Visitor implements IContextVisitor {
  *  match subtrees against it.
  */
 export class TreeWizard {
-    private adaptor: CommonTreeAdaptor;
     private tokenNameToTypeMap?: Map<string | null, number>;
 
-    public constructor(adaptorOrTokenNames: CommonTreeAdaptor | Array<string | null>);
-    public constructor(adaptor: CommonTreeAdaptor, tokenNameToTypeMap: Map<string, number>);
-    public constructor(adaptor: CommonTreeAdaptor, tokenNames: Array<string | null>);
-    public constructor(...args: unknown[]) {
-        let adaptor: CommonTreeAdaptor;
-        let tokenNameToTypeMap: Map<string | null, number> | undefined;
-        let tokenNames: Array<string | null>;
-
-        if (args.length === 1) {
-            if (Array.isArray(args[0])) {
-                adaptor = new CommonTreeAdaptor();
-                tokenNames = args[0] as Array<string | null>;
-            } else {
-                adaptor = args[0] as CommonTreeAdaptor;
-            }
-        } else {
-            adaptor = args[0] as CommonTreeAdaptor;
-            if (Array.isArray(args[1])) {
-                tokenNames = args[1] as Array<string | null>;
-                tokenNameToTypeMap = this.computeTokenTypes(tokenNames);
-            } else {
-                tokenNameToTypeMap = args[1] as Map<string, number>;
-            }
-        }
-
-        this.adaptor = adaptor;
-        this.tokenNameToTypeMap = tokenNameToTypeMap;
-    }
-
-    /**
-     * Compare t1 and t2; return true if token types/text, structure match exactly.
-     *  The trees are examined in their entirety so that (A B) does not match
-     *  (A B C) nor (A (B C)).
-     // TODO: allow them to pass in a comparator
-     *  TODO: have a version that is nonstatic so it can use instance adaptor
-     *
-     *  I cannot rely on the tree node's equals() implementation as I make
-     *  no constraints at all on the node types nor interface etc...
-     */
-    public static equals(t1: CommonTree | null, t2: CommonTree | null, adaptor: CommonTreeAdaptor): boolean {
-        return TreeWizard._equals(t1, t2, adaptor);
-    }
-
-    protected static _equals(t1: CommonTree | null, t2: CommonTree | null, adaptor: CommonTreeAdaptor): boolean {
-        if (t1 === null || t2 === null) {
-            return false;
-        }
-
-        // check roots
-        if (adaptor.getType(t1) !== adaptor.getType(t2)) {
-            return false;
-        }
-
-        if (adaptor.getText(t1) !== adaptor.getText(t2)) {
-            return false;
-        }
-
-        // check children
-        const n1 = adaptor.getChildCount(t1);
-        const n2 = adaptor.getChildCount(t2);
-        if (n1 !== n2) {
-            return false;
-        }
-
-        for (let i = 0; i < n1; i++) {
-            const child1 = adaptor.getChild(t1, i);
-            const child2 = adaptor.getChild(t2, i);
-            if (!TreeWizard._equals(child1, child2, adaptor)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Compute a map that is an inverted index of tokenNames (which maps int token types to names).
-     */
-    public computeTokenTypes(tokenNames: Array<string | null>): Map<string | null, number> {
-        const m = new Map<string | null, number>();
-
-        for (let ttype = 0; ttype < tokenNames.length; ttype++) {
-            const name = tokenNames[ttype];
-            m.set(name, ttype);
-        }
-
-        return m;
-    }
-
-    /** Using the map of token names to token types, return the type. */
-    public getTokenType(tokenName: string): number {
-        if (!this.tokenNameToTypeMap) {
-            return Token.INVALID_TYPE;
-        }
-
-        const ttypeI = this.tokenNameToTypeMap.get(tokenName);
-        if (ttypeI !== undefined) {
-            return ttypeI;
-        }
-
-        return Token.INVALID_TYPE;
-    }
-
-    /**
-     * Walk the entire tree and make a node name to nodes mapping.
-     *  For now, use recursion but later nonrecursive version may be
-     *  more efficient.  Returns Map&lt;Integer, List&gt; where the List is
-     *  of your AST node type.  The Integer is the token type of the node.
-     *
-     *  TODO: save this index so that find and visit are faster
-     */
-    public index(t: CommonTree): Map<number, CommonTree[]> {
-        const m = new Map<number, CommonTree[]>();
-        this._index(t, m);
-
-        return m;
-    }
-
-    /** Return a List of tree nodes with token type ttype or matching a search pattern. */
-    public find(t: CommonTree, typeOrPattern: number | string): CommonTree[] | null {
-        if (typeof typeOrPattern === "number") {
-            const nodes = new Array<CommonTree>();
-            this.visit(t, typeOrPattern, new class extends Visitor {
-                public override visit(t: CommonTree): void {
-                    nodes.push(t);
-                }
-            }());
-
-            return nodes;
-        }
-
-        const subtrees = new Array<CommonTree>();
-        const tokenizer = new TreePatternLexer(typeOrPattern);
-        const parser = new TreePatternParser(tokenizer, this);
-        const tpattern = parser.pattern() as TreePattern | null;
-
-        // don't allow invalid patterns
-        if (tpattern === null || tpattern.isNil() || tpattern instanceof WildcardTreePattern) {
-            return null;
-        }
-
-        const rootTokenType = tpattern.getType();
-        this.visit(t, rootTokenType, new class implements IContextVisitor {
-            public constructor(private readonly $outer: TreeWizard) { };
-
-            public visit(t: CommonTree, parent: CommonTree, childIndex: number, labels: Map<string, CommonTree>): void {
-                if (this.$outer.doParse(t, tpattern, null)) {
-                    subtrees.push(t);
-                }
-            }
-        }(this));
-
-        return subtrees;
-
-    }
-
-    public findFirst(t: CommonTree, typeOrPattern: number | string): CommonTree | null {
-        return null;
-    }
-
-    /**
-     * Visit every ttype node in t, invoking the visitor.  This is a quicker
-     *  version of the general visit(t, pattern) method.  The labels arg
-     *  of the visitor action method is never set (it's null) since using
-     *  a token type rather than a pattern doesn't let us set a label.
-     */
-    public visit<T extends CommonTree>(t: T, ttype: number, visitor: IContextVisitor): void;
-    /**
-     * For all subtrees that match the pattern, execute the visit action.
-     *  The implementation uses the root node of the pattern in combination
-     *  with visit(t, ttype, visitor) so nil-rooted patterns are not allowed.
-     *  Patterns with wildcard roots are also not allowed.
-     */
-    public visit<T extends CommonTree>(t: T, pattern: string, visitor: IContextVisitor): void;
-    public visit<T extends CommonTree>(...args: unknown[]): void {
-        const [t, typeOrPattern, visitor] = args as [T, number | string, IContextVisitor];
-        if (typeof typeOrPattern === "number") {
-            this._visit(t, null, 0, typeOrPattern, visitor);
-        } else {
-            // Create a TreePattern from the pattern
-            const tokenizer = new TreePatternLexer(typeOrPattern);
-            const parser = new TreePatternParser(tokenizer, this);
-            const tpattern = parser.pattern() as TreePattern | null;
-
-            // don't allow invalid patterns
-            if (tpattern === null || tpattern.isNil() || tpattern instanceof WildcardTreePattern) {
-                return;
-            }
-
-            const labels = new Map<string, T>(); // reused for each _parse
-            const rootTokenType = tpattern.getType();
-            this.visit(t, rootTokenType, new class implements IContextVisitor {
-                public constructor(private readonly $outer: TreeWizard) { };
-
-                public visit(t: CommonTree, parent: CommonTree, childIndex: number): void {
-                    labels.clear();
-                    if (this.$outer.doParse(t, tpattern, labels)) {
-                        visitor.visit(t, parent, childIndex, labels);
-                    }
-                }
-            }(this));
-        }
+    public constructor(tokenNames: Array<string | null>) {
+        this.tokenNameToTypeMap = this.computeTokenTypes(tokenNames);
     }
 
     /**
@@ -278,12 +58,32 @@ export class TreeWizard {
         return matched;
     }
 
+    /** Using the map of token names to token types, return the type. */
+    public getTokenType(tokenName: string): number {
+        if (!this.tokenNameToTypeMap) {
+            return Token.INVALID_TYPE;
+        }
+
+        const ttypeI = this.tokenNameToTypeMap.get(tokenName);
+        if (ttypeI !== undefined) {
+            return ttypeI;
+        }
+
+        return Token.INVALID_TYPE;
+    }
+
     /**
-     * Compare type, structure, and text of two trees, assuming adaptor in
-     *  this instance of a TreeWizard.
+     * Compute a map that is an inverted index of tokenNames (which maps int token types to names).
      */
-    public equals(t1: CommonTree, t2: CommonTree): boolean {
-        return TreeWizard._equals(t1, t2, this.adaptor);
+    private computeTokenTypes(tokenNames: Array<string | null>): Map<string | null, number> {
+        const m = new Map<string | null, number>();
+
+        for (let ttype = 0; ttype < tokenNames.length; ttype++) {
+            const name = tokenNames[ttype];
+            m.set(name, ttype);
+        }
+
+        return m;
     }
 
     /**
@@ -292,15 +92,15 @@ export class TreeWizard {
      *  text arguments on nodes.  Fill labels map with pointers to nodes
      *  in tree matched against nodes in pattern with labels.
      */
-    protected doParse(t1: CommonTree, tpattern: TreePattern, labels: Map<string, CommonTree> | null): boolean {
+    private doParse(t1: CommonTree, tpattern: TreePattern, labels: Map<string, CommonTree> | null): boolean {
         // check roots (wildcard matches anything)
         if (!(tpattern instanceof WildcardTreePattern)) {
-            if (this.adaptor.getType(t1) !== tpattern.getType()) {
+            if (t1.getType() !== tpattern.getType()) {
                 return false;
             }
 
             // if pattern has text, check node text
-            if (tpattern.hasTextArg && this.adaptor.getText(t1) !== tpattern.getText()) {
+            if (tpattern.hasTextArg && t1.getText() !== tpattern.getText()) {
                 return false;
             }
         }
@@ -311,13 +111,14 @@ export class TreeWizard {
         }
 
         // check children
-        const n1 = this.adaptor.getChildCount(t1);
+        const n1 = t1.getChildCount();
         const n2 = tpattern.getChildCount();
         if (n1 !== n2) {
             return false;
         }
+
         for (let i = 0; i < n1; i++) {
-            const child1 = this.adaptor.getChild(t1, i);
+            const child1 = t1.getChild(i);
             const child2 = tpattern.getChild(i) as TreePattern;
             if (child1) {
                 if (!this.doParse(child1, child2, labels)) {
@@ -328,41 +129,4 @@ export class TreeWizard {
 
         return true;
     }
-
-    /** Do the work for index */
-    protected _index(t: CommonTree, m: Map<number, CommonTree[]>): void {
-        const ttype = this.adaptor.getType(t);
-        let elements = m.get(ttype);
-        if (!elements) {
-            elements = new Array<CommonTree>();
-            m.set(ttype, elements);
-        }
-
-        elements.push(t);
-        const n = this.adaptor.getChildCount(t);
-        for (let i = 0; i < n; i++) {
-            const child = this.adaptor.getChild(t, i);
-            if (child) {
-                this._index(child, m);
-            }
-        }
-    }
-
-    /** Do the recursive work for visit */
-    protected _visit<T extends CommonTree>(t: T, parent: T | null, childIndex: number, ttype: number,
-        visitor: IContextVisitor): void {
-        if (this.adaptor.getType(t) === ttype) {
-            visitor.visit(t, parent, childIndex, null);
-        }
-
-        const n = this.adaptor.getChildCount(t);
-        for (let i = 0; i < n; i++) {
-            const child = this.adaptor.getChild(t, i);
-
-            if (child) {
-                this._visit(child, t, i, ttype, visitor);
-            }
-        }
-    }
-
 }

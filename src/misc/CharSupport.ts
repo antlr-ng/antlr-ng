@@ -8,7 +8,7 @@ import { IntervalSet } from "antlr4ng";
 import { Character } from "../support/Character.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import type { Grammar } from "../tool/Grammar.js";
-import type { IPosition } from "./helpers.js";
+import type { IPosition } from "../support/helpers.js";
 
 export class CharSupport {
     /** When converting ANTLR char and string literals, here is the value set of escape chars. */
