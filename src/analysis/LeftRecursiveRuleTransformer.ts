@@ -80,7 +80,7 @@ export class LeftRecursiveRuleTransformer {
         // update all refs to recursive rules to have [0] argument
         const ruleRefs = this.ast.getNodesWithType(ANTLRv4Parser.RULE_REF);
         for (const r of ruleRefs) {
-            if (r.getParent()!.getType() === ANTLRv4Parser.RULE) { // must be rule def
+            if (r.parent!.getType() === ANTLRv4Parser.RULE) { // must be rule def
                 continue;
             }
 
@@ -187,7 +187,7 @@ export class LeftRecursiveRuleTransformer {
         // define labels on recursive rule refs we delete; they don't point to nodes of course
         // these are so $label in action translation works
         for (const [ast, _] of leftRecursiveRuleWalker.leftRecursiveRuleRefLabels) {
-            const labelOpNode = ast.getParent() as GrammarAST;
+            const labelOpNode = ast.parent as GrammarAST;
             const elementNode = labelOpNode.getChild(1) as GrammarAST;
             const lp = new LabelElementPair(this.g, ast, elementNode, labelOpNode.getType());
             r.alt[1].labelDefs.set(ast.getText(), [lp]);

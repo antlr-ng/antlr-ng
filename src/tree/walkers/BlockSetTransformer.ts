@@ -91,8 +91,8 @@ export class BlockSetTransformer extends TreeRewriter {
                         if (this.state.backtracking === 1) {
                             this.currentRuleName = id?.getText();
                             result = first;
-                            if (result?.getParent()?.isNil()) {
-                                result = result.getParent() as GrammarAST;
+                            if (result?.parent?.isNil()) {
+                                result = result.parent as GrammarAST;
                             }
                         }
                     } else if (lookahead === ANTLRv4Parser.RULE_REF) {
@@ -104,8 +104,8 @@ export class BlockSetTransformer extends TreeRewriter {
                         if (this.state.backtracking === 1) {
                             this.currentRuleName = id?.getText();
                             result = first;
-                            if (result?.getParent()?.isNil()) {
-                                result = result.getParent() as GrammarAST;
+                            if (result?.parent?.isNil()) {
+                                result = result.parent as GrammarAST;
                             }
                         }
                     } else {
@@ -129,8 +129,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             if (this.state.backtracking === 1) {
                                 result = first;
-                                if (result?.getParent()?.isNil()) {
-                                    result = result.getParent() as GrammarAST;
+                                if (result?.parent?.isNil()) {
+                                    result = result.parent as GrammarAST;
                                 }
                             }
                         } else {
@@ -157,8 +157,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     if (this.state.backtracking === 1) {
                         result = first;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
+                        if (result?.parent?.isNil()) {
+                            result = result.parent as GrammarAST;
                         }
                     }
 
@@ -178,8 +178,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     if (this.state.backtracking === 1) {
                         result = first;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
+                        if (result?.parent?.isNil()) {
+                            result = result.parent as GrammarAST;
                         }
                     }
 
@@ -196,8 +196,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     if (this.state.backtracking === 1) {
                         result = ebnfBlockSet;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
+                        if (result?.parent?.isNil()) {
+                            result = result.parent as GrammarAST;
                         }
                     }
 
@@ -212,8 +212,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     if (this.state.backtracking === 1) {
                         result = blockSet;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
+                        if (result?.parent?.isNil()) {
+                            result = result.parent as GrammarAST;
                         }
                     }
 
@@ -259,8 +259,8 @@ export class BlockSetTransformer extends TreeRewriter {
             }
 
             if (this.state.backtracking === 1) {
-                if (alt.getParent()?.isNil()) {
-                    return alt.getParent() as GrammarAST;
+                if (alt.parent?.isNil()) {
+                    return alt.parent as GrammarAST;
                 }
 
                 return alt;
@@ -333,7 +333,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 root0.addChild(root1);
 
                 result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                this.input.replaceChildren(start.getParent()!, start.getChildIndex(), last.getChildIndex(), result);
+                this.input.replaceChildren(start.parent!, start.getChildIndex(), last.getChildIndex(), result);
 
                 GrammarTransformPipeline.setGrammarPtr(this.g, result);
             }
@@ -438,8 +438,8 @@ export class BlockSetTransformer extends TreeRewriter {
                     if (this.state.backtracking === 1) {
                         elementOptionsStream.add(elementOptions ?? null);
                         result = first;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
+                        if (result?.parent?.isNil()) {
+                            result = result.parent as GrammarAST;
                         }
                     }
                 }
@@ -500,8 +500,8 @@ export class BlockSetTransformer extends TreeRewriter {
                                 elementOptionsStream.add(elementOptions ?? null);
 
                                 result = first;
-                                if (result?.getParent()?.isNil()) {
-                                    result = result.getParent() as GrammarAST;
+                                if (result?.parent?.isNil()) {
+                                    result = result.parent as GrammarAST;
                                 }
                             }
                         }
@@ -522,8 +522,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                         if (this.state.backtracking === 1) {
                             result = first;
-                            if (result?.getParent()?.isNil()) {
-                                result = result.getParent() as GrammarAST;
+                            if (result?.parent?.isNil()) {
+                                result = result.parent as GrammarAST;
                             }
                         }
                     } else {
@@ -578,7 +578,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     root0.addChild(root1);
                     result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                    this.input.replaceChildren(result.getParent()!, start!.getChildIndex(), start!.getChildIndex(),
+                    this.input.replaceChildren(result.parent!, start!.getChildIndex(), start!.getChildIndex(),
                         result);
                 }
             } else {
@@ -626,8 +626,8 @@ export class BlockSetTransformer extends TreeRewriter {
                         elementOptionsStream.add(elementOptions ?? null);
 
                         result = first;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
+                        if (result?.parent?.isNil()) {
+                            result = result.parent as GrammarAST;
                         }
                     }
                 }
@@ -681,8 +681,8 @@ export class BlockSetTransformer extends TreeRewriter {
                                 elementOptionsStream.add(elementOptions ?? null);
 
                                 result = first;
-                                if (result?.getParent()?.isNil()) {
-                                    result = result.getParent() as GrammarAST;
+                                if (result?.parent?.isNil()) {
+                                    result = result.parent as GrammarAST;
                                 }
                             }
                         }
@@ -703,8 +703,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                         if (this.state.backtracking === 1) {
                             result = first;
-                            if (result?.getParent()?.isNil()) {
-                                result = result.getParent() as GrammarAST;
+                            if (result?.parent?.isNil()) {
+                                result = result.parent as GrammarAST;
                             }
                         }
                     } else {
@@ -751,7 +751,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     setElementStream.reset();
                     root0.addChild(root1);
                     result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                    this.input.replaceChildren(result.getParent()!, start!.getChildIndex(), start!.getChildIndex(),
+                    this.input.replaceChildren(result.parent!, start!.getChildIndex(), start!.getChildIndex(),
                         result);
                 }
             }
@@ -817,8 +817,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     if (this.state.backtracking === 1) {
                         result = first ?? undefined;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
+                        if (result?.parent?.isNil()) {
+                            result = result.parent as GrammarAST;
                         }
                     }
 
@@ -845,8 +845,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     if (this.state.backtracking === 1) {
                         result = first;
-                        if (result?.getParent()?.isNil()) {
-                            result = result.getParent() as GrammarAST;
+                        if (result?.parent?.isNil()) {
+                            result = result.parent as GrammarAST;
                         }
                     }
 
@@ -899,8 +899,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                         if (this.state.backtracking === 1) {
                             result = first ?? undefined;
-                            if (result?.getParent()?.isNil()) {
-                                result = result.getParent() as GrammarAST;
+                            if (result?.parent?.isNil()) {
+                                result = result.parent as GrammarAST;
                             }
                         }
 
@@ -918,8 +918,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             if (this.state.backtracking === 1) {
                                 result = first ?? undefined;
-                                if (result?.getParent()?.isNil()) {
-                                    result = result.getParent() as GrammarAST;
+                                if (result?.parent?.isNil()) {
+                                    result = result.parent as GrammarAST;
                                 }
                             }
 
@@ -981,16 +981,16 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 if (this.state.backtracking === 1) {
                     result = first;
-                    if (result?.getParent()?.isNil()) {
-                        result = result.getParent() as GrammarAST;
+                    if (result?.parent?.isNil()) {
+                        result = result.parent as GrammarAST;
                     }
                 }
             }
 
             if (this.state.backtracking === 1) {
                 result = first;
-                if (result?.getParent()?.isNil()) {
-                    result = result.getParent() as GrammarAST;
+                if (result?.parent?.isNil()) {
+                    result = result.parent as GrammarAST;
                 }
 
                 GrammarTransformPipeline.setGrammarPtr(this.g, result!);
@@ -1037,8 +1037,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                         if (this.state.backtracking === 1) {
                             result = first;
-                            if (result?.getParent()?.isNil()) {
-                                result = result.getParent() as GrammarAST;
+                            if (result?.parent?.isNil()) {
+                                result = result.parent as GrammarAST;
                             }
                         }
                     } else {
@@ -1054,8 +1054,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
             if (this.state.backtracking === 1) {
                 result = first;
-                if (result?.getParent()?.isNil()) {
-                    result = result.getParent() as GrammarAST;
+                if (result?.parent?.isNil()) {
+                    result = result.parent as GrammarAST;
                 }
             }
         } catch (re) {
@@ -1084,8 +1084,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 if (this.state.backtracking === 1) {
                     result = id;
-                    if (result.getParent()?.isNil()) {
-                        result = result.getParent() as GrammarAST;
+                    if (result.parent?.isNil()) {
+                        result = result.parent as GrammarAST;
                     }
                 }
 
@@ -1126,8 +1126,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                 if (this.state.backtracking === 1) {
                                     result = assign;
-                                    if (result.getParent()?.isNil()) {
-                                        result = result.getParent() as GrammarAST;
+                                    if (result.parent?.isNil()) {
+                                        result = result.parent as GrammarAST;
                                     }
                                 }
 
@@ -1168,8 +1168,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                 if (this.state.backtracking === 1) {
                                     result = first;
-                                    if (result?.getParent()?.isNil()) {
-                                        result = result.getParent() as GrammarAST;
+                                    if (result?.parent?.isNil()) {
+                                        result = result.parent as GrammarAST;
                                     }
                                 }
 
@@ -1210,8 +1210,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                                 if (this.state.backtracking === 1) {
                                     result = first;
-                                    if (result?.getParent()?.isNil()) {
-                                        result = result.getParent() as GrammarAST;
+                                    if (result?.parent?.isNil()) {
+                                        result = result.parent as GrammarAST;
                                     }
                                 }
 
@@ -1330,8 +1330,8 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 if (this.state.backtracking === 1) {
                     result = first;
-                    if (result?.getParent()?.isNil()) {
-                        result = result.getParent() as GrammarAST;
+                    if (result?.parent?.isNil()) {
+                        result = result.parent as GrammarAST;
                     }
                 }
             }

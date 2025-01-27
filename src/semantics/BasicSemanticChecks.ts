@@ -321,7 +321,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
 
     protected checkNumRules(rulesNode: GrammarAST): void {
         if (rulesNode.getChildCount() === 0) {
-            const root = rulesNode.getParent() as GrammarAST;
+            const root = rulesNode.parent as GrammarAST;
             const idNode = root.getChild(0) as GrammarAST;
             this.g.tool.errorManager.grammarError(ErrorType.NO_RULES, this.g.fileName,
                 null, idNode.getText(), this.g);

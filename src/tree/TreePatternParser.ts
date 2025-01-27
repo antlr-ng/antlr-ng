@@ -3,24 +3,22 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-// cspell: disable
-
 import { CommonToken, Token } from "antlr4ng";
-import type { CommonTree } from "./CommonTree.js";
-import type { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
+
+import { CommonTree } from "./CommonTree.js";
+import { TreePattern } from "./TreePattern.js";
 import { TreePatternLexer } from "./TreePatternLexer.js";
 import { TreeWizard } from "./TreeWizard.js";
+import { WildcardTreePattern } from "./WildcardTreePattern.js";
 
 export class TreePatternParser {
     protected tokenizer: TreePatternLexer;
     protected ttype: number;
     protected wizard: TreeWizard;
-    protected adaptor: CommonTreeAdaptor;
 
-    public constructor(tokenizer: TreePatternLexer, wizard: TreeWizard, adaptor: CommonTreeAdaptor) {
+    public constructor(tokenizer: TreePatternLexer, wizard: TreeWizard) {
         this.tokenizer = tokenizer;
         this.wizard = wizard;
-        this.adaptor = adaptor;
         this.ttype = tokenizer.nextToken(); // kickstart
     }
 
@@ -59,14 +57,14 @@ export class TreePatternParser {
             if (this.ttype === TreePatternLexer.BEGIN) {
                 const subtree = this.parseTree();
                 if (subtree) {
-                    this.adaptor.addChild(root, subtree);
+                    root.addChild(subtree);
                 }
             } else {
                 const child = this.parseNode();
                 if (child === null) {
                     return null;
                 }
-                this.adaptor.addChild(root, child);
+                root.addChild(child);
             }
         }
 
@@ -101,7 +99,7 @@ export class TreePatternParser {
         if (this.ttype === TreePatternLexer.DOT) {
             this.ttype = this.tokenizer.nextToken();
             const wildcardPayload = CommonToken.fromType(0, ".");
-            const node = new TreeWizard.WildcardTreePattern(wildcardPayload);
+            const node = new WildcardTreePattern(wildcardPayload);
             if (label !== null) {
                 node.label = label;
             }
@@ -117,7 +115,7 @@ export class TreePatternParser {
         const tokenName = this.tokenizer.sval.toString();
         this.ttype = this.tokenizer.nextToken();
         if (tokenName === "nil") {
-            return this.adaptor.nil();
+            return new TreePattern();
         }
 
         let text = tokenName;
@@ -135,12 +133,13 @@ export class TreePatternParser {
             return null;
         }
 
-        const node = this.adaptor.create(treeNodeType, text);
-        if (label !== null && node instanceof TreeWizard.TreePattern) {
+        const token = CommonToken.fromType(treeNodeType, text);
+        const node = new TreePattern(token);
+        if (label !== null) {
             node.label = label;
         }
 
-        if (arg !== null && node instanceof TreeWizard.TreePattern) {
+        if (arg !== null) {
             node.hasTextArg = true;
         }
 

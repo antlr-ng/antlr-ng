@@ -251,7 +251,7 @@ export class GrammarTransformPipeline {
                         msg: `${action.g.name} ${scopeName}:${name}=${action.getText()}`
                     });
                     if (action.g !== rootGrammar) {
-                        root.insertChild(1, action.getParent()!);
+                        root.insertChild(1, action.parent!);
                     }
                 }
             }

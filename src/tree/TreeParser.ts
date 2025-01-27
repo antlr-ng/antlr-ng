@@ -44,7 +44,7 @@ export class TreeParser {
     /**
      * The worker for inContext. It's static and full of parameters for testing purposes.
      */
-    public static inContext(adaptor: CommonTreeAdaptor, tokenNames: string[], t: CommonTree | null,
+    public static inContext(adaptor: CommonTreeAdaptor, tokenNames: string[], t: CommonTree,
         context: string): boolean {
         if (context.match(TreeParser.dotdot)) { // don't allow "..", must be "..."
             throw new Error("invalid syntax: ..");
@@ -58,8 +58,8 @@ export class TreeParser {
         context = context.trim();
         const nodes = context.split(/\s+/);
         let ni = nodes.length - 1;
-        t = adaptor.getParent(t);
-        while (ni >= 0 && t !== null) {
+        let run: CommonTree | null = adaptor.getParent(t);
+        while (ni >= 0 && run !== null) {
             if (nodes[ni] === "...") {
                 // walk upwards until we see nodes[ni-1] then continue walking
                 if (ni === 0) {
@@ -68,26 +68,26 @@ export class TreeParser {
 
                 // ... at start is no-op
                 const goal = nodes[ni - 1];
-                const ancestor = TreeParser.getAncestor(adaptor, tokenNames, t, goal);
+                const ancestor = TreeParser.getAncestor(adaptor, tokenNames, run, goal);
                 if (ancestor === null) {
                     return false;
                 }
 
-                t = ancestor;
+                run = ancestor;
                 ni--;
             }
 
-            const name = tokenNames[adaptor.getType(t)];
+            const name = tokenNames[adaptor.getType(run)];
             if (name !== nodes[ni]) {
                 return false;
             }
 
             // advance to parent and to previous element in context node list
             ni--;
-            t = adaptor.getParent(t);
+            run = adaptor.getParent(run);
         }
 
-        if (t === null && ni >= 0) {
+        if (run === null && ni >= 0) {
             return false;
         }
 
@@ -161,7 +161,7 @@ export class TreeParser {
      *  There is no way to force the first node to be the root.
      */
     public inContext(context: string): boolean {
-        return TreeParser.inContext(this.input.getTreeAdaptor(), this.getTokenNames(), this.input.LT(1), context);
+        return TreeParser.inContext(this.input.getTreeAdaptor(), this.getTokenNames(), this.input.LT(1)!, context);
     }
 
     /**

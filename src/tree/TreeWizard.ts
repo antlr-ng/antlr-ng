@@ -11,10 +11,16 @@ import { Token } from "antlr4ng";
 
 import { CommonTree } from "./CommonTree.js";
 import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
+import type { TreePattern } from "./TreePattern.js";
 import { TreePatternLexer } from "./TreePatternLexer.js";
 import { TreePatternParser } from "./TreePatternParser.js";
+import { WildcardTreePattern } from "./WildcardTreePattern.js";
 
-export class Visitor implements TreeWizard.ContextVisitor {
+interface IContextVisitor {
+    visit(t: CommonTree, parent: CommonTree | null, childIndex: number, labels: Map<string, CommonTree> | null): void;
+}
+
+export class Visitor implements IContextVisitor {
     public visit<T>(t: T): void;
     public visit<T>(t: T, parent: T, childIndex: number, labels: Map<string, T>): void;
     public visit<T>(...args: unknown[]): void {
@@ -44,53 +50,8 @@ export class Visitor implements TreeWizard.ContextVisitor {
  *  match subtrees against it.
  */
 export class TreeWizard {
-
-    /**
-     * When using %label:TOKENNAME in a tree for parse(), we must
-     *  track the label.
-     */
-    public static TreePattern = class TreePattern extends CommonTree {
-        public label: string;
-        public hasTextArg: boolean;
-
-        public declare startIndex: number;
-        public declare stopIndex: number;
-        public declare node: CommonTree;
-
-        public constructor(payload?: Token) {
-            super(payload);
-        }
-
-        public override toString(): string {
-            return "%" + this.label + ":" + super.toString();
-        }
-    };
-
-    public static WildcardTreePattern = class WildcardTreePattern extends TreeWizard.TreePattern {
-        public constructor(payload: Token) {
-            super(payload);
-        }
-    };
-
-    /** This adaptor creates TreePattern objects for use during scan() */
-    public static TreePatternTreeAdaptor = class TreePatternTreeAdaptor extends CommonTreeAdaptor {
-        public declare treeToUniqueIDMap: Map<CommonTree, number>;
-        public declare uniqueNodeID;
-
-        public override create(payload?: Token): CommonTree;
-        public override create(tokenType: number, text: string): CommonTree;
-        public override create(tokenType: number, fromToken: Token, text?: string): CommonTree;
-        public override create(...args: unknown[]): CommonTree {
-            if (args.length < 2) {
-                return new TreeWizard.TreePattern(args[0] as Token | undefined);
-            }
-
-            return super.create.apply(this, args) as CommonTree;
-        }
-    };
-
-    protected adaptor: CommonTreeAdaptor;
-    protected tokenNameToTypeMap?: Map<string | null, number>;
+    private adaptor: CommonTreeAdaptor;
+    private tokenNameToTypeMap?: Map<string | null, number>;
 
     public constructor(adaptorOrTokenNames: CommonTreeAdaptor | Array<string | null>);
     public constructor(adaptor: CommonTreeAdaptor, tokenNameToTypeMap: Map<string, number>);
@@ -225,20 +186,20 @@ export class TreeWizard {
 
         const subtrees = new Array<CommonTree>();
         const tokenizer = new TreePatternLexer(typeOrPattern);
-        const parser = new TreePatternParser(tokenizer, this, new TreeWizard.TreePatternTreeAdaptor());
-        const tpattern = parser.pattern() as TreeWizard.TreePattern | null;
+        const parser = new TreePatternParser(tokenizer, this);
+        const tpattern = parser.pattern() as TreePattern | null;
 
         // don't allow invalid patterns
-        if (tpattern === null || tpattern.isNil() || tpattern instanceof TreeWizard.WildcardTreePattern) {
+        if (tpattern === null || tpattern.isNil() || tpattern instanceof WildcardTreePattern) {
             return null;
         }
 
         const rootTokenType = tpattern.getType();
-        this.visit(t, rootTokenType, new class implements TreeWizard.ContextVisitor {
+        this.visit(t, rootTokenType, new class implements IContextVisitor {
             public constructor(private readonly $outer: TreeWizard) { };
 
             public visit(t: CommonTree, parent: CommonTree, childIndex: number, labels: Map<string, CommonTree>): void {
-                if (this.$outer._parse(t, tpattern, null)) {
+                if (this.$outer.doParse(t, tpattern, null)) {
                     subtrees.push(t);
                 }
             }
@@ -258,37 +219,37 @@ export class TreeWizard {
      *  of the visitor action method is never set (it's null) since using
      *  a token type rather than a pattern doesn't let us set a label.
      */
-    public visit<T extends CommonTree>(t: T, ttype: number, visitor: TreeWizard.ContextVisitor): void;
+    public visit<T extends CommonTree>(t: T, ttype: number, visitor: IContextVisitor): void;
     /**
      * For all subtrees that match the pattern, execute the visit action.
      *  The implementation uses the root node of the pattern in combination
      *  with visit(t, ttype, visitor) so nil-rooted patterns are not allowed.
      *  Patterns with wildcard roots are also not allowed.
      */
-    public visit<T extends CommonTree>(t: T, pattern: string, visitor: TreeWizard.ContextVisitor): void;
+    public visit<T extends CommonTree>(t: T, pattern: string, visitor: IContextVisitor): void;
     public visit<T extends CommonTree>(...args: unknown[]): void {
-        const [t, typeOrPattern, visitor] = args as [T, number | string, TreeWizard.ContextVisitor];
+        const [t, typeOrPattern, visitor] = args as [T, number | string, IContextVisitor];
         if (typeof typeOrPattern === "number") {
             this._visit(t, null, 0, typeOrPattern, visitor);
         } else {
             // Create a TreePattern from the pattern
             const tokenizer = new TreePatternLexer(typeOrPattern);
-            const parser = new TreePatternParser(tokenizer, this, new TreeWizard.TreePatternTreeAdaptor());
-            const tpattern = parser.pattern() as TreeWizard.TreePattern | null;
+            const parser = new TreePatternParser(tokenizer, this);
+            const tpattern = parser.pattern() as TreePattern | null;
 
             // don't allow invalid patterns
-            if (tpattern === null || tpattern.isNil() || tpattern instanceof TreeWizard.WildcardTreePattern) {
+            if (tpattern === null || tpattern.isNil() || tpattern instanceof WildcardTreePattern) {
                 return;
             }
 
             const labels = new Map<string, T>(); // reused for each _parse
             const rootTokenType = tpattern.getType();
-            this.visit(t, rootTokenType, new class implements TreeWizard.ContextVisitor {
+            this.visit(t, rootTokenType, new class implements IContextVisitor {
                 public constructor(private readonly $outer: TreeWizard) { };
 
                 public visit(t: CommonTree, parent: CommonTree, childIndex: number): void {
                     labels.clear();
-                    if (this.$outer._parse(t, tpattern, labels)) {
+                    if (this.$outer.doParse(t, tpattern, labels)) {
                         visitor.visit(t, parent, childIndex, labels);
                     }
                 }
@@ -310,33 +271,11 @@ export class TreeWizard {
      */
     public parse<T extends CommonTree>(t: T, pattern: string, labels?: Map<string, T>): boolean {
         const tokenizer = new TreePatternLexer(pattern);
-        const parser = new TreePatternParser(tokenizer, this, new TreeWizard.TreePatternTreeAdaptor());
-        const tpattern = parser.pattern() as TreeWizard.TreePattern;
-        const matched = this._parse(t, tpattern, labels ?? null);
+        const parser = new TreePatternParser(tokenizer, this);
+        const tpattern = parser.pattern() as TreePattern;
+        const matched = this.doParse(t, tpattern, labels ?? null);
 
         return matched;
-    }
-
-    /**
-     * Create a tree or node from the indicated tree pattern that closely
-     *  follows ANTLR tree grammar tree element syntax:
-     *
-     * 		(root child1 ... child2).
-     *
-     *  You can also just pass in a node: ID
-     *
-     *  Any node can have a text argument: ID[foo]
-     *  (notice there are no quotes around foo--it's clear it's a string).
-     *
-     *  nil is a special name meaning "give me a nil node".  Useful for
-     *  making lists: (nil A B C) is a list of A B C.
-     */
-    public create(pattern: string): unknown {
-        const tokenizer = new TreePatternLexer(pattern);
-        const parser = new TreePatternParser(tokenizer, this, this.adaptor);
-        const t = parser.pattern();
-
-        return t;
     }
 
     /**
@@ -353,10 +292,9 @@ export class TreeWizard {
      *  text arguments on nodes.  Fill labels map with pointers to nodes
      *  in tree matched against nodes in pattern with labels.
      */
-    protected _parse(t1: CommonTree, tpattern: TreeWizard.TreePattern,
-        labels: Map<string, CommonTree> | null): boolean {
+    protected doParse(t1: CommonTree, tpattern: TreePattern, labels: Map<string, CommonTree> | null): boolean {
         // check roots (wildcard matches anything)
-        if (!(tpattern instanceof TreeWizard.WildcardTreePattern)) {
+        if (!(tpattern instanceof WildcardTreePattern)) {
             if (this.adaptor.getType(t1) !== tpattern.getType()) {
                 return false;
             }
@@ -380,9 +318,9 @@ export class TreeWizard {
         }
         for (let i = 0; i < n1; i++) {
             const child1 = this.adaptor.getChild(t1, i);
-            const child2 = tpattern.getChild(i) as TreeWizard.TreePattern;
+            const child2 = tpattern.getChild(i) as TreePattern;
             if (child1) {
-                if (!this._parse(child1, child2, labels)) {
+                if (!this.doParse(child1, child2, labels)) {
                     return false;
                 }
             }
@@ -412,7 +350,7 @@ export class TreeWizard {
 
     /** Do the recursive work for visit */
     protected _visit<T extends CommonTree>(t: T, parent: T | null, childIndex: number, ttype: number,
-        visitor: TreeWizard.ContextVisitor): void {
+        visitor: IContextVisitor): void {
         if (this.adaptor.getType(t) === ttype) {
             visitor.visit(t, parent, childIndex, null);
         }
@@ -427,16 +365,4 @@ export class TreeWizard {
         }
     }
 
-}
-
-export namespace TreeWizard {
-    export interface ContextVisitor {
-        // TODO: should this be called visit or something else?
-        visit(t: CommonTree, parent: CommonTree | null, childIndex: number,
-            labels: Map<string, CommonTree> | null): void;
-    }
-
-    export type TreePattern = InstanceType<typeof TreeWizard.TreePattern>;
-    export type WildcardTreePattern = InstanceType<typeof TreeWizard.WildcardTreePattern>;
-    export type TreePatternTreeAdaptor = InstanceType<typeof TreeWizard.TreePatternTreeAdaptor>;
 }

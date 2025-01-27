@@ -21,12 +21,12 @@ export class LeftRecursiveRuleFunction extends RuleFunction {
         // on left-recur refs to proper structs
         for (const [idAST, altLabel] of r.leftRecursiveRuleRefLabels) {
             const label = idAST.getText();
-            const ruleRefAST = idAST.getParent()!.getChild(1) as GrammarAST;
+            const ruleRefAST = idAST.parent!.getChild(1) as GrammarAST;
             if (ruleRefAST.getType() === ANTLRv4Parser.RULE_REF) {
                 const targetRule = factory.getGrammar()!.getRule(ruleRefAST.getText())!;
                 const ctxName = gen.getTarget().getRuleFunctionContextStructName(targetRule);
                 let d: RuleContextDecl;
-                if (idAST.getParent()!.getType() === ANTLRv4Parser.ASSIGN) {
+                if (idAST.parent!.getType() === ANTLRv4Parser.ASSIGN) {
                     d = new RuleContextDecl(factory, label, ctxName);
                 } else {
                     d = new RuleContextListDecl(factory, label, ctxName);

@@ -509,9 +509,9 @@ export abstract class Target {
     }
 
     public grammarSymbolCausesIssueInGeneratedCode(idNode: GrammarAST): boolean {
-        switch (idNode.getParent()?.getType()) {
+        switch (idNode.parent?.getType()) {
             case ANTLRv4Parser.ASSIGN: {
-                switch (idNode.getParent()?.getParent()?.getType()) {
+                switch (idNode.parent.parent?.getType()) {
                     case ANTLRv4Parser.ELEMENT_OPTIONS:
                     case ANTLRv4Parser.OPTIONS: {
                         return false;

@@ -55,7 +55,7 @@ export class SymbolCollector extends GrammarTreeVisitor {
 
     public override globalNamedAction(scope: GrammarAST, id: GrammarAST, action: ActionAST): void {
         action.setScope(scope);
-        this.namedActions.push(id.getParent() as GrammarAST);
+        this.namedActions.push(id.parent as GrammarAST);
         action.resolver = this.g;
     }
 
@@ -95,7 +95,7 @@ export class SymbolCollector extends GrammarTreeVisitor {
     }
 
     public override ruleCatch(arg: GrammarAST, action: ActionAST): void {
-        const catchMe = action.getParent() as GrammarAST;
+        const catchMe = action.parent as GrammarAST;
         this.currentRule!.exceptions.push(catchMe);
         action.resolver = this.currentRule!;
     }

@@ -144,7 +144,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         const lrLabel = this.stripLeftRecursion(altTree);
         if (lrLabel) {
             label = lrLabel.getText();
-            isListLabel = lrLabel.getParent()?.getType() === ANTLRv4Parser.PLUS_ASSIGN;
+            isListLabel = lrLabel.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN;
             this.leftRecursiveRuleRefLabels.push([lrLabel, altLabel]);
         }
 
@@ -187,7 +187,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         const lrLabel = this.stripLeftRecursion(altTree);
         if (lrLabel) {
             label = lrLabel.getText();
-            isListLabel = lrLabel.getParent()?.getType() === ANTLRv4Parser.PLUS_ASSIGN;
+            isListLabel = lrLabel.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN;
             this.leftRecursiveRuleRefLabels.push([lrLabel, altLabel]);
         }
         this.stripAltLabel(altTree);

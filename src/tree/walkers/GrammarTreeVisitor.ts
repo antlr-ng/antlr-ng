@@ -2294,7 +2294,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 while (true) {
                     const lookahead = this.input.LA(1);
                     if (lookahead === ANTLRv4Parser.ASSIGN || lookahead === ANTLRv4Parser.ID) {
-                        this.handleElementOption(start.getParent() as GrammarASTWithOptions);
+                        this.handleElementOption(start.parent as GrammarASTWithOptions);
                     } else {
                         break;
                     }

@@ -264,7 +264,7 @@ export class CommonTreeAdaptor {
             } else if (r.getChildCount() === 1) {
                 r = r.getChild(0)!;
                 // whoever invokes rule will set parent and child index
-                r.setParent(null);
+                r.parent = null;
                 r.setChildIndex(-1);
             }
         }
@@ -330,11 +330,11 @@ export class CommonTreeAdaptor {
             return null;
         }
 
-        return (t).getParent();
+        return t.parent;
     }
 
-    public setParent(t: CommonTree | null, parent: CommonTree): void {
-        t?.setParent(parent);
+    public setParent(t: CommonTree, parent: CommonTree): void {
+        t.parent = parent;
     }
 
     public setChild(t: CommonTree, i: number, child: CommonTree): void {
