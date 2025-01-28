@@ -24,8 +24,7 @@ import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import { RuleRefAST } from "../tool/ast/RuleRefAST.js";
 import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 import { LeftRecursiveRuleWalker } from "../tree/walkers/LeftRecursiveRuleWalker.js";
-import { LeftRecursiveRuleAltInfo } from "./LeftRecursiveRuleAltInfo.js";
-import { dupTree } from "../support/helpers.js";
+import { ILeftRecursiveRuleAltInfo } from "./ILeftRecursiveRuleAltInfo.js";
 
 enum Associativity {
     Left = "left",
@@ -42,10 +41,10 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     private static readonly recRuleTemplates = new STGroupFile(LeftRecursiveRuleAnalyzer.templateGroupFile);
 
     public tool: Tool;
-    public binaryAlts = new Map<number, LeftRecursiveRuleAltInfo>();
-    public ternaryAlts = new Map<number, LeftRecursiveRuleAltInfo>();
-    public suffixAlts = new Map<number, LeftRecursiveRuleAltInfo>();
-    public prefixAndOtherAlts = new Array<LeftRecursiveRuleAltInfo>();
+    public binaryAlts = new Map<number, ILeftRecursiveRuleAltInfo>();
+    public ternaryAlts = new Map<number, ILeftRecursiveRuleAltInfo>();
+    public suffixAlts = new Map<number, ILeftRecursiveRuleAltInfo>();
+    public prefixAndOtherAlts = new Array<ILeftRecursiveRuleAltInfo>();
 
     /** Pointer to ID node of ^(= ID element) */
     public leftRecursiveRuleRefLabels = new Array<[GrammarAST, string | undefined]>();
@@ -137,7 +136,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         this.altAssociativity.set(alt, assoc);
     }
 
-    public override binaryAlt(originalAltTree: AltAST, alt: number): void {
+    public override binaryAlt(originalAltTree: AltAST, altNum: number): void {
         let altTree = dupTree(originalAltTree);
         const altLabel = altTree.altLabel?.getText();
 
@@ -153,34 +152,49 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         this.stripAltLabel(altTree);
 
         // rewrite e to be e_[rec_arg]
-        const nextPrec = this.nextPrecedence(alt);
+        const nextPrec = this.nextPrecedence(altNum);
         altTree = this.addPrecedenceArgToRules(altTree, nextPrec);
 
         this.stripAltLabel(altTree);
         let altText = this.text(altTree);
         altText = altText.trim();
-        const a = new LeftRecursiveRuleAltInfo(alt, altText, label, altLabel, isListLabel, originalAltTree);
+        const a: ILeftRecursiveRuleAltInfo = {
+            altNum,
+            altText,
+            leftRecursiveRuleRefLabel: label,
+            altLabel,
+            isListLabel,
+            originalAltAST: originalAltTree,
+            nextPrec: 0,
+        };
         a.nextPrec = nextPrec;
-        this.binaryAlts.set(alt, a);
+        this.binaryAlts.set(altNum, a);
     }
 
-    public override prefixAlt(originalAltTree: AltAST, alt: number): void {
+    public override prefixAlt(originalAltTree: AltAST, altNum: number): void {
         let altTree = dupTree(originalAltTree);
         this.stripAltLabel(altTree);
 
-        const nextPrec = this.precedence(alt);
+        const nextPrec = this.precedence(altNum);
 
         // rewrite e to be e_[prec]
         altTree = this.addPrecedenceArgToRules(altTree, nextPrec);
         let altText = this.text(altTree);
         altText = altText.trim();
         const altLabel = altTree.altLabel?.getText() ?? undefined;
-        const a = new LeftRecursiveRuleAltInfo(alt, altText, undefined, altLabel, false, originalAltTree);
+        const a: ILeftRecursiveRuleAltInfo = {
+            altNum,
+            altText,
+            altLabel,
+            isListLabel: false,
+            originalAltAST: originalAltTree,
+            nextPrec: 0,
+        };
         a.nextPrec = nextPrec;
         this.prefixAndOtherAlts.push(a);
     }
 
-    public override suffixAlt(originalAltTree: AltAST, alt: number): void {
+    public override suffixAlt(originalAltTree: AltAST, altNum: number): void {
         const altTree = dupTree(originalAltTree);
         const altLabel = altTree.altLabel?.getText();
 
@@ -195,16 +209,31 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         this.stripAltLabel(altTree);
         let altText = this.text(altTree);
         altText = altText.trim();
-        const a = new LeftRecursiveRuleAltInfo(alt, altText, label, altLabel, isListLabel, originalAltTree);
-        this.suffixAlts.set(alt, a);
+        const a: ILeftRecursiveRuleAltInfo = {
+            altNum,
+            altText,
+            leftRecursiveRuleRefLabel: label,
+            altLabel,
+            isListLabel,
+            originalAltAST: originalAltTree,
+            nextPrec: 0,
+        };
+        this.suffixAlts.set(altNum, a);
     }
 
-    public override otherAlt(originalAltTree: AltAST, alt: number): void {
+    public override otherAlt(originalAltTree: AltAST, altNum: number): void {
         const altTree = dupTree(originalAltTree);
         this.stripAltLabel(altTree);
         const altText = this.text(altTree);
         const altLabel = altTree.altLabel?.getText() ?? undefined;
-        const a = new LeftRecursiveRuleAltInfo(alt, altText, undefined, altLabel, false, originalAltTree);
+        const a: ILeftRecursiveRuleAltInfo = {
+            altNum,
+            altText,
+            altLabel,
+            isListLabel: false,
+            originalAltAST: originalAltTree,
+            nextPrec: 0,
+        };
 
         // We keep other alts with prefix alts since they are all added to the start of the generated rule, and
         // we want to retain any prior ordering between them
@@ -222,7 +251,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         ruleST.add("setResultAction", setResultST);
         ruleST.add("userRetvals", this.retvals);
 
-        const opPrecRuleAlts = new OrderedHashMap<number, LeftRecursiveRuleAltInfo>();
+        const opPrecRuleAlts = new OrderedHashMap<number, ILeftRecursiveRuleAltInfo>();
         this.binaryAlts.forEach((value, key) => {
             opPrecRuleAlts.set(key, value);
         });

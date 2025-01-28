@@ -5,7 +5,7 @@
 
 import { Token } from "antlr4ng";
 
-import { type LeftRecursiveRuleAltInfo } from "../../analysis/LeftRecursiveRuleAltInfo.js";
+import { type ILeftRecursiveRuleAltInfo } from "../../analysis/ILeftRecursiveRuleAltInfo.js";
 import { type Alternative } from "../Alternative.js";
 import { type GrammarAST } from "./GrammarAST.js";
 import { type GrammarASTVisitor } from "./GrammarASTVisitor.js";
@@ -18,7 +18,7 @@ export class AltAST extends GrammarASTWithOptions {
     public alt: Alternative;
 
     /** If we transformed this alt from a left-recursive one, need info on it */
-    public leftRecursiveAltInfo?: LeftRecursiveRuleAltInfo;
+    public leftRecursiveAltInfo?: ILeftRecursiveRuleAltInfo;
 
     /**
      * If someone specified an outermost alternative label with #foo. Token type will be ID.

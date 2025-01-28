@@ -5,7 +5,7 @@
 
 /* eslint-disable jsdoc/require-returns */
 
-import { LeftRecursiveRuleAltInfo } from "../analysis/LeftRecursiveRuleAltInfo.js";
+import { ILeftRecursiveRuleAltInfo } from "../analysis/ILeftRecursiveRuleAltInfo.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { Alternative } from "./Alternative.js";
 import { Grammar } from "./Grammar.js";
@@ -17,8 +17,8 @@ import { RuleAST } from "./ast/RuleAST.js";
 export class LeftRecursiveRule extends Rule {
     public override readonly ruleType: string = "LeftRecursiveRule";
 
-    public recPrimaryAlts: LeftRecursiveRuleAltInfo[];
-    public recOpAlts: OrderedHashMap<number, LeftRecursiveRuleAltInfo>;
+    public recPrimaryAlts: ILeftRecursiveRuleAltInfo[];
+    public recOpAlts: OrderedHashMap<number, ILeftRecursiveRuleAltInfo>;
     public originalAST: RuleAST;
 
     /** Did we delete any labels on direct left-recur refs? Points at ID of ^(= ID el) */

@@ -12,17 +12,14 @@ import { LeftRecursionCyclesMessage } from "../tool/LeftRecursionCyclesMessage.j
 import type { Rule } from "../tool/Rule.js";
 
 export class LeftRecursionDetector {
-    public atn: ATN;
-
     /** Holds a list of cycles (sets of rule names). */
-    public listOfRecursiveCycles = new Array<Rule[]>();
-    protected g: Grammar;
+    public listOfRecursiveCycles: Rule[][] = [];
 
-    /**
-     * Which rule start states have we visited while looking for a single
-     * 	left-recursion check?
-     */
-    protected rulesVisitedPerRuleCheck = new HashSet<RuleStartState>();
+    /** Which rule start states have we visited while looking for a single left-recursion check? */
+    private rulesVisitedPerRuleCheck = new HashSet<RuleStartState>();
+
+    private g: Grammar;
+    private atn: ATN;
 
     public constructor(g: Grammar, atn: ATN) {
         this.g = g;
@@ -81,13 +78,13 @@ export class LeftRecursionDetector {
                 if (this.rulesVisitedPerRuleCheck.contains(t.target as RuleStartState)) {
                     this.addRulesToCycle(enclosingRule, r);
                 } else {
-                    // must visit if not already visited; mark target, pop when done
+                    // Must visit if not already visited; mark target, pop when done.
                     this.rulesVisitedPerRuleCheck.add(t.target as RuleStartState);
 
-                    // send new visitedStates set per rule invocation
+                    // Send new visitedStates set per rule invocation.
                     const nullable = this.check(r, t.target, new Set<ATNState>());
 
-                    // we're back from visiting that rule
+                    // We're back from visiting that rule.
                     this.rulesVisitedPerRuleCheck.remove(t.target as RuleStartState);
                     if (nullable) {
                         stateReachesStopState ||= this.check(enclosingRule, rt.followState, visitedStates);
@@ -99,22 +96,20 @@ export class LeftRecursionDetector {
                 }
             }
 
-            // else ignore non-epsilon transitions
+            // else ignore non-epsilon transitions.
         }
 
         return stateReachesStopState;
     }
 
     /**
-     * enclosingRule calls targetRule. Find the cycle containing
-     *  the target and add the caller.  Find the cycle containing the caller
-     *  and add the target.  If no cycles contain either, then create a new
-     *  cycle.
+     * enclosingRule calls targetRule. Find the cycle containing the target and add the caller. Find the cycle
+     * containing the caller and add the target.  If no cycles contain either, then create a new cycle.
      */
     protected addRulesToCycle(enclosingRule: Rule, targetRule: Rule): void {
         let foundCycle = false;
         for (const rulesInCycle of this.listOfRecursiveCycles) {
-            // ensure both rules are in same cycle
+            // Ensure both rules are in same cycle.
             if (rulesInCycle.includes(targetRule)) {
                 rulesInCycle.push(enclosingRule);
                 foundCycle = true;
