@@ -5,7 +5,6 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
-import type { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { CommonTree } from "./CommonTree.js";
 
@@ -42,11 +41,9 @@ export abstract class RewriteRuleElementStream {
      *  the exception would track that info.
      */
     protected elementDescription: string;
-    private adaptor: GrammarASTAdaptor;
 
-    public constructor(adaptor: GrammarASTAdaptor, elementDescription: string, elements?: GrammarAST[]) {
+    public constructor(elementDescription: string, elements?: GrammarAST[]) {
         this.elementDescription = elementDescription;
-        this.adaptor = adaptor;
         this.elements = elements ?? [];
     }
 

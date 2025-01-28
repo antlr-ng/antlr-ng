@@ -9,10 +9,8 @@ import { ATNState, CommonToken, IntervalSet, Token, type BitSet } from "antlr4ng
 
 import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 
-import { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 import { CommonTree } from "../../tree/CommonTree.js";
 
-import { ClassFactory } from "../../ClassFactory.js";
 import type { IGrammarAST } from "../../types.js";
 import type { Grammar } from "../Grammar.js";
 import type { AltAST } from "./AltAST.js";
@@ -22,8 +20,7 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
     /** A discriminator to distinguish between different grammar AST types without creating a circular dependency. */
     public readonly astType: string = "GrammarAST";
 
-    /** For error msgs, nice to know which grammar this AST lives in */
-    // TODO: try to remove
+    /** For process AST nodes from imported grammars. */
     public g: Grammar;
 
     /** If we build an ATN, we make AST node point at left edge of ATN construct */
@@ -172,10 +169,6 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
         return false;
     }
 
-    // TODO: move to base tree when i settle on how runtime works
-    // TODO: don't include this node!!
-    // TODO: reuse other method
-    // TODO: don't include this node!!
     public getFirstDescendantWithType(typeOrTypes: number | BitSet): CommonTree | null {
         if (typeof typeOrTypes === "number") {
             if (this.token?.type === typeOrTypes) {
@@ -231,24 +224,6 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
 
     public override dupNode(): GrammarAST {
         return new GrammarAST(this);
-    }
-
-    public toTokenString(): string {
-        const input = this.token!.inputStream!;
-        const adaptor = ClassFactory.createGrammarASTAdaptor(input);
-        const nodes = new CommonTreeNodeStream(adaptor, this);
-
-        let buf = "";
-        let o = nodes.LT(1) as GrammarAST;
-        let type = adaptor.getType(o);
-        while (type !== Token.EOF) {
-            buf += " " + o.getText();
-            nodes.consume();
-            o = nodes.LT(1) as GrammarAST;
-            type = adaptor.getType(o);
-        }
-
-        return buf;
     }
 
     public visit<T>(v: GrammarASTVisitor<T>): T {

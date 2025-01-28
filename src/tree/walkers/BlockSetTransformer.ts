@@ -280,8 +280,8 @@ export class BlockSetTransformer extends TreeRewriter {
         let result: GrammarAST | undefined;
         const start = this.input.LT(1) as GrammarAST;
 
-        const blockSetStream = new RewriteRuleSubtreeStream(this.adaptor, "rule blockSet");
-        const ebnfSuffixStream = new RewriteRuleSubtreeStream(this.adaptor, "rule ebnfSuffix");
+        const blockSetStream = new RewriteRuleSubtreeStream("rule blockSet");
+        const ebnfSuffixStream = new RewriteRuleSubtreeStream("rule ebnfSuffix");
 
         try {
             const ebnfSuffix = this.ebnfSuffix();
@@ -386,10 +386,10 @@ export class BlockSetTransformer extends TreeRewriter {
         const start = this.input.LT(1) ?? undefined;
         let result: GrammarAST | undefined;
 
-        const blockStream = new RewriteRuleNodeStream(this.adaptor, "token BLOCK");
-        const altStream = new RewriteRuleNodeStream(this.adaptor, "token ALT");
-        const elementOptionsStream = new RewriteRuleSubtreeStream(this.adaptor, "rule elementOptions");
-        const setElementStream = new RewriteRuleSubtreeStream(this.adaptor, "rule setElement");
+        const blockStream = new RewriteRuleNodeStream("token BLOCK");
+        const altStream = new RewriteRuleNodeStream("token ALT");
+        const elementOptionsStream = new RewriteRuleSubtreeStream("rule elementOptions");
+        const setElementStream = new RewriteRuleSubtreeStream("rule setElement");
 
         const inLexer = isTokenName(this.currentRuleName!);
 

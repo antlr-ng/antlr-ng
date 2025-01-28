@@ -163,11 +163,11 @@ export const disjoint = (altLook: Array<IntervalSet | undefined>): boolean => {
         }
 
         if (look.and(combined).length !== 0) {
-            return true;
+            return false;
         }
 
         combined.addSet(look);
     }
 
-    return false;
+    return true;
 };

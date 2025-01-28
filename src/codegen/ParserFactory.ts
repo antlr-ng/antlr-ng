@@ -7,7 +7,7 @@ import { DecisionState, IntervalSet, PlusLoopbackState, StarLoopEntryState } fro
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
-import { AnalysisPipeline } from "../analysis/AnalysisPipeline.js";
+import { disjoint } from "../support/helpers.js";
 import type { IToolParameters } from "../tool-parameters.js";
 import { Alternative } from "../tool/Alternative.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
@@ -204,7 +204,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
     public override getChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[], labelAST: GrammarAST | null): Choice {
         const decision = (blkAST.atnState as DecisionState).decision;
         let c: Choice;
-        if (!this.forceAtn && AnalysisPipeline.disjoint(this.g!.decisionLOOK[decision])) {
+        if (!this.forceAtn && disjoint(this.g!.decisionLOOK[decision])) {
             c = this.getLL1ChoiceBlock(blkAST, alts);
         } else {
             c = this.getComplexChoiceBlock(blkAST, alts);
@@ -239,7 +239,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
                 }
             }
 
-            if (AnalysisPipeline.disjoint(this.g!.decisionLOOK[decision])) {
+            if (disjoint(this.g!.decisionLOOK[decision])) {
                 return this.getLL1EBNFBlock(ebnfRoot, alts);
             }
         }
