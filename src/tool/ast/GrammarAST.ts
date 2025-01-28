@@ -233,13 +233,6 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
         return new GrammarAST(this);
     }
 
-    public dupTree(): GrammarAST {
-        const input = this.token!.inputStream!;
-        const adaptor = ClassFactory.createGrammarASTAdaptor(input);
-
-        return adaptor.dupTree(this) as GrammarAST;
-    }
-
     public toTokenString(): string {
         const input = this.token!.inputStream!;
         const adaptor = ClassFactory.createGrammarASTAdaptor(input);

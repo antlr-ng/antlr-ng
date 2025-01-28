@@ -139,30 +139,6 @@ export class CommonTreeAdaptor {
     }
 
     /**
-     * This is generic in the sense that it will work with any kind of
-     *  tree (not just Tree interface).  It invokes the adaptor routines
-     *  not the tree node routines to do the construction.
-     */
-    public dupTree(t: CommonTree, parent?: CommonTree): CommonTree {
-        const newTree = this.dupNode(t);
-
-        // ensure new subtree root has parent/child index set
-        this.setChildIndex(newTree, this.getChildIndex(t)); // same index in new tree
-        if (parent) {
-            this.setParent(newTree, parent);
-        }
-
-        const n = this.getChildCount(t);
-        for (let i = 0; i < n; i++) {
-            const child = this.getChild(t, i)!;
-            const newSubTree = this.dupTree(child, t);
-            this.addChild(newTree, newSubTree);
-        }
-
-        return newTree;
-    }
-
-    /**
      * Add a child to the tree t.  If child is a flat tree (a list), make all
      *  in list children of t.  Warning: if t has no children, but child does
      *  and child isNil then you can decide it is ok to move children to t via

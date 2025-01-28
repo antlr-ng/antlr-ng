@@ -24,6 +24,7 @@ import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import { RuleRefAST } from "../tool/ast/RuleRefAST.js";
 import { LeftRecursiveRuleWalker } from "../tree/walkers/LeftRecursiveRuleWalker.js";
 import { LeftRecursiveRuleAltInfo } from "./LeftRecursiveRuleAltInfo.js";
+import { dupTree } from "../support/helpers.js";
 
 enum Associativity {
     Left = "left",
@@ -136,7 +137,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     }
 
     public override binaryAlt(originalAltTree: AltAST, alt: number): void {
-        let altTree = originalAltTree.dupTree() as AltAST;
+        let altTree = dupTree(originalAltTree);
         const altLabel = altTree.altLabel?.getText();
 
         let label: string | undefined;
@@ -163,7 +164,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     }
 
     public override prefixAlt(originalAltTree: AltAST, alt: number): void {
-        let altTree = originalAltTree.dupTree() as AltAST;
+        let altTree = dupTree(originalAltTree);
         this.stripAltLabel(altTree);
 
         const nextPrec = this.precedence(alt);
@@ -179,7 +180,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     }
 
     public override suffixAlt(originalAltTree: AltAST, alt: number): void {
-        const altTree = originalAltTree.dupTree() as AltAST;
+        const altTree = dupTree(originalAltTree);
         const altLabel = altTree.altLabel?.getText();
 
         let label: string | undefined;
@@ -198,7 +199,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     }
 
     public override otherAlt(originalAltTree: AltAST, alt: number): void {
-        const altTree = originalAltTree.dupTree() as AltAST;
+        const altTree = dupTree(originalAltTree);
         this.stripAltLabel(altTree);
         const altText = this.text(altTree);
         const altLabel = altTree.altLabel?.getText() ?? undefined;

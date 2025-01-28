@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { Token, type Vocabulary } from "antlr4ng";
+import { IntervalSet, Token, type Vocabulary } from "antlr4ng";
 
 import { CharSupport } from "../misc/CharSupport.js";
 import type { CommonTree } from "../tree/CommonTree.js";
@@ -59,8 +59,8 @@ export const convertArrayToString = <T>(a: T[], separator = ", "): string => {
     return "[" + a.join(separator) + "]";
 };
 
-export const dupTree = (t: CommonTree, parent?: CommonTree): CommonTree => {
-    const newTree = t.dupNode();
+export const dupTree = <T extends CommonTree>(t: T, parent?: CommonTree): T => {
+    const newTree = t.dupNode() as T;
 
     // Ensure new subtree root has parent/child index set.
     newTree.setChildIndex(t.getChildIndex()); // same index in new tree
@@ -148,4 +148,26 @@ export const format = (formatString: string, ...args: unknown[]): string => {
             }
         }
     });
+};
+
+/**
+ * @returns whether interval (lookahead) sets are disjoint; no lookahead ⇒ not disjoint
+ *
+ * @param altLook The interval sets to check.
+ */
+export const disjoint = (altLook: Array<IntervalSet | undefined>): boolean => {
+    const combined = new IntervalSet();
+    for (const look of altLook) {
+        if (look === undefined) {
+            return false; // lookahead must've computation failed
+        }
+
+        if (look.and(combined).length !== 0) {
+            return true;
+        }
+
+        combined.addSet(look);
+    }
+
+    return false;
 };

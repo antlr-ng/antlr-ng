@@ -18,7 +18,7 @@ import { Tool } from "../Tool.js";
 import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import { GrammarToken } from "../parse/GrammarToken.js";
 import { GrammarType } from "../support/GrammarType.js";
-import { isTokenName } from "../support/helpers.js";
+import { dupTree, isTokenName } from "../support/helpers.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import { ErrorType } from "./ErrorType.js";
 import { Grammar } from "./Grammar.js";
@@ -157,7 +157,7 @@ export class GrammarTransformPipeline {
                 });
 
                 if (channelsRoot === null) {
-                    channelsRoot = importedChannelRoot.dupTree();
+                    channelsRoot = dupTree(importedChannelRoot);
                     channelsRoot.g = rootGrammar;
                     root.insertChild(1, channelsRoot); // ^(GRAMMAR ID TOKENS...)
                 } else {
@@ -385,7 +385,7 @@ export class GrammarTransformPipeline {
                 const optionName = o.getChild(0)!.getText();
                 if (Grammar.lexerOptions.has(optionName) &&
                     !Grammar.doNotCopyOptionsToLexer.has(optionName)) {
-                    const optionTree = adaptor.dupTree(o) as GrammarAST;
+                    const optionTree = dupTree(o) as GrammarAST;
 
                     lexerOptionsRoot.addChild(optionTree);
                     lexerAST.setOption(optionName, optionTree.getChild(1) as GrammarAST);
@@ -397,7 +397,7 @@ export class GrammarTransformPipeline {
         const actionsWeMoved = new Array<GrammarAST>();
         for (const e of elements) {
             if (e.getType() === ANTLRv4Parser.AT) {
-                lexerAST.addChild(adaptor.dupTree(e));
+                lexerAST.addChild(dupTree(e));
                 if (e.getChild(0)!.getText() === "lexer") {
                     actionsWeMoved.push(e as GrammarAST);
                 }
@@ -430,7 +430,7 @@ export class GrammarTransformPipeline {
         for (const r of rules) {
             const ruleName = r.getChild(0)!.getText();
             if (isTokenName(ruleName)) {
-                lexerRulesRoot.addChild(adaptor.dupTree(r));
+                lexerRulesRoot.addChild(dupTree(r));
                 rulesWeMoved.push(r);
             }
         }
