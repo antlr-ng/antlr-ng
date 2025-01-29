@@ -9,20 +9,12 @@ import { Grammar } from "../tool/Grammar.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 
 export class RangeBorderCharactersData {
-    public readonly lowerFrom: number;
-    public readonly upperFrom: number;
-    public readonly lowerTo: number;
-    public readonly upperTo: number;
-    public readonly mixOfLowerAndUpperCharCase: boolean;
-
-    public constructor(lowerFrom: number, upperFrom: number, lowerTo: number, upperTo: number,
-        mixOfLowerAndUpperCharCase: boolean) {
-        this.lowerFrom = lowerFrom;
-        this.upperFrom = upperFrom;
-        this.lowerTo = lowerTo;
-        this.upperTo = upperTo;
-        this.mixOfLowerAndUpperCharCase = mixOfLowerAndUpperCharCase;
-    }
+    public constructor(
+        public readonly lowerFrom: number,
+        public readonly upperFrom: number,
+        public readonly lowerTo: number,
+        public readonly upperTo: number,
+        public readonly mixOfLowerAndUpperCharCase: boolean) { }
 
     public static getAndCheckCharactersData(from: number, to: number, grammar: Grammar, tree: CommonTree,
         reportRangeContainsNotImpliedCharacters: boolean,

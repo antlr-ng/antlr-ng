@@ -10,24 +10,18 @@ import { BlockAST } from "../tool/ast/BlockAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { PredAST } from "../tool/ast/PredAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
-import type { Constructor } from "../misc/Utils.js";
 
-/**
- * A pair of states pointing to the left/right (start and end) states of a
- * state submachine. Used to build ATNs.
- */
+/** A pair of states pointing to the left/right (start and end) states of a state submachine. Used to build ATNs. */
 export interface IStatePair {
     left: ATNState | null;
     right: ATNState | null;
 }
 
 export interface IATNFactory {
-    setCurrentOuterAlt(alt: number): void;
+    currentOuterAlt: number;
 
     createATN(): ATN;
     setCurrentRuleName(name: string): void;
-    rule(ruleAST: GrammarAST, name: string, blk: IStatePair): IStatePair;
-    newState<T extends ATNState>(nodeType: Constructor<T>): T;
     label(t: IStatePair): IStatePair;
     listLabel(t: IStatePair): IStatePair;
     tokenRef(node: TerminalAST): IStatePair | null;
@@ -115,7 +109,7 @@ export interface IATNFactory {
      *
      * or, if A is a block, just add an empty alt to the end of the block
      */
-    optional(optAST: GrammarAST, blk: IStatePair): IStatePair;
+    //optional(optAST: GrammarAST, blk: IStatePair): IStatePair;
 
     /**
      * From (A)+ build
@@ -131,7 +125,7 @@ export interface IATNFactory {
      * During analysis we'll call the follow link (transition 1) alt n+1 for
      * an n-alt A block.
      */
-    plus(plusAST: GrammarAST, blk: IStatePair): IStatePair;
+    //plus(plusAST: GrammarAST, blk: IStatePair): IStatePair;
 
     /**
      * From (A)* build
@@ -164,8 +158,7 @@ export interface IATNFactory {
      * is sufficient to let me make an appropriate enter, exit, loop
      * determination.  See codegen.g
      */
-
-    star(starAST: GrammarAST, blk: IStatePair): IStatePair;
+    //star(starAST: GrammarAST, blk: IStatePair): IStatePair;
 
     /** Build an atom with all possible values in its label */
     wildcard(associatedAST: GrammarAST): IStatePair;

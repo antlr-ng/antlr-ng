@@ -9,8 +9,8 @@ import { Token } from "antlr4ng";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
+import { Constants } from "../Constants.js";
 import { LeftRecursiveRuleTransformer } from "../analysis/LeftRecursiveRuleTransformer.js";
-import { LexerATNFactory } from "../automata/LexerATNFactory.js";
 import { isTokenName } from "../support/helpers.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import { Grammar } from "../tool/Grammar.js";
@@ -273,7 +273,7 @@ export class SemanticPipeline {
                     channel.token!, channelName);
             }
 
-            if (LexerATNFactory.COMMON_CONSTANTS.has(channelName)) {
+            if (Constants.COMMON_CONSTANTS.has(channelName)) {
                 this.g.tool.errorManager.grammarError(ErrorType.CHANNEL_CONFLICTS_WITH_COMMON_CONSTANTS, g.fileName,
                     channel.token!, channelName);
             }

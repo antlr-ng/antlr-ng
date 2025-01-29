@@ -28,7 +28,7 @@ export class ATNBuilder extends TreeParser {
     }
 
     public ruleBlock(ebnfRoot: GrammarAST | null): IStatePair | undefined {
-        this.factory.setCurrentOuterAlt(1);
+        this.factory.currentOuterAlt = 1;
 
         try {
             const block = this.match(this.input, ANTLRv4Lexer.BLOCK)!;
@@ -64,7 +64,7 @@ export class ATNBuilder extends TreeParser {
                     if (alt) {
                         alts.push(alt);
                     }
-                    this.factory.setCurrentOuterAlt(++currentAlt);
+                    this.factory.currentOuterAlt = ++currentAlt;
                 } else {
                     if (altCount >= 1) {
                         break;

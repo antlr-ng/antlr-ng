@@ -16,8 +16,7 @@ export class ATNPrinter {
     private work: ATNState[];
     private marked: HashSet<ATNState>;
 
-    public constructor(private g: Grammar, private start: ATNState) {
-    }
+    public constructor(private g: Grammar, private start: ATNState) { }
 
     public asString(): string {
         this.marked = new HashSet<ATNState>();
@@ -27,7 +26,7 @@ export class ATNPrinter {
 
         const vocabulary = this.g.getVocabulary();
 
-        let buffer = "";
+        const result: string[] = [];
         while (this.work.length > 0) {
             const s = this.work.shift();
             if (!s || this.marked.contains(s)) {
@@ -37,7 +36,8 @@ export class ATNPrinter {
             this.marked.add(s);
             const targets = new Set<number>();
             for (const t of s.transitions) {
-                if (!(s instanceof RuleStopState)) { // don't add follow states to work
+                // Don't add follow states to work.
+                if (!(s instanceof RuleStopState)) {
                     if (t instanceof RuleTransition) {
                         this.work.push(t.followState);
                     } else {
@@ -52,43 +52,33 @@ export class ATNPrinter {
                     targets.add(t.target.stateNumber);
                 }
 
-                buffer += this.getStateString(s);
+                const stateString = this.getStateString(s);
                 if (t instanceof EpsilonTransition) {
-                    buffer += "->" + this.getStateString(t.target) + "\n";
-                } else {
-                    if (t instanceof RuleTransition) {
-                        buffer += "-" + this.g.getRule(t.ruleIndex)!.name + "->" + this.getStateString(t.target) +
-                            "\n";
+                    result.push(stateString + "->" + this.getStateString(t.target));
+                } else if (t instanceof RuleTransition) {
+                    result.push(stateString + "-" + this.g.getRule(t.ruleIndex)!.name + "->" +
+                        this.getStateString(t.target));
+                } else if (t instanceof ActionTransition) {
+                    result.push(stateString + "-" + t.toString() + "->" + this.getStateString(t.target));
+                } else if (t instanceof SetTransition) {
+                    const not = t instanceof NotSetTransition;
+                    if (this.g.isLexer()) {
+                        result.push(stateString + "-" + (not ? "~" : "") + t.toString() + "->" +
+                            this.getStateString(t.target));
                     } else {
-                        if (t instanceof ActionTransition) {
-                            const a = t;
-                            buffer += "-" + a.toString() + "->" + this.getStateString(t.target) + "\n";
-                        } else {
-                            if (t instanceof SetTransition) {
-                                const not = t instanceof NotSetTransition;
-                                if (this.g.isLexer()) {
-                                    buffer += "-" + (not ? "~" : "") + t.toString() + "->" +
-                                        this.getStateString(t.target) + "\n";
-                                } else {
-                                    buffer += "-" + (not ? "~" : "") +
-                                        t.label.toStringWithVocabulary(vocabulary) +
-                                        "->" + this.getStateString(t.target) + "\n";
-                                }
-                            } else {
-                                if (t instanceof AtomTransition) {
-                                    const label = this.g.getTokenDisplayName(t.labelValue);
-                                    buffer += "-" + label + "->" + this.getStateString(t.target) + "\n";
-                                } else {
-                                    buffer += `-${t}->${this.getStateString(t.target)}\n`;
-                                }
-                            }
-                        }
+                        result.push(stateString + "-" + (not ? "~" : "") + t.label.toStringWithVocabulary(vocabulary) +
+                            "->" + this.getStateString(t.target));
                     }
+                } else if (t instanceof AtomTransition) {
+                    const label = this.g.getTokenDisplayName(t.labelValue);
+                    result.push(stateString + "-" + label + "->" + this.getStateString(t.target));
+                } else {
+                    result.push(stateString + `-${t}->${this.getStateString(t.target)}`);
                 }
             }
         }
 
-        return buffer;
+        return result.join("\n") + "\n";
     }
 
     private getStateString(s: ATNState): string {

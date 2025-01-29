@@ -14,10 +14,6 @@ import { ErrorType } from "../tool/ErrorType.js";
 import { Grammar } from "../tool/Grammar.js";
 
 export class ATNOptimizer {
-    private constructor() {
-        // intentionally empty
-    }
-
     public static optimize(g: Grammar, atn: ATN): void {
         ATNOptimizer.optimizeSets(g, atn);
         ATNOptimizer.optimizeStates(atn);
@@ -25,7 +21,7 @@ export class ATNOptimizer {
 
     private static optimizeSets(g: Grammar, atn: ATN): void {
         if (g.isParser()) {
-            // parser codegen doesn't currently support SetTransition
+            // Parser code generation doesn't currently support SetTransition.
             return;
         }
 
@@ -34,7 +30,7 @@ export class ATNOptimizer {
             if (decision.ruleIndex >= 0) {
                 const rule = g.getRule(decision.ruleIndex)!;
                 if (Character.isLowerCase(rule.name.codePointAt(0)!)) {
-                    // parser codegen doesn't currently support SetTransition
+                    // Parser code generation doesn't currently support SetTransition.
                     continue;
                 }
             }
@@ -67,7 +63,7 @@ export class ATNOptimizer {
                 }
             }
 
-            // due to min alt resolution policies, can only collapse sequential alts
+            // Due to min alt resolution policies, can only collapse sequential alts.
             const setIntervals = Array.from(setTransitions);
             for (let i = setIntervals.length - 1; i >= 0; i--) {
                 const interval = setIntervals[i];
@@ -123,15 +119,17 @@ export class ATNOptimizer {
 
     private static optimizeStates(atn: ATN): void {
         const compressed = new Array<ATNState>();
-        let i = 0; // new state number
+        let i = 0;
+
         for (const s of atn.states) {
             if (s !== null) {
                 compressed.push(s);
-                s.stateNumber = i; // reset state number as we shift to new position
+                s.stateNumber = i; // Reset state number as we shift to new position.
                 i++;
             }
         }
-        atn.states.splice(0, atn.states.length, ...compressed); // clear and add all
+
+        atn.states.splice(0, atn.states.length, ...compressed); // Clear and add all.
     }
 
 }

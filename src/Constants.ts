@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { Token } from "antlr4ng";
+import { Lexer, Token } from "antlr4ng";
 
 import { AttributeDict } from "./tool/AttributeDict.js";
 import { DictType } from "./tool/DictType.js";
@@ -48,6 +48,24 @@ export class Constants {
      * interface to avoid a runtime type leakage.
      */
     public static readonly predefinedTokenDict = new AttributeDict(DictType.Token);
+
+    /**
+     * Provides a map of names of predefined constants which are likely to
+     * appear as the argument for lexer commands. These names are required during code generation for creating
+     * {@link LexerAction} instances that are usable by a lexer interpreter.
+     */
+    public static readonly COMMON_CONSTANTS = new Map<string, number>([
+        ["HIDDEN", Lexer.HIDDEN],
+        ["DEFAULT_TOKEN_CHANNEL", Lexer.DEFAULT_TOKEN_CHANNEL],
+        ["DEFAULT_MODE", Lexer.DEFAULT_MODE],
+        ["SKIP", Lexer.SKIP],
+        ["MORE", Lexer.MORE],
+        ["EOF", Lexer.EOF],
+        //["MAX_CHAR_VALUE", Lexer.MAX_CHAR_VALUE], // TODO: are these constants needed?
+        //["MIN_CHAR_VALUE", Lexer.MIN_CHAR_VALUE],
+        ["MAX_CHAR_VALUE", 0x1FFFF],
+        ["MIN_CHAR_VALUE", 0],
+    ]);
 
     static {
         Constants.predefinedRulePropertiesDict.add({ name: "parser" });

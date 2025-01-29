@@ -12,7 +12,7 @@ import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
 import type { CommonTree } from "../tree/CommonTree.js";
 
-import { LexerATNFactory } from "../automata/LexerATNFactory.js";
+import { Constants } from "../Constants.js";
 import { AltAST } from "../tool/ast/AltAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
@@ -51,7 +51,7 @@ export class SymbolChecks {
             this.tokenIDs.add(tokenId.getText());
         }
 
-        LexerATNFactory.getCommonConstants().forEach((value, key) => {
+        Constants.COMMON_CONSTANTS.forEach((value, key) => {
             this.reservedNames.add(key);
         });
 
