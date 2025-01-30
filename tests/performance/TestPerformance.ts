@@ -1079,7 +1079,7 @@ public  compileJdk():  void {
          let  factory = this.getParserFactory(javaCompiledState, listenerName, entryPoint);
 
 		if (!TestPerformance.TOP_PACKAGE.isEmpty()) {
-            jdkSourceRoot = jdkSourceRoot + '/' + TestPerformance.TOP_PACKAGE.replace('.', '/');
+            jdkSourceRoot = jdkSourceRoot + '/' + TestPerformance.TOP_PACKAGE.replaceAll('.', '/');
         }
 
         let  directory = new  File(jdkSourceRoot);

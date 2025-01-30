@@ -217,9 +217,8 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
     }
 
     /**
-     * Build what amounts to an epsilon transition with a semantic
-     *  predicate action.  The `pred` is a pointer into the AST of
-     *  the {@link ANTLRParser#SEMPRED} token.
+     * Build what amounts to an epsilon transition with a semantic predicate action.  The `pred` is a pointer
+     *  into the AST of the {@link ANTLRParser#SEMPRED} token.
      */
     public sempred(pred: PredAST): IStatePair {
         const left = this.newState(BasicState);

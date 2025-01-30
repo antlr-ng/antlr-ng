@@ -3,8 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ActionChunk } from "./ActionChunk.js";
 import { StructDecl } from "../decl/StructDecl.js";
+import { ActionChunk } from "./ActionChunk.js";
 
 export class RulePropertyRef extends ActionChunk {
     public label: string;

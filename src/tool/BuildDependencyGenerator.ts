@@ -248,7 +248,7 @@ export class BuildDependencyGenerator {
             return fileName;
         } else {
             if (outputDir.includes(" ")) { // has spaces?
-                const escSpaces = outputDir.replace(" ", "\\ ");
+                const escSpaces = outputDir.replaceAll(" ", "\\ ");
 
                 return escSpaces + "/" + fileName;
             } else {

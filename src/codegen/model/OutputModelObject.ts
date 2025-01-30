@@ -7,9 +7,6 @@ import type { IGrammarAST } from "../../types.js";
 import type { OutputModelFactory } from "../OutputModelFactory.js";
 
 export abstract class OutputModelObject {
-    // Index signature to allow accessing properties by name in the output model walker.
-    [key: string]: unknown;
-
     public factory?: OutputModelFactory;
     public ast?: IGrammarAST;
 

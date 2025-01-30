@@ -3,8 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { SrcOp } from "./SrcOp.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
+import { SrcOp } from "./SrcOp.js";
 
 export class CaptureNextToken extends SrcOp {
     public varName: string;

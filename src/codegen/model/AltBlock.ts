@@ -3,11 +3,12 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
-import { Choice } from "./Choice.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
 import { BlockStartState } from "antlr4ng";
+
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import { OutputModelFactory } from "../OutputModelFactory.js";
+import { Choice } from "./Choice.js";
+import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 
 export class AltBlock extends Choice {
     public constructor(factory: OutputModelFactory,

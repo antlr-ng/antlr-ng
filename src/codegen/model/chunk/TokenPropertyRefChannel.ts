@@ -4,10 +4,5 @@
  */
 
 import { TokenPropertyRef } from "./TokenPropertyRef.js";
-import { StructDecl } from "../decl/StructDecl.js";
 
-export class TokenPropertyRefChannel extends TokenPropertyRef {
-    public constructor(ctx: StructDecl, label: string) {
-        super(ctx, label);
-    }
-}
+export class TokenPropertyRefChannel extends TokenPropertyRef { }

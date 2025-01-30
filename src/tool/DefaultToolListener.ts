@@ -13,7 +13,7 @@ export class DefaultToolListener implements ANTLRToolListener {
 
     public info(msg: string): void {
         if (this.errorManager.formatWantsSingleLineMessage()) {
-            msg = msg.replace("\n", " ");
+            msg = msg.replaceAll("\n", " ");
         }
 
         console.log(msg);
@@ -24,7 +24,7 @@ export class DefaultToolListener implements ANTLRToolListener {
         if (msgST) {
             let outputMsg = msgST.render();
             if (this.errorManager.formatWantsSingleLineMessage()) {
-                outputMsg = outputMsg.replace("\n", " ");
+                outputMsg = outputMsg.replaceAll("\n", " ");
             }
 
             console.log(outputMsg);
@@ -36,7 +36,7 @@ export class DefaultToolListener implements ANTLRToolListener {
         if (msgST) {
             let outputMsg = msgST.render();
             if (this.errorManager.formatWantsSingleLineMessage()) {
-                outputMsg = outputMsg.replace("\n", " ");
+                outputMsg = outputMsg.replaceAll("\n", " ");
             }
 
             console.log(outputMsg);

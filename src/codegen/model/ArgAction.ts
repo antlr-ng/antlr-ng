@@ -3,9 +3,9 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { Action } from "./Action.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
+import { OutputModelFactory } from "../OutputModelFactory.js";
+import { Action } from "./Action.js";
 
 export class ArgAction extends Action {
     /** Context type of invoked rule */

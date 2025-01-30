@@ -39,7 +39,7 @@ export class OutputModelWalker {
     }
 
     public walk(omo: OutputModelObject, header: boolean): IST {
-        // CREATE TEMPLATE FOR THIS OUTPUT OBJECT
+        // Create template for this output object.
         let templateName = omo.constructor.name;
         if (header) {
             templateName += "Header";
@@ -85,8 +85,8 @@ export class OutputModelWalker {
                 continue;
             }
 
-            const o = omo[fieldName];
-            if (o instanceof OutputModelObject) { // SINGLE MODEL OBJECT?
+            const o = (omo as Record<string, unknown>)[fieldName];
+            if (o instanceof OutputModelObject) { // Single model object?
                 const nestedOmo = o;
                 const nestedST = this.walk(nestedOmo, header);
                 st.add(fieldName, nestedST);

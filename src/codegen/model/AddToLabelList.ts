@@ -3,9 +3,9 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { SrcOp } from "./SrcOp.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
 import { Decl } from "./decl/Decl.js";
+import { SrcOp } from "./SrcOp.js";
 
 export class AddToLabelList extends SrcOp {
     public readonly label: Decl;

@@ -69,7 +69,7 @@ export class PHPTarget extends Target {
         addQuotes: boolean, escapeSpecial: boolean): string {
         let targetStringLiteral = super.getTargetStringLiteralFromANTLRStringLiteral(generator, literal, addQuotes,
             escapeSpecial);
-        targetStringLiteral = targetStringLiteral.replace("$", "\\$");
+        targetStringLiteral = targetStringLiteral.replaceAll("$", "\\$");
 
         return targetStringLiteral;
     }

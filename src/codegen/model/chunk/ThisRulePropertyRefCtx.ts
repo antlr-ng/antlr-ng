@@ -4,10 +4,5 @@
  */
 
 import { RulePropertyRef } from "./RulePropertyRef.js";
-import { StructDecl } from "../decl/StructDecl.js";
 
-export class ThisRulePropertyRefCtx extends RulePropertyRef {
-    public constructor(ctx: StructDecl, label: string) {
-        super(ctx, label);
-    }
-}
+export class ThisRulePropertyRefCtx extends RulePropertyRef { }

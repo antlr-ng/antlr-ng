@@ -3,8 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { RetValueRef } from "./RetValueRef.js";
 import { StructDecl } from "../decl/StructDecl.js";
+import { RetValueRef } from "./RetValueRef.js";
 
 export class QRetValueRef extends RetValueRef {
     public readonly dict: string;

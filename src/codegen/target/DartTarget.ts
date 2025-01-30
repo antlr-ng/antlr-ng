@@ -32,7 +32,7 @@ export class DartTarget extends Target {
     public override getTargetStringLiteralFromANTLRStringLiteral(generator: CodeGenerator, literal: string,
         addQuotes: boolean, escapeSpecial: boolean): string {
         return super.getTargetStringLiteralFromANTLRStringLiteral(generator, literal, addQuotes, escapeSpecial)
-            .replace("$", "\\$");
+            .replaceAll("$", "\\$");
     }
 
     public override get reservedWords(): Set<string> {

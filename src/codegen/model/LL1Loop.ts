@@ -4,6 +4,7 @@
  */
 
 import { IntervalSet } from "antlr4ng";
+import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
@@ -11,7 +12,6 @@ import { Choice } from "./Choice.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { OutputModelObject } from "./OutputModelObject.js";
 import { SrcOp } from "./SrcOp.js";
-import { ModelElement } from "../../misc/ModelElement.js";
 
 export abstract class LL1Loop extends Choice {
 
