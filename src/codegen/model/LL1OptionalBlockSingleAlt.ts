@@ -31,8 +31,7 @@ export class LL1OptionalBlockSingleAlt extends LL1Choice {
 
         const look = altLookSets[0];
         const followLook = altLookSets[1];
-        const expecting = look.or([followLook]);
-        this.error = this.getThrowNoViableAlt(factory, blkAST, expecting);
+        this.error = this.getThrowNoViableAlt(factory, blkAST);
 
         this.expr = this.addCodeForLookaheadTempVar(look);
         this.followExpr = factory.getLL1Test(followLook, blkAST)!;

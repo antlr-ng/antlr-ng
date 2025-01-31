@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { DecisionState, IntervalSet } from "antlr4ng";
+import { DecisionState } from "antlr4ng";
 
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
@@ -21,7 +21,6 @@ export class LL1AltBlock extends LL1Choice {
         this.altLook = this.getAltLookaheadAsStringLists(altLookSets);
 
         // Combine alt sets.
-        const expecting = IntervalSet.or(altLookSets);
-        this.error = this.getThrowNoViableAlt(factory, blkAST, expecting);
+        this.error = this.getThrowNoViableAlt(factory, blkAST);
     }
 }
