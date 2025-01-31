@@ -4,13 +4,5 @@
  */
 
 import { ThrowRecognitionException } from "./ThrowRecognitionException.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
-import { IntervalSet } from "antlr4ng";
-import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 
-export class ThrowNoViableAlt extends ThrowRecognitionException {
-    public constructor(factory: OutputModelFactory, blkOrEbnfRootAST: GrammarAST,
-        expecting?: IntervalSet) {
-        super(factory, blkOrEbnfRootAST, expecting);
-    }
-}
+export class ThrowNoViableAlt extends ThrowRecognitionException { }

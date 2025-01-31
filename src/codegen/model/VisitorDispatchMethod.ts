@@ -3,11 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { OutputModelFactory } from "../OutputModelFactory.js";
 import { DispatchMethod } from "./DispatchMethod.js";
 
-export class VisitorDispatchMethod extends DispatchMethod {
-    public constructor(factory: OutputModelFactory) {
-        super(factory);
-    }
-}
+export class VisitorDispatchMethod extends DispatchMethod { }

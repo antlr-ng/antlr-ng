@@ -6,11 +6,11 @@
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { TerminalAST } from "../../tool/ast/TerminalAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
-import { LabeledOp } from "./LabeledOp.js";
+import { ILabeledOp } from "./ILabeledOp.js";
 import { RuleElement } from "./RuleElement.js";
 import { Decl } from "./decl/Decl.js";
 
-export class MatchToken extends RuleElement implements LabeledOp {
+export class MatchToken extends RuleElement implements ILabeledOp {
     public readonly name?: string;
     public readonly escapedName?: string;
     public readonly ttype: number = 0;
@@ -22,6 +22,7 @@ export class MatchToken extends RuleElement implements LabeledOp {
             const g = factory.getGrammar()!;
             const gen = factory.getGenerator()!;
             this.ttype = g.getTokenType(ast.getText());
+
             const target = gen.getTarget();
             this.name = target.getTokenTypeAsTargetLabel(g, this.ttype);
             this.escapedName = target.escapeIfNeeded(this.name);

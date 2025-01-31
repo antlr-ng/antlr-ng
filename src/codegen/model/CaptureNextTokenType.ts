@@ -8,8 +8,10 @@ import { SrcOp } from "./SrcOp.js";
 
 export class CaptureNextTokenType extends SrcOp {
     public varName: string;
+
     public constructor(factory: OutputModelFactory, varName: string) {
         super(factory);
+
         this.varName = varName;
     }
 }

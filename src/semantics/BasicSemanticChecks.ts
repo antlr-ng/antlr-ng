@@ -203,7 +203,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
             if (altAST.altLabel) {
                 const altLabel = altAST.altLabel.getText();
 
-                // first check that label doesn't conflict with a rule
+                // First check that label doesn't conflict with a rule
                 // label X or x can't be rule x.
                 const r = this.ruleCollector.nameToRuleMap.get(Utils.decapitalize(altLabel));
                 if (r) {

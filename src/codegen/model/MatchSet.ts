@@ -22,9 +22,12 @@ export class MatchSet extends MatchToken {
 
     public constructor(factory: OutputModelFactory, ast: GrammarAST) {
         super(factory, ast);
+
         const st = ast.atnState!.transitions[0] as SetTransition;
         const wordSize = factory.getGenerator()!.getTarget().getInlineTestSetWordSize();
+
         this.expr = new TestSetInline(factory, undefined, st.set, wordSize);
+
         const d = new TokenTypeDecl(factory, this.expr.varName);
         factory.getCurrentRuleFunction()?.addLocalDecl(d);
         this.capture = new CaptureNextTokenType(factory, this.expr.varName);

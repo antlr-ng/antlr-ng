@@ -4,6 +4,7 @@
  */
 
 import { PlusBlockStartState } from "antlr4ng";
+
 import { BlockAST } from "../../tool/ast/BlockAST.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
@@ -19,6 +20,7 @@ export class LL1PlusBlockSingleAlt extends LL1Loop {
 
         this.stateNumber = blkStart.loopBackState.stateNumber;
         this.blockStartStateNumber = blkStart.stateNumber;
+
         const plus = blkAST.atnState as PlusBlockStartState;
         this.decision = plus.loopBackState.decision;
         const altLookSets = factory.getGrammar()!.decisionLOOK[this.decision];

@@ -18,7 +18,7 @@ import { OutputModelFactory } from "./OutputModelFactory.js";
 import { Choice } from "./model/Choice.js";
 import { CodeBlockForAlt } from "./model/CodeBlockForAlt.js";
 import type { CodeBlockForOuterMostAlt } from "./model/CodeBlockForOuterMostAlt.js";
-import { LabeledOp } from "./model/LabeledOp.js";
+import { ILabeledOp } from "./model/ILabeledOp.js";
 import { Lexer } from "./model/Lexer.js";
 import { LexerFile } from "./model/LexerFile.js";
 import type { OutputModelObject } from "./model/OutputModelObject.js";
@@ -141,7 +141,7 @@ export abstract class BlankOutputModelFactory implements OutputModelFactory {
         return undefined;
     }
 
-    public needsImplicitLabel(id: GrammarAST, op: LabeledOp): boolean {
+    public needsImplicitLabel(id: GrammarAST, op: ILabeledOp): boolean {
         return false;
     }
 

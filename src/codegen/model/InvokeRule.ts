@@ -10,14 +10,14 @@ import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { ActionTranslator } from "../ActionTranslator.js";
 import { ParserFactory } from "../ParserFactory.js";
-import { LabeledOp } from "./LabeledOp.js";
+import { ILabeledOp } from "./ILabeledOp.js";
 import { RuleElement } from "./RuleElement.js";
 import { ActionChunk } from "./chunk/ActionChunk.js";
 import { Decl } from "./decl/Decl.js";
 import { RuleContextDecl } from "./decl/RuleContextDecl.js";
 import { RuleContextListDecl } from "./decl/RuleContextListDecl.js";
 
-export class InvokeRule extends RuleElement implements LabeledOp {
+export class InvokeRule extends RuleElement implements ILabeledOp {
     public readonly name: string;
     public readonly escapedName: string;
     public readonly labels: Decl[] = []; // TODO: should need just 1
@@ -40,11 +40,10 @@ export class InvokeRule extends RuleElement implements LabeledOp {
         this.escapedName = gen.getTarget().escapeIfNeeded(this.name);
         this.ctxName = target.getRuleFunctionContextStructName(r);
 
-        // TODO: move to factory
         const rf = factory.getCurrentRuleFunction()!;
         if (labelAST !== null) {
             let decl: RuleContextDecl;
-            // for x=r, define <rule-context-type> x and list_x
+            // For x=r, define <rule-context-type> x and list_x.
             const label = labelAST.getText();
             if (labelAST.parent!.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
                 factory.defineImplicitLabel(ast, this);
@@ -62,7 +61,7 @@ export class InvokeRule extends RuleElement implements LabeledOp {
             this.argExprsChunks = ActionTranslator.translateAction(factory, rf, arg.token!, arg);
         }
 
-        // If action refs rule as rule name not label, we need to define implicit label
+        // If action refs rule as rule name not label, we need to define implicit label.
         if (factory.getCurrentOuterMostAlt().ruleRefsInActions.has(identifier)) {
             const label = gen.getTarget().getImplicitRuleLabel(identifier);
             const d = new RuleContextDecl(factory, label, this.ctxName);

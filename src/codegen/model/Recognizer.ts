@@ -23,9 +23,9 @@ export abstract class Recognizer extends OutputModelObject {
     public tokens: Map<string, number>;
 
     /**
-     * @deprecated This field is provided only for compatibility with code
-     * generation targets which have not yet been updated to use
-     * {@link #literalNames} and {@link #symbolicNames}.
+     * This field is provided only for compatibility with code generation targets which have not yet been
+     * updated to use {@link #literalNames} and {@link #symbolicNames}.
+     *
      * @deprecated
      */
     public tokenNames: Array<string | null>;
@@ -60,6 +60,7 @@ export abstract class Recognizer extends OutputModelObject {
         this.name = g.getRecognizerName();
         this.accessLevel = g.getOptionString("accessLevel");
         this.tokens = new Map<string, number>();
+
         for (const [key, ttype] of g.tokenNameToTypeMap) {
             if (ttype > 0) {
                 this.tokens.set(gen.getTarget().escapeIfNeeded(key), ttype);
@@ -116,5 +117,4 @@ export abstract class Recognizer extends OutputModelObject {
             return gen.getTarget().getTargetStringLiteralFromString(tokenName, true);
         }
     }
-
 }

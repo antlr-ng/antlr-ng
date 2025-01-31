@@ -8,12 +8,12 @@ import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
 import { Choice } from "./Choice.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
+import type { ITokenInfo } from "./ITokenInfo.js";
 import { ThrowNoViableAlt } from "./ThrowNoViableAlt.js";
-import { TokenInfo } from "./TokenInfo.js";
 
 export abstract class LL1Choice extends Choice {
     /** Token names for each alt 0..n-1 */
-    public altLook: TokenInfo[][];
+    public altLook: ITokenInfo[][];
 
     @ModelElement
     public error: ThrowNoViableAlt;

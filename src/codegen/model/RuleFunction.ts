@@ -7,8 +7,8 @@
 
 import { ATNState, IntervalSet, OrderedHashSet, RecognitionException } from "antlr4ng";
 
-import { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 import { ANTLRv4Lexer } from "../../generated/ANTLRv4Lexer.js";
+import { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 
 import type { CommonTree } from "../../tree/CommonTree.js";
 
@@ -55,7 +55,7 @@ export class RuleFunction extends OutputModelObject {
     public code: SrcOp[];
 
     @ModelElement
-    public locals = new OrderedHashSet<Decl>(); // TODO: move into ctx?
+    public readonly locals = new OrderedHashSet<Decl>(); // TODO: move into ctx?
 
     @ModelElement
     public args?: AttributeDecl[];
@@ -80,6 +80,7 @@ export class RuleFunction extends OutputModelObject {
 
     public constructor(factory: OutputModelFactory, r: Rule) {
         super(factory);
+
         this.name = r.name;
         this.escapedName = factory.getGenerator()!.getTarget().escapeIfNeeded(r.name);
         this.rule = r;
@@ -113,6 +114,7 @@ export class RuleFunction extends OutputModelObject {
         this.ruleLabels = r.getElementLabelNames();
         this.tokenLabels = r.getTokenRefs();
         this.exceptions = new Array<ExceptionClause>();
+
         for (const e of r.exceptions) {
             const catchArg = e.getChild(0) as ActionAST;
             const catchAction = e.getChild(1) as ActionAST;
@@ -123,18 +125,17 @@ export class RuleFunction extends OutputModelObject {
     }
 
     public addContextGetters(factory: OutputModelFactory, r: Rule): void {
-        // Add ctx labels for elements in alts with no -> label
+        // Add ctx labels for elements in alts with no -> label.
         const altsNoLabels = r.getUnlabeledAltASTs();
         if (altsNoLabels !== null) {
             const decls = this.getDeclsForAllElements(altsNoLabels);
-            // we know to put in rule ctx, so do it directly
+            // We know to put in rule ctx, so do it directly.
             for (const d of decls) {
                 this.ruleCtx.addDecl(d);
             }
-
         }
 
-        // make structs for -> labeled alts, define ctx labels for elements
+        // Make structs for -> labeled alts, define ctx labels for elements.
         this.altLabelCtxs = new Map<string, AltLabelStructDecl>();
         const labels = r.getAltLabels();
         if (labels !== null) {
@@ -151,7 +152,7 @@ export class RuleFunction extends OutputModelObject {
                         this.altLabelCtxs.set(label, this.altToContext[altNum]);
                     }
 
-                    // we know which ctx to put in, so do it directly
+                    // We know which ctx to put in, so do it directly.
                     for (const d of decls) {
                         this.altToContext[altNum].addDecl(d);
                     }
@@ -173,9 +174,8 @@ export class RuleFunction extends OutputModelObject {
     }
 
     /**
-        for all alts, find which ref X or r needs List
-       Must see across alts. If any alt needs X or r as list, then
-       define as list.
+     * For all alts, find which ref X or r needs List. Must see across alts.
+     * If any alt needs X or r as list, then define as list.
      */
     public getDeclsForAllElements(altASTs: AltAST[]): Set<Decl> {
         const needsList = new Set<string>();
@@ -270,11 +270,11 @@ export class RuleFunction extends OutputModelObject {
         d.isLocal = true;
     }
 
-    /** Add decl to struct ctx for rule or alt if labeled */
+    /** Add decl to struct ctx for rule or alt if labeled. */
     public addContextDecl(altLabel: string, d: Decl): void {
         const alt = d.getOuterMostAltCodeBlock();
 
-        // if we found code blk and might be alt label, try to add to that label ctx
+        // If we found code blk and might be alt label, try to add to that label ctx.
         if (alt && this.altLabelCtxs) {
             const altCtx = this.altLabelCtxs.get(altLabel);
             if (altCtx) { // we have an alt ctx
@@ -284,10 +284,11 @@ export class RuleFunction extends OutputModelObject {
             }
         }
 
-        this.ruleCtx.addDecl(d); // stick in overall rule's ctx
+        // Stick in overall rule's ctx.
+        this.ruleCtx.addDecl(d);
     }
 
-    /** Given list of X and r refs in alt, compute how many of each there are */
+    /** Given list of X and r refs in alt, compute how many of each there are. */
     protected getElementFrequenciesForAlt(ast: AltAST): [FrequencySet<string>, FrequencySet<string>] {
         const errorManager = this.factory!.getGrammar()!.tool.errorManager;
 
@@ -320,7 +321,7 @@ export class RuleFunction extends OutputModelObject {
 
             let ignore = false;
             while (r !== null) {
-                // Ignore string literals in predicates
+                // Ignore string literals in predicates.
                 if (r instanceof PredAST) {
                     ignore = true;
                     break;
@@ -342,7 +343,7 @@ export class RuleFunction extends OutputModelObject {
             ? tokenText
             : token.g.getTokenName(tokenText);
 
-        // Do not include tokens with auto generated names
+        // Do not include tokens with auto generated names.
         return tokenName === null || tokenName.startsWith("T__") ? null : tokenName;
     }
 
@@ -354,5 +355,4 @@ export class RuleFunction extends OutputModelObject {
 
         return a;
     }
-
 }

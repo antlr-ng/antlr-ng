@@ -15,6 +15,7 @@ export class AltBlock extends Choice {
         blkOrEbnfRootAST: GrammarAST,
         alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST, alts);
+
         this.decision = (blkOrEbnfRootAST.atnState as BlockStartState).decision;
     }
 }

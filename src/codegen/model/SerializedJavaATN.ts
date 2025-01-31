@@ -10,7 +10,7 @@ import { ATN, ATNSerializer } from "antlr4ng";
 import { OutputModelFactory } from "../OutputModelFactory.js";
 import { SerializedATN } from "./SerializedATN.js";
 
-/** A serialized ATN for the java target, which requires we use strings and 16-bit unicode values */
+/** A serialized ATN for the java target, which requires we use strings and 16-bit unicode values. */
 export class SerializedJavaATN extends SerializedATN {
     private readonly serializedAsString: string[];
     private readonly segments: string[][];
@@ -37,10 +37,6 @@ export class SerializedJavaATN extends SerializedATN {
 
         this.serializedAsString = this.segments[0]; // serializedAsString is valid if only one segment
     }
-
-    public get serialized(): string[] {
-        return this.serializedAsString;
-    };
 
     public override getSerialized(): object {
         return this.serializedAsString;
@@ -73,26 +69,30 @@ export class SerializedJavaATN extends SerializedATN {
 
         for (let i = 0; i < data.length; i++) {
             let v = data[i];
-            if (v === -1) { // use two max uint16 for -1
+            if (v === -1) {
+                // Use two max uint16 for -1.
                 data16[index++] = 0xFFFF;
                 data16[index++] = 0xFFFF;
             } else if (v <= 0x7FFF) {
                 data16[index++] = v;
             } else { // v > 0x7FFF
                 if (v >= 0x7FFF_FFFF) {
-                    // too big to fit in 15 bits + 16 bits? (+1 would be 8000_0000 which is bad encoding)
+                    // Too big to fit in 15 bits + 16 bits? (+1 would be 8000_0000 which is bad encoding).
                     throw new Error(`Serialized ATN data element[${i}] = ${v} doesn't fit in 31 bits`);
                 }
-                v = v & 0x7FFF_FFFF; // strip high bit (sentinel) if set
 
-                // store high 15-bit word first and set high bit to say word follows
+                // Strip high bit (sentinel) if set.
+                v = v & 0x7FFF_FFFF;
+
+                // Store high 15-bit word first and set high bit to say word follows.
                 data16[index++] = (v >> 16) | 0x8000;
 
-                // then store lower 16-bit word
-                data16[index++] = (v & 0xFFFF); // then store lower 16-bit word
+                // Then store lower 16-bit word.
+                data16[index++] = (v & 0xFFFF);
             }
         }
 
-        return data16.slice(0, index); // return the filled portion of the array
+        // Return the filled portion of the array.
+        return data16.slice(0, index);
     }
 }

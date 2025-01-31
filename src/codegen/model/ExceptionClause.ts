@@ -20,6 +20,7 @@ export class ExceptionClause extends SrcOp {
         catchArg: ActionAST,
         catchAction: ActionAST) {
         super(factory, catchArg);
+
         this.catchArg = new Action(factory, catchArg);
         this.catchAction = new Action(factory, catchAction);
     }

@@ -3,8 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import type { IToolParameters } from "../../tool-parameters.js";
 import { ModelElement } from "../../misc/ModelElement.js";
+import type { IToolParameters } from "../../tool-parameters.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
 import { Action } from "./Action.js";
 import { Lexer } from "./Lexer.js";
@@ -24,6 +24,7 @@ export class LexerFile extends OutputFile {
 
     public constructor(factory: OutputModelFactory, fileName: string, toolParameters: IToolParameters) {
         super(factory, fileName);
+
         this.namedActions = this.buildNamedActions(factory.getGrammar()!);
         this.genPackage = toolParameters.package;
         this.exportMacro = factory.getGrammar()!.getOptionString("exportMacro");

@@ -10,6 +10,7 @@ import { Action } from "./Action.js";
 export class ArgAction extends Action {
     /** Context type of invoked rule */
     public ctxType: string;
+
     public constructor(factory: OutputModelFactory, ast: ActionAST, ctxType: string) {
         super(factory, ast);
         this.ctxType = ctxType;

@@ -17,11 +17,10 @@ import type { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
 
     /**
-     * This special value means "no set", and is used by {@link #minFrequencies}
-     * to ensure that {@link #combineMin} doesn't merge an empty set (all zeros)
-     * with the results of the first alternative.
+     * This special value means "no set", and is used by {@link #minFrequencies} to ensure that {@link #combineMin}
+     * doesn't merge an empty set (all zeros) with the results of the first alternative.
      */
-    private static readonly SENTINEL = new FrequencySet<string>();
+    private static readonly sentinel = new FrequencySet<string>();
 
     public readonly frequencies: Array<FrequencySet<string>>;
 
@@ -29,21 +28,21 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
 
     public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream) {
         super(errorManager, input);
+
         this.frequencies = new Array<FrequencySet<string>>();
         this.frequencies.unshift(new FrequencySet<string>());
         this.minFrequencies = new Array<FrequencySet<string>>();
-        this.minFrequencies.unshift(ElementFrequenciesVisitor.SENTINEL);
+        this.minFrequencies.unshift(ElementFrequenciesVisitor.sentinel);
     }
 
     /**
-     * Generate a frequency set as the union of two input sets. If an
-     * element is contained in both sets, the value for the output will be
-     * the maximum of the two input values.
+     * Generate a frequency set as the union of two input sets. If an element is contained in both sets, the value
+     * for the output will be the maximum of the two input values.
      *
      * @param a The first set.
      * @param b The second set.
-     * @returns The union of the two sets, with the maximum value chosen
-     * whenever both sets contain the same key.
+     *
+     * @returns The union of the two sets, with the maximum value chosen whenever both sets contain the same key.
      */
     protected static combineMax(a: FrequencySet<string>, b: FrequencySet<string>): FrequencySet<string> {
         const result = ElementFrequenciesVisitor.combineAndClip(a, b, 1);
@@ -60,22 +59,19 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
     }
 
     /**
-     * Generate a frequency set as the union of two input sets. If an
-     * element is contained in both sets, the value for the output will be
-     * the minimum of the two input values.
+     * Generate a frequency set as the union of two input sets. If an element is contained in both sets, the value
+     * for the output will be the minimum of the two input values.
      *
      * @param a The first set.
-     * @param b The second set. If this set is {@link #SENTINEL}, it is treated
-     * as though no second set were provided.
-     * @returns The union of the two sets, with the minimum value chosen
-     * whenever both sets contain the same key.
+     * @param b The second set. If this set is {@link sentinel}, it is treated as though no second set were provided.
+     *
+     * @returns The union of the two sets, with the minimum value chosen whenever both sets contain the same key.
      */
     protected static combineMin(a: FrequencySet<string>, b: FrequencySet<string>): FrequencySet<string> {
-        if (b === ElementFrequenciesVisitor.SENTINEL) {
+        if (b === ElementFrequenciesVisitor.sentinel) {
             return a;
         }
 
-        /* assert a != SENTINEL; */
         const result = ElementFrequenciesVisitor.combineAndClip(a, b, Number.MAX_VALUE);
         for (const [key] of result.entries()) {
             result.set(key, Math.min(a.count(key), b.count(key)));
@@ -85,16 +81,15 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
     }
 
     /**
-     * Generate a frequency set as the union of two input sets, with the
-     * values clipped to a specified maximum value. If an element is
-     * contained in both sets, the value for the output, prior to clipping,
-     * will be the sum of the two input values.
+     * Generate a frequency set as the union of two input sets, with the values clipped to a specified maximum value.
+     * If an element is contained in both sets, the value for the output, prior to clipping, will be the sum of the
+     * two input values.
      *
      * @param a The first set.
      * @param b The second set.
      * @param clip The maximum value to allow for any output.
-     * @returns The sum of the two sets, with the individual elements clipped
-     * to the maximum value given by {@code clip}.
+     *
+     * @returns The sum of the two sets, with the individual elements clipped to the maximum value given by `clip`.
      */
     protected static combineAndClip(a: FrequencySet<string>, b: FrequencySet<string>,
         clip: number): FrequencySet<string> {
@@ -118,17 +113,21 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
         return result;
     }
 
-    public override tokenRef(ref: TerminalAST): void {
+    public getMinFrequencies(): FrequencySet<string> {
+        return this.minFrequencies[0];
+    }
+
+    protected override tokenRef(ref: TerminalAST): void {
         this.frequencies[0].add(ref.getText());
         this.minFrequencies[0].add(ref.getText());
     }
 
-    public override ruleRef(ref: GrammarAST, arg: ActionAST): void {
+    protected override ruleRef(ref: GrammarAST, arg: ActionAST): void {
         this.frequencies[0].add(ref.getText());
         this.minFrequencies[0].add(ref.getText());
     }
 
-    public override stringRef(ref: TerminalAST): void {
+    protected override stringRef(ref: TerminalAST): void {
         const tokenName = ref.g.getTokenName(ref.getText());
 
         if (tokenName !== null && !tokenName.startsWith("T__")) {
@@ -136,14 +135,6 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
             this.minFrequencies[0].add(tokenName);
         }
     }
-
-    public getMinFrequencies(): FrequencySet<string> {
-        return this.minFrequencies[0];
-    }
-
-    /*
-     * Parser rules
-     */
 
     protected override enterAlternative(tree: AltAST): void {
         this.frequencies.unshift(new FrequencySet<string>());
@@ -175,16 +166,15 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
     }
 
     protected override exitBlockSet(tree: GrammarAST): void {
-        // This visitor counts a block set as a sequence of elements, not a
-        // sequence of alternatives of elements. Reset the count back to 1
-        // for all items when leaving the set to ensure duplicate entries in
-        // the set are treated as a maximum of one item.
+        // This visitor counts a block set as a sequence of elements, not a sequence of alternatives of elements.
+        // Reset the count back to 1 for all items when leaving the set to ensure duplicate entries in the set are
+        // treated as a maximum of one item.
         for (const key of this.frequencies[0].keys()) {
             this.frequencies[0].set(key, 1);
         }
 
         if (this.minFrequencies[0].size > 1) {
-            // Everything is optional
+            // Everything is optional.
             this.minFrequencies[0].clear();
         }
 
@@ -208,10 +198,6 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
             this.minFrequencies[0].clear();
         }
     }
-
-    /*
-     * Lexer rules
-     */
 
     protected override enterLexerAlternative(tree: GrammarAST): void {
         this.frequencies.unshift(new FrequencySet<string>());

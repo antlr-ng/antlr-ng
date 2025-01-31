@@ -17,10 +17,11 @@ export class RuleActionFunction extends OutputModelObject {
 
     /** Map actionIndex to Action */
     @ModelElement
-    public actions = new Map<number, Action>();
+    public readonly actions = new Map<number, Action>();
 
     public constructor(factory: OutputModelFactory, r: Rule, ctxType: string) {
         super(factory);
+
         this.name = r.name;
         this.escapedName = factory.getGenerator()!.getTarget().escapeIfNeeded(this.name);
         this.ruleIndex = r.index;

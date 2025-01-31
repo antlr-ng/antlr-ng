@@ -17,14 +17,15 @@ export class LeftRecursiveRuleFunction extends RuleFunction {
         super(factory, r);
 
         const gen = factory.getGenerator()!;
-        // Since we delete x=lr, we have to manually add decls for all labels
-        // on left-recur refs to proper structs
+
+        // Since we delete x=lr, we have to manually add decls for all labels on left-recur refs to proper structs.
         for (const [idAST, altLabel] of r.leftRecursiveRuleRefLabels) {
             const label = idAST.getText();
             const ruleRefAST = idAST.parent!.getChild(1) as GrammarAST;
             if (ruleRefAST.getType() === ANTLRv4Parser.RULE_REF) {
                 const targetRule = factory.getGrammar()!.getRule(ruleRefAST.getText())!;
                 const ctxName = gen.getTarget().getRuleFunctionContextStructName(targetRule);
+
                 let d: RuleContextDecl;
                 if (idAST.parent!.getType() === ANTLRv4Parser.ASSIGN) {
                     d = new RuleContextDecl(factory, label, ctxName);
@@ -38,9 +39,12 @@ export class LeftRecursiveRuleFunction extends RuleFunction {
                     if (s) {
                         struct = s;
                     }
-                    // if alt label, use sub ctx
+
+                    // If alt label, use sub ctx.
                 }
-                struct.addDecl(d); // stick in overall rule's ctx
+
+                // Stick in overall rule's ctx.
+                struct.addDecl(d);
             }
         }
     }

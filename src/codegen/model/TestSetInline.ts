@@ -8,11 +8,11 @@ import { IntervalSet } from "antlr4ng";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
 import { SrcOp } from "./SrcOp.js";
-import { TokenInfo } from "./TokenInfo.js";
+import { ITokenInfo } from "./ITokenInfo.js";
 
 class Bitset {
     public readonly shift: bigint;
-    private readonly tokens: TokenInfo[] = [];
+    private readonly tokens: ITokenInfo[] = [];
     private bits = 0n;
 
     public constructor(shift: number) {
@@ -20,11 +20,11 @@ class Bitset {
     }
 
     public addToken(type: number, name: string): void {
-        this.tokens.push(new TokenInfo(type, name));
+        this.tokens.push({ type, name });
         this.bits |= 1n << (BigInt(type) - this.shift);
     }
 
-    public getTokens(): TokenInfo[] {
+    public getTokens(): ITokenInfo[] {
         return this.tokens;
     }
 
@@ -41,10 +41,12 @@ export class TestSetInline extends SrcOp {
 
     public constructor(factory: OutputModelFactory, ast: GrammarAST | undefined, set: IntervalSet, wordSize: number) {
         super(factory, ast);
+
         this.bitsetWordSize = wordSize;
         const withZeroOffset = TestSetInline.createBitsets(factory, set, wordSize, true);
         const withoutZeroOffset = TestSetInline.createBitsets(factory, set, wordSize, false);
         this.bitsets = withZeroOffset.length <= withoutZeroOffset.length ? withZeroOffset : withoutZeroOffset;
+
         this.varName = "_la";
     }
 

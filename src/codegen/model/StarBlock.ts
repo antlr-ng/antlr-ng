@@ -4,19 +4,20 @@
  */
 
 import { StarLoopEntryState } from "antlr4ng";
+
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { Loop } from "./Loop.js";
 
 export class StarBlock extends Loop {
-    public loopLabel: string;
+    public readonly loopLabel: string;
 
-    public constructor(factory: OutputModelFactory,
-        blkOrEbnfRootAST: GrammarAST,
-        alts: CodeBlockForAlt[]) {
+    public constructor(factory: OutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST, alts);
+
         this.loopLabel = factory.getGenerator()!.getTarget().getLoopLabel(blkOrEbnfRootAST);
+
         const star = blkOrEbnfRootAST.atnState as StarLoopEntryState;
         this.loopBackStateNumber = star.loopBackState.stateNumber;
         this.decision = star.decision;

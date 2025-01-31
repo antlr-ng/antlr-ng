@@ -4,6 +4,7 @@
  */
 
 import { IntervalSet } from "antlr4ng";
+
 import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { OutputModelFactory } from "../OutputModelFactory.js";
@@ -15,10 +16,7 @@ import { SrcOp } from "./SrcOp.js";
 
 export abstract class LL1Loop extends Choice {
 
-    /**
-     * The state associated wih the (A|B|...) block not loopback, which
-     *  is super.stateNumber
-     */
+    /** The state associated wih the (A|B|...) block not loopback, which is super.stateNumber */
     public blockStartStateNumber: number;
     public loopBackStateNumber: number;
 

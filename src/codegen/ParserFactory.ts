@@ -30,7 +30,7 @@ import { LL1OptionalBlock } from "./model/LL1OptionalBlock.js";
 import { LL1OptionalBlockSingleAlt } from "./model/LL1OptionalBlockSingleAlt.js";
 import { LL1PlusBlockSingleAlt } from "./model/LL1PlusBlockSingleAlt.js";
 import { LL1StarBlockSingleAlt } from "./model/LL1StarBlockSingleAlt.js";
-import { LabeledOp } from "./model/LabeledOp.js";
+import { ILabeledOp } from "./model/ILabeledOp.js";
 import { LeftRecursiveRuleFunction } from "./model/LeftRecursiveRuleFunction.js";
 import { MatchNotSet } from "./model/MatchNotSet.js";
 import { MatchSet } from "./model/MatchSet.js";
@@ -326,7 +326,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return [new TestSetInline(this, blkAST, look, this.gen.getTarget().getInlineTestSetWordSize())];
     }
 
-    public override needsImplicitLabel(id: GrammarAST, op: LabeledOp): boolean {
+    public override needsImplicitLabel(id: GrammarAST, op: ILabeledOp): boolean {
         const currentOuterMostAlt = this.getCurrentOuterMostAlt();
         const actionRefsAsToken = currentOuterMostAlt.tokenRefsInActions.has(id.getText());
         const actionRefsAsRule = currentOuterMostAlt.ruleRefsInActions.has(id.getText());
@@ -336,7 +336,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
 
     // support
 
-    public defineImplicitLabel(ast: GrammarAST, op: LabeledOp): void {
+    public defineImplicitLabel(ast: GrammarAST, op: ILabeledOp): void {
         let d: Decl;
 
         if (ast.getType() === ANTLRv4Parser.SET || ast.getType() === ANTLRv4Parser.WILDCARD) {
@@ -363,7 +363,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
         this.getCurrentRuleFunction()!.addContextDecl(ast.getAltLabel()!, d);
     }
 
-    public getAddToListOpIfListLabelPresent(op: LabeledOp, label: GrammarAST | null): AddToLabelList | null {
+    public getAddToListOpIfListLabelPresent(op: ILabeledOp, label: GrammarAST | null): AddToLabelList | null {
         let labelOp = null;
         if (label?.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
             const target = this.gen.getTarget();

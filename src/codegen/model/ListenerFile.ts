@@ -14,9 +14,11 @@ import { OutputFile } from "./OutputFile.js";
  *  These are the rules specific events triggered by a parse tree visitor.
  */
 export class ListenerFile extends OutputFile {
-    public genPackage?: string; // from -package cmd-line
-    public accessLevel?: string; // from -DaccessLevel cmd-line
-    public exportMacro?: string; // from -DexportMacro cmd-line
+    // These fields are used in some code generation templates:
+
+    public genPackage?: string;
+    public accessLevel?: string;
+    public exportMacro?: string;
     public grammarName: string;
     public parserName: string;
 

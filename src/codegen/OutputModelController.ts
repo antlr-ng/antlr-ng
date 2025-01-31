@@ -35,7 +35,7 @@ import { BaseVisitorFile } from "./model/BaseVisitorFile.js";
 import { Choice } from "./model/Choice.js";
 import { CodeBlockForAlt } from "./model/CodeBlockForAlt.js";
 import { CodeBlockForOuterMostAlt } from "./model/CodeBlockForOuterMostAlt.js";
-import { LabeledOp } from "./model/LabeledOp.js";
+import { ILabeledOp } from "./model/ILabeledOp.js";
 import { LeftRecursiveRuleFunction } from "./model/LeftRecursiveRuleFunction.js";
 import { Lexer } from "./model/Lexer.js";
 import { LexerFile } from "./model/LexerFile.js";
@@ -484,7 +484,7 @@ export class OutputModelController {
         return c;
     }
 
-    public needsImplicitLabel(id: GrammarAST, op: LabeledOp): boolean {
+    public needsImplicitLabel(id: GrammarAST, op: ILabeledOp): boolean {
         let needs = this.delegate.needsImplicitLabel(id, op);
         for (const ext of this.extensions) {
             needs ||= ext.needsImplicitLabel(id, op);

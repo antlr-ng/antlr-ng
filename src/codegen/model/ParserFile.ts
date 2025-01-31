@@ -36,7 +36,7 @@ export class ParserFile extends OutputFile {
         this.genPackage = toolParameters.package;
         this.exportMacro = factory.getGrammar()!.getOptionString("exportMacro");
 
-        // need the below members in the ST for Python, C++
+        // Need the below members in the ST for Python, C++.
         this.genListener = toolParameters.generateListener ?? true;
         this.genVisitor = toolParameters.generateVisitor ?? false;
         this.grammarName = g.name;

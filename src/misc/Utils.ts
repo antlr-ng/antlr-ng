@@ -54,45 +54,11 @@ export class Utils {
         return b;
     }
 
-    /** Find exact object type or subclass of cl in list */
-    public static find<T>(ops: unknown[], cl: Constructor<T>): T | null {
-        for (const o of ops) {
-            if (o instanceof cl) {
-                return o;
-            }
-        }
-
-        return null;
-    }
-
-    public static indexOf<T>(elements: T[], filter: Utils.Filter<T>): number {
-        for (let i = 0; i < elements.length; i++) {
-            if (filter.select(elements[i])) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    public static lastIndexOf<T>(elements: T[], filter: Utils.Filter<T>): number {
-        for (let i = elements.length - 1; i >= 0; i--) {
-            if (filter.select(elements[i])) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
     public static setSize(list: unknown[], size: number): void {
-        const fills = size - list.length;
-        if (fills < 0) {
-            list.length = size;
-        } else {
-            for (let i = 0; i < fills; i++) {
-                list.push(null);
-            }
+        const oldLength = list.length;
+        list.length = size;
+        if (oldLength < size) {
+            list.fill(null, oldLength, size);
         }
     }
 

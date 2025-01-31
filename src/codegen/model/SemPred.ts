@@ -13,25 +13,20 @@ import { ActionChunk } from "./chunk/ActionChunk.js";
 export class SemPred extends Action {
 
     /**
-     * The user-specified terminal option {@code fail}, if it was used and the
-     * value is a string literal. For example:
+     * The user-specified terminal option `fail`, if it was used and the value is a string literal. For example:
      *
-     * <p>
-     * {@code {pred}?<fail='message'>}</p>
+     * `{pred}?<fail='message'>`
      */
     public msg: string;
 
-    /**
-     * The predicate string with <code>{</code> and <code>}?</code> stripped from the ends.
-     */
+    /** The predicate string with <code>{</code> and <code>}?</code> stripped from the ends. */
     public predicate: string;
 
     /**
-     * The translated chunks of the user-specified terminal option {@code fail},
-     * if it was used and the value is an action. For example:
+     * The translated chunks of the user-specified terminal option `fail`, if it was used and the value is an action.
+     * For example:
      *
-     * <p>
-     * {@code {pred}?<fail={"Java literal"}>}</p>
+     * `{pred}?<fail={"Java literal"}>`
      */
     @ModelElement
     public failChunks: ActionChunk[];

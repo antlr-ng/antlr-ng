@@ -19,10 +19,9 @@ export class Loop extends Choice {
     @ModelElement
     public iteration: SrcOp[] = [];
 
-    public constructor(factory: OutputModelFactory,
-        blkOrEbnfRootAST: GrammarAST,
-        alts: CodeBlockForAlt[]) {
+    public constructor(factory: OutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST, alts);
+
         const nongreedy = ("isGreedy" in blkOrEbnfRootAST) && !(blkOrEbnfRootAST as QuantifierAST).isGreedy();
         this.exitAlt = nongreedy ? 1 : alts.length + 1;
     }

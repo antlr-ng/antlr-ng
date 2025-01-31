@@ -9,21 +9,18 @@ import { Action } from "./Action.js";
 import { OutputFile } from "./OutputFile.js";
 
 export class VisitorFile extends OutputFile {
-    public genPackage?: string; // from -package cmd-line
-    public accessLevel?: string; // from -DaccessLevel cmd-line
-    public exportMacro?: string; // from -DexportMacro cmd-line
+    public genPackage?: string;
+    public accessLevel?: string;
+    public exportMacro?: string;
     public grammarName: string;
     public parserName: string;
 
-    /**
-     * The names of all rule contexts which may need to be visited.
-     */
+    /** The names of all rule contexts which may need to be visited. */
     public visitorNames = new Set<string>();
 
     /**
-     * For rule contexts created for a labeled outer alternative, maps from
-     * a listener context name to the name of the rule which defines the
-     * context.
+     * For rule contexts created for a labeled outer alternative, maps from a listener context name to the name of
+     * the rule which defines the context.
      */
     public visitorLabelRuleNames = new Map<string, string>();
 
@@ -40,6 +37,7 @@ export class VisitorFile extends OutputFile {
         this.namedActions = this.buildNamedActions(g, (ast) => {
             return ast.getScope() === null;
         });
+
         this.parserName = g.getRecognizerName();
         this.grammarName = g.name;
         for (const r of g.rules.values()) {
@@ -50,7 +48,7 @@ export class VisitorFile extends OutputFile {
                     this.visitorLabelRuleNames.set(key, r.name);
                 }
             } else {
-                // if labels, must label all. no need for generic rule visitor then
+                // If labels, must label all. no need for generic rule visitor then.
                 this.visitorNames.add(r.name);
             }
         }

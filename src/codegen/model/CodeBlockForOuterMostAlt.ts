@@ -8,20 +8,15 @@ import type { OutputModelFactory } from "../OutputModelFactory.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 
 /**
- * The code associated with the outermost alternative of a rule.
- *  Sometimes we might want to treat them differently in the
- *  code generation.
+ * The code associated with the outermost alternative of a rule. Sometimes we might want to treat them differently
+ * in the code generation.
  */
 export class CodeBlockForOuterMostAlt extends CodeBlockForAlt {
 
-    /**
-     * The label for the alternative; or null if the alternative is not labeled.
-     */
+    /** The label for the alternative; or null if the alternative is not labeled. */
     public altLabel?: string;
 
-    /**
-     * The alternative.
-     */
+    /** The alternative. */
     public alt: IAlternative;
 
     public constructor(factory: OutputModelFactory, alt: IAlternative) {

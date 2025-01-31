@@ -4,10 +4,5 @@
  */
 
 import { Decl } from "./Decl.js";
-import { OutputModelFactory } from "../../OutputModelFactory.js";
 
-export class TokenTypeDecl extends Decl {
-    public constructor(factory: OutputModelFactory, name: string) {
-        super(factory, name);
-    }
-}
+export class TokenTypeDecl extends Decl { }

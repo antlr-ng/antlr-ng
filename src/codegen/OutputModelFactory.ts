@@ -17,7 +17,7 @@ import type { OutputModelController } from "./OutputModelController.js";
 import type { Choice } from "./model/Choice.js";
 import type { CodeBlockForAlt } from "./model/CodeBlockForAlt.js";
 import type { CodeBlockForOuterMostAlt } from "./model/CodeBlockForOuterMostAlt.js";
-import type { LabeledOp } from "./model/LabeledOp.js";
+import type { ILabeledOp } from "./model/ILabeledOp.js";
 import type { Lexer } from "./model/Lexer.js";
 import type { LexerFile } from "./model/LexerFile.js";
 import type { OutputModelObject } from "./model/OutputModelObject.js";
@@ -84,7 +84,7 @@ export interface OutputModelFactory {
 
     getLL1Test(look: IntervalSet, blkAST: GrammarAST): SrcOp[] | undefined;
 
-    needsImplicitLabel(ID: GrammarAST, op: LabeledOp): boolean;
+    needsImplicitLabel(ID: GrammarAST, op: ILabeledOp): boolean;
 
     // CONTEXT INFO
 

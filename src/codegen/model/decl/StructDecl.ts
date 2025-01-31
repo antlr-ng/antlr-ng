@@ -79,7 +79,7 @@ export class StructDecl extends Decl {
     public addDispatchMethods(r: Rule): void {
         this.dispatchMethods = new Array<DispatchMethod>();
         if (!r.hasAltSpecificContexts()) {
-            // no enter/exit for this ruleContext if rule has labels
+            // No enter/exit for this ruleContext if rule has labels.
             if (this.generateListener) {
                 this.dispatchMethods.push(new ListenerDispatchMethod(this.factory!, true));
                 this.dispatchMethods.push(new ListenerDispatchMethod(this.factory!, false));

@@ -16,15 +16,16 @@ export abstract class OutputFile extends OutputModelObject {
     public readonly inputSymbolType?: string;
 
     /**
-     * This is the version the runtimes test against for their compatibility.
-     * We use the version of the old ANTLR4 tool here, until we start implementing the new target
-     * infrastructure.
+     * This is the version the runtimes test against for their compatibility. We use the version of the old ANTLR4
+     * tool here, until we start implementing the new target infrastructure.
      */
-    public readonly ANTLRVersion = "4.13.2"; // antlrVersion;
+    public readonly ANTLRVersion = "4.13.2";
 
     public constructor(factory: OutputModelFactory, fileName: string) {
         super(factory);
+
         this.fileName = fileName;
+
         const g = factory.getGrammar()!;
         this.grammarFileName = g.fileName.replace("\\", "/");
         this.TokenLabelType = g.getOptionString("TokenLabelType");

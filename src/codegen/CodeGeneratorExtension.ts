@@ -6,7 +6,7 @@
 import { OutputModelFactory } from "./OutputModelFactory.js";
 import { Choice } from "./model/Choice.js";
 import { CodeBlockForAlt } from "./model/CodeBlockForAlt.js";
-import { LabeledOp } from "./model/LabeledOp.js";
+import { ILabeledOp } from "./model/ILabeledOp.js";
 import { Lexer } from "./model/Lexer.js";
 import { LexerFile } from "./model/LexerFile.js";
 import { Parser } from "./model/Parser.js";
@@ -99,7 +99,7 @@ export class CodeGeneratorExtension {
         return c;
     }
 
-    public needsImplicitLabel(_id: GrammarAST, op: LabeledOp): boolean {
+    public needsImplicitLabel(_id: GrammarAST, op: ILabeledOp): boolean {
         return false;
     }
 }
