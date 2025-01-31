@@ -56,7 +56,9 @@ export class AnalysisPipeline {
             });
 
             let look: IntervalSet[] = [];
-            if (!s.nonGreedy) { // nongreedy decisions can't be LL(1)
+            if (s.nonGreedy) { // nongreedy decisions can't be LL(1)
+                look = new Array<IntervalSet>(s.transitions.length + 1);
+            } else {
                 const anal = new LL1Analyzer(this.g.atn!);
                 look = anal.getDecisionLookahead(s) as IntervalSet[];
                 this.g.tool.logInfo({ component: "LL1", msg: "look=" + look });
