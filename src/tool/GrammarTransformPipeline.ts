@@ -401,8 +401,6 @@ export class GrammarTransformPipeline {
                 if (e.getChild(0)!.getText() === "lexer") {
                     actionsWeMoved.push(e as GrammarAST);
                 }
-
-                break;
             }
         }
 
