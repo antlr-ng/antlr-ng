@@ -44,14 +44,8 @@ export class Python3Target extends Target {
         // https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals
         [0x07, "a"],
         [0x08, "b"],
-        [0x09, "t"],
-        [0x0A, "n"],
-        [0x0C, "f"],
         [0x0D, "r"],
         [0x0B, "v"],
-        [0x5C, "\\"],
-        [0x22, "\""],
-        [0x27, "'"],
     ]);
 
     public constructor(gen: CodeGenerator) {
@@ -59,7 +53,7 @@ export class Python3Target extends Target {
     }
 
     public override getTargetCharValueEscape(): Map<char, string> {
-        return Python3Target.targetCharValueEscape;
+        return new Map([...Target.defaultCharValueEscape, ...Python3Target.targetCharValueEscape]);
     }
 
     public override wantsBaseListener(): boolean {

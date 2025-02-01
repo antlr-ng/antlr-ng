@@ -22,24 +22,14 @@ export class CSharpTarget extends Target {
         [0, "0"],
         [0x07, "a"],
         [0x08, "b"],
-        [0x09, "t"],
-        [0x0A, "n"],
         [0x0B, "v"],
-        [0x0C, "f"],
-        [0x0D, "r"],
         [0x1B, "e"],
         [0x3F, "?"],
-        [0x5C, "\\"],
-        [0x09, "t"],
-        [0x0A, "n"],
-        [0x0D, "r"],
-        [0x22, "\""],
-        [0x27, "'"],
 
     ]);
 
     public override getTargetCharValueEscape(): Map<char, string> {
-        return CSharpTarget.targetCharValueEscape;
+        return new Map([...Target.defaultCharValueEscape, ...CSharpTarget.targetCharValueEscape]);
     }
 
     public override isATNSerializedAsInts(): boolean {

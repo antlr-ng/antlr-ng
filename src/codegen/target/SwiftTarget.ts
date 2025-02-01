@@ -9,15 +9,9 @@ import { format } from "../../support/helpers.js";
 import { Target, type char } from "../Target.js";
 
 export class SwiftTarget extends Target {
-    // https://docs.swift.org/swift-book/LanguageGuide/StringsAndCharacters.html
+    // https://docs.swift.org/swift-book/documentation/the-swift-programming-language/stringsandcharacters/
     protected static readonly targetCharValueEscape = new Map<number, string>([
         [0, "0"],
-        [0x5C, "\\"],
-        [0x09, "t"],
-        [0x0A, "n"],
-        [0x0D, "r"],
-        [0x22, "\""],
-        [0x27, "'"],
     ]);
 
     protected static readonly reservedWords = new Set([
@@ -36,7 +30,7 @@ export class SwiftTarget extends Target {
     ]);
 
     public override getTargetCharValueEscape(): Map<char, string> {
-        return SwiftTarget.targetCharValueEscape;
+        return new Map([...Target.defaultCharValueEscape, ...SwiftTarget.targetCharValueEscape]);
     }
 
     protected override get reservedWords(): Set<string> {

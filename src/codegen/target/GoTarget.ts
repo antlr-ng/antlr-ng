@@ -47,7 +47,7 @@ export class GoTarget extends Target {
         "start", "stop", "exception",
     ]);
 
-    private static readonly DO_GOFMT: boolean = (() => {
+    private static readonly doGoFormat: boolean = (() => {
         let result = false;
 
         let value = process.env.ANTLR_GO_DISABLE_GOFMT;
@@ -91,50 +91,44 @@ export class GoTarget extends Target {
     }
 
     /**
-     * A given grammar T, return the listener name such as
-     *  TListener.java, if we're using the Java target.
+     * A given grammar T, return the listener name such as TListener.java, if we're using the Java target.
      */
     public override getListenerFileName(header: boolean): string {
         const gen = this.getCodeGenerator();
         const g = gen.g!;
 
-        /* assert g.name != null; */
         return g.name.toLowerCase() + "_listener.go";
     }
 
     /**
-     * A given grammar T, return the visitor name such as
-     *  TVisitor.java, if we're using the Java target.
+     * A given grammar T, return the visitor name such as TVisitor.java, if we're using the Java target.
      */
     public override getVisitorFileName(header: boolean): string {
         const gen = this.getCodeGenerator();
         const g = gen.g!;
 
-        /* assert g.name != null; */
         return g.name.toLowerCase() + "_visitor.go";
     }
 
     /**
-     * A given grammar T, return a blank listener implementation
-     *  such as TBaseListener.java, if we're using the Java target.
+     * A given grammar T, return a blank listener implementation such as TBaseListener.java, if we're using
+     * the Java target.
      */
     public override getBaseListenerFileName(header: boolean): string {
         const gen = this.getCodeGenerator();
         const g = gen.g!;
 
-        /* assert g.name != null; */
         return g.name.toLowerCase() + "_base_listener.go";
     }
 
     /**
-     * A given grammar T, return a blank listener implementation
-     *  such as TBaseListener.java, if we're using the Java target.
+     * A given grammar T, return a blank listener implementation such as TBaseListener.java, if we're using
+     * the Java target.
      */
     public override getBaseVisitorFileName(header: boolean): string {
         const gen = this.getCodeGenerator();
         const g = gen.g!;
 
-        /* assert g.name != null; */
         return g.name.toLowerCase() + "_base_visitor.go";
     }
 
@@ -144,7 +138,9 @@ export class GoTarget extends Target {
 
     public override genFile(g: Grammar | undefined, outputFileST: ST, fileName: string): void {
         super.genFile(g, outputFileST, fileName);
-        if (g && GoTarget.DO_GOFMT && !fileName.startsWith(".") /* criterion taken from gofmt */
+
+        // Criterion taken from gofmt.
+        if (g && GoTarget.doGoFormat && !fileName.startsWith(".")
             && fileName.endsWith(".go")) {
             this.gofmt(path.join(this.getCodeGenerator().tool.getOutputDirectory(g.fileName), fileName));
         }

@@ -26,7 +26,7 @@ export class DartTarget extends Target {
     }
 
     public override getTargetCharValueEscape(): Map<char, string> {
-        return DartTarget.targetCharValueEscape;
+        return new Map([...Target.defaultCharValueEscape, ...DartTarget.targetCharValueEscape]);
     }
 
     public override getTargetStringLiteralFromANTLRStringLiteral(generator: CodeGenerator, literal: string,

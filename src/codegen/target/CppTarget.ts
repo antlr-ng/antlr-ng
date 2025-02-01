@@ -12,16 +12,9 @@ export class CppTarget extends Target {
         // https://stackoverflow.com/a/10220539/1046374
         [0x07, "a"],
         [0x08, "b"],
-        [0x09, "t"],
-        [0x0A, "n"],
         [0x0B, "v"],
-        [0x0C, "f"],
-        [0x0D, "r"],
         [0x1B, "e"],
         [0x3F, "?"],
-        [0x5C, "\\"],
-        [0x22, "\""],
-        [0x27, "'"],
     ]);
 
     protected static readonly reservedWords = new Set([
@@ -45,7 +38,7 @@ export class CppTarget extends Target {
     ]);
 
     public override getTargetCharValueEscape(): Map<number, string> {
-        return CppTarget.targetCharValueEscape;
+        return new Map([...Target.defaultCharValueEscape, ...CppTarget.targetCharValueEscape]);
     }
 
     public override needsHeader(): boolean {
@@ -60,7 +53,6 @@ export class CppTarget extends Target {
     }
 
     public override getListenerFileName(header: boolean): string {
-        /* assert gen.g.name != null; */
         const extST = this.getTemplates().getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
         const listenerName = this.gen.g!.name + "Listener";
 
@@ -68,7 +60,6 @@ export class CppTarget extends Target {
     }
 
     public override getVisitorFileName(header: boolean): string {
-        /* assert gen.g.name != null; */
         const extST = this.getTemplates().getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
         const listenerName = this.gen.g!.name + "Visitor";
 
@@ -76,7 +67,6 @@ export class CppTarget extends Target {
     }
 
     public override getBaseListenerFileName(header: boolean): string {
-        /* assert gen.g.name != null; */
         const extST = this.getTemplates().getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
         const listenerName = this.gen.g!.name + "BaseListener";
 
@@ -84,7 +74,6 @@ export class CppTarget extends Target {
     }
 
     public override getBaseVisitorFileName(header: boolean): string {
-        /* assert gen.g.name != null; */
         const extST = this.getTemplates().getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
         const listenerName = this.gen.g!.name + "BaseVisitor";
 
@@ -97,8 +86,8 @@ export class CppTarget extends Target {
 
     protected override shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(codePoint: number): boolean {
         if (codePoint === 0x3F) { // ?
-            // in addition to the default escaped code points, also escape ? to prevent trigraphs
-            // ideally, we would escape ? with \?, but escaping as unicode \u003F works as well
+            // In addition to the default escaped code points, also escape ? to prevent trigraphs.
+            // Ideally, we would escape ? with \?, but escaping as unicode \u003F works as well.
             return true;
         } else {
             return super.shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(codePoint);

@@ -14,19 +14,16 @@ export class JavaScriptTarget extends Target {
         "super", "switch", "this", "throw", "try", "typeof", "var", "void",
         "while", "with", "yield",
 
-        //future reserved
+        // future reserved
         "enum", "await", "implements", "package", "protected", "static",
         "interface", "private", "public",
 
-        //future reserved in older standards
+        // future reserved in older standards
         "abstract", "boolean", "byte", "char", "double", "final", "float",
         "goto", "int", "long", "native", "short", "synchronized", "transient",
         "volatile",
 
-        //literals
         "null", "true", "false",
-
-        // misc
         "rule", "parserRule",
     ]);
 

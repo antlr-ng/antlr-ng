@@ -35,21 +35,13 @@ export class PHPTarget extends Target {
         "__halt_compiler", "__CLASS__", "__DIR__", "__FILE__", "__FUNCTION__",
         "__LINE__", "__METHOD__", "__NAMESPACE__", "__TRAIT__",
 
-        // misc
         "rule", "parserRule",
     ]);
 
     protected static readonly targetCharValueEscape = new Map<char, string>([
         // https://www.php.net/manual/en/language.types.string.php
-        [0x09, "t"],
-        [0x0A, "n"],
         [0x0B, "v"],
-        [0x0C, "f"],
-        [0x0D, "r"],
         [0x1B, "e"],
-        [0x5C, "\\"],
-        [0x22, "\""],
-        [0x27, "'"],
         [0x24, "$"],
     ]);
 
@@ -58,7 +50,7 @@ export class PHPTarget extends Target {
     }
 
     public override getTargetCharValueEscape(): Map<char, string> {
-        return PHPTarget.targetCharValueEscape;
+        return new Map([...Target.defaultCharValueEscape, ...PHPTarget.targetCharValueEscape]);
     }
 
     public override supportsOverloadedMethods(): boolean {
