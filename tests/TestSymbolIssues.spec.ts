@@ -29,10 +29,11 @@ describe("TestSymbolIssues", () => {
         "\n" +
         "ID : 'a'..'z'+ ID ;",
         // YIELDS
+        "error(" + ErrorType.ACTION_REDEFINITION.code + "): A.g4:5:1: redefinition of members action\n" +
+        "error(" + ErrorType.ACTION_REDEFINITION.code + "): A.g4:7:1: redefinition of header action\n" +
         "warning(" + ErrorType.ILLEGAL_OPTION.code + "): A.g4:2:10: unsupported option opt\n" +
         "warning(" + ErrorType.ILLEGAL_OPTION.code + "): A.g4:2:21: unsupported option k\n" +
         "error(" + ErrorType.ACTION_REDEFINITION.code + "): A.g4:5:1: redefinition of members action\n" +
-        "error(" + ErrorType.ACTION_REDEFINITION.code + "): A.g4:7:1: redefinition of header action\n" +
         "warning(" + ErrorType.IMPLICIT_TOKEN_DEFINITION.code +
         "): A.g4:9:27: implicit definition of token X in parser\n" +
         "warning(" + ErrorType.IMPLICIT_TOKEN_DEFINITION.code +
