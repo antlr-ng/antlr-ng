@@ -26,7 +26,7 @@ export class CodeGenPipeline {
         const errorCount = this.g.tool.errorManager.errors;
 
         if (this.g.isLexer()) {
-            if (this.gen.getTarget().needsHeader()) {
+            if (this.gen.target.needsHeader()) {
                 const lexer = this.gen.generateLexer(toolParameters, true); // Header file if needed.
                 if (this.g.tool.errorManager.errors === errorCount) {
                     this.writeRecognizer(lexer, this.gen, true);
@@ -37,7 +37,7 @@ export class CodeGenPipeline {
                 this.writeRecognizer(lexer, this.gen, false);
             }
         } else {
-            if (this.gen.getTarget().needsHeader()) {
+            if (this.gen.target.needsHeader()) {
                 const parser = this.gen.generateParser(toolParameters, true);
                 if (this.g.tool.errorManager.errors === errorCount) {
                     this.writeRecognizer(parser, this.gen, true);
@@ -50,7 +50,7 @@ export class CodeGenPipeline {
             }
 
             if (this.generateListener) {
-                if (this.gen.getTarget().needsHeader()) {
+                if (this.gen.target.needsHeader()) {
                     const listener = this.gen.generateListener(true);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeListener(listener, true);
@@ -61,13 +61,13 @@ export class CodeGenPipeline {
                     this.gen.writeListener(listener, false);
                 }
 
-                if (this.gen.getTarget().needsHeader()) {
+                if (this.gen.target.needsHeader()) {
                     const baseListener = this.gen.generateBaseListener(true);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeBaseListener(baseListener, true);
                     }
                 }
-                if (this.gen.getTarget().wantsBaseListener()) {
+                if (this.gen.target.wantsBaseListener()) {
                     const baseListener = this.gen.generateBaseListener(false);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeBaseListener(baseListener, false);
@@ -76,7 +76,7 @@ export class CodeGenPipeline {
             }
 
             if (this.generateVisitor) {
-                if (this.gen.getTarget().needsHeader()) {
+                if (this.gen.target.needsHeader()) {
                     const visitor = this.gen.generateVisitor(true);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeVisitor(visitor, true);
@@ -87,13 +87,13 @@ export class CodeGenPipeline {
                     this.gen.writeVisitor(visitor, false);
                 }
 
-                if (this.gen.getTarget().needsHeader()) {
+                if (this.gen.target.needsHeader()) {
                     const baseVisitor = this.gen.generateBaseVisitor(true);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeBaseVisitor(baseVisitor, true);
                     }
                 }
-                if (this.gen.getTarget().wantsBaseVisitor()) {
+                if (this.gen.target.wantsBaseVisitor()) {
                     const baseVisitor = this.gen.generateBaseVisitor(false);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeBaseVisitor(baseVisitor, false);

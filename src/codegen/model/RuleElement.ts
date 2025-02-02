@@ -4,14 +4,14 @@
  */
 
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { SrcOp } from "./SrcOp.js";
 
 export class RuleElement extends SrcOp {
     /** Associated ATN state for this rule elements (action, token, rule ref, ...) */
     public stateNumber = 0;
 
-    public constructor(factory: OutputModelFactory, ast?: GrammarAST) {
+    public constructor(factory: IOutputModelFactory, ast?: GrammarAST) {
         super(factory, ast);
 
         if (ast?.atnState) {

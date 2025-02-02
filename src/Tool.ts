@@ -208,7 +208,7 @@ export class Tool implements ITool {
             return;
         }
 
-        const codeGenerator = new CodeGenerator(this, g, g.getLanguage() ?? "Java");
+        const codeGenerator = new CodeGenerator(g);
 
         // BUILD ATN FROM AST
         let factory: IATNFactory;
@@ -510,7 +510,7 @@ export class Tool implements ITool {
             const parentDir = dirname(g.fileName); // Check the parent dir of input directory.
             candidate = join(parentDir, fileName);
             if (!existsSync(candidate)) { // try in lib dir
-                const libDirectory = this.toolParameters.libDirectory;
+                const libDirectory = this.toolParameters.lib;
                 if (libDirectory) {
                     candidate = join(libDirectory, fileName);
                     if (!existsSync(candidate)) {

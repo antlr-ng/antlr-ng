@@ -6,12 +6,12 @@
 import { BlockStartState } from "antlr4ng";
 
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Choice } from "./Choice.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 
 export class AltBlock extends Choice {
-    public constructor(factory: OutputModelFactory,
+    public constructor(factory: IOutputModelFactory,
         blkOrEbnfRootAST: GrammarAST,
         alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST, alts);

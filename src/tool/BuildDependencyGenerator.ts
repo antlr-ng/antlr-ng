@@ -79,7 +79,7 @@ export class BuildDependencyGenerator {
         const files = new Array<URL>();
 
         // add generated recognizer; e.g., TParser.java
-        if (this.generator.getTarget().needsHeader()) {
+        if (this.generator.target.needsHeader()) {
             files.push(this.getOutputFile(this.generator.getRecognizerFileName(true)));
         }
 
@@ -92,9 +92,9 @@ export class BuildDependencyGenerator {
 
         // are we generating a .h file?
         let headerExtST = null;
-        const extST = this.generator.getTemplates().getInstanceOf("codeFileExtension");
-        if (this.generator.getTemplates().isDefined("headerFile")) {
-            headerExtST = this.generator.getTemplates().getInstanceOf("headerFileExtension");
+        const extST = this.generator.templates.getInstanceOf("codeFileExtension");
+        if (this.generator.templates.isDefined("headerFile")) {
+            headerExtST = this.generator.templates.getInstanceOf("headerFileExtension");
             const suffix = Grammar.getGrammarTypeToFileNameSuffix(this.g.type);
             const fileName = `${this.g.name}${suffix}${headerExtST?.render()}`;
             files.push(this.getOutputFile(fileName));
@@ -118,13 +118,13 @@ export class BuildDependencyGenerator {
 
         if (this.generateListeners ?? true) {
             // add generated listener; e.g., TListener.java
-            if (this.generator.getTarget().needsHeader()) {
+            if (this.generator.target.needsHeader()) {
                 files.push(this.getOutputFile(this.generator.getListenerFileName(true)));
             }
             files.push(this.getOutputFile(this.generator.getListenerFileName(false)));
 
             // add generated base listener; e.g., TBaseListener.java
-            if (this.generator.getTarget().needsHeader()) {
+            if (this.generator.target.needsHeader()) {
                 files.push(this.getOutputFile(this.generator.getBaseListenerFileName(true)));
             }
             files.push(this.getOutputFile(this.generator.getBaseListenerFileName(false)));
@@ -132,13 +132,13 @@ export class BuildDependencyGenerator {
 
         if (this.generateVisitors) {
             // add generated visitor; e.g., TVisitor.java
-            if (this.generator.getTarget().needsHeader()) {
+            if (this.generator.target.needsHeader()) {
                 files.push(this.getOutputFile(this.generator.getVisitorFileName(true)));
             }
             files.push(this.getOutputFile(this.generator.getVisitorFileName(false)));
 
             // add generated base visitor; e.g., TBaseVisitor.java
-            if (this.generator.getTarget().needsHeader()) {
+            if (this.generator.target.needsHeader()) {
                 files.push(this.getOutputFile(this.generator.getBaseVisitorFileName(true)));
             }
             files.push(this.getOutputFile(this.generator.getBaseVisitorFileName(false)));

@@ -4,13 +4,13 @@
  */
 
 import { Decl } from "./Decl.js";
-import { OutputModelFactory } from "../../OutputModelFactory.js";
+import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 
 export class RuleContextDecl extends Decl {
     public ctxName: string;
     public isImplicit: boolean;
 
-    public constructor(factory: OutputModelFactory, name: string, ctxName: string) {
+    public constructor(factory: IOutputModelFactory, name: string, ctxName: string) {
         super(factory, name);
         this.ctxName = ctxName;
     }

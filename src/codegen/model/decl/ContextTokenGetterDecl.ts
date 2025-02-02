@@ -4,13 +4,13 @@
  */
 
 import { ContextGetterDecl } from "./ContextGetterDecl.js";
-import { OutputModelFactory } from "../../OutputModelFactory.js";
+import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 
 /** {@code public Token X() { }} */
 export class ContextTokenGetterDecl extends ContextGetterDecl {
     public optional: boolean;
 
-    public constructor(factory: OutputModelFactory, name: string, optional: boolean, signature?: boolean) {
+    public constructor(factory: IOutputModelFactory, name: string, optional: boolean, signature?: boolean) {
         super(factory, name, signature);
         this.optional = optional;
     }

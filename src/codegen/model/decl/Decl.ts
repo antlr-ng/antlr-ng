@@ -6,7 +6,7 @@
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
 import { MurmurHash } from "../../../support/MurmurHash.js";
-import { OutputModelFactory } from "../../OutputModelFactory.js";
+import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 import { SrcOp } from "../SrcOp.js";
 import { StructDecl } from "./StructDecl.js";
 
@@ -21,10 +21,10 @@ export class Decl extends SrcOp {
 
     public ctx: StructDecl; // which context contains us? set by addDecl
 
-    public constructor(factory: OutputModelFactory, name: string, decl?: string) {
+    public constructor(factory: IOutputModelFactory, name: string, decl?: string) {
         super(factory);
         this.name = name;
-        this.escapedName = factory.getGenerator()!.getTarget().escapeIfNeeded(name);
+        this.escapedName = factory.getGenerator()!.target.escapeIfNeeded(name);
         this.decl = decl;
     }
 

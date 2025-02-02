@@ -5,7 +5,7 @@
 
 import { Grammar } from "../../tool/Grammar.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { OutputModelObject } from "./OutputModelObject.js";
 
@@ -21,12 +21,12 @@ export abstract class OutputFile extends OutputModelObject {
      */
     public readonly ANTLRVersion = "4.13.2";
 
-    public constructor(factory: OutputModelFactory, fileName: string) {
+    public constructor(factory: IOutputModelFactory, fileName: string) {
         super(factory);
 
         this.fileName = fileName;
 
-        const g = factory.getGrammar()!;
+        const g = factory.grammar;
         this.grammarFileName = g.fileName.replace("\\", "/");
         this.TokenLabelType = g.getOptionString("TokenLabelType");
         this.inputSymbolType = this.TokenLabelType;

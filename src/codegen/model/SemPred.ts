@@ -6,7 +6,7 @@
 import { ModelElement } from "../../misc/ModelElement.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { ActionTranslator } from "../ActionTranslator.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { ActionChunk } from "./chunk/ActionChunk.js";
 
@@ -31,7 +31,7 @@ export class SemPred extends Action {
     @ModelElement
     public failChunks: ActionChunk[];
 
-    public constructor(factory: OutputModelFactory, ast: ActionAST) {
+    public constructor(factory: IOutputModelFactory, ast: ActionAST) {
         super(factory, ast);
         const failNode = ast.getOptionAST("fail");
         const gen = factory.getGenerator()!;
@@ -42,7 +42,7 @@ export class SemPred extends Action {
             this.predicate = this.predicate.substring(1, this.predicate.length - 2);
         }
 
-        this.predicate = gen.getTarget().getTargetStringLiteralFromString(this.predicate);
+        this.predicate = gen.target.getTargetStringLiteralFromString(this.predicate);
         if (!failNode) {
             return;
         }
@@ -52,7 +52,7 @@ export class SemPred extends Action {
             const rf = factory.getCurrentRuleFunction() ?? null;
             this.failChunks = ActionTranslator.translateAction(factory, rf, failActionNode.token!, failActionNode);
         } else {
-            this.msg = gen.getTarget().getTargetStringLiteralFromANTLRStringLiteral(gen, failNode.getText(), true,
+            this.msg = gen.target.getTargetStringLiteralFromANTLRStringLiteral(gen, failNode.getText(), true,
                 true);
         }
     }

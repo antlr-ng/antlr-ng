@@ -6,13 +6,13 @@
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
 import { MurmurHash } from "../../../support/MurmurHash.js";
-import { OutputModelFactory } from "../../OutputModelFactory.js";
+import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 import { Decl } from "./Decl.js";
 
 export abstract class ContextGetterDecl extends Decl { // assume no args
     public readonly signature: boolean;
 
-    public constructor(factory: OutputModelFactory, name: string, signature?: boolean) {
+    public constructor(factory: IOutputModelFactory, name: string, signature?: boolean) {
         super(factory, name);
         this.signature = signature ?? false;
     }

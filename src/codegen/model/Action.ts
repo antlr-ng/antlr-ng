@@ -11,7 +11,7 @@ import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 import { ModelElement } from "../../misc/ModelElement.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { ActionTranslator } from "../ActionTranslator.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { ActionChunk } from "./chunk/ActionChunk.js";
 import { ActionTemplate } from "./chunk/ActionTemplate.js";
 import { ActionText } from "./chunk/ActionText.js";
@@ -23,13 +23,13 @@ export class Action extends RuleElement {
     @ModelElement
     public chunks: ActionChunk[] = [];
 
-    public constructor(factory: OutputModelFactory, ast?: ActionAST);
-    public constructor(factory: OutputModelFactory, ctx: StructDecl, action: string | IST);
+    public constructor(factory: IOutputModelFactory, ast?: ActionAST);
+    public constructor(factory: IOutputModelFactory, ctx: StructDecl, action: string | IST);
     public constructor(...args: unknown[]) {
         if (args.length === 1) {
-            super(args[0] as OutputModelFactory);
+            super(args[0] as IOutputModelFactory);
         } else if (args.length === 2) {
-            const [factory, ast] = args as [OutputModelFactory, ActionAST | undefined];
+            const [factory, ast] = args as [IOutputModelFactory, ActionAST | undefined];
 
             super(factory, ast);
             const rf = factory.getCurrentRuleFunction() ?? null;
@@ -37,7 +37,7 @@ export class Action extends RuleElement {
                 this.chunks = ActionTranslator.translateAction(factory, rf, ast.token!, ast);
             }
         } else {
-            const [factory, ctx, action] = args as [OutputModelFactory, StructDecl, string | IST];
+            const [factory, ctx, action] = args as [IOutputModelFactory, StructDecl, string | IST];
 
             super(factory);
 

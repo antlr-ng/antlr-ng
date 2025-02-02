@@ -7,7 +7,7 @@ import { IntervalSet } from "antlr4ng";
 
 import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
 import { Choice } from "./Choice.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
@@ -26,7 +26,7 @@ export abstract class LL1Loop extends Choice {
     @ModelElement
     public iteration: SrcOp[] = [];
 
-    public constructor(factory: OutputModelFactory,
+    public constructor(factory: IOutputModelFactory,
         blkAST: GrammarAST,
         alts: CodeBlockForAlt[]) {
         super(factory, blkAST, alts);

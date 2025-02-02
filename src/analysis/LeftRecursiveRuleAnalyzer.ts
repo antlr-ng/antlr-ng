@@ -67,7 +67,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         this.tokenStream = ruleAST.g.tokenStream;
 
         // use codegen to get correct language templates; that's it though
-        this.codegenTemplates = new CodeGenerator(tool, undefined, language).getTemplates();
+        this.codegenTemplates = new CodeGenerator(language).templates;
     }
 
     /**

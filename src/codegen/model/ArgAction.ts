@@ -4,14 +4,14 @@
  */
 
 import { ActionAST } from "../../tool/ast/ActionAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 
 export class ArgAction extends Action {
     /** Context type of invoked rule */
     public ctxType: string;
 
-    public constructor(factory: OutputModelFactory, ast: ActionAST, ctxType: string) {
+    public constructor(factory: IOutputModelFactory, ast: ActionAST, ctxType: string) {
         super(factory, ast);
         this.ctxType = ctxType;
     }

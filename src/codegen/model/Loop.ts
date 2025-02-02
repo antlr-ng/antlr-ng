@@ -6,7 +6,7 @@
 import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { QuantifierAST } from "../../tool/ast/QuantifierAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Choice } from "./Choice.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { SrcOp } from "./SrcOp.js";
@@ -19,7 +19,7 @@ export class Loop extends Choice {
     @ModelElement
     public iteration: SrcOp[] = [];
 
-    public constructor(factory: OutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[]) {
+    public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST, alts);
 
         const nongreedy = ("isGreedy" in blkOrEbnfRootAST) && !(blkOrEbnfRootAST as QuantifierAST).isGreedy();

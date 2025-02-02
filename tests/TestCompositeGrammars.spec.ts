@@ -71,7 +71,7 @@ describe("TestCompositeGrammars", () => {
                 "WS : (' '|'\\n') -> skip ;\n";
             writeFileSync(join(tempDir, "M.g4"), master);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", subdir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", subdir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });
@@ -88,7 +88,7 @@ describe("TestCompositeGrammars", () => {
                 "s : 'a' ;\n";
             writeFileSync(join(tempDir, "M.g4"), master);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });
@@ -110,7 +110,7 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c';\n";
             writeFileSync(join(tempDir, "S.g4"), slave);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });
@@ -134,7 +134,7 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> popMode;\n";
             writeFileSync(join(tempDir, "S.g4"), slave);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });
@@ -157,7 +157,7 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c';\n";
             writeFileSync(join(tempDir, "S.g4"), slave);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });
@@ -181,7 +181,7 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> channel(CH_C);\n";
             writeFileSync(join(tempDir, "S.g4"), slave);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });
@@ -206,7 +206,7 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> channel(CH_C);\n";
             writeFileSync(join(tempDir, "S.g4"), slave);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });
@@ -231,7 +231,7 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> popMode;\n";
             writeFileSync(join(tempDir, "S.g4"), slave);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });
@@ -256,7 +256,7 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> popMode;\n";
             writeFileSync(join(tempDir, "S.g4"), slave);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });
@@ -281,7 +281,7 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> popMode;\n";
             writeFileSync(join(tempDir, "S.g4"), slave);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             expect(queue.all).toHaveLength(1);
 
             const msg = queue.all[0];
@@ -364,7 +364,7 @@ describe("TestCompositeGrammars", () => {
                 "import S;\n";
             writeFileSync(join(tempDir, "M.g4"), master);
 
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-lib", tempDir);
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             const msg = queue.errors[0];
 
             expect(msg.errorType).toBe(ErrorType.UNDEFINED_RULE_REF);
@@ -423,7 +423,7 @@ describe("TestCompositeGrammars", () => {
             writeFileSync(join(tempDir, "M.g4"), master);
             const outdir = tempDir + "/out";
             mkdirSync(outdir);
-            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-o", outdir, "-lib",
+            const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-o", outdir, "--lib",
                 subdir);
             expect(queue.all).toHaveLength(0);
         } finally {
@@ -461,7 +461,7 @@ describe("TestCompositeGrammars", () => {
             let queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "MLexer.g4", false, "-o", outdir);
             expect(queue.all).toHaveLength(0);
 
-            queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "MParser.g4", false, "-o", outdir, "-lib", subdir);
+            queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "MParser.g4", false, "-o", outdir, "--lib", subdir);
             expect(queue.all).toHaveLength(0);
         } finally {
             rmSync(tempDir, { recursive: true });

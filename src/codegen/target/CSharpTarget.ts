@@ -4,7 +4,7 @@
  */
 
 import { format } from "../../support/helpers.js";
-import { Target, type char } from "../Target.js";
+import { Target, type CodePoint } from "../Target.js";
 
 export class CSharpTarget extends Target {
     protected static readonly reservedWords = new Set([
@@ -17,7 +17,7 @@ export class CSharpTarget extends Target {
         "unchecked", "unsafe", "ushort", "using", "virtual", "values", "void", "volatile", "while",
     ]);
 
-    protected static readonly targetCharValueEscape = new Map<char, string>([
+    protected static readonly targetCharValueEscape = new Map<CodePoint, string>([
         // https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/strings/#string-escape-sequences
         [0, "0"],
         [0x07, "a"],
@@ -28,7 +28,7 @@ export class CSharpTarget extends Target {
 
     ]);
 
-    public override getTargetCharValueEscape(): Map<char, string> {
+    public override getTargetCharValueEscape(): Map<CodePoint, string> {
         return new Map([...Target.defaultCharValueEscape, ...CSharpTarget.targetCharValueEscape]);
     }
 

@@ -236,8 +236,8 @@ export class ToolTestUtils {
             options.push(workdir);
         }
 
-        if (!options.includes("-lib")) {
-            options.push("-lib");
+        if (!options.includes("--lib")) {
+            options.push("--lib");
             options.push(workdir);
         }
 

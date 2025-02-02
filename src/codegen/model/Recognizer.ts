@@ -6,7 +6,7 @@
 import { ModelElement } from "../../misc/ModelElement.js";
 import { Rule } from "../../tool/Rule.js";
 import { CodeGenerator } from "../CodeGenerator.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { JavaTarget } from "../target/JavaTarget.js";
 import { ActionChunk } from "./chunk/ActionChunk.js";
 import { ActionText } from "./chunk/ActionText.js";
@@ -44,10 +44,10 @@ export abstract class Recognizer extends OutputModelObject {
     @ModelElement
     public sempredFuncs = new Map<Rule, RuleSempredFunction>();
 
-    public constructor(factory: OutputModelFactory) {
+    public constructor(factory: IOutputModelFactory) {
         super(factory);
 
-        const g = factory.getGrammar()!;
+        const g = factory.grammar;
         const gen = factory.getGenerator()!;
 
         let lastSlash = g.fileName.lastIndexOf("/");
@@ -63,13 +63,13 @@ export abstract class Recognizer extends OutputModelObject {
 
         for (const [key, ttype] of g.tokenNameToTypeMap) {
             if (ttype > 0) {
-                this.tokens.set(gen.getTarget().escapeIfNeeded(key), ttype);
+                this.tokens.set(gen.target.escapeIfNeeded(key), ttype);
             }
         }
 
         this.ruleNames = new Set(g.rules.keys());
         this.rules = Array.from(g.rules.values());
-        if (gen.getTarget() instanceof JavaTarget) {
+        if (gen.target instanceof JavaTarget) {
             this.atn = new SerializedJavaATN(factory, g.atn!);
         } else {
             this.atn = new SerializedATN(factory, g.atn);
@@ -110,11 +110,11 @@ export abstract class Recognizer extends OutputModelObject {
 
         if (tokenName.startsWith("'")) {
             const targetString =
-                gen.getTarget().getTargetStringLiteralFromANTLRStringLiteral(gen, tokenName, false, true);
+                gen.target.getTargetStringLiteralFromANTLRStringLiteral(gen, tokenName, false, true);
 
             return "\"'" + targetString + "'\"";
         } else {
-            return gen.getTarget().getTargetStringLiteralFromString(tokenName, true);
+            return gen.target.getTargetStringLiteralFromString(tokenName, true);
         }
     }
 }

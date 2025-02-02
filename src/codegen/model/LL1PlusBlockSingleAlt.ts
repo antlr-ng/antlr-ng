@@ -7,12 +7,12 @@ import { PlusBlockStartState } from "antlr4ng";
 
 import { BlockAST } from "../../tool/ast/BlockAST.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { LL1Loop } from "./LL1Loop.js";
 
 export class LL1PlusBlockSingleAlt extends LL1Loop {
-    public constructor(factory: OutputModelFactory, plusRoot: GrammarAST, alts: CodeBlockForAlt[]) {
+    public constructor(factory: IOutputModelFactory, plusRoot: GrammarAST, alts: CodeBlockForAlt[]) {
         super(factory, plusRoot, alts);
 
         const blkAST = plusRoot.getChild(0) as BlockAST;
@@ -23,7 +23,7 @@ export class LL1PlusBlockSingleAlt extends LL1Loop {
 
         const plus = blkAST.atnState as PlusBlockStartState;
         this.decision = plus.loopBackState.decision;
-        const altLookSets = factory.getGrammar()!.decisionLOOK[this.decision];
+        const altLookSets = factory.grammar.decisionLOOK[this.decision];
 
         const loopBackLook = altLookSets[0];
         this.loopExpr = this.addCodeForLoopLookaheadTempVar(loopBackLook);

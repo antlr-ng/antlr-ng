@@ -7,7 +7,7 @@ import { IntervalSet } from "antlr4ng";
 
 import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { RuleElement } from "./RuleElement.js";
@@ -36,7 +36,7 @@ export abstract class Choice extends RuleElement {
     @ModelElement
     public preamble: SrcOp[] = [];
 
-    public constructor(factory: OutputModelFactory,
+    public constructor(factory: IOutputModelFactory,
         blkOrEbnfRootAST: GrammarAST,
         alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST);
@@ -50,8 +50,8 @@ export abstract class Choice extends RuleElement {
 
     public getAltLookaheadAsStringLists(altLookSets: IntervalSet[]): ITokenInfo[][] {
         const altLook: ITokenInfo[][] = [];
-        const target = this.factory!.getGenerator()!.getTarget();
-        const grammar = this.factory!.getGrammar()!;
+        const target = this.factory!.getGenerator()!.target;
+        const grammar = this.factory!.grammar!;
 
         for (const s of altLookSets) {
             const list = s.toArray();
@@ -81,7 +81,7 @@ export abstract class Choice extends RuleElement {
         return expr ?? null;
     }
 
-    public getThrowNoViableAlt(factory: OutputModelFactory, blkAST: GrammarAST): ThrowNoViableAlt {
+    public getThrowNoViableAlt(factory: IOutputModelFactory, blkAST: GrammarAST): ThrowNoViableAlt {
         return new ThrowNoViableAlt(factory, blkAST);
     }
 }

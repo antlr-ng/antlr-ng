@@ -4,7 +4,7 @@
  */
 
 import { ModelElement } from "../../misc/ModelElement.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { ParserFile } from "./ParserFile.js";
 import { Recognizer } from "./Recognizer.js";
 import { RuleFunction } from "./RuleFunction.js";
@@ -15,7 +15,7 @@ export class Parser extends Recognizer {
     @ModelElement
     public funcs = new Array<RuleFunction>();
 
-    public constructor(factory: OutputModelFactory, file: ParserFile) {
+    public constructor(factory: IOutputModelFactory, file: ParserFile) {
         super(factory);
         this.file = file; // who contains us?
     }

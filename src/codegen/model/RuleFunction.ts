@@ -21,7 +21,7 @@ import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { AltAST } from "../../tool/ast/AltAST.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { PredAST } from "../../tool/ast/PredAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { ElementFrequenciesVisitor } from "./ElementFrequenciesVisitor.js";
 import { ExceptionClause } from "./ExceptionClause.js";
@@ -78,11 +78,11 @@ export class RuleFunction extends OutputModelObject {
     @ModelElement
     public postamble: SrcOp[] | undefined;
 
-    public constructor(factory: OutputModelFactory, r: Rule) {
+    public constructor(factory: IOutputModelFactory, r: Rule) {
         super(factory);
 
         this.name = r.name;
-        this.escapedName = factory.getGenerator()!.getTarget().escapeIfNeeded(r.name);
+        this.escapedName = factory.getGenerator()!.target.escapeIfNeeded(r.name);
         this.rule = r;
         this.modifiers = this.nodesToStrings(r.modifiers ?? []);
 
@@ -121,10 +121,10 @@ export class RuleFunction extends OutputModelObject {
             this.exceptions.push(new ExceptionClause(factory, catchArg, catchAction));
         }
 
-        this.startState = factory.getGrammar()!.atn!.ruleToStartState[r.index]!;
+        this.startState = factory.grammar.atn!.ruleToStartState[r.index]!;
     }
 
-    public addContextGetters(factory: OutputModelFactory, r: Rule): void {
+    public addContextGetters(factory: IOutputModelFactory, r: Rule): void {
         // Add ctx labels for elements in alts with no -> label.
         const altsNoLabels = r.getUnlabeledAltASTs();
         if (altsNoLabels !== null) {
@@ -161,7 +161,7 @@ export class RuleFunction extends OutputModelObject {
         }
     }
 
-    public fillNamedActions(factory: OutputModelFactory, r: Rule): void {
+    public fillNamedActions(factory: IOutputModelFactory, r: Rule): void {
         if (r.finallyAction) {
             this.finallyAction = new Action(factory, r.finallyAction);
         }
@@ -238,10 +238,10 @@ export class RuleFunction extends OutputModelObject {
     public getDeclForAltElement(t: GrammarAST, refLabelName: string, needList: boolean, optional: boolean): Decl[] {
         const decls = new Array<Decl>();
         if (t.getType() === ANTLRv4Lexer.RULE_REF) {
-            const ruleRef = this.factory!.getGrammar()!.getRule(t.getText())!;
-            const ctxName = this.factory!.getGenerator()!.getTarget().getRuleFunctionContextStructName(ruleRef);
+            const ruleRef = this.factory!.grammar.getRule(t.getText())!;
+            const ctxName = this.factory!.getGenerator()!.target.getRuleFunctionContextStructName(ruleRef);
             if (needList) {
-                if (this.factory!.getGenerator()!.getTarget().supportsOverloadedMethods()) {
+                if (this.factory!.getGenerator()!.target.supportsOverloadedMethods()) {
                     decls.push(new ContextRuleListGetterDecl(this.factory!, refLabelName, ctxName));
                 }
 
@@ -251,7 +251,7 @@ export class RuleFunction extends OutputModelObject {
             }
         } else {
             if (needList) {
-                if (this.factory!.getGenerator()!.getTarget().supportsOverloadedMethods()) {
+                if (this.factory!.getGenerator()!.target.supportsOverloadedMethods()) {
                     decls.push(new ContextTokenListGetterDecl(this.factory!, refLabelName));
                 }
 
@@ -290,7 +290,7 @@ export class RuleFunction extends OutputModelObject {
 
     /** Given list of X and r refs in alt, compute how many of each there are. */
     protected getElementFrequenciesForAlt(ast: AltAST): [FrequencySet<string>, FrequencySet<string>] {
-        const errorManager = this.factory!.getGrammar()!.tool.errorManager;
+        const errorManager = this.factory!.grammar.tool.errorManager;
 
         try {
             const visitor = new ElementFrequenciesVisitor(errorManager,

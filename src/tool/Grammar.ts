@@ -1022,7 +1022,7 @@ export class Grammar implements IGrammar, AttributeResolver {
         const vocab = this.getOptionString("tokenVocab");
         if (vocab) {
             const vParser = new TokenVocabParser(this, this.tool.getOutputDirectory(this.fileName),
-                this.tool.toolParameters.libDirectory);
+                this.tool.toolParameters.lib);
             const tokens = vParser.load();
             this.tool.logInfo({ component: "grammar", msg: `tokens=${String(tokens)}` });
 
@@ -1261,7 +1261,7 @@ export class Grammar implements IGrammar, AttributeResolver {
         return "combined";
     }
 
-    public getLanguage(): SupportedLanguage | undefined {
+    public getLanguage(): SupportedLanguage {
         const language = this.getOptionString("language") as SupportedLanguage | undefined;
         if (language && !targetLanguages.includes(language)) {
             this.tool.errorManager.toolError(ErrorType.CANNOT_CREATE_TARGET_GENERATOR, language);

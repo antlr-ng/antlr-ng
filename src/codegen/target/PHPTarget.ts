@@ -7,7 +7,7 @@
 
 import { format } from "../../support/helpers.js";
 import { CodeGenerator } from "../CodeGenerator.js";
-import { Target, type char } from "../Target.js";
+import { Target, type CodePoint } from "../Target.js";
 
 export class PHPTarget extends Target {
     protected static readonly reservedWords = new Set([
@@ -38,7 +38,7 @@ export class PHPTarget extends Target {
         "rule", "parserRule",
     ]);
 
-    protected static readonly targetCharValueEscape = new Map<char, string>([
+    protected static readonly targetCharValueEscape = new Map<CodePoint, string>([
         // https://www.php.net/manual/en/language.types.string.php
         [0x0B, "v"],
         [0x1B, "e"],
@@ -49,7 +49,7 @@ export class PHPTarget extends Target {
         super(gen);
     }
 
-    public override getTargetCharValueEscape(): Map<char, string> {
+    public override getTargetCharValueEscape(): Map<CodePoint, string> {
         return new Map([...Target.defaultCharValueEscape, ...PHPTarget.targetCharValueEscape]);
     }
 

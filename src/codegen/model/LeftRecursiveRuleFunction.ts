@@ -7,13 +7,13 @@ import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 
 import { LeftRecursiveRule } from "../../tool/LeftRecursiveRule.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { RuleFunction } from "./RuleFunction.js";
 import { RuleContextDecl } from "./decl/RuleContextDecl.js";
 import { RuleContextListDecl } from "./decl/RuleContextListDecl.js";
 
 export class LeftRecursiveRuleFunction extends RuleFunction {
-    public constructor(factory: OutputModelFactory, r: LeftRecursiveRule) {
+    public constructor(factory: IOutputModelFactory, r: LeftRecursiveRule) {
         super(factory, r);
 
         const gen = factory.getGenerator()!;
@@ -23,8 +23,8 @@ export class LeftRecursiveRuleFunction extends RuleFunction {
             const label = idAST.getText();
             const ruleRefAST = idAST.parent!.getChild(1) as GrammarAST;
             if (ruleRefAST.getType() === ANTLRv4Parser.RULE_REF) {
-                const targetRule = factory.getGrammar()!.getRule(ruleRefAST.getText())!;
-                const ctxName = gen.getTarget().getRuleFunctionContextStructName(targetRule);
+                const targetRule = factory.grammar!.getRule(ruleRefAST.getText())!;
+                const ctxName = gen.target.getRuleFunctionContextStructName(targetRule);
 
                 let d: RuleContextDecl;
                 if (idAST.parent!.getType() === ANTLRv4Parser.ASSIGN) {

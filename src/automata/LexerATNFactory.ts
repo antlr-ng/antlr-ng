@@ -54,7 +54,7 @@ export class LexerATNFactory extends ParserATNFactory {
 
         // Use code generation to get correct language templates for lexer commands.
         codeGenerator ??= new CodeGenerator(g);
-        this.codegenTemplates = codeGenerator.getTemplates();
+        this.codegenTemplates = codeGenerator.templates;
     }
 
     public override createATN(): ATN {

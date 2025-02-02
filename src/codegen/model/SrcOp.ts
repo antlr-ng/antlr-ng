@@ -8,7 +8,7 @@
 import { isCodeBlockForOuterMostAlt } from "../../support/helpers.js";
 import { type GrammarAST } from "../../tool/ast/GrammarAST.js";
 import type { ICodeBlockForOuterMostAlt } from "../../types.js";
-import { type OutputModelFactory } from "../OutputModelFactory.js";
+import { type IOutputModelFactory } from "../IOutputModelFactory.js";
 import { type CodeBlock } from "./decl/CodeBlock.js";
 import { OutputModelObject } from "./OutputModelObject.js";
 import { type RuleFunction } from "./RuleFunction.js";
@@ -26,7 +26,7 @@ export abstract class SrcOp extends OutputModelObject {
 
     private enclosingRuleFunction?: RuleFunction;
 
-    public constructor(factory: OutputModelFactory, ast?: GrammarAST) {
+    public constructor(factory: IOutputModelFactory, ast?: GrammarAST) {
         super(factory, ast);
 
         this.enclosingBlock = factory.getCurrentBlock()!;

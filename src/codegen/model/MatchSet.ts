@@ -7,7 +7,7 @@ import { SetTransition } from "antlr4ng";
 
 import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
 import { TokenTypeDecl } from "./decl/TokenTypeDecl.js";
 import { MatchToken } from "./MatchToken.js";
@@ -20,11 +20,11 @@ export class MatchSet extends MatchToken {
     @ModelElement
     public capture: CaptureNextTokenType;
 
-    public constructor(factory: OutputModelFactory, ast: GrammarAST) {
+    public constructor(factory: IOutputModelFactory, ast: GrammarAST) {
         super(factory, ast);
 
         const st = ast.atnState!.transitions[0] as SetTransition;
-        const wordSize = factory.getGenerator()!.getTarget().getInlineTestSetWordSize();
+        const wordSize = factory.getGenerator()!.target.getInlineTestSetWordSize();
 
         this.expr = new TestSetInline(factory, undefined, st.set, wordSize);
 

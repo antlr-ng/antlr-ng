@@ -41,21 +41,11 @@ export type SupportedLanguage = typeof targetLanguages[number];
 
 /**  General controller for code gen.  Can instantiate sub generator(s). */
 export class CodeGenerator {
-    public readonly g?: Grammar;
-
-    public readonly tool: Tool;
-
-    public readonly language: SupportedLanguage;
-
-    public lineWidth = 72;
-
-    private target: Target;
-
-    static readonly #vocabFilePattern =
+    private static readonly vocabFilePattern =
         "<tokens.keys:{t | <t>=<tokens.(t)>\n}>" +
         "<literals.keys:{t | <t>=<literals.(t)>\n}>";
 
-    static #languageMap = new Map<SupportedLanguage, new (generator: CodeGenerator) => Target>([
+    private static languageMap = new Map<SupportedLanguage, new (generator: CodeGenerator) => Target>([
         ["Cpp", CppTarget],
         ["CSharp", CSharpTarget],
         ["Dart", DartTarget],
@@ -68,28 +58,23 @@ export class CodeGenerator {
         ["TypeScript", TypeScriptTarget],
     ]);
 
-    public constructor(g: Grammar);
-    public constructor(tool: Tool, g: Grammar | undefined, language: SupportedLanguage);
-    public constructor(toolOrGrammar: Tool | Grammar, g?: Grammar, language?: SupportedLanguage) {
-        if (toolOrGrammar instanceof Grammar) {
-            this.g = toolOrGrammar;
-            this.tool = this.g.tool;
-            this.language = toolOrGrammar.getLanguage() ?? "Java";
-        } else {
-            this.g = g;
-            this.tool = toolOrGrammar;
-            this.language = language!;
-        }
+    public target: Target;
+    public readonly g?: Grammar;
+    public readonly language: SupportedLanguage;
 
-        this.target = new (CodeGenerator.#languageMap.get(this.language)!)(this);
+    private readonly tool?: Tool;
+    private readonly lineWidth = 72;
+
+    public constructor(grammarOrLanguage: Grammar | SupportedLanguage) {
+        this.g = grammarOrLanguage instanceof Grammar ? grammarOrLanguage : undefined;
+        this.tool = this.g?.tool;
+
+        this.language = (grammarOrLanguage instanceof Grammar) ? this.g!.getLanguage() : grammarOrLanguage;
+        this.target = new (CodeGenerator.languageMap.get(this.language)!)(this);
     }
 
-    public getTarget(): Target {
-        return this.target;
-    }
-
-    public getTemplates(): STGroup {
-        return this.target.getTemplates();
+    public get templates(): STGroup {
+        return this.target.templates;
     }
 
     public generateLexer(toolParameters: IToolParameters, header?: boolean): IST {
@@ -162,6 +147,10 @@ export class CodeGenerator {
     }
 
     public write(code: IST, fileName: string): void {
+        if (this.tool === undefined) {
+            return;
+        }
+
         try {
             fileName = this.tool.getOutputFile(this.g!, fileName);
             const w = new StringWriter();
@@ -218,7 +207,7 @@ export class CodeGenerator {
     }
 
     public getHeaderFileName(): string | undefined {
-        const extST = this.getTemplates().getInstanceOf("headerFileExtension");
+        const extST = this.templates.getInstanceOf("headerFileExtension");
         if (extST === null) {
             return undefined;
         }
@@ -237,7 +226,7 @@ export class CodeGenerator {
      *  This is independent of the target language and used by antlr internally.
      */
     protected getTokenVocabOutput(): ST {
-        const vocabFileST = new ST(CodeGenerator.#vocabFilePattern);
+        const vocabFileST = new ST(CodeGenerator.vocabFilePattern);
         const tokens = new Map<string, number>();
 
         // Make constants for the token names.
@@ -265,13 +254,17 @@ export class CodeGenerator {
     private createController(forceAtn?: boolean): OutputModelController {
         const factory = new ParserFactory(this, forceAtn);
         const controller = new OutputModelController(factory);
-        factory.setController(controller);
+        factory.controller = controller;
 
         return controller;
     }
 
     private walk(outputModel: OutputModelObject, header: boolean): IST {
-        const walker = new OutputModelWalker(this.tool, this.getTemplates());
+        if (this.tool === undefined) {
+            throw new Error("Tool is undefined.");
+        }
+
+        const walker = new OutputModelWalker(this.tool, this.templates);
 
         return walker.walk(outputModel, header);
     }

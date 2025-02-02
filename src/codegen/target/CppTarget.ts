@@ -46,35 +46,35 @@ export class CppTarget extends Target {
     }
 
     public override getRecognizerFileName(header: boolean): string {
-        const extST = this.getTemplates().getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
+        const extST = this.templates.getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
         const recognizerName = this.gen.g!.getRecognizerName();
 
         return recognizerName + extST.render();
     }
 
     public override getListenerFileName(header: boolean): string {
-        const extST = this.getTemplates().getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
+        const extST = this.templates.getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
         const listenerName = this.gen.g!.name + "Listener";
 
         return listenerName + extST.render();
     }
 
     public override getVisitorFileName(header: boolean): string {
-        const extST = this.getTemplates().getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
+        const extST = this.templates.getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
         const listenerName = this.gen.g!.name + "Visitor";
 
         return listenerName + extST.render();
     }
 
     public override getBaseListenerFileName(header: boolean): string {
-        const extST = this.getTemplates().getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
+        const extST = this.templates.getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
         const listenerName = this.gen.g!.name + "BaseListener";
 
         return listenerName + extST.render();
     }
 
     public override getBaseVisitorFileName(header: boolean): string {
-        const extST = this.getTemplates().getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
+        const extST = this.templates.getInstanceOf(header ? "headerFileExtension" : "codeFileExtension")!;
         const listenerName = this.gen.g!.name + "BaseVisitor";
 
         return listenerName + extST.render();

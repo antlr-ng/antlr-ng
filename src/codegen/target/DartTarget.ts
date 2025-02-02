@@ -5,10 +5,10 @@
 
 import { format } from "../../support/helpers.js";
 import { CodeGenerator } from "../CodeGenerator.js";
-import { Target, type char } from "../Target.js";
+import { Target, type CodePoint } from "../Target.js";
 
 export class DartTarget extends Target {
-    protected static readonly targetCharValueEscape = new Map<char, string>([
+    protected static readonly targetCharValueEscape = new Map<CodePoint, string>([
         [0x24, "$"],
     ]);
 
@@ -25,7 +25,7 @@ export class DartTarget extends Target {
         super(gen);
     }
 
-    public override getTargetCharValueEscape(): Map<char, string> {
+    public override getTargetCharValueEscape(): Map<CodePoint, string> {
         return new Map([...Target.defaultCharValueEscape, ...DartTarget.targetCharValueEscape]);
     }
 

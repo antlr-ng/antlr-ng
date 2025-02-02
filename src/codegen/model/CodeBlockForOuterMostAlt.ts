@@ -4,7 +4,7 @@
  */
 
 import type { IAlternative } from "../../types.js";
-import type { OutputModelFactory } from "../OutputModelFactory.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 
 /**
@@ -19,7 +19,7 @@ export class CodeBlockForOuterMostAlt extends CodeBlockForAlt {
     /** The alternative. */
     public alt: IAlternative;
 
-    public constructor(factory: OutputModelFactory, alt: IAlternative) {
+    public constructor(factory: IOutputModelFactory, alt: IAlternative) {
         super(factory);
         this.alt = alt;
         this.altLabel = alt.ast.altLabel?.getText() ?? undefined;

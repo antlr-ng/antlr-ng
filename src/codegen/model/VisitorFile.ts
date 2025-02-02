@@ -4,7 +4,7 @@
  */
 
 import { ModelElement } from "../../misc/ModelElement.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { OutputFile } from "./OutputFile.js";
 
@@ -30,10 +30,10 @@ export class VisitorFile extends OutputFile {
     @ModelElement
     public namedActions: Map<string, Action>;
 
-    public constructor(factory: OutputModelFactory, fileName: string, packageName?: string) {
+    public constructor(factory: IOutputModelFactory, fileName: string, packageName?: string) {
         super(factory, fileName);
 
-        const g = factory.getGrammar()!;
+        const g = factory.grammar;
         this.namedActions = this.buildNamedActions(g, (ast) => {
             return ast.getScope() === null;
         });

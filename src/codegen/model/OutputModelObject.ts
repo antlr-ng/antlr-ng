@@ -4,13 +4,13 @@
  */
 
 import type { IGrammarAST } from "../../types.js";
-import type { OutputModelFactory } from "../OutputModelFactory.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
 
 export abstract class OutputModelObject {
-    public factory?: OutputModelFactory;
+    public factory?: IOutputModelFactory;
     public ast?: IGrammarAST;
 
-    public constructor(factory?: OutputModelFactory, ast?: IGrammarAST) {
+    public constructor(factory?: IOutputModelFactory, ast?: IGrammarAST) {
         this.factory = factory;
         this.ast = ast;
     }

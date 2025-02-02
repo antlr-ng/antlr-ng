@@ -5,7 +5,7 @@
 
 import { MurmurHash } from "../../../support/MurmurHash.js";
 import { Rule } from "../../../tool/Rule.js";
-import { OutputModelFactory } from "../../OutputModelFactory.js";
+import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 import { DispatchMethod } from "../DispatchMethod.js";
 import { ListenerDispatchMethod } from "../ListenerDispatchMethod.js";
 import { VisitorDispatchMethod } from "../VisitorDispatchMethod.js";
@@ -15,9 +15,9 @@ import { StructDecl } from "./StructDecl.js";
 export class AltLabelStructDecl extends StructDecl {
     public altNum: number;
     public parentRule: string;
-    public constructor(factory: OutputModelFactory, r: Rule, altNum: number, label: string) {
+    public constructor(factory: IOutputModelFactory, r: Rule, altNum: number, label: string) {
         // Override name set in super to the label ctx.
-        super(factory, r, factory.getGenerator()!.getTarget().getAltLabelContextStructName(label));
+        super(factory, r, factory.getGenerator()!.target.getAltLabelContextStructName(label));
         this.altNum = altNum;
         this.parentRule = r.name;
         this.derivedFromName = label;
@@ -31,7 +31,7 @@ export class AltLabelStructDecl extends StructDecl {
         }
 
         if (this.generateVisitor) {
-            this.dispatchMethods.push(new VisitorDispatchMethod(this.factory!));
+            this.dispatchMethods.push(new VisitorDispatchMethod(this.factory));
         }
     }
 

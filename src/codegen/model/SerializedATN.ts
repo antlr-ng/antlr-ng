@@ -5,7 +5,7 @@
 
 import { ATN, ATNSerializer } from "antlr4ng";
 
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { OutputModelObject } from "./OutputModelObject.js";
 
 /**
@@ -15,7 +15,7 @@ import { OutputModelObject } from "./OutputModelObject.js";
 export class SerializedATN extends OutputModelObject {
     private serialized: number[];
 
-    public constructor(factory: OutputModelFactory, atn?: ATN) {
+    public constructor(factory: IOutputModelFactory, atn?: ATN) {
         super(factory);
 
         if (atn) {

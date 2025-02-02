@@ -6,7 +6,7 @@
 /* eslint-disable jsdoc/require-param */
 
 import { ModelElement } from "../../../misc/ModelElement.js";
-import { type OutputModelFactory } from "../../OutputModelFactory.js";
+import { type IOutputModelFactory } from "../../IOutputModelFactory.js";
 import { SrcOp } from "../SrcOp.js";
 import { type Decl } from "./Decl.js";
 
@@ -23,10 +23,10 @@ export class CodeBlock extends SrcOp {
     @ModelElement
     public ops: SrcOp[] = [];
 
-    public constructor(factory: OutputModelFactory);
-    public constructor(factory: OutputModelFactory, treeLevel: number, codeBlockLevel: number);
+    public constructor(factory: IOutputModelFactory);
+    public constructor(factory: IOutputModelFactory, treeLevel: number, codeBlockLevel: number);
     public constructor(...args: unknown[]) {
-        const factory = args[0] as OutputModelFactory;
+        const factory = args[0] as IOutputModelFactory;
         super(factory);
         if (args.length === 3) {
             this.treeLevel = args[1] as number;

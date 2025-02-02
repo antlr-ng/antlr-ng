@@ -6,18 +6,18 @@
 import { DecisionState } from "antlr4ng";
 
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { LL1Choice } from "./LL1Choice.js";
 
 /** `(A | B | C)` */
 export class LL1AltBlock extends LL1Choice {
-    public constructor(factory: OutputModelFactory, blkAST: GrammarAST, alts: CodeBlockForAlt[]) {
+    public constructor(factory: IOutputModelFactory, blkAST: GrammarAST, alts: CodeBlockForAlt[]) {
         super(factory, blkAST, alts);
         this.decision = (blkAST.atnState as DecisionState).decision;
 
         // Lookahead for each alt 1..n.
-        const altLookSets = factory.getGrammar()!.decisionLOOK[this.decision];
+        const altLookSets = factory.grammar.decisionLOOK[this.decision];
         this.altLook = this.getAltLookaheadAsStringLists(altLookSets);
 
         // Combine alt sets.

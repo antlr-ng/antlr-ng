@@ -193,7 +193,7 @@ export class SourceGenTriggers extends TreeParser {
         // Set alt if outer ALT only (the only ones with alt field set to Alternative object).
         const altAST = start as AltAST;
         if (outerMost) {
-            this.controller!.setCurrentOuterMostAlt(altAST.alt);
+            this.controller!.currentOuterMostAlt = altAST.alt;
         }
 
         try {
@@ -213,13 +213,12 @@ export class SourceGenTriggers extends TreeParser {
                 this.match(this.input, ANTLRv4Lexer.EPSILON);
                 this.match(this.input, Constants.UP);
 
-                result.altCodeBlock = this.controller!.epsilon(this.controller!.getCurrentOuterMostAlt(), outerMost);
+                result.altCodeBlock = this.controller!.epsilon(this.controller!.currentOuterMostAlt, outerMost);
             } else {
                 const elems = new Array<SrcOp>();
-                result.altCodeBlock = this.controller!.alternative(this.controller!.getCurrentOuterMostAlt(),
-                    outerMost);
+                result.altCodeBlock = this.controller!.alternative(this.controller!.currentOuterMostAlt, outerMost);
                 result.altCodeBlock.ops = result.ops = elems;
-                this.controller?.setCurrentBlock(result.altCodeBlock);
+                this.controller!.currentBlock = result.altCodeBlock;
 
                 this.match(this.input, ANTLRv4Lexer.ALT);
                 this.match(this.input, Constants.DOWN);
@@ -572,7 +571,7 @@ export class SourceGenTriggers extends TreeParser {
 
                     const alts: CodeBlockForAlt[] = [];
                     const blk = b[0];
-                    const alt = new CodeBlockForAlt(this.controller!.delegate);
+                    const alt = new CodeBlockForAlt(this.controller!.factory);
 
                     alt.addOp(blk);
                     alts.push(alt);

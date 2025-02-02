@@ -5,7 +5,7 @@
 
 import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Choice } from "./Choice.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import type { ITokenInfo } from "./ITokenInfo.js";
@@ -18,7 +18,7 @@ export abstract class LL1Choice extends Choice {
     @ModelElement
     public error: ThrowNoViableAlt;
 
-    public constructor(factory: OutputModelFactory, blkAST: GrammarAST,
+    public constructor(factory: IOutputModelFactory, blkAST: GrammarAST,
         alts: CodeBlockForAlt[]) {
         super(factory, blkAST, alts);
     }

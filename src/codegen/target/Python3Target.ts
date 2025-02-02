@@ -7,7 +7,7 @@
 // cspell: ignore setattr repr staticmethod unichr
 
 import { CodeGenerator } from "../CodeGenerator.js";
-import { Target, type char } from "../Target.js";
+import { Target, type CodePoint } from "../Target.js";
 
 export class Python3Target extends Target {
     protected static readonly reservedWords = new Set([
@@ -40,7 +40,7 @@ export class Python3Target extends Target {
         "rule", "parserRule",
     ]);
 
-    protected static readonly targetCharValueEscape = new Map<char, string>([
+    protected static readonly targetCharValueEscape = new Map<CodePoint, string>([
         // https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals
         [0x07, "a"],
         [0x08, "b"],
@@ -52,7 +52,7 @@ export class Python3Target extends Target {
         super(gen);
     }
 
-    public override getTargetCharValueEscape(): Map<char, string> {
+    public override getTargetCharValueEscape(): Map<CodePoint, string> {
         return new Map([...Target.defaultCharValueEscape, ...Python3Target.targetCharValueEscape]);
     }
 

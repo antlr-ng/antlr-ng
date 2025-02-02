@@ -7,7 +7,7 @@
 
 import { ATN, ATNSerializer } from "antlr4ng";
 
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { SerializedATN } from "./SerializedATN.js";
 
 /** A serialized ATN for the java target, which requires we use strings and 16-bit unicode values. */
@@ -15,13 +15,13 @@ export class SerializedJavaATN extends SerializedATN {
     private readonly serializedAsString: string[];
     private readonly segments: string[][];
 
-    public constructor(factory: OutputModelFactory, atn: ATN) {
+    public constructor(factory: IOutputModelFactory, atn: ATN) {
         super(factory);
         let data = ATNSerializer.getSerialized(atn);
         data = this.encodeIntsWith16BitWords(data);
 
         const size = data.length;
-        const target = factory.getGenerator()!.getTarget();
+        const target = factory.getGenerator()!.target;
         const segmentLimit = target.getSerializedATNSegmentLimit();
         this.segments = new Array<string[]>(Math.trunc((size + segmentLimit - 1) / segmentLimit));
         let segmentIndex = 0;

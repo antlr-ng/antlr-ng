@@ -5,7 +5,7 @@
 
 import { ModelElement } from "../../misc/ModelElement.js";
 import type { IToolParameters } from "../../tool-parameters.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { Lexer } from "./Lexer.js";
 import { OutputFile } from "./OutputFile.js";
@@ -22,12 +22,12 @@ export class LexerFile extends OutputFile {
     @ModelElement
     public namedActions: Map<string, Action>;
 
-    public constructor(factory: OutputModelFactory, fileName: string, toolParameters: IToolParameters) {
+    public constructor(factory: IOutputModelFactory, fileName: string, toolParameters: IToolParameters) {
         super(factory, fileName);
 
-        this.namedActions = this.buildNamedActions(factory.getGrammar()!);
+        this.namedActions = this.buildNamedActions(factory.grammar!);
         this.genPackage = toolParameters.package;
-        this.exportMacro = factory.getGrammar()!.getOptionString("exportMacro");
+        this.exportMacro = factory.grammar!.getOptionString("exportMacro");
         this.genListener = toolParameters.generateListener ?? true;
         this.genVisitor = toolParameters.generateVisitor ?? false;
     }

@@ -4,7 +4,7 @@
  */
 
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { SrcOp } from "./SrcOp.js";
 
 export class ThrowRecognitionException extends SrcOp {
@@ -13,11 +13,11 @@ export class ThrowRecognitionException extends SrcOp {
     public grammarLine: number;
     public grammarCharPosInLine: number;
 
-    public constructor(factory: OutputModelFactory, ast: GrammarAST) {
+    public constructor(factory: IOutputModelFactory, ast: GrammarAST) {
         super(factory, ast);
 
         this.grammarLine = ast.getLine();
         this.grammarLine = ast.getCharPositionInLine();
-        this.grammarFile = factory.getGrammar()!.fileName;
+        this.grammarFile = factory.grammar.fileName;
     }
 }

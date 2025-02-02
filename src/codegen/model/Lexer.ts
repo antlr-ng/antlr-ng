@@ -6,7 +6,7 @@
 import { ModelElement } from "../../misc/ModelElement.js";
 import { LexerGrammar } from "../../tool/LexerGrammar.js";
 import { Rule } from "../../tool/Rule.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { LexerFile } from "./LexerFile.js";
 import { Recognizer } from "./Recognizer.js";
 import { RuleActionFunction } from "./RuleActionFunction.js";
@@ -21,12 +21,12 @@ export class Lexer extends Recognizer {
     @ModelElement
     public actionFuncs = new Map<Rule, RuleActionFunction>();
 
-    public constructor(factory: OutputModelFactory, file: LexerFile) {
+    public constructor(factory: IOutputModelFactory, file: LexerFile) {
         super(factory);
         this.file = file; // who contains us?
 
-        const g = factory.getGrammar()!;
-        const target = factory.getGenerator()!.getTarget();
+        const g = factory.grammar!;
+        const target = factory.getGenerator()!.target;
 
         for (const [key, value] of g.channelNameToValueMap) {
             this.escapedChannels.set(target.escapeIfNeeded(key), value);

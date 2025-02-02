@@ -86,7 +86,12 @@ export default tslint.config(
                 "always"
             ],
             "@stylistic/no-multiple-empty-lines": ["error", { "max": 1 }],
-            "@stylistic/no-multi-spaces": "error",
+            "@stylistic/no-multi-spaces": [
+                "error",
+                {
+                    "ignoreEOLComments": true
+                }
+            ],
             "@stylistic/lines-around-comment": [
                 "error",
                 {

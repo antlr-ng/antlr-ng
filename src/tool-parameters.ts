@@ -16,7 +16,7 @@ export interface IToolParameters {
     define?: Record<string, string>,
 
     outputDirectory?: string,
-    libDirectory?: string,
+    lib?: string,
     atn?: boolean,
     encoding?: string,
     msgFormat?: string,
@@ -94,13 +94,13 @@ export const parseToolParameters = (args: string[]): IToolParameters => {
 
     const prepared = new Command()
         .option("-o, --output-directory <path>", "specify output directory where all output is generated")
-        .option("-lib, --lib-directory <path>", "specify location of grammars, tokens files")
+        .option("--lib <path>", "specify location of grammars, tokens files")
         .option<boolean>("--atn [boolean]", "Generate rule augmented transition network diagrams.", parseBoolean, false)
         .option("-e, --encoding <string>", "Specify grammar file encoding; e.g., ucs-2.", "utf-8")
-        .addOption(new Option("-mf, --message-format [string]", "Specify output style for messages in antlr, gnu, " +
+        .addOption(new Option("--message-format[string]", "Specify output style for messages in antlr, gnu, " +
             "vs2005.")
             .choices(["antlr", "gnu", "vs2005"]).default("antlr"))
-        .option<boolean>("-lm, --long-messages [boolean]",
+        .option<boolean>("--long-messages [boolean]",
             "Show exception details when available for errors and warnings.", parseBoolean, false)
         .option<boolean>("-l, --generate-listener [boolean]", "Generate parse tree listener.", parseBoolean, true)
         .option<boolean>("-v, --generate-visitor [boolean]", "Generate parse tree visitor.", parseBoolean, false)

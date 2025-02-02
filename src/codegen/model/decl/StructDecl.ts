@@ -8,7 +8,7 @@ import { HashSet, OrderedHashSet } from "antlr4ng";
 import { ModelElement } from "../../../misc/ModelElement.js";
 import type { IAttribute } from "../../../tool/IAttribute.js";
 import { Rule } from "../../../tool/Rule.js";
-import { OutputModelFactory } from "../../OutputModelFactory.js";
+import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 import { DispatchMethod } from "../DispatchMethod.js";
 import { ListenerDispatchMethod } from "../ListenerDispatchMethod.js";
 import { OutputModelObject } from "../OutputModelObject.js";
@@ -65,13 +65,13 @@ export class StructDecl extends Decl {
     @ModelElement
     public signatures = new OrderedHashSet<Decl>();
 
-    public constructor(factory: OutputModelFactory, r: Rule, name?: string,) {
-        super(factory, name ?? factory.getGenerator()!.getTarget().getRuleFunctionContextStructName(r));
+    public constructor(factory: IOutputModelFactory, r: Rule, name?: string,) {
+        super(factory, name ?? factory.getGenerator()!.target.getRuleFunctionContextStructName(r));
         this.derivedFromName = r.name;
         this.provideCopyFrom = r.hasAltSpecificContexts();
 
-        this.generateListener = factory.getGrammar()!.tool.toolParameters.generateListener ?? true;
-        this.generateVisitor = factory.getGrammar()!.tool.toolParameters.generateVisitor ?? false;
+        this.generateListener = factory.grammar.tool.toolParameters.generateListener ?? true;
+        this.generateVisitor = factory.grammar.tool.toolParameters.generateVisitor ?? false;
 
         this.addDispatchMethods(r);
     }
@@ -86,7 +86,7 @@ export class StructDecl extends Decl {
             }
 
             if (this.generateVisitor) {
-                this.dispatchMethods.push(new VisitorDispatchMethod(this.factory!));
+                this.dispatchMethods.push(new VisitorDispatchMethod(this.factory));
             }
         }
     }

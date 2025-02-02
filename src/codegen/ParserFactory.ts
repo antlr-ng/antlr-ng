@@ -24,13 +24,13 @@ import { AltBlock } from "./model/AltBlock.js";
 import { Choice } from "./model/Choice.js";
 import { CodeBlockForAlt } from "./model/CodeBlockForAlt.js";
 import { CodeBlockForOuterMostAlt } from "./model/CodeBlockForOuterMostAlt.js";
+import { ILabeledOp } from "./model/ILabeledOp.js";
 import { InvokeRule } from "./model/InvokeRule.js";
 import { LL1AltBlock } from "./model/LL1AltBlock.js";
 import { LL1OptionalBlock } from "./model/LL1OptionalBlock.js";
 import { LL1OptionalBlockSingleAlt } from "./model/LL1OptionalBlockSingleAlt.js";
 import { LL1PlusBlockSingleAlt } from "./model/LL1PlusBlockSingleAlt.js";
 import { LL1StarBlockSingleAlt } from "./model/LL1StarBlockSingleAlt.js";
-import { ILabeledOp } from "./model/ILabeledOp.js";
 import { LeftRecursiveRuleFunction } from "./model/LeftRecursiveRuleFunction.js";
 import { MatchNotSet } from "./model/MatchNotSet.js";
 import { MatchSet } from "./model/MatchSet.js";
@@ -101,7 +101,8 @@ export class ParserFactory extends DefaultOutputModelFactory {
 
     public override ruleRef(id: GrammarAST, label: GrammarAST | null, args: GrammarAST): SrcOp[] {
         const invokeOp = new InvokeRule(this, id, label);
-        // If no manual label and action refs as token/rule not label, we need to define implicit label
+
+        // If no manual label and action refs as token/rule not label, we need to define implicit label.
         if (this.controller.needsImplicitLabel(id, invokeOp)) {
             this.defineImplicitLabel(id, invokeOp);
         }
@@ -118,8 +119,8 @@ export class ParserFactory extends DefaultOutputModelFactory {
             const label = labelAST.getText();
             const rf = this.getCurrentRuleFunction()!;
             if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-                // add Token _X and List<Token> X decls
-                this.defineImplicitLabel(id, matchOp); // adds _X
+                // Add Token _X and List<Token> X decls.
+                this.defineImplicitLabel(id, matchOp);
                 const l = this.getTokenListLabelDecl(label);
                 rf.addContextDecl(id.getAltLabel()!, l);
             } else {
@@ -143,7 +144,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
     }
 
     public getTokenListLabelDecl(label: string): TokenListDecl {
-        return new TokenListDecl(this, this.gen.getTarget().getListLabel(label));
+        return new TokenListDecl(this, this.gen.target.getListLabel(label));
     }
 
     public override set(setAST: GrammarAST, labelAST: GrammarAST | null, invert: boolean): SrcOp[] {
@@ -179,7 +180,6 @@ export class ParserFactory extends DefaultOutputModelFactory {
 
     public override wildcard(ast: GrammarAST, labelAST: GrammarAST | null): SrcOp[] {
         const wild = new Wildcard(this, ast);
-        // TODO: dup with tokenRef
 
         if (labelAST) {
             const label = labelAST.getText();
@@ -204,20 +204,20 @@ export class ParserFactory extends DefaultOutputModelFactory {
     public override getChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[], labelAST: GrammarAST | null): Choice {
         const decision = (blkAST.atnState as DecisionState).decision;
         let c: Choice;
-        if (!this.forceAtn && disjoint(this.g!.decisionLOOK[decision])) {
+        if (!this.forceAtn && disjoint(this.grammar.decisionLOOK[decision])) {
             c = this.getLL1ChoiceBlock(blkAST, alts);
         } else {
             c = this.getComplexChoiceBlock(blkAST, alts);
         }
 
         if (labelAST) {
-            // for x=(...), define x or x_list
+            // For x=(...), define x or x_list.
             const label = labelAST.getText();
             const d = this.getTokenLabelDecl(label);
             c.label = d;
             this.getCurrentRuleFunction()!.addContextDecl(labelAST.getAltLabel()!, d);
             if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-                const listLabel = this.gen.getTarget().getListLabel(label);
+                const listLabel = this.gen.target.getListLabel(label);
                 const l = new TokenListDecl(this, listLabel);
                 this.getCurrentRuleFunction()!.addContextDecl(labelAST.getAltLabel()!, l);
             }
@@ -239,7 +239,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
                 }
             }
 
-            if (disjoint(this.g!.decisionLOOK[decision])) {
+            if (disjoint(this.grammar.decisionLOOK[decision])) {
                 return this.getLL1EBNFBlock(ebnfRoot, alts);
             }
         }
@@ -323,7 +323,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
     }
 
     public override getLL1Test(look: IntervalSet, blkAST: GrammarAST): SrcOp[] {
-        return [new TestSetInline(this, blkAST, look, this.gen.getTarget().getInlineTestSetWordSize())];
+        return [new TestSetInline(this, blkAST, look, this.gen.target.getInlineTestSetWordSize())];
     }
 
     public override needsImplicitLabel(id: GrammarAST, op: ILabeledOp): boolean {
@@ -334,24 +334,22 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return op.labels.length === 0 && (actionRefsAsToken || actionRefsAsRule);
     }
 
-    // support
-
     public defineImplicitLabel(ast: GrammarAST, op: ILabeledOp): void {
         let d: Decl;
 
         if (ast.getType() === ANTLRv4Parser.SET || ast.getType() === ANTLRv4Parser.WILDCARD) {
-            const implLabel = this.gen.getTarget().getImplicitSetLabel(String(ast.token!.tokenIndex));
+            const implLabel = this.gen.target.getImplicitSetLabel(String(ast.token!.tokenIndex));
             d = this.getTokenLabelDecl(implLabel);
             (d as TokenDecl).isImplicit = true;
         } else {
-            if (ast.getType() === ANTLRv4Parser.RULE_REF) { // a rule reference?
-                const r = this.g!.getRule(ast.getText())!;
-                const implLabel = this.gen.getTarget().getImplicitRuleLabel(ast.getText());
-                const ctxName = this.gen.getTarget().getRuleFunctionContextStructName(r);
+            if (ast.getType() === ANTLRv4Parser.RULE_REF) { // A rule reference?
+                const r = this.grammar.getRule(ast.getText())!;
+                const implLabel = this.gen.target.getImplicitRuleLabel(ast.getText());
+                const ctxName = this.gen.target.getRuleFunctionContextStructName(r);
                 d = new RuleContextDecl(this, implLabel, ctxName);
                 (d as RuleContextDecl).isImplicit = true;
             } else {
-                const implLabel = this.gen.getTarget().getImplicitTokenLabel(ast.getText());
+                const implLabel = this.gen.target.getImplicitTokenLabel(ast.getText());
                 d = this.getTokenLabelDecl(implLabel);
                 (d as TokenDecl).isImplicit = true;
             }
@@ -359,14 +357,14 @@ export class ParserFactory extends DefaultOutputModelFactory {
 
         op.labels.push(d);
 
-        // all labels must be in scope struct in case we exec action out of context
+        // All labels must be in scope struct in case we exec action out of context.
         this.getCurrentRuleFunction()!.addContextDecl(ast.getAltLabel()!, d);
     }
 
     public getAddToListOpIfListLabelPresent(op: ILabeledOp, label: GrammarAST | null): AddToLabelList | null {
         let labelOp = null;
         if (label?.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-            const target = this.gen.getTarget();
+            const target = this.gen.target;
             const listLabel = target.getListLabel(label.getText());
             const listRuntimeName = target.escapeIfNeeded(listLabel);
             labelOp = new AddToLabelList(this, listRuntimeName, op.labels[0]);
@@ -374,5 +372,4 @@ export class ParserFactory extends DefaultOutputModelFactory {
 
         return labelOp;
     }
-
 }

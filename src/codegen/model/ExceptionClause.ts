@@ -5,7 +5,7 @@
 
 import { ModelElement } from "../../misc/ModelElement.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { SrcOp } from "./SrcOp.js";
 
@@ -16,7 +16,7 @@ export class ExceptionClause extends SrcOp {
     @ModelElement
     public catchAction: Action;
 
-    public constructor(factory: OutputModelFactory,
+    public constructor(factory: IOutputModelFactory,
         catchArg: ActionAST,
         catchAction: ActionAST) {
         super(factory, catchArg);

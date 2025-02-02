@@ -4,14 +4,14 @@
  */
 
 import { ContextGetterDecl } from "./ContextGetterDecl.js";
-import { OutputModelFactory } from "../../OutputModelFactory.js";
+import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 
 /** {@code public XContext X() { }} */
 export class ContextRuleGetterDecl extends ContextGetterDecl {
     public ctxName: string;
     public optional: boolean;
 
-    public constructor(factory: OutputModelFactory, name: string, ctxName: string, optional: boolean,
+    public constructor(factory: IOutputModelFactory, name: string, ctxName: string, optional: boolean,
         signature?: boolean) {
         super(factory, name, signature);
         this.ctxName = ctxName;

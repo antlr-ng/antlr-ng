@@ -3,13 +3,9 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { printf } from "fast-printf";
-
 import { Character } from "../support/Character.js";
 
-/**
- * Utility class to escape Unicode code points using various languages' syntax.
- */
+/** Utility class to escape Unicode code points using various languages' syntax. */
 export class UnicodeEscapes {
     public static escapeCodePoint(codePoint: number, language: string): string {
         let introducer = "\\u";
@@ -23,28 +19,34 @@ export class UnicodeEscapes {
             case "PHP": {
                 if (Character.isSupplementaryCodePoint(codePoint)) {
                     introducer = "\\U";
-                    text = printf("%08x", codePoint);
+                    //text = printf("%08x", codePoint);
+                    text = codePoint.toString(16).padStart(8, "0");
                 } else {
-                    text = printf("%04x", codePoint);
+                    //text = printf("%04x", codePoint);
+                    text = codePoint.toString(16).padStart(4, "0");
                 }
 
                 break;
             }
 
             case "Swift": {
-                text = printf("{%04x}", codePoint);
+                //text = printf("{%04x}", codePoint);
+                text = `{${codePoint.toString(16).padStart(4, "0")}}`;
 
                 break;
             }
 
             default: {
                 if (Character.isSupplementaryCodePoint(codePoint)) {
-                    // char is not an 'integral' type, so we have to explicitly convert
-                    // to int before passing to the %X formatter or else it throws.
-                    return introducer + printf("%04x", Number(Character.highSurrogate(codePoint))).toUpperCase() +
-                        introducer + printf("%04x", Number(Character.lowSurrogate(codePoint))).toUpperCase();
+                    /*return introducer + printf("%04x", Number(Character.highSurrogate(codePoint))).toUpperCase() +
+                        introducer + printf("%04x", Number(Character.lowSurrogate(codePoint))).toUpperCase();*/
+                    return introducer +
+                        Number(Character.highSurrogate(codePoint)).toString(16).toUpperCase().padStart(4, "0") +
+                        introducer +
+                        Number(Character.lowSurrogate(codePoint)).toString(16).toUpperCase().padStart(4, "0");
                 } else {
-                    text = printf("%04x", codePoint);
+                    //text = printf("%04x", codePoint);
+                    text = codePoint.toString(16).padStart(4, "0");
                 }
             }
         }

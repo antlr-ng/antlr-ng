@@ -5,7 +5,7 @@
 
 import { ModelElement } from "../../misc/ModelElement.js";
 import type { IToolParameters } from "../../tool-parameters.js";
-import { OutputModelFactory } from "../OutputModelFactory.js";
+import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { ActionChunk } from "./chunk/ActionChunk.js";
 import { ActionText } from "./chunk/ActionText.js";
@@ -29,12 +29,12 @@ export class ParserFile extends OutputFile {
     @ModelElement
     public contextSuperClass: ActionChunk;
 
-    public constructor(factory: OutputModelFactory, fileName: string, toolParameters: IToolParameters) {
+    public constructor(factory: IOutputModelFactory, fileName: string, toolParameters: IToolParameters) {
         super(factory, fileName);
-        const g = factory.getGrammar()!;
-        this.namedActions = this.buildNamedActions(factory.getGrammar()!);
+        const g = factory.grammar;
+        this.namedActions = this.buildNamedActions(g);
         this.genPackage = toolParameters.package;
-        this.exportMacro = factory.getGrammar()!.getOptionString("exportMacro");
+        this.exportMacro = g.getOptionString("exportMacro");
 
         // Need the below members in the ST for Python, C++.
         this.genListener = toolParameters.generateListener ?? true;

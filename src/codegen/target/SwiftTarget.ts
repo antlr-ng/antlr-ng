@@ -6,7 +6,7 @@
 // cspell: ignore associatedtype deinit typealias nonmutating
 
 import { format } from "../../support/helpers.js";
-import { Target, type char } from "../Target.js";
+import { Target, type CodePoint } from "../Target.js";
 
 export class SwiftTarget extends Target {
     // https://docs.swift.org/swift-book/documentation/the-swift-programming-language/stringsandcharacters/
@@ -29,7 +29,7 @@ export class SwiftTarget extends Target {
         "rule", "parserRule",
     ]);
 
-    public override getTargetCharValueEscape(): Map<char, string> {
+    public override getTargetCharValueEscape(): Map<CodePoint, string> {
         return new Map([...Target.defaultCharValueEscape, ...SwiftTarget.targetCharValueEscape]);
     }
 

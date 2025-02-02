@@ -16,25 +16,20 @@ import type { CodeGenerator } from "./CodeGenerator.js";
 import type { OutputModelController } from "./OutputModelController.js";
 import type { Choice } from "./model/Choice.js";
 import type { CodeBlockForAlt } from "./model/CodeBlockForAlt.js";
-import type { CodeBlockForOuterMostAlt } from "./model/CodeBlockForOuterMostAlt.js";
 import type { ILabeledOp } from "./model/ILabeledOp.js";
 import type { Lexer } from "./model/Lexer.js";
 import type { LexerFile } from "./model/LexerFile.js";
-import type { OutputModelObject } from "./model/OutputModelObject.js";
 import type { Parser } from "./model/Parser.js";
 import type { ParserFile } from "./model/ParserFile.js";
 import type { RuleFunction } from "./model/RuleFunction.js";
 import type { SrcOp } from "./model/SrcOp.js";
 import type { CodeBlock } from "./model/decl/CodeBlock.js";
 
-export interface OutputModelFactory {
-    getGrammar(): Grammar | undefined;
+export interface IOutputModelFactory {
+    readonly controller: OutputModelController;
+    readonly grammar: Grammar;
 
     getGenerator(): CodeGenerator | undefined;
-
-    setController(controller: OutputModelController): void;
-
-    getController(): OutputModelController | undefined;
 
     parserFile(fileName: string, toolParameters: IToolParameters): ParserFile | undefined;
 
@@ -88,18 +83,9 @@ export interface OutputModelFactory {
 
     // CONTEXT INFO
 
-    getRoot(): OutputModelObject | undefined;
-
     getCurrentRuleFunction(): RuleFunction | undefined;
 
     getCurrentOuterMostAlt(): Alternative | undefined;
 
     getCurrentBlock(): CodeBlock | undefined;
-
-    getCurrentOuterMostAlternativeBlock(): CodeBlockForOuterMostAlt | undefined;
-
-    getCodeBlockLevel(): number;
-
-    getTreeLevel(): number;
-
 }

@@ -142,7 +142,7 @@ export class GoTarget extends Target {
         // Criterion taken from gofmt.
         if (g && GoTarget.doGoFormat && !fileName.startsWith(".")
             && fileName.endsWith(".go")) {
-            this.gofmt(path.join(this.getCodeGenerator().tool.getOutputDirectory(g.fileName), fileName));
+            this.gofmt(path.join(g.tool.getOutputDirectory(g.fileName), fileName));
         }
     }
 

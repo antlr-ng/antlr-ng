@@ -4,7 +4,7 @@
  */
 
 import type { IAttribute } from "../../../tool/IAttribute.js";
-import { OutputModelFactory } from "../../OutputModelFactory.js";
+import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 import { Decl } from "./Decl.js";
 
 export class AttributeDecl extends Decl {
@@ -12,7 +12,7 @@ export class AttributeDecl extends Decl {
 
     public initValue?: string;
 
-    public constructor(factory: OutputModelFactory, a: IAttribute) {
+    public constructor(factory: IOutputModelFactory, a: IAttribute) {
         super(factory, a.name, a.decl);
         this.type = a.type!;
         this.initValue = a.initValue;
