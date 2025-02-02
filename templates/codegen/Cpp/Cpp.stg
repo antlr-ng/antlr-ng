@@ -951,50 +951,50 @@ SetAttr(s,rhsChunks) ::= "<ctx(s)>-><s.escapedName> = <rhsChunks>;"
 
 InputSymbolType() ::= "<file.InputSymbolType; null = {Token}> *"
 
-TokenPropertyRef_textHeader(t) ::= "<! Required but unused. !>"
-TokenPropertyRef_text(t) ::= <<(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getText() : "")>>
+TokenPropertyRefTextHeader(t) ::= "<! Required but unused. !>"
+TokenPropertyRefText(t) ::= <<(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getText() : "")>>
 
-TokenPropertyRef_typeHeader(t) ::= "<! Required but unused. !>"
-TokenPropertyRef_type(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getType() : 0)"
+TokenPropertyRefTypeHeader(t) ::= "<! Required but unused. !>"
+TokenPropertyRefType(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getType() : 0)"
 
-TokenPropertyRef_lineHeader(t) ::= "<! Required but unused. !>"
-TokenPropertyRef_line(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getLine() : 0)"
+TokenPropertyRefLineHeader(t) ::= "<! Required but unused. !>"
+TokenPropertyRefLine(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getLine() : 0)"
 
-TokenPropertyRef_posHeader(t) ::= "<! Required but unused. !>"
-TokenPropertyRef_pos(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getCharPositionInLine() : 0)"
+TokenPropertyRefPosHeader(t) ::= "<! Required but unused. !>"
+TokenPropertyRefPos(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getCharPositionInLine() : 0)"
 
-TokenPropertyRef_channelHeader(t) ::= "<! Required but unused. !>"
-TokenPropertyRef_channel(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getChannel() : 0)"
+TokenPropertyRefChannelHeader(t) ::= "<! Required but unused. !>"
+TokenPropertyRefChannel(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getChannel() : 0)"
 
-TokenPropertyRef_indexHeader(t) ::= "<! Required but unused. !>"
-TokenPropertyRef_index(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getTokenIndex() : 0)"
+TokenPropertyRefIndexHeader(t) ::= "<! Required but unused. !>"
+TokenPropertyRefIndex(t) ::= "(<ctx(t)>-><t.label> != nullptr ? <ctx(t)>-><t.label>->getTokenIndex() : 0)"
 
-TokenPropertyRef_intHeader(t) ::= "<! Required but unused. !>"
-TokenPropertyRef_int(t) ::= "(<ctx(t)>-><t.label> != nullptr ? std::stoi(<ctx(t)>-><t.label>->getText()) : 0)"
+TokenPropertyRefIntHeader(t) ::= "<! Required but unused. !>"
+TokenPropertyRefInt(t) ::= "(<ctx(t)>-><t.label> != nullptr ? std::stoi(<ctx(t)>-><t.label>->getText()) : 0)"
 
-RulePropertyRef_startHeader(r)  ::= "<! Required but unused. !>"
-RulePropertyRef_start(r) ::= "(<ctx(r)>-><r.label> != nullptr ? (<ctx(r)>-><r.label>->start) : nullptr)"
+RulePropertyRefStartHeader(r)  ::= "<! Required but unused. !>"
+RulePropertyRefStart(r) ::= "(<ctx(r)>-><r.label> != nullptr ? (<ctx(r)>-><r.label>->start) : nullptr)"
 
-RulePropertyRef_stopHeader(r)  ::= "<! Required but unused. !>"
-RulePropertyRef_stop(r)  ::= "(<ctx(r)>-><r.label> != nullptr ? (<ctx(r)>-><r.label>->stop) : nullptr)"
+RulePropertyRefStopHeader(r)  ::= "<! Required but unused. !>"
+RulePropertyRefStop(r)  ::= "(<ctx(r)>-><r.label> != nullptr ? (<ctx(r)>-><r.label>->stop) : nullptr)"
 
-RulePropertyRef_textHeader(r)  ::= "<! Required but unused. !>"
-RulePropertyRef_text(r)  ::= "(<ctx(r)>-><r.label> != nullptr ? _input->getText(<ctx(r)>-><r.label>->start, <ctx(r)>-><r.label>->stop) : nullptr)"
+RulePropertyRefTextHeader(r)  ::= "<! Required but unused. !>"
+RulePropertyRefText(r)  ::= "(<ctx(r)>-><r.label> != nullptr ? _input->getText(<ctx(r)>-><r.label>->start, <ctx(r)>-><r.label>->stop) : nullptr)"
 
-RulePropertyRef_ctxHeader(r)   ::= "<! Required but unused. !>"
-RulePropertyRef_ctx(r)   ::= "<ctx(r)>-><r.label>"
+RulePropertyRefCtxHeader(r)   ::= "<! Required but unused. !>"
+RulePropertyRefCtx(r)   ::= "<ctx(r)>-><r.label>"
 
-ThisRulePropertyRef_start(r) ::= "ThisRulePropertyRef_start(r) _localctx->start"
-ThisRulePropertyRef_stop(r)  ::= "ThisRulePropertyRef_stop(r) _localctx->stop"
+ThisRulePropertyRefStart(r) ::= "ThisRulePropertyRefStart(r) _localctx->start"
+ThisRulePropertyRefStop(r)  ::= "ThisRulePropertyRefStop(r) _localctx->stop"
 
-ThisRulePropertyRef_textHeader(r)  ::= "<! Required but unused. !>"
-ThisRulePropertyRef_text(r)  ::= "_input->getText(_localctx->start, _input->LT(-1))"
+ThisRulePropertyRefTextHeader(r)  ::= "<! Required but unused. !>"
+ThisRulePropertyRefText(r)  ::= "_input->getText(_localctx->start, _input->LT(-1))"
 
-ThisRulePropertyRef_ctxHeader(r)   ::= "<! Required but unused. !>"
-ThisRulePropertyRef_ctx(r)   ::= "_localctx"
+ThisRulePropertyRefCtxHeader(r)   ::= "<! Required but unused. !>"
+ThisRulePropertyRefCtx(r)   ::= "_localctx"
 
-ThisRulePropertyRef_parserHeader(r)	 ::= "<! Required but unused. !>"
-ThisRulePropertyRef_parser(r)	 ::= "this"
+ThisRulePropertyRefParserHeader(r)	 ::= "<! Required but unused. !>"
+ThisRulePropertyRefParser(r)	 ::= "this"
 
 NonLocalAttrRef(s) ::= "NonLocalAttrRef(s) ((<s.ruleName; format=\"cap\">Context)getInvokingContext(<s.ruleIndex>)).<s.escapedName>"
 SetNonLocalAttr(s, rhsChunks) ::=
