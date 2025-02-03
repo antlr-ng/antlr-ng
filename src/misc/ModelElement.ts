@@ -14,8 +14,7 @@ const modelElementSymbol = Symbol("ModelElement");
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const ModelElement = <T, This>(target: undefined, context: ClassFieldDecoratorContext<This, T>): void => {
     context.addInitializer(function (this: This) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const constructor = Object.getPrototypeOf(this).constructor as {
+        const constructor = (Object.getPrototypeOf(this) as object).constructor as {
             [modelElementSymbol]?: Set<string | symbol>;
         };
 
@@ -28,8 +27,7 @@ export const ModelElement = <T, This>(target: undefined, context: ClassFieldDeco
 };
 
 export const isModelElement = (instance: unknown, fieldName: string | symbol): boolean => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    const constructor = Object.getPrototypeOf(instance).constructor as {
+    const constructor = (Object.getPrototypeOf(instance) as object).constructor as {
         [modelElementSymbol]?: Set<string | symbol>;
     };
 

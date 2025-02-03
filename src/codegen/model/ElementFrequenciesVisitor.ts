@@ -8,32 +8,19 @@ import { GrammarTreeVisitor } from "../../tree/walkers/GrammarTreeVisitor.js";
 import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 import { FrequencySet } from "../../misc/FrequencySet.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
-import { AltAST } from "../../tool/ast/AltAST.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { TerminalAST } from "../../tool/ast/TerminalAST.js";
-import type { ErrorManager } from "../../tool/ErrorManager.js";
-import type { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 
 export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
 
     /**
-     * This special value means "no set", and is used by {@link #minFrequencies} to ensure that {@link #combineMin}
+     * This special value means "no set", and is used by {@link minFrequencies} to ensure that {@link combineMin}
      * doesn't merge an empty set (all zeros) with the results of the first alternative.
      */
     private static readonly sentinel = new FrequencySet<string>();
 
-    public readonly frequencies: Array<FrequencySet<string>>;
-
-    private readonly minFrequencies: Array<FrequencySet<string>>;
-
-    public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream) {
-        super(errorManager, input);
-
-        this.frequencies = new Array<FrequencySet<string>>();
-        this.frequencies.unshift(new FrequencySet<string>());
-        this.minFrequencies = new Array<FrequencySet<string>>();
-        this.minFrequencies.unshift(ElementFrequenciesVisitor.sentinel);
-    }
+    public readonly frequencies: Array<FrequencySet<string>> = [new FrequencySet<string>()];
+    public readonly minFrequencies: Array<FrequencySet<string>> = [ElementFrequenciesVisitor.sentinel];
 
     /**
      * Generate a frequency set as the union of two input sets. If an element is contained in both sets, the value
@@ -113,10 +100,6 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
         return result;
     }
 
-    public getMinFrequencies(): FrequencySet<string> {
-        return this.minFrequencies[0];
-    }
-
     protected override tokenRef(ref: TerminalAST): void {
         this.frequencies[0].add(ref.getText());
         this.minFrequencies[0].add(ref.getText());
@@ -136,36 +119,36 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
         }
     }
 
-    protected override enterAlternative(tree: AltAST): void {
+    protected override enterAlternative(): void {
         this.frequencies.unshift(new FrequencySet<string>());
         this.minFrequencies.unshift(new FrequencySet<string>());
     }
 
-    protected override exitAlternative(tree: AltAST): void {
+    protected override exitAlternative(): void {
         this.frequencies.unshift(ElementFrequenciesVisitor.combineMax(this.frequencies.shift()!,
             this.frequencies.shift()!));
         this.minFrequencies.unshift(ElementFrequenciesVisitor.combineMin(this.minFrequencies.shift()!,
             this.minFrequencies.shift()!));
     }
 
-    protected override enterElement(tree: GrammarAST): void {
+    protected override enterElement(): void {
         this.frequencies.unshift(new FrequencySet<string>());
         this.minFrequencies.unshift(new FrequencySet<string>());
     }
 
-    protected override exitElement(tree: GrammarAST): void {
+    protected override exitElement(): void {
         this.frequencies.unshift(ElementFrequenciesVisitor.combineAndClip(this.frequencies.shift()!,
             this.frequencies.shift()!, 2));
         this.minFrequencies.unshift(ElementFrequenciesVisitor.combineAndClip(this.minFrequencies.shift()!,
             this.minFrequencies.shift()!, 2));
     }
 
-    protected override enterBlockSet(tree: GrammarAST): void {
+    protected override enterBlockSet(): void {
         this.frequencies.unshift(new FrequencySet<string>());
         this.minFrequencies.unshift(new FrequencySet<string>());
     }
 
-    protected override exitBlockSet(tree: GrammarAST): void {
+    protected override exitBlockSet(): void {
         // This visitor counts a block set as a sequence of elements, not a sequence of alternatives of elements.
         // Reset the count back to 1 for all items when leaving the set to ensure duplicate entries in the set are
         // treated as a maximum of one item.
@@ -199,24 +182,24 @@ export class ElementFrequenciesVisitor extends GrammarTreeVisitor {
         }
     }
 
-    protected override enterLexerAlternative(tree: GrammarAST): void {
+    protected override enterLexerAlternative(): void {
         this.frequencies.unshift(new FrequencySet<string>());
         this.minFrequencies.unshift(new FrequencySet<string>());
     }
 
-    protected override exitLexerAlternative(tree: GrammarAST): void {
+    protected override exitLexerAlternative(): void {
         this.frequencies.unshift(ElementFrequenciesVisitor.combineMax(this.frequencies.shift()!,
             this.frequencies.pop()!));
         this.minFrequencies.unshift(ElementFrequenciesVisitor.combineMin(this.minFrequencies.shift()!,
             this.minFrequencies.pop()!));
     }
 
-    protected override enterLexerElement(tree: GrammarAST): void {
+    protected override enterLexerElement(): void {
         this.frequencies.unshift(new FrequencySet<string>());
         this.minFrequencies.unshift(new FrequencySet<string>());
     }
 
-    protected override exitLexerElement(tree: GrammarAST): void {
+    protected override exitLexerElement(): void {
         this.frequencies.unshift(ElementFrequenciesVisitor.combineAndClip(this.frequencies.shift()!,
             this.frequencies.shift()!, 2));
         this.minFrequencies.unshift(ElementFrequenciesVisitor.combineAndClip(this.minFrequencies.shift()!,

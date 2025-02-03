@@ -19,10 +19,8 @@ export class UnicodeEscapes {
             case "PHP": {
                 if (Character.isSupplementaryCodePoint(codePoint)) {
                     introducer = "\\U";
-                    //text = printf("%08x", codePoint);
                     text = codePoint.toString(16).padStart(8, "0");
                 } else {
-                    //text = printf("%04x", codePoint);
                     text = codePoint.toString(16).padStart(4, "0");
                 }
 
@@ -30,7 +28,6 @@ export class UnicodeEscapes {
             }
 
             case "Swift": {
-                //text = printf("{%04x}", codePoint);
                 text = `{${codePoint.toString(16).padStart(4, "0")}}`;
 
                 break;
@@ -38,14 +35,11 @@ export class UnicodeEscapes {
 
             default: {
                 if (Character.isSupplementaryCodePoint(codePoint)) {
-                    /*return introducer + printf("%04x", Number(Character.highSurrogate(codePoint))).toUpperCase() +
-                        introducer + printf("%04x", Number(Character.lowSurrogate(codePoint))).toUpperCase();*/
                     return introducer +
                         Number(Character.highSurrogate(codePoint)).toString(16).toUpperCase().padStart(4, "0") +
                         introducer +
                         Number(Character.lowSurrogate(codePoint)).toString(16).toUpperCase().padStart(4, "0");
                 } else {
-                    //text = printf("%04x", codePoint);
                     text = codePoint.toString(16).padStart(4, "0");
                 }
             }

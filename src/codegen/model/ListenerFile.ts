@@ -26,9 +26,8 @@ export class ListenerFile extends OutputFile {
     public listenerNames = new Set<string>();
 
     /**
-     * For listener contexts created for a labeled outer alternative, maps from
-     * a listener context name to the name of the rule which defines the
-     * context.
+     * For listener contexts created for a labeled outer alternative, maps from a listener context name to the name
+     * of the rule which defines the context.
      */
     public listenerLabelRuleNames = new OrderedHashMap<string, string>();
 
@@ -56,7 +55,7 @@ export class ListenerFile extends OutputFile {
                     this.listenerLabelRuleNames.set(key, r.name);
                 }
             } else {
-                // only add rule context if no labels
+                // Only add rule context if no labels.
                 this.listenerNames.add(r.name);
             }
         }

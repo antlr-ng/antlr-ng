@@ -302,7 +302,7 @@ export class RuleFunction extends OutputModelObject {
                 return [new FrequencySet<string>(), new FrequencySet<string>()];
             }
 
-            return [visitor.getMinFrequencies(), visitor.frequencies[0]];
+            return [visitor.minFrequencies[0], visitor.frequencies[0]];
         } catch (ex) {
             if (ex instanceof RecognitionException) {
                 errorManager.toolError(ErrorType.INTERNAL_ERROR, ex);

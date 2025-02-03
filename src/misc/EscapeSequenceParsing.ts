@@ -40,7 +40,7 @@ export abstract class EscapeSequenceParsing {
     static #fullSet = IntervalSet.of(Character.MIN_CODE_POINT, Character.MAX_CODE_POINT);
 
     /**
-     * Parses a single escape sequence starting at {@code startOff}.
+     * Parses a single escape sequence starting at `startOff`.
      *
      * @returns a type of INVALID if no valid escape sequence was found, a Result otherwise.
      */
@@ -50,11 +50,11 @@ export abstract class EscapeSequenceParsing {
             return EscapeSequenceParsing.invalid(startOff, s.length - 1);
         }
 
-        // Move past backslash
+        // Move past backslash.
         offset++;
         const escaped = s.codePointAt(offset)!;
 
-        // Move past escaped code point
+        // Move past escaped code point.
         offset += Character.charCount(escaped);
         if (escaped === 0x75) { // 'u'
             // \\u{1} is the shortest we support
@@ -70,11 +70,13 @@ export abstract class EscapeSequenceParsing {
                 if (hexEndOffset === -1) {
                     return EscapeSequenceParsing.invalid(startOff, s.length - 1);
                 }
+
                 offset = hexEndOffset + 1;
             } else {
                 if (offset + 4 > s.length) {
                     return EscapeSequenceParsing.invalid(startOff, s.length - 1);
                 }
+
                 hexStartOffset = offset;
                 hexEndOffset = offset + 4;
                 offset = hexEndOffset;
@@ -92,60 +94,58 @@ export abstract class EscapeSequenceParsing {
                 startOffset: startOff,
                 parseLength: offset - startOff,
             };
-        } else {
-            if (escaped === 0x70 || escaped === 0x50) { // 'p' or 'P'
-                // \p{L} is the shortest we support
-                if (offset + 3 > s.length) {
-                    return EscapeSequenceParsing.invalid(startOff, s.length - 1);
-                }
-
-                if (s.codePointAt(offset) !== 0x7B) { // '{'
-                    return EscapeSequenceParsing.invalid(startOff, offset);
-                }
-
-                const openBraceOffset = offset;
-                const closeBraceOffset = s.indexOf("}", openBraceOffset);
-                if (closeBraceOffset === -1) {
-                    return EscapeSequenceParsing.invalid(startOff, s.length - 1);
-                }
-
-                const propertyName = s.substring(openBraceOffset + 1, closeBraceOffset);
-                const lookupResult = getPropertyCodePoints(propertyName);
-                if (lookupResult.status !== "ok" || lookupResult.codePoints === undefined) {
-                    return EscapeSequenceParsing.invalid(startOff, closeBraceOffset);
-                }
-
-                offset = closeBraceOffset + 1;
-                let codePoints = lookupResult.codePoints;
-                if (escaped === 0x50) { // 'P'
-                    codePoints = codePoints.complementWithVocabulary(EscapeSequenceParsing.#fullSet);
-                }
-
-                return {
-                    type: ResultType.Property,
-                    codePoint: -1,
-                    propertyIntervalSet: codePoints,
-                    startOffset: startOff,
-                    parseLength: offset - startOff,
-                };
-            } else {
-                let codePoint = CharSupport.ANTLRLiteralEscapedCharValue.get(s[offset - 1]);
-                if (codePoint === undefined) {
-                    if (escaped !== 0x5D && escaped !== 0x2D) { // escape ']' and '-' only in char sets.
-                        return EscapeSequenceParsing.invalid(startOff, startOff + 1);
-                    } else {
-                        codePoint = escaped;
-                    }
-                }
-
-                return {
-                    type: ResultType.CodePoint,
-                    codePoint,
-                    propertyIntervalSet: EscapeSequenceParsing.#emptySet,
-                    startOffset: startOff,
-                    parseLength: offset - startOff,
-                };
+        } else if (escaped === 0x70 || escaped === 0x50) { // 'p' or 'P'
+            // \p{L} is the shortest we support.
+            if (offset + 3 > s.length) {
+                return EscapeSequenceParsing.invalid(startOff, s.length - 1);
             }
+
+            if (s.codePointAt(offset) !== 0x7B) { // '{'
+                return EscapeSequenceParsing.invalid(startOff, offset);
+            }
+
+            const openBraceOffset = offset;
+            const closeBraceOffset = s.indexOf("}", openBraceOffset);
+            if (closeBraceOffset === -1) {
+                return EscapeSequenceParsing.invalid(startOff, s.length - 1);
+            }
+
+            const propertyName = s.substring(openBraceOffset + 1, closeBraceOffset);
+            const lookupResult = getPropertyCodePoints(propertyName);
+            if (lookupResult.status !== "ok" || lookupResult.codePoints === undefined) {
+                return EscapeSequenceParsing.invalid(startOff, closeBraceOffset);
+            }
+
+            offset = closeBraceOffset + 1;
+            let codePoints = lookupResult.codePoints;
+            if (escaped === 0x50) { // 'P'
+                codePoints = codePoints.complementWithVocabulary(EscapeSequenceParsing.#fullSet);
+            }
+
+            return {
+                type: ResultType.Property,
+                codePoint: -1,
+                propertyIntervalSet: codePoints,
+                startOffset: startOff,
+                parseLength: offset - startOff,
+            };
+        } else {
+            let codePoint = CharSupport.ANTLRLiteralEscapedCharValue.get(s[offset - 1]);
+            if (codePoint === undefined) {
+                if (escaped !== 0x5D && escaped !== 0x2D) { // escape ']' and '-' only in char sets.
+                    return EscapeSequenceParsing.invalid(startOff, startOff + 1);
+                } else {
+                    codePoint = escaped;
+                }
+            }
+
+            return {
+                type: ResultType.CodePoint,
+                codePoint,
+                propertyIntervalSet: EscapeSequenceParsing.#emptySet,
+                startOffset: startOff,
+                parseLength: offset - startOff,
+            };
         }
     }
 

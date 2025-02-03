@@ -59,7 +59,7 @@ export class LeftRecursiveRuleTransformer {
     }
 
     public translateLeftRecursiveRules(): void {
-        const language = this.g.getLanguage() ?? "Java";
+        const language = this.g.getLanguage();
 
         // Translate all recursive rules.
         const leftRecursiveRuleNames: string[] = [];

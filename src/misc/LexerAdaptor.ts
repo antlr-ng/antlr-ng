@@ -8,15 +8,11 @@ import { CharStream, Lexer, Token } from "antlr4ng";
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
 
 export abstract class LexerAdaptor extends Lexer {
-    /**
-     *  Generic type for OPTIONS, TOKENS and CHANNELS
-     */
-    static #PREQUEL_CONSTRUCT = -10;
-    static #OPTIONS_CONSTRUCT = -11;
+    /** Generic type for OPTIONS, TOKENS and CHANNELS */
+    private static PREQUEL_CONSTRUCT = -10;
+    private static OPTIONS_CONSTRUCT = -11;
 
-    #currentRuleType: number = Token.INVALID_TYPE;
-    // eslint-disable-next-line no-unused-private-class-members
-    #insideOptionsBlock = false;
+    private currentRuleType: number = Token.INVALID_TYPE;
 
     public constructor(input: CharStream) {
         super(input);
@@ -33,39 +29,39 @@ export abstract class LexerAdaptor extends Lexer {
          * The whole point of this state information is to distinguish between [..arg actions..] and [char sets].
          * Char sets can only occur in lexical rules and arg actions cannot occur.
          */
-        this.#currentRuleType = Token.INVALID_TYPE;
-        this.#insideOptionsBlock = false;
+        this.currentRuleType = Token.INVALID_TYPE;
     }
 
     public override reset(): void {
-        this.#currentRuleType = Token.INVALID_TYPE;
-        this.#insideOptionsBlock = false;
+        this.currentRuleType = Token.INVALID_TYPE;
         super.reset();
     }
 
     public override emit(): Token {
         if ((this.type === ANTLRv4Lexer.OPTIONS || this.type === ANTLRv4Lexer.TOKENS
             || this.type === ANTLRv4Lexer.CHANNELS)
-            && this.#currentRuleType === Token.INVALID_TYPE) {
-            // enter prequel construct ending with an RBRACE
-            this.#currentRuleType = LexerAdaptor.#PREQUEL_CONSTRUCT;
-        } else if (this.type === ANTLRv4Lexer.OPTIONS && this.#currentRuleType === ANTLRv4Lexer.TOKEN_REF) {
-            this.#currentRuleType = LexerAdaptor.#OPTIONS_CONSTRUCT;
+            && this.currentRuleType === Token.INVALID_TYPE) {
+            // Enter prequel construct ending with an RBRACE.
+            this.currentRuleType = LexerAdaptor.PREQUEL_CONSTRUCT;
+        } else if (this.type === ANTLRv4Lexer.OPTIONS && this.currentRuleType === ANTLRv4Lexer.TOKEN_REF) {
+            this.currentRuleType = LexerAdaptor.OPTIONS_CONSTRUCT;
         } else if (this.type === ANTLRv4Lexer.RBRACE
-            && this.#currentRuleType === LexerAdaptor.#PREQUEL_CONSTRUCT) {
-            // exit prequel construct
-            this.#currentRuleType = Token.INVALID_TYPE;
+            && this.currentRuleType === LexerAdaptor.PREQUEL_CONSTRUCT) {
+            // Exit prequel construct.
+            this.currentRuleType = Token.INVALID_TYPE;
         } else if (this.type === ANTLRv4Lexer.RBRACE
-            && this.#currentRuleType === LexerAdaptor.#OPTIONS_CONSTRUCT) {
-            // exit options
-            this.#currentRuleType = ANTLRv4Lexer.TOKEN_REF;
-        } else if (this.type === ANTLRv4Lexer.AT && this.#currentRuleType === Token.INVALID_TYPE) { // enter action
-            this.#currentRuleType = ANTLRv4Lexer.AT;
+            && this.currentRuleType === LexerAdaptor.OPTIONS_CONSTRUCT) {
+            // Exit options.
+            this.currentRuleType = ANTLRv4Lexer.TOKEN_REF;
+        } else if (this.type === ANTLRv4Lexer.AT && this.currentRuleType === Token.INVALID_TYPE) {
+            // Enter action.
+            this.currentRuleType = ANTLRv4Lexer.AT;
         } else if (this.type === ANTLRv4Lexer.SEMI
-            && this.#currentRuleType === LexerAdaptor.#OPTIONS_CONSTRUCT) {
+            && this.currentRuleType === LexerAdaptor.OPTIONS_CONSTRUCT) {
             // ';' in options { .... }. Don't change anything.
-        } else if (this.type === ANTLRv4Lexer.END_ACTION && this.#currentRuleType === ANTLRv4Lexer.AT) { // exit action
-            this.#currentRuleType = Token.INVALID_TYPE;
+        } else if (this.type === ANTLRv4Lexer.END_ACTION && this.currentRuleType === ANTLRv4Lexer.AT) {
+            // Exit action.
+            this.currentRuleType = Token.INVALID_TYPE;
         } else if (this.type === ANTLRv4Lexer.ID) {
             const firstChar = this.inputStream.getTextFromRange(this.tokenStartCharIndex, this.tokenStartCharIndex);
             const c = firstChar.charAt(0);
@@ -75,18 +71,21 @@ export abstract class LexerAdaptor extends Lexer {
                 this.type = ANTLRv4Lexer.RULE_REF;
             }
 
-            if (this.#currentRuleType === Token.INVALID_TYPE) { // if outside of rule def
-                this.#currentRuleType = this.type; // set to inside lexer or parser rule
+            // If outside of rule def.
+            if (this.currentRuleType === Token.INVALID_TYPE) {
+                // Set to inside lexer or parser rule.
+                this.currentRuleType = this.type;
             }
-        } else if (this.type === ANTLRv4Lexer.SEMI) { // exit rule def
-            this.#currentRuleType = Token.INVALID_TYPE;
+        } else if (this.type === ANTLRv4Lexer.SEMI) {
+            // Exit rule def.
+            this.currentRuleType = Token.INVALID_TYPE;
         }
 
         return super.emit();
     }
 
     protected handleBeginArgument(): void {
-        if (this.#currentRuleType === ANTLRv4Lexer.TOKEN_REF) {
+        if (this.currentRuleType === ANTLRv4Lexer.TOKEN_REF) {
             this.pushMode(ANTLRv4Lexer.LexerCharSet);
             this.more();
         } else {

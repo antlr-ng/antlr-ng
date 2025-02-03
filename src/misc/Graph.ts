@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-returns */
-
 /**
  * A generic graph with edges; Each node has a single Object payload.
  * This is only used to topologically sort a list of file dependencies at the moment.
@@ -52,20 +50,21 @@ export class Graph {
     };
 
     /**
-     * DFS-based topological sort. A valid sort is the reverse of
-     * the post-order DFA traversal.  Amazingly simple but true.
-     * For sorting, I'm not following convention here since ANTLR
-     * needs the opposite.  Here's what I assume for sorting:
+     * DFS-based topological sort. A valid sort is the reverse of the post-order DFA traversal. Amazingly simple
+     * but true. For sorting, I'm not following convention here since ANTLR needs the opposite. Here's what I
+     * assume for sorting:
      *
      * If there exists an edge u -> v then u depends on v and v must happen before u.
      *
      * So if this gives non-reversed post order traversal, I get the order I want.
+     *
+     * @returns A list of node payloads in topological order.
      */
     public sort(): string[] {
         const visited = new Set<InstanceType<typeof Graph.Node>>();
         const sorted = new Array<string>();
         while (visited.size < this.nodes.size) {
-            // pick any unvisited node, n
+            // Pick any unvisited node, n.
             let n = null;
             for (const tNode of this.nodes.values()) {
                 n = tNode;
@@ -74,7 +73,8 @@ export class Graph {
                 }
             }
 
-            if (n !== null) { // if at least one unvisited
+            if (n !== null) {
+                // If at least one unvisited.
                 this.dfs(n, visited, sorted);
             }
         }

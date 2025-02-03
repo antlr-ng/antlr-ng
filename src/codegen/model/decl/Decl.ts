@@ -15,11 +15,14 @@ export class Decl extends SrcOp {
 
     public readonly escapedName: string;
 
-    public readonly decl?: string; // whole thing if copied from action
+    /** Whole thing if copied from action. */
+    public readonly decl?: string;
 
-    public isLocal: boolean; // if local var (not in RuleContext struct)
+    /** If local var (not in RuleContext struct). */
+    public isLocal: boolean;
 
-    public ctx: StructDecl; // which context contains us? set by addDecl
+    /** Which context contains us? set by addDecl. */
+    public ctx: StructDecl;
 
     public constructor(factory: IOutputModelFactory, name: string, decl?: string) {
         super(factory);
@@ -32,7 +35,7 @@ export class Decl extends SrcOp {
         return MurmurHash.hashCode(this.name);
     }
 
-    /** If same name, can't redefine, unless it's a getter */
+    /** If same name, can't redefine, unless it's a getter. */
     public equals(obj: object): boolean {
         if (this === obj) {
             return true;
@@ -42,7 +45,7 @@ export class Decl extends SrcOp {
             return false;
         }
 
-        // A() and label A are different
+        // A() and label A are different.
         if ("signature" in obj) { // ContextGetterDecl
             return false;
         }
