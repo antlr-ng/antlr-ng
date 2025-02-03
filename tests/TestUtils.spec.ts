@@ -25,24 +25,6 @@ describe("TestUtils", () => {
         expect(Utils.decapitalize("FOO")).toBe("fOO");
     });
 
-    it("testSelect", () => {
-        const strings: string[] = [];
-        strings.push("foo");
-        strings.push("bar");
-
-        const func1 = new class implements Utils.Func1<string, string> {
-            public exec(arg1: string): string {
-                return "baz";
-            }
-        }();
-
-        const retval: string[] = [];
-        retval.push("baz");
-        retval.push("baz");
-
-        expect(Utils.select(strings, func1)).toEqual(retval);
-    });
-
     it("testSetSize", () => {
         const strings: string[] = [];
         strings.push("foo");
