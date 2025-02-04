@@ -6,6 +6,7 @@
 import {
     BaseErrorListener, type ATNSimulator, type RecognitionException, type Recognizer, type Token
 } from "antlr4ng";
+
 import type { Tool } from "../Tool.js";
 import { ErrorType } from "../tool/ErrorType.js";
 

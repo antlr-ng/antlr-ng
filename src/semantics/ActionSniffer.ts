@@ -7,25 +7,23 @@ import { CharStream, type Token } from "antlr4ng";
 
 import { ActionSplitter } from "../generated/ActionSplitter.js";
 
+import type { IActionSplitterListener } from "../parse/IActionSplitterListener.js";
 import { Alternative } from "../tool/Alternative.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { Grammar } from "../tool/Grammar.js";
 import { Rule } from "../tool/Rule.js";
-import { BlankActionSplitterListener } from "./BlankActionSplitterListener.js";
 
-/**
- * Find token and rule refs plus refs to them in actions; side-effect: update Alternatives
- */
-export class ActionSniffer extends BlankActionSplitterListener {
+/** Find token and rule refs plus refs to them in actions; side-effect: update Alternatives. */
+export class ActionSniffer implements IActionSplitterListener {
     public g: Grammar;
-    public r: Rule; // null if action outside of rule
-    public alt: Alternative; // null if action outside of alt; could be in rule
+    public r: Rule;
+    public alt: Alternative;
     public node: ActionAST;
-    public actionToken: Token; // token within action
+
+    /** Token within action. */
+    public actionToken: Token;
 
     public constructor(g: Grammar, r: Rule, alt: Alternative, node: ActionAST, actionToken: Token) {
-        super();
-
         this.g = g;
         this.r = r;
         this.alt = alt;
@@ -35,40 +33,39 @@ export class ActionSniffer extends BlankActionSplitterListener {
 
     public examineAction(): void {
         const input = CharStream.fromString(this.actionToken.text!);
-        //input.setLine(this.actionToken.line);
-        //input.setCharPositionInLine(this.actionToken.getCharPositionInLine());
         const splitter = new ActionSplitter(input);
 
-        // forces eval, triggers listener methods
+        // Forces eval, triggers listener methods.
         this.node.chunks = splitter.getActionTokens(this, this.actionToken);
     }
 
     public processNested(actionToken: string): void {
         const input = CharStream.fromString(actionToken);
-        //input.setLine(actionToken.getLine());
-        //input.setCharPositionInLine(actionToken.getCharPositionInLine());
         const splitter = new ActionSplitter(input);
 
-        // forces eval, triggers listener methods
+        // Forces eval, triggers listener methods.
         splitter.getActionTokens(this, this.actionToken);
     }
 
-    public override attr(expr: string, x: Token): void {
+    public attr(expr: string, x: Token): void {
         this.trackRef(x.text!);
     }
 
-    public override qualifiedAttr(expr: string, x: Token, y: Token): void {
+    public qualifiedAttr(expr: string, x: Token, y: Token): void {
         this.trackRef(x.text!);
     }
 
-    public override setAttr(expr: string, x: Token, rhs: Token): void {
+    public setAttr(expr: string, x: Token, rhs: Token): void {
         this.trackRef(x.text!);
         this.processNested(rhs.text!);
     }
 
-    public override setNonLocalAttr(expr: string, x: Token, y: Token, rhs: string): void {
+    public setNonLocalAttr(expr: string, x: Token, y: Token, rhs: string): void {
         this.processNested(rhs);
     }
+
+    public nonLocalAttr(): void { /**/ }
+    public text(): void { /**/ }
 
     public trackRef(x: string): void {
         const xRefs = this.alt.tokenRefs.get(x);

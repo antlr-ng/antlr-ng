@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-param, jsdoc/require-returns */
-
 import { CommonToken } from "antlr4ng";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
@@ -19,11 +17,10 @@ import { IAttribute } from "../tool/IAttribute.js";
 
 /**
  * Parse args, return values, locals
- * <p>
+ * ```
  * rule[arg1, arg2, ..., argN] returns [ret1, ..., retN]
- * <p>
- * text is target language dependent.  Java/C#/C/C++ would
- * use "int i" but ruby/python would use "i". Languages with
+ * ```
+ * Text is target language dependent.  Java/C#/C/C++ would use "int i" but ruby/python would use "i". Languages with
  * postfix types like Go, Swift use "x : T" notation or "T x".
  */
 export class ScopeParser {
@@ -37,6 +34,12 @@ export class ScopeParser {
      * int i=3, j=a[34]+20
      * ```
      * convert to an attribute scope.
+     *
+     * @param action The action node that contains the decl.
+     * @param s The decl to parse.
+     * @param g The grammar.
+     *
+     * @returns The attribute scope.
      */
     public static parseTypedArgList(action: ActionAST | null, s: string, g: Grammar): AttributeDict {
         return this.parse(action, s, ",", g);
@@ -56,10 +59,15 @@ export class ScopeParser {
     }
 
     /**
-     * For decls like "String foo" or "char *foo32[]" compute the ID
-     * and type declarations.  Also handle "int x=3" and 'T t = new T("foo")'
-     * but if the separator is ',' you cannot use ',' in the init value
+     * For decls like "String foo" or "char *foo32[]" compute the ID and type declarations. Also handle "int x=3"
+     * and 'T t = new T("foo")' but if the separator is ',' you cannot use ',' in the init value
      * unless you escape use "\," escape.
+     *
+     * @param action The action node that contains the decl.
+     * @param decl The decl to parse.
+     * @param g The grammar.
+     *
+     * @returns The attribute definition.
      */
     private static parseAttributeDef(action: ActionAST | null, decl: [string | null, number],
         g: Grammar): IAttribute | null {
@@ -71,7 +79,7 @@ export class ScopeParser {
         let rightEdgeOfDeclarator = decl[0].length - 1;
         const equalsIndex = decl[0].indexOf("=");
         if (equalsIndex > 0) {
-            // everything after the '=' is the init value
+            // Everything after the '=' is the init value.
             attr.initValue = decl[0].substring(equalsIndex + 1, decl[0].length).trim();
             rightEdgeOfDeclarator = equalsIndex - 1;
         }
@@ -81,10 +89,10 @@ export class ScopeParser {
         let text = decl[0];
         text = text.replaceAll("::", "");
         if (text.includes(":")) {
-            // declarator has type appearing after the name like "x:T"
+            // Declarator has type appearing after the name like "x:T".
             p = ScopeParser.parsePostfixDecl(attr, declarator, action, g);
         } else {
-            // declarator has type appearing before the name like "T x"
+            // Declarator has type appearing before the name like "T x".
             p = ScopeParser.parsePrefixDecl(attr, declarator, action, g);
         }
 
@@ -107,7 +115,7 @@ export class ScopeParser {
             const charIndexes = new Array<number>(actionText.length);
             for (let i = 0, j = 0; i < actionText.length; i++, j++) {
                 charIndexes[j] = i;
-                // skip comments
+                // Skip comments.
                 if (i < actionText.length - 1 && actionText[i] === "/" && actionText[i + 1] === "/") {
                     while (i < actionText.length && actionText[i] !== "\n") {
                         i++;
@@ -121,10 +129,8 @@ export class ScopeParser {
             const line = action.token!.line + declLine;
             let charPositionInLine = charPositionInLines[declOffset + idStart];
             if (declLine === 0) {
-                /* offset for the start position of the ARG_ACTION token, plus 1
-                 * since the ARG_ACTION text had the leading '[' stripped before
-                 * reaching the scope parser.
-                 */
+                /// Offset for the start position of the ARG_ACTION token, plus 1 since the ARG_ACTION text had the
+                // leading '[' stripped before reaching the scope parser.
                 charPositionInLine += action.token!.column + 1;
             }
 
@@ -139,22 +145,19 @@ export class ScopeParser {
     }
 
     private static parsePrefixDecl(attr: IAttribute, decl: string, a: ActionAST | null, g: Grammar): [number, number] {
-        // walk backwards looking for start of an ID
+        // Walk backwards looking for start of an ID.
         let inID = false;
         let start = -1;
         for (let i = decl.length - 1; i >= 0; i--) {
             const ch = decl.codePointAt(i)!;
 
-            // if we haven't found the end yet, keep going
+            // If we haven't found the end yet, keep going.
             if (!inID && Character.isLetterOrDigit(ch)) {
                 inID = true;
-            } else {
-                if (inID && !(Character.isLetterOrDigit(ch) || ch === 0x5F)) { // '_'
-                    start = i + 1;
-                    break;
-                }
+            } else if (inID && !(Character.isLetterOrDigit(ch) || ch === 0x5F)) { // '_'
+                start = i + 1;
+                break;
             }
-
         }
 
         if (start < 0 && inID) {
@@ -166,11 +169,11 @@ export class ScopeParser {
                 decl);
         }
 
-        // walk forward looking for end of an ID
+        // Walk forward looking for end of an ID.
         let stop = -1;
         for (let i = start; i < decl.length; i++) {
             const ch = decl.codePointAt(i)!;
-            // if we haven't found the end yet, keep going
+            // If we haven't found the end yet, keep going.
             if (!(Character.isLetterOrDigit(ch) || ch === 0x5F)) { // '_'
                 stop = i;
                 break;
@@ -181,10 +184,10 @@ export class ScopeParser {
             }
         }
 
-        // the name is the last ID
+        // The name is the last ID.
         attr.name = decl.substring(start, stop);
 
-        // the type is the decl minus the ID (could be empty)
+        // The type is the decl minus the ID (could be empty).
         attr.type = decl.substring(0, start);
         if (stop <= decl.length - 1) {
             attr.type += decl.substring(stop, decl.length);
@@ -204,7 +207,7 @@ export class ScopeParser {
         const colon = decl.indexOf(":");
         const namePartEnd = colon === -1 ? decl.length : colon;
 
-        // look for start of name
+        // Look for start of name.
         for (let i = 0; i < namePartEnd; ++i) {
             const ch = decl.codePointAt(i)!;
             if (Character.isLetterOrDigit(ch) || ch === 0x5F) { // '_'
@@ -219,7 +222,7 @@ export class ScopeParser {
                 decl);
         }
 
-        // look for stop of name
+        // Look for stop of name.
         for (let i = start; i < namePartEnd; ++i) {
             const ch = decl.codePointAt(i)!;
             if (!(Character.isLetterOrDigit(ch) || ch === 0x5F)) { // '_'
@@ -236,10 +239,10 @@ export class ScopeParser {
             stop = start;
         }
 
-        // extract name from decl
+        // Extract name from decl.
         attr.name = decl.substring(start, stop);
 
-        // extract type from decl (could be empty)
+        // Extract type from decl (could be empty).
         if (colon === -1) {
             attr.type = "";
         } else {
@@ -262,6 +265,11 @@ export class ScopeParser {
      * ```
      * convert to a list of attributes.  Allow nested square brackets etc...
      * Set separatorChar to ';' or ',' or whatever you want.
+     *
+     * @param s The argument list to parse.
+     * @param separatorChar The separator character.
+     *
+     * @returns The list of attributes.
      */
     private static splitDecls(s: string, separatorChar: string): Array<[string, number]> {
         const args = new Array<[string, number]>();
@@ -284,55 +292,63 @@ export class ScopeParser {
         while (p < n && actionText.codePointAt(p)! !== targetChar) {
             const c = actionText.codePointAt(p)!;
             switch (c) {
-                case 0x27: { // single quote
-                    p++;
+                case 0x27: { // Single quote.
+                    ++p;
                     while (p < n && actionText.codePointAt(p) !== 0x27) {
                         if (actionText.codePointAt(p) === 0x5C && (p + 1) < n &&
                             actionText.codePointAt(p + 1) === 0x27) {
-                            p++; // skip escaped quote
+                            // Skip escaped quote.
+                            ++p;
                         }
-                        p++;
+                        ++p;
                     }
-                    p++;
+                    ++p;
+
                     break;
                 }
 
                 case 0x22: { // double quote
-                    p++;
+                    ++p;
                     while (p < n && actionText.codePointAt(p) !== 0x22) {
                         if (actionText.codePointAt(p) === 0x5C && (p + 1) < n &&
                             actionText.codePointAt(p + 1) === 0x22) {
-                            p++; // skip escaped quote
+                            ++p; // skip escaped quote
                         }
-                        p++;
+                        ++p;
                     }
-                    p++;
+                    ++p;
+
                     break;
                 }
 
                 case 0x28: { // '('
                     p = ScopeParser.splitArgumentList(actionText, p + 1, 0x23, separatorChar, args);
+
                     break;
                 }
 
                 case 0x7B: { // '{'
                     p = ScopeParser.splitArgumentList(actionText, p + 1, 0x7D, separatorChar, args);
+
                     break;
                 }
 
                 case 0x3C: { // '<'
                     if (actionText.indexOf(">", p + 1) >= p) {
-                        // do we see a matching '>' ahead?  if so, hope it's a generic
-                        // and not less followed by expr with greater than
+                        // Do we see a matching '>' ahead?  if so, hope it's a generic
+                        // and not less followed by expr with greater than.
                         p = ScopeParser.splitArgumentList(actionText, p + 1, 0x3E, separatorChar, args);
                     } else {
-                        p++; // treat as normal char
+                        // Treat as normal char.
+                        ++p;
                     }
+
                     break;
                 }
 
                 case 0x5B: { // '['
                     p = ScopeParser.splitArgumentList(actionText, p + 1, 0x5D, separatorChar, args);
+
                     break;
                 }
 
@@ -347,12 +363,13 @@ export class ScopeParser {
                         args.push([arg.trim(), index]);
                         last = p + 1;
                     }
-                    p++;
+                    ++p;
+
                     break;
                 }
-
             }
         }
+
         if (targetChar === -1) {
             const arg = actionText.substring(last, p).trim();
             let index = last;
@@ -364,7 +381,7 @@ export class ScopeParser {
                 args.push([arg.trim(), index]);
             }
         }
-        p++;
+        ++p;
 
         return p;
     }

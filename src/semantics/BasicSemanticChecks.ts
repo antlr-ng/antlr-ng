@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-param, jsdoc/require-returns */
-
 import type { Token } from "antlr4ng";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
@@ -30,35 +28,23 @@ import { RuleCollector } from "./RuleCollector.js";
 
 /**
  * No side-effects except for setting options into the appropriate node.
- *  TODO:  make the side effects into a separate pass this
  *
  * Invokes check rules for these:
  *
  * FILE_AND_GRAMMAR_NAME_DIFFER
  * LEXER_RULES_NOT_ALLOWED
  * PARSER_RULES_NOT_ALLOWED
- * CANNOT_ALIAS_TOKENS
- * ARGS_ON_TOKEN_REF
  * ILLEGAL_OPTION
- * REWRITE_OR_OP_WITH_NO_OUTPUT_OPTION
  * NO_RULES
- * REWRITE_FOR_MULTI_ELEMENT_ALT
- * HETERO_ILLEGAL_IN_REWRITE_ALT
- * AST_OP_WITH_NON_AST_OUTPUT_OPTION
- * AST_OP_IN_ALT_WITH_REWRITE
- * CONFLICTING_OPTION_IN_TREE_FILTER
- * WILDCARD_AS_ROOT
  * INVALID_IMPORT
- * TOKEN_VOCAB_IN_DELEGATE
  * IMPORT_NAME_CLASH
  * REPEATED_PREQUEL
  * TOKEN_NAMES_MUST_START_UPPER
  */
 export class BasicSemanticChecks extends GrammarTreeVisitor {
     /**
-     * Set of valid imports.  Maps delegate to set of delegator grammar types.
-     *  validDelegations.get(LEXER) gives list of the kinds of delegators
-     *  that can import lexers.
+     * Set of valid imports. Maps delegate to set of delegator grammar types. `validDelegations.get(LEXER)` gives
+     * list of the kinds of delegators that can import lexers.
      */
     public static readonly validImportTypes = new Map<number, number[]>([
         [GrammarType.Lexer, [GrammarType.Lexer, GrammarType.Combined]],
@@ -70,30 +56,23 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
     public ruleCollector: RuleCollector;
 
     /**
-     * When this is {@code true}, the semantic checks will report
-     * {@link ErrorType#UNRECOGNIZED_ASSOC_OPTION} where appropriate. This may
-     * be set to {@code false} to disable this specific check.
+     * When this is `true`, the semantic checks will report {@link ErrorType.UNRECOGNIZED_ASSOC_OPTION} where
+     * appropriate. This may be set to `false` to disable this specific check.
      *
-     * <p>The default value is {@code true}.</p>
+     * The default value is `true`.
      */
     public checkAssocElementOption = true;
 
-    /**
-     * This field is used for reporting the {@link ErrorType#MODE_WITHOUT_RULES}
-     * error when necessary.
-     */
+    /** This field is used for reporting the {@link ErrorType.MODE_WITHOUT_RULES} error when necessary. */
     protected nonFragmentRuleCount: number;
 
     /**
-     * This is {@code true} from the time {@link #discoverLexerRule} is called
-     * for a lexer rule with the {@code fragment} modifier until
-     * {@link #exitLexerRule} is called.
+     * This is `true` from the time {@link discoverLexerRule} is called for a lexer rule with the `fragment` modifier
+     * until {@link exitLexerRule} is called.
      */
     private inFragmentRule: boolean;
 
-    /**
-     * Value of caseInsensitive option (false if not defined)
-     */
+    /** Value of caseInsensitive option (false if not defined) */
     private grammarCaseInsensitive = false;
 
     public constructor(g: Grammar, ruleCollector: RuleCollector) {
@@ -107,8 +86,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         this.visitGrammar(this.g.ast);
     };
 
-    // Routines to route visitor traffic to the checking routines
-
+    // Routines to route visitor traffic to the checking routines.
     public override discoverGrammar(root: GrammarRootAST, id: GrammarAST): void {
         this.checkGrammarName(id.token!);
     }
@@ -121,7 +99,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         const parent = firstPrequel.parent as GrammarAST;
         const options = parent.getAllChildrenWithType(ANTLRv4Parser.OPTIONS);
         const imports = parent.getAllChildrenWithType(ANTLRv4Parser.IMPORT);
-        const tokens = parent.getAllChildrenWithType(ANTLRv4Parser.TOKENS); // TOKEN_SPEC originally.
+        const tokens = parent.getAllChildrenWithType(ANTLRv4Parser.TOKENS);
         this.checkNumPrequels(options, imports, tokens);
     }
 
@@ -140,15 +118,11 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         }
     }
 
-    public override discoverRule(rule: RuleAST, id: GrammarAST, modifiers: GrammarAST[], arg: ActionAST,
-        returns: ActionAST, _throws: GrammarAST, options: GrammarAST, locals: ActionAST, actions: GrammarAST[],
-        block: GrammarAST): void {
-        // TODO: check that all or no alts have "# label"
+    public override discoverRule(rule: RuleAST, id: GrammarAST): void {
         this.checkInvalidRuleDef(id.token!);
     }
 
-    public override discoverLexerRule(rule: RuleAST, id: GrammarAST, modifiers: GrammarAST[], options: GrammarAST,
-        block: GrammarAST): void {
+    public override discoverLexerRule(rule: RuleAST, id: GrammarAST, modifiers: GrammarAST[]): void {
         this.checkInvalidRuleDef(id.token!);
 
         for (const tree of modifiers) {
@@ -162,7 +136,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         }
     }
 
-    public override ruleRef(ref: GrammarAST, arg: ActionAST): void {
+    public override ruleRef(ref: GrammarAST): void {
         this.checkInvalidRuleRef(ref.token!);
     }
 
@@ -190,7 +164,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         this.checkElementOptions(t, id, valueAST);
     }
 
-    public override finishRule(rule: RuleAST, _id: GrammarAST, _block: GrammarAST): void {
+    public override finishRule(rule: RuleAST): void {
         if (rule.isLexerRule()) {
             return;
         }
@@ -203,16 +177,15 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
             if (altAST.altLabel) {
                 const altLabel = altAST.altLabel.getText();
 
-                // First check that label doesn't conflict with a rule
-                // label X or x can't be rule x.
+                // First check that label doesn't conflict with a rule label X or x can't be rule x.
                 const r = this.ruleCollector.nameToRuleMap.get(Utils.decapitalize(altLabel));
                 if (r) {
                     this.g.tool.errorManager.grammarError(ErrorType.ALT_LABEL_CONFLICTS_WITH_RULE, this.g.fileName,
                         altAST.altLabel.token!, altLabel, r.name);
                 }
 
-                // Now verify that label X or x doesn't conflict with label
-                // in another rule. altLabelToRuleName has both X and x mapped.
+                // Now verify that label X or x doesn't conflict with label in another rule. altLabelToRuleName
+                // has both X and x mapped.
                 const prevRuleForLabel = this.ruleCollector.altLabelToRuleName.get(altLabel);
                 if (prevRuleForLabel && prevRuleForLabel !== rule.getRuleName()) {
                     this.g.tool.errorManager.grammarError(ErrorType.ALT_LABEL_REDEF, this.g.fileName,
@@ -291,6 +264,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
             : this.g.isCombined()
                 ? ErrorType.CHANNELS_BLOCK_IN_COMBINED_GRAMMAR
                 : null;
+
         if (errorType !== null) {
             this.g.tool.errorManager.grammarError(errorType, this.g.fileName, tree.token!);
         }
@@ -396,11 +370,14 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
     }
 
     /**
-     Make sure that action is last element in outer alt; here action,
-     a2, z, and zz are bad, but a3 is ok:
-     (RULE A (BLOCK (ALT {action} 'a')))
-     (RULE B (BLOCK (ALT (BLOCK (ALT {a2} 'x') (ALT 'y')) {a3})))
-     (RULE C (BLOCK (ALT 'd' {z}) (ALT 'e' {zz})))
+     * Make sure that action is the last element in an outer alt. Here action, a2, z, and zz are bad, but a3 is ok:
+     * ```
+     * (RULE A (BLOCK (ALT {action} 'a')))
+     * (RULE B (BLOCK (ALT (BLOCK (ALT {a2} 'x') (ALT 'y')) {a3})))
+     * (RULE C (BLOCK (ALT 'd' {z}) (ALT 'e' {zz})))
+     * ```
+     *
+     * @param tree The action node to check.
      */
     protected checkElementIsOuterMostInSingleAlt(tree: GrammarAST): void {
         const alt = tree.parent!;
@@ -411,7 +388,6 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         if (!outerMostAlt || blk.getChildCount() > 1) {
             const e = ErrorType.LEXER_COMMAND_PLACEMENT_ISSUE;
             this.g.tool.errorManager.grammarError(e, fileName ?? "<none>", tree.token!, rule.getChild(0)!.getText());
-
         }
     }
 
@@ -423,7 +399,13 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         }
     }
 
-    /** Check option is appropriate for grammar, rule, subrule */
+    /**
+     * Checks that an option is appropriate for grammar, rule, subrule.
+     *
+     * @param parent The parent node of the option.
+     * @param optionID The ID of the option.
+     * @param valueAST The value of the option.
+     */
     protected checkOptions(parent: GrammarAST, optionID: Token, valueAST: GrammarAST): void {
         let optionsToCheck = null;
         const parentType = parent.getType();
@@ -457,7 +439,15 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         }
     }
 
-    /** Check option is appropriate for elem; parent of ID is ELEMENT_OPTIONS */
+    /**
+     * Checks that an option is appropriate for elem. Parent of ID is ELEMENT_OPTIONS.
+     *
+     * @param elem The element to check.
+     * @param id The ID of the option.
+     * @param valueAST The value of the option.
+     *
+     * @returns `true` if the option is valid for the element, `false` otherwise.
+     */
     protected checkElementOptions(elem: GrammarASTWithOptions, id: GrammarAST, valueAST: GrammarAST | null): boolean {
         if (this.checkAssocElementOption && id.getText() === "assoc") {
             if (elem.getType() !== ANTLRv4Parser.ALT) {
@@ -506,7 +496,6 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
             return false;
         }
 
-        // TODO: extra checks depending on rule kind?
         return true;
     }
 
@@ -522,7 +511,6 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
             return false;
         }
 
-        // TODO: extra checks depending on terminal kind?
         return true;
     }
 
@@ -554,11 +542,9 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
                 const currentValue = valueText === "true";
                 if (parentType === ANTLRv4Parser.GRAMMAR) {
                     this.grammarCaseInsensitive = currentValue;
-                } else {
-                    if (this.grammarCaseInsensitive === currentValue) {
-                        this.g.tool.errorManager.grammarError(ErrorType.REDUNDANT_CASE_INSENSITIVE_LEXER_RULE_OPTION,
-                            this.g.fileName, optionID, currentValue);
-                    }
+                } else if (this.grammarCaseInsensitive === currentValue) {
+                    this.g.tool.errorManager.grammarError(ErrorType.REDUNDANT_CASE_INSENSITIVE_LEXER_RULE_OPTION,
+                        this.g.fileName, optionID, currentValue);
                 }
             } else {
                 this.g.tool.errorManager.grammarError(ErrorType.ILLEGAL_OPTION_VALUE, this.g.fileName, valueAST.token!,

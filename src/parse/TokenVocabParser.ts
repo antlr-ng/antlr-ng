@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-returns */
-
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -23,7 +21,11 @@ export class TokenVocabParser {
         this.g = g;
     }
 
-    /** Load a vocab file {@code <vocabName>.tokens} and return mapping. */
+    /**
+     * Loads a vocab file `<vocabName>.tokens` and return mapping.
+     *
+     * @returns A map of token names to token types.
+     */
     public load(): Map<string, number> {
         const tokens = new Map<string, number>();
         let maxTokenType = -1;
@@ -37,7 +39,7 @@ export class TokenVocabParser {
         for (const tokenDef of lines) {
             ++lineNum;
             if (tokenDef.length === 0) {
-                // ignore blank lines
+                // Ignore blank lines.
                 continue;
             }
 
@@ -73,6 +75,8 @@ export class TokenVocabParser {
      * assume that the .tokens file is going to be generated as part of this build and we have defined .tokens files
      * so that they ALWAYS are generated in the base output directory, which means the current directory for the
      * command line tool if there was no output directory specified.
+     *
+     * @returns The content of the vocab file.
      */
     public getImportedVocabFile(): string {
         const vocabName = this.g.getOptionString("tokenVocab");
@@ -110,7 +114,8 @@ export class TokenVocabParser {
             if (vocabName === inTreeValue) {
                 this.g.tool.errorManager.grammarError(ErrorType.CANNOT_FIND_TOKENS_FILE_REFD_IN_GRAMMAR,
                     this.g.fileName, inTree?.token ?? null, inTreeValue);
-            } else { // must be from -D option on cmd-line not token in tree
+            } else {
+                // Must be from -D option on cmd-line not token in tree.
                 this.g.tool.errorManager.toolError(ErrorType.CANNOT_FIND_TOKENS_FILE_GIVEN_ON_CMDLINE, vocabName,
                     this.g.name);
             }

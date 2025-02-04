@@ -8,12 +8,12 @@ import { CharStream, type Token } from "antlr4ng";
 import { ActionSplitter } from "../generated/ActionSplitter.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
+import type { IActionSplitterListener } from "../parse/IActionSplitterListener.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { Grammar } from "../tool/Grammar.js";
 import { LexerGrammar } from "../tool/LexerGrammar.js";
 import { Rule } from "../tool/Rule.js";
 import { ActionSniffer } from "./ActionSniffer.js";
-import { BlankActionSplitterListener } from "./BlankActionSplitterListener.js";
 
 /** Look for errors and dead code stuff */
 export class UseDefAnalyzer {
@@ -32,33 +32,33 @@ export class UseDefAnalyzer {
 
     public static actionIsContextDependent(actionAST: ActionAST): boolean {
         const input = CharStream.fromString(actionAST.token!.text!);
-        //input.setLine(actionAST.token.getLine());
-        //input.setCharPositionInLine(actionAST.token.getCharPositionInLine());
         const dependent = [false]; // can't be simple bool with anon class
-        const listener = new class extends BlankActionSplitterListener {
-            public override nonLocalAttr(expr: string, x: Token, y: Token): void {
+        const listener = new class implements IActionSplitterListener {
+            public nonLocalAttr(expr: string, x: Token, y: Token): void {
                 dependent[0] = true;
             }
 
-            public override qualifiedAttr(expr: string, x: Token, y: Token): void {
+            public qualifiedAttr(expr: string, x: Token, y: Token): void {
                 dependent[0] = true;
             }
 
-            public override setAttr(expr: string, x: Token, rhs: Token): void {
+            public setAttr(expr: string, x: Token, rhs: Token): void {
                 dependent[0] = true;
             }
 
-            public override setExprAttribute(expr: string): void {
+            public setExprAttribute(expr: string): void {
                 dependent[0] = true;
             }
 
-            public override setNonLocalAttr(expr: string, x: Token, y: Token, rhs: string): void {
+            public setNonLocalAttr(expr: string, x: Token, y: Token, rhs: string): void {
                 dependent[0] = true;
             }
 
-            public override attr(expr: string, x: Token): void {
+            public attr(expr: string, x: Token): void {
                 dependent[0] = true;
             }
+
+            public text(text: string): void { /**/ }
         }();
 
         const splitter = new ActionSplitter(input);

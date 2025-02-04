@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-// cspell: ignore thrws
-
 import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
 import { MultiMap } from "stringtemplate4ts";
@@ -14,19 +12,18 @@ import { ScopeParser } from "../parse/ScopeParser.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { AltAST } from "../tool/ast/AltAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
+import type { GrammarRootAST } from "../tool/ast/GrammarRootAST.js";
 import { RuleAST } from "../tool/ast/RuleAST.js";
 import { DictType } from "../tool/DictType.js";
 import { Grammar } from "../tool/Grammar.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { Rule } from "../tool/Rule.js";
-import type { GrammarRootAST } from "../tool/ast/GrammarRootAST.js";
 
 export class RuleCollector extends GrammarTreeVisitor {
 
-    /** which grammar are we checking */
+    /** Which grammar are we checking? */
     public g: Grammar;
 
-    // stuff to collect. this is the output
     public nameToRuleMap = new Map<string, Rule>();
     public ruleToAltLabels = new MultiMap<string, GrammarAST>();
     public altLabelToRuleName = new Map<string, string>();
@@ -52,6 +49,7 @@ export class RuleCollector extends GrammarTreeVisitor {
         } else {
             r = new Rule(this.g, id.getText(), rule, numAlts);
         }
+
         this.nameToRuleMap.set(r.name, r);
 
         if (arg !== undefined) {

@@ -6,7 +6,7 @@
 import { CharStream, type Token } from "antlr4ng";
 
 import { ActionSplitter } from "../generated/ActionSplitter.js";
-import { ActionSplitterListener } from "../parse/ActionSplitterListener.js";
+import { IActionSplitterListener } from "../parse/IActionSplitterListener.js";
 
 import { DictType } from "../tool/DictType.js";
 import { ErrorType } from "../tool/ErrorType.js";
@@ -48,7 +48,7 @@ import { TokenPropertyRefType } from "./model/chunk/TokenPropertyRefType.js";
 import { TokenRef } from "./model/chunk/TokenRef.js";
 import { StructDecl } from "./model/decl/StructDecl.js";
 
-export class ActionTranslator implements ActionSplitterListener {
+export class ActionTranslator implements IActionSplitterListener {
     public static readonly thisRulePropToModelMap = new Map<string, typeof RulePropertyRef>([
         ["start", ThisRulePropertyRefStart],
         ["stop", ThisRulePropertyRefStop],

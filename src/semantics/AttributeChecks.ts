@@ -7,7 +7,7 @@ import { CharStream, type Token } from "antlr4ng";
 
 import { ActionSplitter } from "../generated/ActionSplitter.js";
 
-import { ActionSplitterListener } from "../parse/ActionSplitterListener.js";
+import { IActionSplitterListener } from "../parse/IActionSplitterListener.js";
 import { Alternative } from "../tool/Alternative.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { ErrorType } from "../tool/ErrorType.js";
@@ -15,14 +15,16 @@ import { Grammar } from "../tool/Grammar.js";
 import { LabelType } from "../tool/LabelType.js";
 import { Rule } from "../tool/Rule.js";
 
-/**
- * Trigger checks for various kinds of attribute expressions.
- * no side-effects.
- */
-export class AttributeChecks implements ActionSplitterListener {
+/** Trigger checks for various kinds of attribute expressions. no side-effects. */
+export class AttributeChecks implements IActionSplitterListener {
     public g: Grammar;
-    public r: Rule | null; // null if action outside of rule
-    public alt: Alternative | null; // null if action outside of alt; could be in rule
+
+    /** `null` if action outside of rule */
+    public r: Rule | null;
+
+    /** `null` if action outside of alt; could be in rule. */
+    public alt: Alternative | null;
+
     public node: ActionAST;
     public actionToken?: Token;
 
@@ -71,14 +73,11 @@ export class AttributeChecks implements ActionSplitterListener {
         const input = CharStream.fromString(this.actionToken!.text!);
         const splitter = new ActionSplitter(input);
 
-        // forces eval, triggers listener methods
+        // Forces eval, triggers listener methods.
         this.node.chunks = splitter.getActionTokens(this, this.actionToken);
     }
 
-    // LISTENER METHODS
-
-    // $x.y
-
+    // `$x.y`
     public qualifiedAttr(expr: string, x: Token, y: Token): void {
         if (this.g.isLexer()) {
             this.g.tool.errorManager.grammarError(ErrorType.ATTRIBUTE_IN_LEXER_ACTION, this.g.fileName, x,
@@ -88,7 +87,7 @@ export class AttributeChecks implements ActionSplitterListener {
         }
 
         if (this.node.resolver.resolveToAttribute(x.text!, this.node) !== null) {
-            // must be a member access to a predefined attribute like $ctx.foo
+            // Must be a member access to a predefined attribute like `$ctx.foo`.
             this.attr(expr, x);
 
             return;
@@ -131,6 +130,7 @@ export class AttributeChecks implements ActionSplitterListener {
 
             this.g.tool.errorManager.grammarError(errorType, this.g.fileName, x, x.text, expr);
         }
+
         new AttributeChecks(this.g, this.r, this.alt, this.node, rhs).examineAction();
     }
 
@@ -144,11 +144,13 @@ export class AttributeChecks implements ActionSplitterListener {
 
         if (this.node.resolver.resolveToAttribute(x.text!, this.node) === null) {
             if (this.node.resolver.resolvesToToken(x.text!, this.node)) {
-                return; // $ID for token ref or label of token
+                // $ID for token ref or label of token.
+                return;
             }
 
             if (this.node.resolver.resolvesToListLabel(x.text!, this.node)) {
-                return; // $ids for ids+=ID etc...
+                // $ids for ids+=ID etc...
+                return;
             }
 
             if (this.isolatedRuleRef(x.text!) !== null) {
@@ -184,17 +186,13 @@ export class AttributeChecks implements ActionSplitterListener {
     }
 
     public text(text: string): void { /**/ }
-
-    // don't care
     public templateInstance(expr: string): void { /**/ }
     public indirectTemplateInstance(expr: string): void { /**/ }
     public setExprAttribute(expr: string): void { /**/ }
     public setSTAttribute(expr: string): void { /**/ }
     public templateExpr(expr: string): void { /**/ }
 
-    // SUPPORT
-
-    public isolatedRuleRef(x: string): Rule | null {
+    private isolatedRuleRef(x: string): Rule | null {
         if (this.node.resolver instanceof Grammar) {
             return null;
         }

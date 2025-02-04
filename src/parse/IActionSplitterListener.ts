@@ -5,7 +5,7 @@
 
 import type { Token } from "antlr4ng";
 
-export interface ActionSplitterListener {
+export interface IActionSplitterListener {
     qualifiedAttr(expr: string, x: Token, y: Token): void;
     setAttr(expr: string, x: Token, rhs: Token): void;
     attr(expr: string, x: Token): void;
