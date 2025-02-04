@@ -10,7 +10,7 @@ lexer grammar ActionSplitter;
 
 @header {/* eslint-disable */
 
-import type { ActionSplitterListener } from "../parse/ActionSplitterListener.js";
+import type { IActionSplitterListener } from "../parse/IActionSplitterListener.js";
 import { Character } from "../support/Character.js";
 
 const attrValueExpr = /[^=][^;]*/;
@@ -23,7 +23,7 @@ const attr = new RegExp(`\\$(?<x>${id.source})`);
 }
 
 @members {/** Force filtering (and return tokens). Sends token values to the delegate. */
-public getActionTokens(delegate: ActionSplitterListener, refToken?: Token): Token[] {
+public getActionTokens(delegate: IActionSplitterListener, refToken?: Token): Token[] {
     const tokens = this.getAllTokens();
     for (let i = 0; i < tokens.length; i++) {
         const t = tokens[i];
