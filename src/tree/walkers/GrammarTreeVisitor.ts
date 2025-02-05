@@ -85,7 +85,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     public outerAlternative(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.discoverOuterAlt(start as AltAST);
 
@@ -204,7 +204,7 @@ export class GrammarTreeVisitor extends TreeParser {
 
     private prequelConstructs(): GrammarAST | undefined {
         let firstOne;
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             const lookahead = this.input.LA(1);
@@ -296,7 +296,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private optionsSpec(): GrammarAST {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             this.match(this.input, ANTLRv4Parser.OPTIONS);
@@ -356,7 +356,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private optionValue(): GrammarAST {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             const lookahead = this.input.LA(1);
@@ -479,7 +479,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private channelsSpec(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterChannelsSpec(start);
 
@@ -589,7 +589,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private mode(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterMode(start);
 
@@ -620,7 +620,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private lexerRule(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterLexerRule(start);
         const mods = new Array<GrammarAST>();
@@ -651,7 +651,8 @@ export class GrammarTreeVisitor extends TreeParser {
                 }
             }
 
-            this.discoverLexerRule(rule as RuleAST, tokenRef, mods, opts ?? null, this.input.LT(1) as GrammarAST);
+            this.discoverLexerRule(rule as RuleAST, tokenRef, mods, opts ?? null,
+                this.input.lookAhead(1) as GrammarAST);
             this.lexerRuleBlock();
 
             this.currentRuleName = undefined;
@@ -738,8 +739,8 @@ export class GrammarTreeVisitor extends TreeParser {
             }
 
             this.discoverRule(rule as RuleAST, ruleRef, mods, argAction as ActionAST,
-                ret?.getChild(0) as ActionAST, thr, opts ?? undefined,
-                loc?.getChild(0) as ActionAST | null ?? undefined, actions, this.input.LT(1) as GrammarAST);
+                ret?.children[0] as ActionAST, thr, opts ?? undefined,
+                loc?.children[0] as ActionAST | null ?? undefined, actions, this.input.lookAhead(1) as GrammarAST);
             const ruleBlock17 = this.ruleBlock();
 
             this.exceptionGroup();
@@ -812,7 +813,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private locals(): GrammarAST {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             this.match(this.input, ANTLRv4Parser.LOCALS);
@@ -831,7 +832,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private ruleReturns(): GrammarAST {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             this.match(this.input, ANTLRv4Parser.RETURNS);
@@ -850,7 +851,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private throwsSpec(): GrammarAST {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             this.match(this.input, ANTLRv4Parser.THROWS);
@@ -884,7 +885,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private ruleAction(): GrammarAST {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             this.match(this.input, ANTLRv4Parser.AT);
@@ -904,7 +905,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private ruleModifier(): GrammarAST {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             const lookahead = this.input.LA(1);
@@ -960,7 +961,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private ruleBlock(): GrammarAST {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             this.match(this.input, ANTLRv4Parser.BLOCK);
@@ -996,7 +997,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private lexerOuterAlternative(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.discoverOuterAlt(start as AltAST);
 
@@ -1012,7 +1013,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private lexerAlternative(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterLexerAlternative(start);
 
@@ -1099,7 +1100,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private lexerElement(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterLexerElement(start);
 
@@ -1347,12 +1348,12 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private alternative(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterAlternative(start as AltAST);
 
         try {
-            if (start.getChild(0)?.getType() === ANTLRv4Parser.EPSILON) { // Empty alternative.
+            if (start.children[0]?.getType() === ANTLRv4Parser.EPSILON) { // Empty alternative.
                 this.match(this.input, ANTLRv4Parser.ALT);
                 this.match(this.input, Constants.DOWN);
 
@@ -1430,7 +1431,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private element(): GrammarAST {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterElement(start);
 
@@ -1669,7 +1670,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private labeledElement(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             if (this.input.LA(1) === ANTLRv4Parser.ASSIGN || this.input.LA(1) === ANTLRv4Parser.PLUS_ASSIGN) {
@@ -1695,7 +1696,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private subrule(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             const lookahead = this.input.LA(1);
@@ -1724,7 +1725,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private lexerSubrule(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             const lookahead = this.input.LA(1);
@@ -1964,7 +1965,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private blockSet(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterBlockSet(start);
 
@@ -2193,7 +2194,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private terminal(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterTerminal(start);
 
@@ -2284,7 +2285,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private elementOptions(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             this.match(this.input, ANTLRv4Parser.ELEMENT_OPTIONS);
@@ -2312,7 +2313,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private handleLexerCommand(): void {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         this.enterLexerCommand(start);
 

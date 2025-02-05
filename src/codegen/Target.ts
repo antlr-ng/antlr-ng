@@ -503,7 +503,7 @@ export abstract class Target {
             }
 
             case ANTLRv4Parser.LEXER_ACTION_CALL: {
-                if (idNode.getChildIndex() === 0) {
+                if (idNode.childIndex === 0) {
                     // First child is the command name which is part of the ANTLR language.
                     return false;
                 }

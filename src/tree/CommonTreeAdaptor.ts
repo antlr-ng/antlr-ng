@@ -213,9 +213,9 @@ export class CommonTreeAdaptor {
 
         // handle ^(nil real-node)
         if (newRoot.isNil()) {
-            const nc = newRoot.getChildCount();
+            const nc = newRoot.children.length;
             if (nc === 1) {
-                newRoot = newRoot.getChild(0)!;
+                newRoot = newRoot.children[0];
             } else if (nc > 1) {
                 throw new Error("more than one node as root (TODO: make exception hierarchy)");
             }
@@ -235,13 +235,13 @@ export class CommonTreeAdaptor {
     public rulePostProcessing(root: CommonTree): CommonTree | null {
         let r: CommonTree | null = root;
         if (r.isNil()) {
-            if (r.getChildCount() === 0) {
+            if (r.children.length === 0) {
                 r = null;
-            } else if (r.getChildCount() === 1) {
-                r = r.getChild(0)!;
+            } else if (r.children.length === 1) {
+                r = r.children[0]!;
                 // whoever invokes rule will set parent and child index
                 r.parent = null;
-                r.setChildIndex(-1);
+                r.childIndex = -1;
             }
         }
 
@@ -290,7 +290,7 @@ export class CommonTreeAdaptor {
             return null;
         }
 
-        return t.getChild(i);
+        return t.children[i];
     }
 
     public getChildCount(t: CommonTree | null): number {
@@ -298,7 +298,7 @@ export class CommonTreeAdaptor {
             return 0;
         }
 
-        return t.getChildCount();
+        return t.children.length;
     }
 
     public getParent(t: CommonTree | null): CommonTree | null {
@@ -318,11 +318,11 @@ export class CommonTreeAdaptor {
     }
 
     public getChildIndex(t: CommonTree | undefined): number {
-        return t?.getChildIndex() ?? 0;
+        return t?.childIndex ?? 0;
     }
 
     public setChildIndex(t: CommonTree | undefined, index: number): void {
-        t?.setChildIndex(index);
+        t!.childIndex = index;
     }
 
     public replaceChildren(parent: CommonTree | undefined, startChildIndex: number, stopChildIndex: number,

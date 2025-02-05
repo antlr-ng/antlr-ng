@@ -42,7 +42,7 @@ export class RuleCollector extends GrammarTreeVisitor {
     public override discoverRule(rule: RuleAST, id: GrammarAST, modifiers: GrammarAST[], arg: ActionAST | undefined,
         returns: ActionAST | undefined, thrws: GrammarAST, options: GrammarAST, locals: ActionAST | undefined,
         actions: GrammarAST[], block: GrammarAST): void {
-        const numAlts = block.getChildCount();
+        const numAlts = block.children.length;
         let r: Rule;
         if (LeftRecursiveRuleAnalyzer.hasImmediateRecursiveRuleRefs(rule, id.getText())) {
             r = new LeftRecursiveRule(this.g, id.getText(), rule);
@@ -73,8 +73,8 @@ export class RuleCollector extends GrammarTreeVisitor {
 
         for (const a of actions) {
             // a = ^(AT ID ACTION)
-            const action = a.getChild(1) as ActionAST;
-            r.namedActions.set(a.getChild(0)!.getText(), action);
+            const action = a.children[1] as ActionAST;
+            r.namedActions.set(a.children[0].getText(), action);
             action.resolver = r;
         }
     }
@@ -99,17 +99,17 @@ export class RuleCollector extends GrammarTreeVisitor {
         options: GrammarAST | null, block: GrammarAST): void {
         let currentCaseInsensitive = this.grammarCaseInsensitive;
         if (options !== null) {
-            for (const child of options.getChildren()) {
+            for (const child of options.children) {
                 const childAST = child as GrammarAST;
-                const caseInsensitive = this.getCaseInsensitiveValue(childAST.getChild(0) as GrammarAST,
-                    childAST.getChild(1) as GrammarAST);
+                const caseInsensitive = this.getCaseInsensitiveValue(childAST.children[0] as GrammarAST,
+                    childAST.children[1] as GrammarAST);
                 if (caseInsensitive !== null) {
                     currentCaseInsensitive = caseInsensitive;
                 }
             }
         }
 
-        const numAlts = block.getChildCount();
+        const numAlts = block.children.length;
         const r = new Rule(this.g, id.getText(), rule, numAlts, this.currentModeName, currentCaseInsensitive);
         if (modifiers.length != 0) {
             r.modifiers = modifiers;

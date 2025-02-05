@@ -183,9 +183,9 @@ export class LexerATNFactory extends ParserATNFactory {
 
         for (const t of alts) {
             if (t.getType() === ANTLRv4Parser.RANGE) {
-                const a = CharSupport.getCharValueFromGrammarCharLiteral(t.getChild(0)!.getText());
-                const b = CharSupport.getCharValueFromGrammarCharLiteral(t.getChild(1)!.getText());
-                if (this.checkRange(t.getChild(0) as GrammarAST, t.getChild(1) as GrammarAST, a, b)) {
+                const a = CharSupport.getCharValueFromGrammarCharLiteral(t.children[0].getText());
+                const b = CharSupport.getCharValueFromGrammarCharLiteral(t.children[1].getText());
+                if (this.checkRange(t.children[0] as GrammarAST, t.children[1] as GrammarAST, a, b)) {
                     this.checkRangeAndAddToSet(associatedAST, t, set, a, b, this.currentRule!.caseInsensitive, null);
                 }
             } else if (t.getType() === ANTLRv4Parser.LEXER_CHAR_SET) {
@@ -539,14 +539,14 @@ export class LexerATNFactory extends ParserATNFactory {
                         for (let i = a; i <= b; i++) {
                             if (set.contains(i)) {
                                 let setText: string;
-                                if (rootAst.getChildren().length === 0) {
+                                if (rootAst.children.length === 0) {
                                     setText = rootAst.getText()!;
                                 } else {
                                     setText = "";
-                                    for (const child of rootAst.getChildren()) {
+                                    for (const child of rootAst.children) {
                                         if (child instanceof RangeAST) {
-                                            setText += (child.getChild(0)!.getText()) + "..";
-                                            setText += (child).getChild(1)!.getText();
+                                            setText += (child.children[0].getText()) + "..";
+                                            setText += (child).children[1].getText();
                                         } else {
                                             setText += (child as GrammarAST).getText();
                                         }

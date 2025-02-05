@@ -42,7 +42,7 @@ export class AnalysisPipeline {
             const look = analyzer.look(this.g.atn!.ruleToStartState[rule.index]!, undefined);
             if (look.contains(Token.EPSILON)) {
                 this.g.tool.errorManager.grammarError(ErrorType.EPSILON_TOKEN, this.g.fileName,
-                    (rule.ast.getChild(0) as GrammarAST).token!, rule.name);
+                    (rule.ast.children[0] as GrammarAST).token!, rule.name);
             }
         }
     }

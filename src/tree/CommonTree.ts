@@ -3,14 +3,14 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { Interval, ParseTree, Token, type ParseTreeVisitor } from "antlr4ng";
+import { Interval, Token } from "antlr4ng";
 
 /** A tree node that is wrapper for a Token object. */
-export class CommonTree implements ParseTree {
-    /** A single token is the payload */
+export class CommonTree {
+    /** A single token is the payload. */
     public token?: Token;
 
-    /** Who is the parent node of this node; if null, implies node is root */
+    /** Who is the parent node of this node? If null, implies node is root. */
     public parent: CommonTree | null = null;
 
     /** What token indexes bracket all tokens associated with this node and below? */
@@ -20,9 +20,9 @@ export class CommonTree implements ParseTree {
     public stopIndex = -1;
 
     /** What index is this node in the child list? Range: 0..n-1 */
-    private childIndex = -1;
+    public childIndex = -1;
 
-    private children: CommonTree[] = [];
+    public children: CommonTree[] = [];
 
     public constructor(nodeOrToken?: CommonTree | Token) {
         if (nodeOrToken instanceof CommonTree) {
@@ -36,18 +36,6 @@ export class CommonTree implements ParseTree {
         }
     }
 
-    public getChild(i: number): CommonTree | null {
-        return this.children[i] ?? null;
-    }
-
-    public getChildCount(): number {
-        return this.children.length;
-    }
-
-    public getChildren(): CommonTree[] {
-        return this.children;
-    }
-
     public getFirstChildWithType(type: number): CommonTree | null {
         for (const t of this.children) {
             if (t.getType() === type) {
@@ -58,20 +46,15 @@ export class CommonTree implements ParseTree {
         return null;
     }
 
-    public getPayload(): Token | null {
-        return this.token ?? null;
-    }
-
     public dupNode(): CommonTree {
         return new CommonTree(this);
     }
 
     /**
-     * Add t as child of this node.
+     * Adds t as child of this node.
      *
-     * Warning: if t has no children, but child does
-     * and child isNil then this routine moves children to t via
-     * t.#children = child.#children; i.e., without copying the array.
+     * Warning: if t has no children, but child does and child isNil then this routine moves children to t via
+     * `t.children = child.children`, i.e., without copying the array.
      *
      * @param t The child to add.
      */
@@ -80,37 +63,39 @@ export class CommonTree implements ParseTree {
             return;
         }
 
-        if (t.isNil()) { // t is an empty node possibly with children
+        if (t.isNil()) {
+            // t is an empty node possibly with children.
             if (this.children === t.children) {
                 throw new Error("attempt to add child list to itself");
             }
 
-            // just add all of childTree's children to this
-            if (this.children.length > 0) { // must copy, this has children already
+            // Just add all of childTree's children to this.
+            if (this.children.length > 0) {
+                // Must copy, this has children already.
                 const n = t.children.length;
                 for (let i = 0; i < n; i++) {
                     const c = t.children[i];
                     this.children.push(c);
 
-                    // handle double-link stuff for each child of nil root
+                    // Handle double-link stuff for each child of nil root.
                     c.parent = this;
-                    c.setChildIndex(this.children.length - 1);
+                    c.childIndex = this.children.length - 1;
                 }
             } else {
-                // no children for this but t has children; just set pointer
-                // call general freshener routine
+                // No children for this but t has children; just set pointer call general freshener routine.
                 this.children = t.children;
                 this.freshenParentAndChildIndexes();
             }
-        } else { // child is not nil (don't care about children)
+        } else {
+            // Child is not nil (don't care about children).
             this.children.push(t);
             t.parent = this;
-            t.setChildIndex(this.children.length - 1);
+            t.childIndex = this.children.length - 1;
         }
     }
 
     /**
-     * Add all elements of kids list as children of this node
+     * Adds all elements of kids list as children of this node.
      *
      * @param kids The children to add.
      */
@@ -127,43 +112,40 @@ export class CommonTree implements ParseTree {
 
         this.children[i] = t;
         t.parent = this;
-        t.setChildIndex(i);
+        t.childIndex = i;
     }
 
     /**
-     * Insert child t at child position i (0..n-1) by shifting children
-     * i+1..n-1 to the right one position. Set parent / indexes properly
-     * but does NOT collapse nil-rooted t's that come in here like addChild.
+     * Inserts child t at child position i (0..n - 1) by shifting children i + 1..n - 1 to the right one position. Sets
+     * parent/indexes properly but does NOT collapse nil-rooted t's that come in here like addChild.
      *
      * @param i The index to insert the child at.
      * @param t The child to insert.
      */
     public insertChild(i: number, t: CommonTree): void {
-        if (i < 0 || i > this.getChildCount()) {
+        if (i < 0 || i > this.children.length) {
             throw new Error(`${i} out or range`);
         }
 
         this.children.splice(i, 0, t);
 
-        // walk others to increment their child indexes
-        // set index, parent of this one too
+        // Walk others to increment their child indexes set index, parent of this one too.
         this.freshenParentAndChildIndexes(i);
     }
 
     public deleteChild(i: number): CommonTree | null {
         const killed = this.children.splice(i, 1);
 
-        // walk rest and decrement their child indexes
+        // Walk rest and decrement their child indexes.
         this.freshenParentAndChildIndexes(i);
 
         return killed[0] ?? null;
     }
 
     /**
-     * Delete children from start to stop and replace with t even if t is
-     * a list (nil-root tree).  num of children can increase or decrease.
-     * For huge child lists, inserting children can force walking rest of
-     * children to set their child index; could be slow.
+     * Deletes children from start to stop and replaces with t even if t is a list (nil-root tree). Number of children
+     * can increase or decrease. For huge child lists, inserting children can force walking rest of
+     * children to set their child index - could be slow.
      *
      * @param startChildIndex The index to start deleting children.
      * @param stopChildIndex The index to stop deleting children.
@@ -178,7 +160,7 @@ export class CommonTree implements ParseTree {
         const newTree = t;
         let newChildren: CommonTree[] = [];
 
-        // normalize to a list of children to add: newChildren
+        // Normalize to a list of children to add: newChildren.
         if (newTree.isNil()) {
             newChildren = newTree.children;
         } else {
@@ -189,68 +171,55 @@ export class CommonTree implements ParseTree {
         const numNewChildren = newChildren.length;
         const delta = replacingHowMany - replacingWithHowMany;
 
-        // if same number of nodes, do direct replace
+        // If same number of nodes, do direct replace.
         if (delta === 0) {
-            let j = 0; // index into new children
+            // Index into new children.
+            let j = 0;
             for (let i = startChildIndex; i <= stopChildIndex; i++) {
                 const child = newChildren[j];
                 this.children.splice(i, 1, child);
                 child.parent = this;
-                child.setChildIndex(i);
+                child.childIndex = i;
                 j++;
             }
-        } else {
-            if (delta > 0) { // fewer new nodes than there were
-                // set children and then delete extra
-                for (let j = 0; j < numNewChildren; j++) {
-                    this.children[startChildIndex + j] = newChildren[j];
-                }
-
-                const indexToDelete = startChildIndex + numNewChildren;
-                for (let c = indexToDelete; c <= stopChildIndex; c++) {
-                    // delete same index, shifting everybody down each time
-                    this.children.splice(indexToDelete, 1);
-                }
-                this.freshenParentAndChildIndexes(startChildIndex);
-            } else { // more new nodes than were there before
-                // fill in as many children as we can (replacingHowMany) w/o moving data
-                for (let j = 0; j < replacingHowMany; j++) {
-                    this.children[startChildIndex + j] = newChildren[j];
-                }
-
-                for (let j = replacingHowMany; j < replacingWithHowMany; j++) {
-                    this.children.splice(startChildIndex + j, 0, newChildren[j]);
-                }
-                this.freshenParentAndChildIndexes(startChildIndex);
+        } else if (delta > 0) { // fewer new nodes than there were
+            // Set children and then delete extra.
+            for (let j = 0; j < numNewChildren; j++) {
+                this.children[startChildIndex + j] = newChildren[j];
             }
+
+            const indexToDelete = startChildIndex + numNewChildren;
+            for (let c = indexToDelete; c <= stopChildIndex; c++) {
+                // Delete same index, shifting everybody down each time.
+                this.children.splice(indexToDelete, 1);
+            }
+
+            this.freshenParentAndChildIndexes(startChildIndex);
+        } else {
+            // More new nodes than were there before.
+            // Fill in as many children as we can (replacingHowMany) w/o moving data.
+            for (let j = 0; j < replacingHowMany; j++) {
+                this.children[startChildIndex + j] = newChildren[j];
+            }
+
+            for (let j = replacingHowMany; j < replacingWithHowMany; j++) {
+                this.children.splice(startChildIndex + j, 0, newChildren[j]);
+            }
+            this.freshenParentAndChildIndexes(startChildIndex);
         }
     }
 
     /**
-     * Set the parent and child index values for all child of t
+     * Sets the parent and child index values for all child of t.
      *
      * @param offset The index to start from.
      */
     public freshenParentAndChildIndexes(offset?: number): void {
         offset ??= 0;
-        const n = this.getChildCount();
-        for (let c = offset; c < n; c++) {
-            const child = this.getChild(c);
-            if (child) {
-                child.setChildIndex(c);
-                child.parent = this;
-            }
-        }
-
-    }
-
-    public freshenParentAndChildIndexesDeeply(offset = 0): void {
-        const n = this.children.length;
-        for (let c = offset; c < n; c++) {
-            const child = this.children[c];
-            child.setChildIndex(c);
+        for (let i = offset; i < this.children.length; ++i) {
+            const child = this.children[i];
+            child.childIndex = i;
             child.parent = this;
-            child.freshenParentAndChildIndexesDeeply();
         }
     }
 
@@ -263,11 +232,11 @@ export class CommonTree implements ParseTree {
             throw new Error(`parents don't match; expected ${parent} found ${this.parent}`);
         }
 
-        if (i !== this.getChildIndex()) {
-            throw new Error(`child indexes don't match; expected ${i} found ${this.getChildIndex()}`);
+        if (i !== this.childIndex) {
+            throw new Error(`child indexes don't match; expected ${i} found ${this.childIndex}`);
         }
 
-        const n = this.getChildCount();
+        const n = this.children.length;
         for (let c = 0; c < n; c++) {
             const child = this.children[c];
             child.sanityCheckParentAndChildIndexes(this, c);
@@ -275,7 +244,7 @@ export class CommonTree implements ParseTree {
     }
 
     public isNil(): boolean {
-        return !this.token;
+        return this.token === undefined;
     }
 
     public getType(): number {
@@ -339,9 +308,8 @@ export class CommonTree implements ParseTree {
     }
 
     /**
-     * For every node in this subtree, make sure it's start/stop token's
-     *  are set.  Walk depth first, visit bottom up.  Only updates nodes
-     *  with at least one token index &lt; 0.
+     * For every node in this subtree, make sure it's start/stop token's are set. Walks depth first, visits bottom up.
+     * Only updates nodes with at least one token index < 0.
      */
     public setUnknownTokenBoundaries(): void {
         if (this.children.length === 0) {
@@ -360,19 +328,11 @@ export class CommonTree implements ParseTree {
             return;
         }
 
-        // already set
+        // Already set.
         const firstChild = this.children[0];
         const lastChild = this.children[this.children.length - 1];
         this.startIndex = firstChild.getTokenStartIndex();
         this.stopIndex = lastChild.getTokenStopIndex();
-    }
-
-    public getChildIndex(): number {
-        return this.childIndex;
-    }
-
-    public setChildIndex(index: number): void {
-        this.childIndex = index;
     }
 
     public toString(): string {
@@ -387,27 +347,12 @@ export class CommonTree implements ParseTree {
         return this.token.text ?? "nil";
     }
 
-    public accept<T>(visitor: ParseTreeVisitor<T>): T | null {
-        return visitor.visitChildren(this);
-    }
-
     public getSourceInterval(): Interval {
         return Interval.of(this.getTokenStartIndex(), this.getTokenStopIndex());
     }
 
     /**
-     * Walk upwards looking for ancestor with this token type.
-     *
-     * @param ttype The token type to check for.
-     *
-     * @returns `true` if this node has an ancestor with the specified token type; otherwise, `false`.
-     */
-    public hasAncestor(ttype: number): boolean {
-        return this.getAncestor(ttype) !== null;
-    }
-
-    /**
-     * Walk upwards and get first ancestor with this token type.
+     * Walks upwards and get first ancestor with this token type.
      *
      * @param ttype The token type to check for.
      *
@@ -428,28 +373,7 @@ export class CommonTree implements ParseTree {
     }
 
     /**
-     * Return a list of all ancestors of this node. The first node of list is the root and the last is the parent
-     * of this node.
-     *
-     * @returns A list of all ancestors of this node, or `null` if this node has no parent.
-     */
-    public getAncestors(): CommonTree[] | null {
-        if (this.parent === null) {
-            return null;
-        }
-
-        const ancestors = new Array<CommonTree>();
-        let t: CommonTree | null = this.parent;
-        while (t !== null) {
-            ancestors.unshift(t); // insert at start
-            t = t.parent;
-        }
-
-        return ancestors;
-    }
-
-    /**
-     * Print out a whole tree not just a node
+     * Prints out a whole tree not just a node.
      *
      * @returns A string representation of the tree.
      */
@@ -479,4 +403,23 @@ export class CommonTree implements ParseTree {
         return result;
     }
 
+    /**
+     * @returns a list of all ancestors of this node. The first node of list is the root and the last is the parent
+     * of this node.
+     */
+    protected getAncestors(): CommonTree[] | null {
+        if (this.parent === null) {
+            return null;
+        }
+
+        const ancestors = new Array<CommonTree>();
+        let t: CommonTree | null = this.parent;
+        while (t !== null) {
+            // Insert at start.
+            ancestors.unshift(t);
+            t = t.parent;
+        }
+
+        return ancestors;
+    }
 }

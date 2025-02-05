@@ -21,9 +21,9 @@ export class LeftRecursiveRuleFunction extends RuleFunction {
         // Since we delete x=lr, we have to manually add decls for all labels on left-recur refs to proper structs.
         for (const [idAST, altLabel] of r.leftRecursiveRuleRefLabels) {
             const label = idAST.getText();
-            const ruleRefAST = idAST.parent!.getChild(1) as GrammarAST;
+            const ruleRefAST = idAST.parent!.children[1] as GrammarAST;
             if (ruleRefAST.getType() === ANTLRv4Parser.RULE_REF) {
-                const targetRule = factory.grammar!.getRule(ruleRefAST.getText())!;
+                const targetRule = factory.grammar.getRule(ruleRefAST.getText())!;
                 const ctxName = gen.target.getRuleFunctionContextStructName(targetRule);
 
                 let d: RuleContextDecl;

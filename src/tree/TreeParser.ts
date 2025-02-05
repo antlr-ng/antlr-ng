@@ -119,7 +119,7 @@ export class TreeParser {
         this.state.errorRecovery = false;
         this.state.failed = false;
 
-        let lookAhead = this.input.LT(1);
+        let lookAhead = this.input.lookAhead(1);
         if (lookAhead && this.input.getTreeAdaptor().getChildCount(lookAhead) === 0) {
             this.input.consume(); // Not subtree, consume 1 node and return.
 
@@ -132,7 +132,7 @@ export class TreeParser {
             let tokenType = this.input.getTreeAdaptor().getType(lookAhead);
             while (tokenType !== Token.EOF && !(tokenType === Constants.UP && level === 0)) {
                 this.input.consume();
-                lookAhead = this.input.LT(1);
+                lookAhead = this.input.lookAhead(1);
                 if (lookAhead) {
                     tokenType = this.input.getTreeAdaptor().getType(lookAhead);
                     if (tokenType === Constants.DOWN) {
@@ -161,7 +161,8 @@ export class TreeParser {
      *  There is no way to force the first node to be the root.
      */
     public inContext(context: string): boolean {
-        return TreeParser.inContext(this.input.getTreeAdaptor(), this.getTokenNames(), this.input.LT(1)!, context);
+        return TreeParser.inContext(this.input.getTreeAdaptor(), this.getTokenNames(), this.input.lookAhead(1)!,
+            context);
     }
 
     /**
@@ -171,7 +172,7 @@ export class TreeParser {
     public match<T extends GrammarAST = GrammarAST>(input: CommonTreeNodeStream, ttype: number): T | null {
         this.state.failed = false;
 
-        const matchedSymbol = input.LT(1) as T | null;
+        const matchedSymbol = input.lookAhead(1) as T | null;
         if (input.LA(1) === ttype) {
             input.consume();
             this.state.errorRecovery = false;

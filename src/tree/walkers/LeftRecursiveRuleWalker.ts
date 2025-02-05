@@ -307,8 +307,8 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
     private ruleBlock(): boolean {
         let result = false;
-        const start = this.input.LT(1) as GrammarAST;
-        this.numAlts = start.getChildCount();
+        const start = this.input.lookAhead(1) as GrammarAST;
+        this.numAlts = start.children.length;
 
         this.match(this.input, ANTLRv4Lexer.BLOCK);
         if (this.failed) {
@@ -362,7 +362,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
     private outerAlternative(): boolean {
         let result = false;
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         if (this.input.LA(1) === ANTLRv4Lexer.ALT) {
             if (this.syntacticPredicate1()) {
@@ -748,7 +748,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private recurseNoLabel(): void {
-        if ((this.input.LT(1)!).getText() !== this.ruleName) {
+        if ((this.input.lookAhead(1)!).getText() !== this.ruleName) {
             if (this.state.backtracking > 0) {
                 this.failed = true;
 
@@ -2052,7 +2052,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return true;
                 }
 
-                if (la === Constants.UP && this.input.LT(1)!.getText() === this.ruleName) {
+                if (la === Constants.UP && this.input.lookAhead(1)!.getText() === this.ruleName) {
                     return false;
                 }
 
@@ -2063,7 +2063,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             case ANTLRv4Lexer.PLUS_ASSIGN: {
                 // LA(2) is DOWN, LA(3) is ID.
                 if (this.input.LA(4) === ANTLRv4Lexer.RULE_REF) {
-                    if (this.input.LT(4)!.getText() === this.ruleName) {
+                    if (this.input.lookAhead(4)!.getText() === this.ruleName) {
                         return false;
                     }
                 }

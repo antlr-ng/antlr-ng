@@ -188,7 +188,7 @@ export class SourceGenTriggers extends TreeParser {
 
     private alt(outerMost: boolean): IAltResults {
         const result: IAltResults = { ops: [] };
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         // Set alt if outer ALT only (the only ones with alt field set to Alternative object).
         const altAST = start as AltAST;
@@ -198,11 +198,11 @@ export class SourceGenTriggers extends TreeParser {
 
         try {
             let index = 0;
-            if (start.getChild(index)!.getType() === ANTLRv4Lexer.ELEMENT_OPTIONS) {
+            if (start.children[index].getType() === ANTLRv4Lexer.ELEMENT_OPTIONS) {
                 ++index;
             }
 
-            if (start.getChild(index)!.getType() === ANTLRv4Lexer.EPSILON) {
+            if (start.children[index].getType() === ANTLRv4Lexer.EPSILON) {
                 this.match(this.input, ANTLRv4Lexer.ALT);
                 this.match(this.input, Constants.DOWN);
 

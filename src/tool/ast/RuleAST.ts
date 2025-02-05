@@ -32,7 +32,7 @@ export class RuleAST extends GrammarASTWithOptions {
     }
 
     public getRuleName(): string | null {
-        const nameNode = this.getChild(0) as GrammarAST | null;
+        const nameNode = this.children[0] as GrammarAST | null;
 
         return nameNode?.getText() ?? null;
     }
@@ -43,10 +43,10 @@ export class RuleAST extends GrammarASTWithOptions {
 
     public getLexerAction(): ActionAST | null {
         const blk = this.getFirstChildWithType(ANTLRv4Parser.LPAREN);
-        if (blk?.getChildCount() === 1) {
-            const onlyAlt = blk.getChild(0);
-            const lastChild = onlyAlt?.getChild(onlyAlt.getChildCount() - 1);
-            if (lastChild?.getType() === ANTLRv4Parser.RBRACE) {
+        if (blk?.children.length === 1) {
+            const onlyAlt = blk.children[0];
+            const lastChild = onlyAlt.children[onlyAlt.children.length - 1];
+            if (lastChild.getType() === ANTLRv4Parser.RBRACE) {
                 return lastChild as ActionAST;
             }
         }

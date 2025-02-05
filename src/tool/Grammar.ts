@@ -262,7 +262,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
     public constructor(...args: unknown[]) {
         if (args.length === 2 && typeof args[0] !== "string") {
             [this.tool, this.ast] = args as [ITool, GrammarRootAST];
-            this.name = (this.ast.getChild(0)!).getText()!;
+            this.name = (this.ast.children[0]).getText()!;
             this.tokenStream = this.ast.tokenStream;
             this.originalTokenStream = this.tokenStream;
 
@@ -381,14 +381,14 @@ export class Grammar implements IGrammar, IAttributeResolver {
      */
     public static setNodeOptions(node: GrammarAST, options: GrammarAST): void {
         const t = node as GrammarASTWithOptions;
-        if (t.getChildCount() === 0 || options.getChildCount() === 0) {
+        if (t.children.length === 0 || options.children.length === 0) {
             return;
         }
 
-        for (const o of options.getChildren()) {
+        for (const o of options.children) {
             const c = o as GrammarAST;
             if (c.getType() === ANTLRv4Parser.ASSIGN) {
-                t.setOption(c.getChild(0)!.getText(), c.getChild(1) as GrammarAST);
+                t.setOption(c.children[0].getText(), c.children[1] as GrammarAST);
             } else {
                 t.setOption(c.getText(), null); // no arg such as ID<VarNodeType>
             }
@@ -418,7 +418,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
         }
 
         for (const r of ruleNodes) {
-            const name = r.getChild(0)!;
+            const name = r.children[0];
             if (name.getType() === ANTLRv4Parser.TOKEN_REF) {
                 // check rule against patterns
                 let isLitRule: boolean;
@@ -456,11 +456,11 @@ export class Grammar implements IGrammar, IAttributeResolver {
         }
 
         visited.add(this.name);
-        for (const c of i.getChildren()) {
+        for (const c of i.children) {
             let t = c as GrammarAST;
             let importedGrammarName = null;
             if (t.getType() === ANTLRv4Parser.ASSIGN) {
-                t = t.getChild(1) as GrammarAST;
+                t = t.children[1] as GrammarAST;
                 importedGrammarName = t.getText();
             } else {
                 if (t.getType() === ANTLRv4Parser.ID) {
@@ -493,15 +493,15 @@ export class Grammar implements IGrammar, IAttributeResolver {
     }
 
     public defineAction(atAST: GrammarAST): void {
-        if (atAST.getChildCount() === 2) {
-            const name = atAST.getChild(0)!.getText();
-            this.namedActions.set(name, atAST.getChild(1) as ActionAST);
+        if (atAST.children.length === 2) {
+            const name = atAST.children[0].getText();
+            this.namedActions.set(name, atAST.children[1] as ActionAST);
         } else {
-            const scope = atAST.getChild(0)!.getText();
+            const scope = atAST.children[0].getText();
             const grammarType = this.getTypeString();
             if (scope === grammarType || (scope === "parser" && grammarType === "combined")) {
-                const name = atAST.getChild(1)!.getText();
-                this.namedActions.set(name, atAST.getChild(2) as ActionAST);
+                const name = atAST.children[1].getText();
+                this.namedActions.set(name, atAST.children[2] as ActionAST);
             }
         }
     }

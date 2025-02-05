@@ -38,8 +38,8 @@ export class RewriteRuleSubtreeStream extends RewriteRuleElementStream {
 
         // test size above then fetch
         let tree = this.getNext();
-        while (tree.isNil() && tree.getChildCount() === 1) {
-            tree = tree.getChild(0)! as GrammarAST;
+        while (tree.isNil() && tree.children.length === 1) {
+            tree = tree.children[0] as GrammarAST;
         }
 
         return tree.dupNode(); // dup just the root (want node here)

@@ -111,19 +111,17 @@ export class TreeWizard {
         }
 
         // check children
-        const n1 = t1.getChildCount();
-        const n2 = tpattern.getChildCount();
+        const n1 = t1.children.length;
+        const n2 = tpattern.children.length;
         if (n1 !== n2) {
             return false;
         }
 
         for (let i = 0; i < n1; i++) {
-            const child1 = t1.getChild(i);
-            const child2 = tpattern.getChild(i) as TreePattern;
-            if (child1) {
-                if (!this.doParse(child1, child2, labels)) {
-                    return false;
-                }
+            const child1 = t1.children[i];
+            const child2 = tpattern.children[i] as TreePattern;
+            if (!this.doParse(child1, child2, labels)) {
+                return false;
             }
         }
 

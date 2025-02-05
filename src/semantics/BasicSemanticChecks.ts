@@ -170,10 +170,10 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         }
 
         const blk = rule.getFirstChildWithType(ANTLRv4Parser.BLOCK) as BlockAST;
-        const altCount = blk.getChildCount();
-        const idAST = rule.getChild(0) as GrammarAST;
+        const altCount = blk.children.length;
+        const idAST = rule.children[0] as GrammarAST;
         for (let i = 0; i < altCount; i++) {
-            const altAST = blk.getChild(i) as AltAST;
+            const altAST = blk.children[i] as AltAST;
             if (altAST.altLabel) {
                 const altLabel = altAST.altLabel.getText();
 
@@ -241,13 +241,13 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         if (this.nonFragmentRuleCount === 0) {
             let token = tree.token!;
             let name = "?";
-            if (tree.getChildCount() > 0) {
-                name = tree.getChild(0)?.getText() ?? "";
+            if (tree.children.length > 0) {
+                name = tree.children[0]?.getText() ?? "";
                 if (!name) {
                     name = "?";
                 }
 
-                token = (tree.getChild(0) as GrammarAST).token!;
+                token = (tree.children[0] as GrammarAST).token!;
             }
 
             this.g.tool.errorManager.grammarError(ErrorType.MODE_WITHOUT_RULES, this.g.fileName, token, name, this.g);
@@ -294,9 +294,9 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
     }
 
     protected checkNumRules(rulesNode: GrammarAST): void {
-        if (rulesNode.getChildCount() === 0) {
+        if (rulesNode.children.length === 0) {
             const root = rulesNode.parent as GrammarAST;
-            const idNode = root.getChild(0) as GrammarAST;
+            const idNode = root.children[0] as GrammarAST;
             this.g.tool.errorManager.grammarError(ErrorType.NO_RULES, this.g.fileName,
                 null, idNode.getText(), this.g);
         }
@@ -385,9 +385,9 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         const outerMostAlt = blk.parent!.getType() === ANTLRv4Parser.RULE;
         const rule = tree.getAncestor(ANTLRv4Parser.RULE)!;
         const fileName = tree.token?.inputStream?.getSourceName();
-        if (!outerMostAlt || blk.getChildCount() > 1) {
+        if (!outerMostAlt || blk.children.length > 1) {
             const e = ErrorType.LEXER_COMMAND_PLACEMENT_ISSUE;
-            this.g.tool.errorManager.grammarError(e, fileName ?? "<none>", tree.token!, rule.getChild(0)!.getText());
+            this.g.tool.errorManager.grammarError(e, fileName ?? "<none>", tree.token!, rule.children[0].getText());
         }
     }
 

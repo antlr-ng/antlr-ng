@@ -278,7 +278,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
     private ebnfBlockSet(): GrammarAST | undefined {
         let result: GrammarAST | undefined;
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         const blockSetStream = new RewriteRuleSubtreeStream("rule blockSet");
         const ebnfSuffixStream = new RewriteRuleSubtreeStream("rule ebnfSuffix");
@@ -298,7 +298,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 return undefined;
             }
 
-            let last = this.input.LT(1) as GrammarAST;
+            let last = this.input.lookAhead(1) as GrammarAST;
             const blockSet = this.blockSet();
             if (this.failed) {
                 return undefined;
@@ -333,7 +333,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 root0.addChild(root1);
 
                 result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                this.input.replaceChildren(start.parent!, start.getChildIndex(), last.getChildIndex(), result);
+                this.input.replaceChildren(start.parent!, start.childIndex, last.childIndex, result);
 
                 GrammarTransformPipeline.setGrammarPtr(this.g, result);
             }
@@ -349,7 +349,7 @@ export class BlockSetTransformer extends TreeRewriter {
     }
 
     private ebnfSuffix(): GrammarAST | undefined {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             const lookahead = this.input.LA(1);
@@ -383,7 +383,7 @@ export class BlockSetTransformer extends TreeRewriter {
     }
 
     private blockSet(): GrammarAST | undefined {
-        const start = this.input.LT(1) ?? undefined;
+        const start = this.input.lookAhead(1) ?? undefined;
         let result: GrammarAST | undefined;
 
         const blockStream = new RewriteRuleNodeStream("token BLOCK");
@@ -578,8 +578,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     root0.addChild(root1);
                     result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                    this.input.replaceChildren(result.parent!, start!.getChildIndex(), start!.getChildIndex(),
-                        result);
+                    this.input.replaceChildren(result.parent!, start!.childIndex, start!.childIndex, result);
                 }
             } else {
                 let first;
@@ -751,8 +750,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     setElementStream.reset();
                     root0.addChild(root1);
                     result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                    this.input.replaceChildren(result.parent!, start!.getChildIndex(), start!.getChildIndex(),
-                        result);
+                    this.input.replaceChildren(result.parent!, start!.childIndex, start!.childIndex, result);
                 }
             }
 

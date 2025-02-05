@@ -116,8 +116,8 @@ export class RuleFunction extends OutputModelObject {
         this.exceptions = new Array<ExceptionClause>();
 
         for (const e of r.exceptions) {
-            const catchArg = e.getChild(0) as ActionAST;
-            const catchAction = e.getChild(1) as ActionAST;
+            const catchArg = e.children[0] as ActionAST;
+            const catchAction = e.children[1] as ActionAST;
             this.exceptions.push(new ExceptionClause(factory, catchArg, catchAction));
         }
 

@@ -15,7 +15,7 @@ export class LL1PlusBlockSingleAlt extends LL1Loop {
     public constructor(factory: IOutputModelFactory, plusRoot: GrammarAST, alts: CodeBlockForAlt[]) {
         super(factory, plusRoot, alts);
 
-        const blkAST = plusRoot.getChild(0) as BlockAST;
+        const blkAST = plusRoot.children[0] as BlockAST;
         const blkStart = blkAST.atnState as PlusBlockStartState;
 
         this.stateNumber = blkStart.loopBackState.stateNumber;

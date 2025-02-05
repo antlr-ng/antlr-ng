@@ -129,11 +129,11 @@ export class Tool implements ITool {
     /** Manually get option node from tree; return null if not defined. */
     private static findOptionValueAST(root: GrammarRootAST, option: string): GrammarAST | null {
         const options = root.getFirstChildWithType(ANTLRv4Parser.OPTIONS) as GrammarAST | null;
-        if (options !== null && options.getChildCount() > 0) {
-            for (const o of options.getChildren()) {
+        if (options !== null && options.children.length > 0) {
+            for (const o of options.children) {
                 const c = o as GrammarAST;
-                if (c.getType() === ANTLRv4Parser.ASSIGN && c.getChild(0)?.getText() === option) {
-                    return c.getChild(1) as GrammarAST;
+                if (c.getType() === ANTLRv4Parser.ASSIGN && c.children[0].getText() === option) {
+                    return c.children[1] as GrammarAST;
                 }
             }
         }
@@ -268,11 +268,11 @@ export class Tool implements ITool {
         const ruleToAST = new Map<string, RuleAST>();
         for (const r of rules) {
             const ruleAST = r as RuleAST;
-            const id = ruleAST.getChild(0) as GrammarAST;
+            const id = ruleAST.children[0] as GrammarAST;
             const ruleName = id.getText();
             const prev = ruleToAST.get(ruleName);
             if (prev) {
-                const prevChild = prev.getChild(0) as GrammarAST;
+                const prevChild = prev.children[0] as GrammarAST;
                 this.errorManager.grammarError(ErrorType.RULE_REDEFINITION, g.fileName, id.token!, ruleName,
                     prevChild.token!.line);
                 redefinition = true;

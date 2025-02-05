@@ -36,7 +36,7 @@ export class TreeVisitor {
             t = action.pre(t); // if rewritten, walk children of new t
         }
 
-        for (let i = 0; i < t.getChildCount(); i++) {
+        for (let i = 0; i < t.children.length; i++) {
             const child = this.adaptor.getChild(t, i)!;
             const visitResult = this.visit(child, action);
             const childAfterVisit = this.adaptor.getChild(t, i)!;

@@ -86,12 +86,9 @@ export class GrammarRootAST extends GrammarASTWithOptions implements IGrammarRoo
     }
 
     public getGrammarName(): string | null {
-        const t = this.getChild(0);
-        if (t !== null) {
-            return t.getText();
-        }
+        const t = this.children[0];
 
-        return null;
+        return t.getText();
     }
 
     public override getOptionString(key: string): string | undefined {

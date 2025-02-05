@@ -77,15 +77,15 @@ export const convertArrayToString = <T>(a: T[], separator = ", "): string => {
 export const dupTree = <T extends CommonTree>(t: T, parent?: CommonTree): T => {
     const newTree = t.dupNode() as T;
 
-    // Ensure new subtree root has parent/child index set.
-    newTree.setChildIndex(t.getChildIndex()); // same index in new tree
+    // Ensure new subtree root has parent/child index set. Same index in new tree.
+    newTree.childIndex = t.childIndex;
     if (parent) {
         newTree.parent = parent;
     }
 
-    const n = t.getChildCount();
+    const n = t.children.length;
     for (let i = 0; i < n; i++) {
-        const child = t.getChild(i)!;
+        const child = t.children[i];
         const newSubTree = dupTree(child, t);
         newTree.addChild(newSubTree);
     }

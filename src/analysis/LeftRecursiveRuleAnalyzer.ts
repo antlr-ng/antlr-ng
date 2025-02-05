@@ -80,30 +80,26 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
             return false;
         }
 
-        const n = blk.getChildren().length;
+        const n = blk.children.length;
         for (let i = 0; i < n; i++) {
-            const alt = blk.getChildren()[i] as GrammarAST;
-            let first = alt.getChild(0);
-            if (first === null) {
-                continue;
-            }
+            const alt = blk.children[i] as GrammarAST;
+            let first = alt.children[0];
 
             if (first.getType() === ANTLRv4Parser.ELEMENT_OPTIONS) {
-                first = alt.getChild(1);
-                if (first === null) {
-                    continue;
-                }
+                first = alt.children[1];
             }
+
             if (first.getType() === ANTLRv4Parser.RULE_REF && first.getText() === ruleName) {
                 return true;
             }
 
-            const ruleRef = first.getChild(1);
-            if (ruleRef !== null && ruleRef.getType() === ANTLRv4Parser.RULE_REF &&
-                ruleRef.getText() === ruleName) {
-                return true;
+            if (first.children.length > 1) {
+                const ruleRef = first.children[1];
+                if (ruleRef.getType() === ANTLRv4Parser.RULE_REF &&
+                    ruleRef.getText() === ruleName) {
+                    return true;
+                }
             }
-
         }
 
         return false;
@@ -304,19 +300,19 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     // ineffectively ignores this routine.
     public stripLeftRecursion(altAST: GrammarAST): GrammarAST | undefined {
         let lrLabel: GrammarAST | undefined;
-        let first = altAST.getChild(0) as GrammarAST;
+        let first = altAST.children[0] as GrammarAST;
         let leftRecurRuleIndex = 0;
         if (first.getType() === ANTLRv4Parser.ELEMENT_OPTIONS) {
-            first = altAST.getChild(1) as GrammarAST;
+            first = altAST.children[1] as GrammarAST;
             leftRecurRuleIndex = 1;
         }
-        const rRef = first.getChild(1); // if label=rule
+        const rRef = first.children[1]; // if label=rule
         if ((first.getType() === ANTLRv4Parser.RULE_REF && first.getText() === this.ruleName)
-            || (rRef !== null && rRef.getType() === ANTLRv4Parser.RULE_REF
+            || (rRef.getType() === ANTLRv4Parser.RULE_REF
                 && rRef.getText() === this.ruleName)) {
             if (first.getType() === ANTLRv4Parser.ASSIGN
                 || first.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-                lrLabel = first.getChild(0) as GrammarAST;
+                lrLabel = first.children[0] as GrammarAST;
             }
 
             // remove rule ref (first child unless options present)
@@ -324,7 +320,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
 
             // reset index so it prints properly (sets token range of
             // ALT to start to right of left recur rule we deleted)
-            const newFirstChild = altAST.getChild(leftRecurRuleIndex) as GrammarAST;
+            const newFirstChild = altAST.children[leftRecurRuleIndex] as GrammarAST;
             altAST.setTokenStartIndex(newFirstChild.getTokenStartIndex());
         }
 
@@ -370,7 +366,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         typeSet.addOne(ANTLRv4Parser.PLUS_ASSIGN);
         const labeledSubTrees = t.getNodesWithType(typeSet);
         for (const sub of labeledSubTrees) {
-            noOptions.addOne(sub.getChild(0)!.getTokenStartIndex());
+            noOptions.addOne(sub.children[0].getTokenStartIndex());
         }
 
         let result = "";

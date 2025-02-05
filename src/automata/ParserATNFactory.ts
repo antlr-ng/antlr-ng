@@ -65,15 +65,15 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
      * `(BLOCK (ALT .))` or `(BLOCK (ALT 'a') (ALT .))`.
      */
     private static blockHasWildcardAlt(block: GrammarAST): boolean {
-        for (const alt of block.getChildren()) {
+        for (const alt of block.children) {
             if (!(alt instanceof AltAST)) {
                 continue;
             }
 
             const altAST = alt;
-            if (altAST.getChildCount() === 1 || (altAST.getChildCount() === 2
-                && altAST.getChild(0)!.getType() === ANTLRv4Parser.ELEMENT_OPTIONS)) {
-                const e = altAST.getChild(altAST.getChildCount() - 1)!;
+            if (altAST.children.length === 1 || (altAST.children.length === 2
+                && altAST.children[0].getType() === ANTLRv4Parser.ELEMENT_OPTIONS)) {
+                const e = altAST.children[altAST.children.length - 1];
                 if (e.getType() === ANTLRv4Parser.WILDCARD) {
                     return true;
                 }
@@ -104,7 +104,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
                 const analyzer = new LL1Analyzer(this.atn);
                 if (analyzer.look(startState, atnState2).contains(Token.EPSILON)) {
                     this.g.tool.errorManager.grammarError(ErrorType.EPSILON_OPTIONAL, this.g.fileName,
-                        (rule.ast.getChild(0) as GrammarAST).token!, rule.name);
+                        (rule.ast.children[0] as GrammarAST).token!, rule.name);
                     continue optionalCheck;
                 }
             }
@@ -443,12 +443,12 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
                     ? ErrorType.EPSILON_LR_FOLLOW
                     : ErrorType.EPSILON_CLOSURE;
                 this.g.tool.errorManager.grammarError(errorType, this.g.fileName,
-                    (rule.ast.getChild(0) as GrammarAST).token!, rule.name);
+                    (rule.ast.children[0] as GrammarAST).token!, rule.name);
             }
 
             if (lookahead.contains(Token.EOF)) {
                 this.g.tool.errorManager.grammarError(ErrorType.EOF_CLOSURE, this.g.fileName,
-                    (rule.ast.getChild(0) as GrammarAST).token!, rule.name);
+                    (rule.ast.children[0] as GrammarAST).token!, rule.name);
             }
         }
     }
@@ -578,7 +578,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         plusAST.atnState = loop;
         this.epsilon(blkEnd, loop); // blk can see loop back
 
-        const blkAST = plusAST.getChild(0) as BlockAST;
+        const blkAST = plusAST.children[0] as BlockAST;
         if ((plusAST as IQuantifierAST).isGreedy()) {
             if (this.expectNonGreedy(blkAST)) {
                 this.g.tool.errorManager.grammarError(ErrorType.EXPECTED_NON_GREEDY_WILDCARD_BLOCK, this.g.fileName,
@@ -622,7 +622,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         entry.loopBackState = loop;
         end.loopBackState = loop;
 
-        const blkAST = starAST.getChild(0) as BlockAST;
+        const blkAST = starAST.children[0] as BlockAST;
         if ((starAST as IQuantifierAST).isGreedy()) {
             if (this.expectNonGreedy(blkAST)) {
                 this.g.tool.errorManager.grammarError(ErrorType.EXPECTED_NON_GREEDY_WILDCARD_BLOCK, this.g.fileName,

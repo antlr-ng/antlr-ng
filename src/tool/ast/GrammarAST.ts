@@ -75,8 +75,8 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
                 nodes.push(t);
             }
 
-            if (t.getChildren().length > 0) {
-                work.push(...t.getChildren() as GrammarAST[]);
+            if (t.children.length > 0) {
+                work.push(...t.children as GrammarAST[]);
             }
         }
 
@@ -84,7 +84,7 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
     }
 
     public getAllChildrenWithType(type: number): GrammarAST[] {
-        return this.getChildren().filter((t) => {
+        return this.children.filter((t) => {
             return t.getType() === type;
         }) as GrammarAST[];
     }
@@ -101,7 +101,7 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
             return this;
         }
 
-        for (const child of this.getChildren()) {
+        for (const child of this.children) {
             const result = (child as GrammarAST).getNodeWithTokenIndex(index);
             if (result !== null) {
                 return result;
@@ -146,9 +146,9 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
             return super.deleteChild(param);
         }
 
-        for (const c of this.getChildren()) {
+        for (const c of this.children) {
             if (c === param) {
-                super.deleteChild(param.getChildIndex());
+                super.deleteChild(param.childIndex);
 
                 return true;
             }
@@ -163,7 +163,7 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
                 return this;
             }
 
-            for (const c of this.getChildren()) {
+            for (const c of this.children) {
                 const t = c as GrammarAST;
                 if (t.token?.type === typeOrTypes) {
                     return t;
@@ -183,7 +183,7 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
             return this;
         }
 
-        for (const c of this.getChildren()) {
+        for (const c of this.children) {
             const t = c as GrammarAST;
             if (t.token && typeOrTypes.get(t.token.type)) {
                 return t;
@@ -226,7 +226,7 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
         }
 
         // Walk all children of root.
-        this.getChildren().forEach((child: GrammarAST) => {
+        this.children.forEach((child: GrammarAST) => {
             child.doGetNodesWithTypePreorderDFS(nodes, types);
         });
     }

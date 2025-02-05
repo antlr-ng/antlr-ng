@@ -167,8 +167,8 @@ export class ATNBuilder extends TreeParser {
 
                 return undefined;
             } else {
-                const current = this.input.LT(1)!;
-                if (current.getChild(0)!.getType() === ANTLRv4Lexer.EPSILON) {
+                const current = this.input.lookAhead(1)!;
+                if (current.children[0].getType() === ANTLRv4Lexer.EPSILON) {
                     this.match(this.input, ANTLRv4Lexer.ALT);
                     this.match(this.input, Constants.DOWN);
 
@@ -304,7 +304,7 @@ export class ATNBuilder extends TreeParser {
     }
 
     private lexerCommandExpr(): GrammarAST | undefined {
-        const result = this.input.LT(1) ?? undefined;
+        const result = this.input.lookAhead(1) ?? undefined;
 
         try {
             if (this.input.LA(1) === ANTLRv4Lexer.ID || this.input.LA(1) === ANTLRv4Lexer.INT) {
@@ -326,7 +326,7 @@ export class ATNBuilder extends TreeParser {
 
     private element(): IStatePair | undefined {
         let result: IStatePair | undefined;
-        const start = this.input.LT(1);
+        const start = this.input.lookAhead(1);
 
         try {
             switch (this.input.LA(1)) {
@@ -508,7 +508,7 @@ export class ATNBuilder extends TreeParser {
 
     private subrule(): IStatePair | undefined {
         let result: IStatePair | undefined;
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             switch (this.input.LA(1)) {
@@ -566,7 +566,7 @@ export class ATNBuilder extends TreeParser {
 
     private blockSet(invert: boolean): IStatePair | undefined {
         try {
-            const start = this.input.LT(1)!;
+            const start = this.input.lookAhead(1)!;
 
             this.match(this.input, ANTLRv4Lexer.SET);
             this.match(this.input, Constants.DOWN);
@@ -608,7 +608,7 @@ export class ATNBuilder extends TreeParser {
     }
 
     private setElement(): GrammarAST | undefined {
-        const start = this.input.LT(1) as GrammarAST;
+        const start = this.input.lookAhead(1) as GrammarAST;
 
         try {
             switch (this.input.LA(1)) {
@@ -700,7 +700,7 @@ export class ATNBuilder extends TreeParser {
 
     private atom(): IStatePair | undefined {
         try {
-            const start = this.input.LT(1) as GrammarAST;
+            const start = this.input.lookAhead(1) as GrammarAST;
 
             switch (this.input.LA(1)) {
                 case ANTLRv4Lexer.RANGE: {
@@ -1013,7 +1013,7 @@ export class ATNBuilder extends TreeParser {
 
     private terminal(): IStatePair | undefined {
         try {
-            const start = this.input.LT(1) as GrammarAST;
+            const start = this.input.lookAhead(1) as GrammarAST;
 
             let alt24 = 5;
             const lookahead = this.input.LA(1);

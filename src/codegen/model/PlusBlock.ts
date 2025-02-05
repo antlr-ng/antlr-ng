@@ -20,7 +20,7 @@ export class PlusBlock extends Loop {
     public constructor(factory: IOutputModelFactory, plusRoot: IQuantifierAST, alts: CodeBlockForAlt[]) {
         super(factory, plusRoot, alts);
 
-        const blkAST = plusRoot.getChild(0) as BlockAST;
+        const blkAST = plusRoot.children[0] as BlockAST;
         const blkStart = blkAST.atnState as PlusBlockStartState;
         const loop = blkStart.loopBackState;
 

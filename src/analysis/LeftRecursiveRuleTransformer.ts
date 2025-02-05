@@ -71,7 +71,7 @@ export class LeftRecursiveRuleTransformer {
                         leftRecursiveRuleNames.push(r.name);
                     } else { // Better given an error that non-conforming left-recursion exists.
                         this.g.tool.errorManager.grammarError(ErrorType.NONCONFORMING_LR_RULE, this.g.fileName,
-                            (r.ast.getChild(0) as GrammarAST).token!, r.name);
+                            (r.ast.children[0] as GrammarAST).token!, r.name);
                     }
                 }
             }
@@ -102,7 +102,7 @@ export class LeftRecursiveRuleTransformer {
     public translateLeftRecursiveRule(context: GrammarRootAST, r: LeftRecursiveRule,
         language: SupportedLanguage): boolean {
         const prevRuleAST = r.ast;
-        const ruleName = prevRuleAST.getChild(0)!.getText();
+        const ruleName = prevRuleAST.children[0].getText();
         const leftRecursiveRuleWalker = new LeftRecursiveRuleAnalyzer(prevRuleAST, this.tool, ruleName, language);
 
         let isLeftRec: boolean;
@@ -130,10 +130,10 @@ export class LeftRecursiveRuleTransformer {
 
         // Reuse the name token from the original AST since it refers to the proper source location in the original
         // grammar.
-        (t.getChild(0) as GrammarAST).token = (prevRuleAST.getChild(0) as GrammarAST).token;
+        (t.children[0] as GrammarAST).token = (prevRuleAST.children[0] as GrammarAST).token;
 
         // Update grammar AST and set rule's AST.
-        rules.setChild(prevRuleAST.getChildIndex(), t);
+        rules.setChild(prevRuleAST.childIndex, t);
         r.ast = t;
 
         // Reduce sets in newly created rule tree.
@@ -155,7 +155,7 @@ export class LeftRecursiveRuleTransformer {
         r.recPrimaryAlts.push(...leftRecursiveRuleWalker.prefixAndOtherAlts);
         if (r.recPrimaryAlts.length === 0) {
             this.g.tool.errorManager.grammarError(ErrorType.NO_NON_LR_ALTS, this.g.fileName,
-                (r.ast.getChild(0) as GrammarAST).token!, r.name);
+                (r.ast.children[0] as GrammarAST).token!, r.name);
         }
 
         r.recOpAlts = new OrderedHashMap<number, ILeftRecursiveRuleAltInfo>();
@@ -187,7 +187,7 @@ export class LeftRecursiveRuleTransformer {
         // these are so $label in action translation works.
         for (const [ast, _] of leftRecursiveRuleWalker.leftRecursiveRuleRefLabels) {
             const labelOpNode = ast.parent as GrammarAST;
-            const elementNode = labelOpNode.getChild(1) as GrammarAST;
+            const elementNode = labelOpNode.children[1] as GrammarAST;
             const lp = new LabelElementPair(this.g, ast, elementNode, labelOpNode.getType());
             r.alt[1].labelDefs.set(ast.getText(), [lp]);
         }
@@ -212,7 +212,7 @@ export class LeftRecursiveRuleTransformer {
             const r = p.ruleSpec();
             const root = new GrammarAST();
             ParseTreeToASTConverter.convertRuleSpecToAST(r, root);
-            const ruleAST = root.getChild(0) as RuleAST;
+            const ruleAST = root.children[0] as RuleAST;
 
             GrammarTransformPipeline.setGrammarPtr(g, ruleAST);
             GrammarTransformPipeline.augmentTokensWithOriginalPosition(g, ruleAST);
@@ -228,20 +228,20 @@ export class LeftRecursiveRuleTransformer {
 
     public setAltASTPointers(r: LeftRecursiveRule, t: RuleAST): void {
         const ruleBlk = t.getFirstChildWithType(ANTLRv4Parser.BLOCK) as BlockAST;
-        const mainAlt = ruleBlk.getChild(0) as AltAST;
-        const primaryBlk = mainAlt.getChild(0) as BlockAST;
-        const opsBlk = mainAlt.getChild(1)!.getChild(0) as BlockAST; // (* BLOCK ...)
+        const mainAlt = ruleBlk.children[0] as AltAST;
+        const primaryBlk = mainAlt.children[0] as BlockAST;
+        const opsBlk = mainAlt.children[1].children[0] as BlockAST; // (* BLOCK ...)
 
         for (let i = 0; i < r.recPrimaryAlts.length; i++) {
             const altInfo = r.recPrimaryAlts[i];
-            altInfo.altAST = primaryBlk.getChild(i) as AltAST;
+            altInfo.altAST = primaryBlk.children[i] as AltAST;
             altInfo.altAST.leftRecursiveAltInfo = altInfo;
             altInfo.originalAltAST!.leftRecursiveAltInfo = altInfo;
         }
 
         for (let i = 0; i < r.recOpAlts.size; i++) {
             const altInfo = r.recOpAlts.getElement(i)!;
-            altInfo.altAST = opsBlk.getChild(i) as AltAST;
+            altInfo.altAST = opsBlk.children[i] as AltAST;
             altInfo.altAST.leftRecursiveAltInfo = altInfo;
             altInfo.originalAltAST!.leftRecursiveAltInfo = altInfo;
         }

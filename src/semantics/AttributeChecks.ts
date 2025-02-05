@@ -57,7 +57,7 @@ export class AttributeChecks implements IActionSplitterListener {
             }
 
             for (const e of r.exceptions) {
-                const a = e.getChild(1) as ActionAST;
+                const a = e.children[1] as ActionAST;
                 const checker = new AttributeChecks(g, r, null, a, a.token);
                 checker.examineAction();
             }

@@ -83,31 +83,6 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
      * Pull elements from tree iterator.  Track tree level 0..max_level.
      *  If nil rooted tree, don't give initial nil and DOWN nor final UP.
      */
-    public nextElement(): CommonTree {
-        let t = this.it.nextTree()!;
-
-        if (t === this.it.up) {
-            this.level--;
-            if (this.level === 0 && this.hasNilRoot) {
-                return this.it.nextTree()!;
-            }
-            // don't give last UP; get EOF
-        } else {
-            if (t === this.it.down) {
-                this.level++;
-            }
-        }
-
-        if (this.level === 0 && this.adaptor.isNil(t)) { // if nil root, scarf nil, DOWN
-            this.hasNilRoot = true;
-            t = this.it.nextTree()!; // t is now DOWN, so get first real node next
-            this.level++;
-            t = this.it.nextTree()!;
-        }
-
-        return t;
-    }
-
     public override remove(): CommonTree {
         const result = super.remove();
         if (this.p === 0 && this.hasPositionInformation(this.prevElement)) {
@@ -153,7 +128,7 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public LA(i: number): number {
-        return this.adaptor.getType(this.LT(i));
+        return this.adaptor.getType(this.lookAhead(i));
     }
 
     /**
@@ -227,15 +202,40 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
     public toTokenTypeString(): string {
         this.reset();
         let buf = "";
-        let o = this.LT(1)!;
+        let o = this.lookAhead(1)!;
         let type = this.adaptor.getType(o);
         while (type !== Token.EOF) {
             buf += " " + type;
             this.consume();
-            o = this.LT(1)!;
+            o = this.lookAhead(1)!;
             type = this.adaptor.getType(o);
         }
 
         return buf.toString();
+    }
+
+    protected nextElement(): CommonTree {
+        let t = this.it.nextTree()!;
+
+        if (t === this.it.up) {
+            this.level--;
+            if (this.level === 0 && this.hasNilRoot) {
+                return this.it.nextTree()!;
+            }
+            // don't give last UP; get EOF
+        } else {
+            if (t === this.it.down) {
+                this.level++;
+            }
+        }
+
+        if (this.level === 0 && this.adaptor.isNil(t)) { // if nil root, scarf nil, DOWN
+            this.hasNilRoot = true;
+            t = this.it.nextTree()!; // t is now DOWN, so get first real node next
+            this.level++;
+            t = this.it.nextTree()!;
+        }
+
+        return t;
     }
 }
