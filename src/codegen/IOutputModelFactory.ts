@@ -43,7 +43,7 @@ export interface IOutputModelFactory {
 
     rulePostamble(func: RuleFunction, r: Rule): SrcOp[] | undefined;
 
-    // ELEMENT TRIGGERS
+    // Element triggers.
 
     alternative(alt: Alternative, outerMost: boolean): CodeBlockForAlt | undefined;
 
@@ -81,7 +81,7 @@ export interface IOutputModelFactory {
 
     needsImplicitLabel(ID: GrammarAST, op: ILabeledOp): boolean;
 
-    // CONTEXT INFO
+    // Context info.
 
     getCurrentRuleFunction(): RuleFunction | undefined;
 

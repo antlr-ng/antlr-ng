@@ -4,18 +4,19 @@
  */
 
 import type { ANTLRMessage } from "../../src/tool/ANTLRMessage.js";
-import type { ANTLRToolListener } from "../../src/tool/ANTLRToolListener.js";
+import { ToolListener } from "../../src/tool/ToolListener.js";
 import { ErrorManager } from "../../src/tool/ErrorManager.js";
 import type { ToolMessage } from "../../src/tool/ToolMessage.js";
 
-export class ErrorQueue implements ANTLRToolListener {
+export class ErrorQueue extends ToolListener {
     public readonly infos: string[] = [];
     public readonly errors: ANTLRMessage[] = [];
     public readonly warnings: ANTLRMessage[] = [];
     public readonly all: ANTLRMessage[] = [];
 
     // TODO: reorganize the error manager to avoid cross-references.
-    public constructor(public errorManager: ErrorManager) {
+    public constructor(errorManager: ErrorManager) {
+        super(errorManager);
     }
 
     public info(msg: string): void {

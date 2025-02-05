@@ -7,7 +7,7 @@
 
 import type { IAlternative } from "../types.js";
 import type { IAttribute } from "./IAttribute.js";
-import { AttributeResolver } from "./AttributeResolver.js";
+import { IAttributeResolver } from "./IAttributeResolver.js";
 import { LabelElementPair } from "./LabelElementPair.js";
 import { LabelType } from "./LabelType.js";
 import { Rule } from "./Rule.js";
@@ -17,31 +17,23 @@ import { GrammarAST } from "./ast/GrammarAST.js";
 import { TerminalAST } from "./ast/TerminalAST.js";
 
 /** An outermost alternative for a rule.  We don't track inner alternatives. */
-export class Alternative implements AttributeResolver, IAlternative {
-    public rule: Rule;
-
+export class Alternative implements IAttributeResolver, IAlternative {
     public ast: AltAST;
 
-    /** What alternative number is this outermost alt? 1..n */
-    public altNum: number;
+    /** Token IDs, string literals in this alt. */
+    public readonly tokenRefs = new Map<string, TerminalAST[]>();
 
-    // token IDs, string literals in this alt
-    public tokenRefs = new Map<string, TerminalAST[]>();
+    /** Does not include labels. */
+    public readonly tokenRefsInActions = new Map<string, GrammarAST[]>();
 
-    // does not include labels
-    public tokenRefsInActions = new Map<string, GrammarAST[]>();
-
-    // all rule refs in this alt
-    public ruleRefs = new Map<string, GrammarAST[]>();
+    /** All rule refs in this alt. */
+    public readonly ruleRefs = new Map<string, GrammarAST[]>();
 
     // does not include labels
-    public ruleRefsInActions = new Map<string, GrammarAST[]>();
+    public readonly ruleRefsInActions = new Map<string, GrammarAST[]>();
 
     /** A list of all LabelElementPair attached to tokens like id=ID, ids+=ID */
-    public labelDefs = new Map<string, LabelElementPair[]>();
-
-    // track all token, rule, label refs in rewrite (right of ->)
-    //public List<GrammarAST> rewriteElements = new ArrayList<GrammarAST>();
+    public readonly labelDefs = new Map<string, LabelElementPair[]>();
 
     /**
      * Track all executable actions other than named actions like @init
@@ -52,6 +44,11 @@ export class Alternative implements AttributeResolver, IAlternative {
      *  This tracks per alt
      */
     public actions = new Array<ActionAST>();
+
+    /** What alternative number is this outermost alt? Used in templates. */
+    public altNum: number;
+
+    private rule: Rule;
 
     public constructor(r: Rule, altNum: number) {
         this.rule = r;

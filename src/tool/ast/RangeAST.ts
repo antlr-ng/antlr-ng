@@ -6,7 +6,7 @@
 import type { Token } from "antlr4ng";
 
 import { GrammarAST } from "./GrammarAST.js";
-import { GrammarASTVisitor } from "./GrammarASTVisitor.js";
+import { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 
 export class RangeAST extends GrammarAST {
 
@@ -18,7 +18,7 @@ export class RangeAST extends GrammarAST {
         return new RangeAST(this);
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 }

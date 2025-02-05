@@ -6,7 +6,7 @@
 import type { Token } from "antlr4ng";
 
 import { ActionAST } from "./ActionAST.js";
-import { GrammarASTVisitor } from "./GrammarASTVisitor.js";
+import { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 
 export class PredAST extends ActionAST {
     public override readonly astType: string = "PredAST";
@@ -30,7 +30,7 @@ export class PredAST extends ActionAST {
         return new PredAST(this);
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 }

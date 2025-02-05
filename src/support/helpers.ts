@@ -27,6 +27,13 @@ export const isTokenName = (id: string): boolean => {
     return Character.isUpperCase(id.charCodeAt(0));
 };
 
+/**
+ * Does the given object implement the `ICodeBlockForOuterMostAlt` interface?
+ *
+ * @param obj The object to check.
+ *
+ * @returns `true` if the object implements the interface; otherwise, `false`.
+ */
 export const isCodeBlockForOuterMostAlt = (obj: object): obj is ICodeBlockForOuterMostAlt => {
     return ("codeBlockLevel" in obj) && ("treeLevel" in obj);
 };
@@ -59,6 +66,14 @@ export const convertArrayToString = <T>(a: T[], separator = ", "): string => {
     return "[" + a.join(separator) + "]";
 };
 
+/**
+ * Duplicates a tree.
+ *
+ * @param t The tree to duplicate.
+ * @param parent The parent of the tree copy.
+ *
+ * @returns The duplicated tree.
+ */
 export const dupTree = <T extends CommonTree>(t: T, parent?: CommonTree): T => {
     const newTree = t.dupNode() as T;
 
@@ -79,9 +94,8 @@ export const dupTree = <T extends CommonTree>(t: T, parent?: CommonTree): T => {
 };
 
 /**
- * Given a token type, get a meaningful name for it such as the ID
- * or string literal.  If this is a lexer and the ttype is in the
- * char vocabulary, compute an ANTLR-valid (possibly escaped) char literal.
+ * Given a token type, get a meaningful name for it such as the ID or string literal.  If this is a lexer and the
+ * ttype is in the char vocabulary, compute an ANTLR-valid (possibly escaped) char literal.
  *
  * @param ttype The type of the token to describe.
  * @param vocabulary A vocabulary object to use for the display name.

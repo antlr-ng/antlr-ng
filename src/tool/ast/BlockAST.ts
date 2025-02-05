@@ -5,11 +5,10 @@
 
 import type { Token } from "antlr4ng";
 
-import { GrammarASTVisitor } from "./GrammarASTVisitor.js";
+import { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 import { GrammarASTWithOptions } from "./GrammarASTWithOptions.js";
 
 export class BlockAST extends GrammarASTWithOptions {
-    // TODO: maybe I need a Subrule object like Rule so these options mov to that?
     /** What are the default options for a subrule? */
     public static readonly defaultBlockOptions = new Map<string, string>();
 
@@ -45,7 +44,7 @@ export class BlockAST extends GrammarASTWithOptions {
         return new BlockAST(this);
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 }

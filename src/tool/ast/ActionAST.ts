@@ -5,15 +5,15 @@
 
 import type { Token } from "antlr4ng";
 
-import { AttributeResolver } from "../AttributeResolver.js";
+import { IAttributeResolver } from "../IAttributeResolver.js";
 import { GrammarAST } from "./GrammarAST.js";
-import { GrammarASTVisitor } from "./GrammarASTVisitor.js";
+import { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 import { GrammarASTWithOptions } from "./GrammarASTWithOptions.js";
 
 export class ActionAST extends GrammarASTWithOptions {
     public override readonly astType: string = "ActionAST";
 
-    public resolver: AttributeResolver;
+    public resolver: IAttributeResolver;
     public chunks: Token[];
 
     // Alt, rule, grammar space
@@ -47,7 +47,7 @@ export class ActionAST extends GrammarASTWithOptions {
         return new ActionAST(this);
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 

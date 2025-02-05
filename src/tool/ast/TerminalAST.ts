@@ -5,8 +5,8 @@
 
 import type { Token } from "antlr4ng";
 
-import { GrammarASTVisitor } from "./GrammarASTVisitor.js";
 import { GrammarASTWithOptions } from "./GrammarASTWithOptions.js";
+import { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 
 export class TerminalAST extends GrammarASTWithOptions {
 
@@ -29,7 +29,7 @@ export class TerminalAST extends GrammarASTWithOptions {
         return new TerminalAST(this);
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 }

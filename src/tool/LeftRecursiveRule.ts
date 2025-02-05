@@ -7,7 +7,6 @@
 
 import { ILeftRecursiveRuleAltInfo } from "../analysis/ILeftRecursiveRuleAltInfo.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
-import { Alternative } from "./Alternative.js";
 import { Grammar } from "./Grammar.js";
 import { Rule } from "./Rule.js";
 import { AltAST } from "./ast/AltAST.js";
@@ -25,11 +24,8 @@ export class LeftRecursiveRule extends Rule {
     public leftRecursiveRuleRefLabels = new Array<[GrammarAST, string | undefined]>();
 
     public constructor(g: Grammar, name: string, ast: RuleAST) {
-        super(g, name, ast, 1); // always just one
+        super(g, name, ast, 1); // Always just one.
         this.originalAST = ast;
-        for (let i = 1; i <= this.numberOfAlts; i++) {
-            this.alt[i] = new Alternative(this, i);
-        }
     }
 
     public override hasAltSpecificContexts(): boolean {

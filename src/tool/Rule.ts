@@ -11,7 +11,7 @@ import { MurmurHash } from "../support/MurmurHash.js";
 import type { IRule } from "../types.js";
 import { Alternative } from "./Alternative.js";
 import { AttributeDict } from "./AttributeDict.js";
-import { AttributeResolver } from "./AttributeResolver.js";
+import { IAttributeResolver } from "./IAttributeResolver.js";
 import { Grammar } from "./Grammar.js";
 import { IAttribute } from "./IAttribute.js";
 import { LabelElementPair } from "./LabelElementPair.js";
@@ -22,7 +22,7 @@ import { GrammarAST } from "./ast/GrammarAST.js";
 import { PredAST } from "./ast/PredAST.js";
 import { RuleAST } from "./ast/RuleAST.js";
 
-export class Rule implements AttributeResolver, IComparable, IRule {
+export class Rule implements IAttributeResolver, IComparable, IRule {
     public static readonly validLexerCommands = new Set<string>([
         "mode", "pushMode", "type", "channel",
         "popMode", "skip", "more"
@@ -94,7 +94,8 @@ export class Rule implements AttributeResolver, IComparable, IRule {
         this.name = name;
         this.ast = ast;
         this.numberOfAlts = numberOfAlts;
-        this.alt = new Array<Alternative>(numberOfAlts + 1); // 1..n
+
+        this.alt = new Array<Alternative>(numberOfAlts + 1);
         for (let i = 1; i <= numberOfAlts; i++) {
             this.alt[i] = new Alternative(this, i);
         }

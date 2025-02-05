@@ -11,13 +11,11 @@ import { ErrorBuffer, IST, STGroup, STGroupString } from "stringtemplate4ts";
 import { basename } from "path";
 
 import { ANTLRMessage } from "./ANTLRMessage.js";
-import type { ANTLRToolListener } from "./ANTLRToolListener.js";
-import { DefaultToolListener } from "./DefaultToolListener.js";
 import { ErrorSeverity, severityMap } from "./ErrorSeverity.js";
 import { ErrorType } from "./ErrorType.js";
 import { GrammarSemanticsMessage } from "./GrammarSemanticsMessage.js";
 import { GrammarSyntaxMessage } from "./GrammarSyntaxMessage.js";
-import { ToolMessage } from "./ToolMessage.js";
+import { ToolListener } from "./ToolListener.js";
 
 // The supported ANTLR message formats. Using ST here is overkill and will later be replaced with a simple solution.
 const messageFormats = new Map<string, string>([
@@ -50,20 +48,18 @@ export class ErrorManager {
     public errorTypes = new Set<ErrorType>();
 
     /** The group of templates that represent the current message format. */
-    #format: STGroup;
+    private format: STGroup;
 
-    #formatName: string;
+    private formatName: string;
 
-    #initSTListener = new ErrorBuffer();
-    #listeners = new Array<ANTLRToolListener>();
+    private initSTListener = new ErrorBuffer();
+    private listeners = new Array<ToolListener>();
 
     /**
-     * Track separately so if someone adds a listener, it's the only one
-     * instead of it and the default stderr listener.
+     * Track separately so if someone adds a listener, it's the only one instead of it and the default stderr listener.
      */
-    #defaultListener = new DefaultToolListener(this);
+    private defaultListener = new ToolListener(this);
 
-    // TODO: make this class only a holder of static methods and fields?
     public constructor(msgFormat?: string, private longMessages?: boolean, private warningsAreErrors?: boolean) {
         this.errors = 0;
         this.warnings = 0;
@@ -101,7 +97,7 @@ export class ErrorManager {
     }
 
     public formatWantsSingleLineMessage(): boolean {
-        const result = this.#format.getInstanceOf("wantsSingleLineMessage")?.render();
+        const result = this.format.getInstanceOf("wantsSingleLineMessage")?.render();
 
         return result === "true" ? true : false;
     }
@@ -126,7 +122,7 @@ export class ErrorManager {
 
         if (msg.fileName) {
             let displayFileName = msg.fileName;
-            if (this.#formatName === "antlr") {
+            if (this.formatName === "antlr") {
                 // Don't show path to file in messages in ANTLR format, they're too long.
                 displayFileName = basename(msg.fileName);
             } else {
@@ -161,7 +157,7 @@ export class ErrorManager {
     public toolError(errorType: ErrorType, ...args: unknown[]): void;
     public toolError(errorType: ErrorType, e: Error, ...args: unknown[]): void;
     public toolError(...allArgs: unknown[]): void {
-        let msg: ToolMessage;
+        let msg: ANTLRMessage;
 
         if (allArgs.length < 1) {
             throw new Error("Invalid number of arguments");
@@ -173,12 +169,12 @@ export class ErrorManager {
             const error = allArgs[0];
             if (error instanceof Error) {
                 allArgs.shift();
-                msg = new ToolMessage(errorType, error, allArgs);
+                msg = new ANTLRMessage(errorType, "", error, -1, -1, ...allArgs);
             } else {
-                msg = new ToolMessage(errorType, allArgs);
+                msg = new ANTLRMessage(errorType, "", -1, -1, ...allArgs);
             }
         } else {
-            msg = new ToolMessage(errorType);
+            msg = new ANTLRMessage(errorType, "", -1, -1);
         }
 
         this.emit(errorType, msg);
@@ -191,19 +187,19 @@ export class ErrorManager {
         this.emit(errorType, msg);
     }
 
-    public addListener(tl: ANTLRToolListener): void {
-        this.#listeners.push(tl);
+    public addListener(tl: ToolListener): void {
+        this.listeners.push(tl);
     }
 
-    public removeListener(tl: ANTLRToolListener): void {
-        const index = this.#listeners.indexOf(tl);
+    public removeListener(tl: ToolListener): void {
+        const index = this.listeners.indexOf(tl);
         if (index >= 0) {
-            this.#listeners.splice(index, 1);
+            this.listeners.splice(index, 1);
         }
     }
 
     public removeListeners(): void {
-        this.#listeners = [];
+        this.listeners = [];
     }
 
     public syntaxError(errorType: ErrorType, fileName: string, line: number, column: number,
@@ -213,35 +209,35 @@ export class ErrorManager {
     }
 
     public info(msg: string): void {
-        if (this.#listeners.length === 0) {
-            this.#defaultListener.info(msg);
+        if (this.listeners.length === 0) {
+            this.defaultListener.info(msg);
 
             return;
         }
 
-        for (const l of this.#listeners) {
+        for (const l of this.listeners) {
             l.info(msg);
         }
     }
 
     public error(msg: ANTLRMessage): void {
         ++this.errors;
-        if (this.#listeners.length === 0) {
-            this.#defaultListener.error(msg);
+        if (this.listeners.length === 0) {
+            this.defaultListener.error(msg);
 
             return;
         }
 
-        for (const l of this.#listeners) {
+        for (const l of this.listeners) {
             l.error(msg);
         }
     }
 
     public warning(msg: ANTLRMessage): void {
-        if (this.#listeners.length === 0) {
-            this.#defaultListener.warning(msg);
+        if (this.listeners.length === 0) {
+            this.defaultListener.warning(msg);
         } else {
-            for (const l of this.#listeners) {
+            for (const l of this.listeners) {
                 l.warning(msg);
             }
         }
@@ -294,18 +290,18 @@ export class ErrorManager {
      * emitting messages.
      */
     private getLocationFormat(): IST {
-        return this.#format.getInstanceOf("location")!;
+        return this.format.getInstanceOf("location")!;
     }
 
     private getReportFormat(severity: ErrorSeverity): IST | null {
-        const st = this.#format.getInstanceOf("report");
+        const st = this.format.getInstanceOf("report");
         st?.add("type", severityMap.get(severity));
 
         return st;
     }
 
     private getMessageFormat(): IST {
-        return this.#format.getInstanceOf("message")!;
+        return this.format.getInstanceOf("message")!;
     }
 
     /**
@@ -327,11 +323,11 @@ export class ErrorManager {
             ErrorManager.loadedFormats.set(formatName, loadedFormat);
         }
 
-        this.#formatName = formatName;
-        this.#format = loadedFormat;
+        this.formatName = formatName;
+        this.format = loadedFormat;
 
-        if (this.#initSTListener.size > 0) {
-            throw new Error("Can't load messages format file:\n" + this.#initSTListener.toString());
+        if (this.initSTListener.size > 0) {
+            throw new Error("Can't load messages format file:\n" + this.initSTListener.toString());
         }
 
         const formatOK = this.verifyFormat();
@@ -343,18 +339,18 @@ export class ErrorManager {
     /** Verify the message format template group */
     private verifyFormat(): boolean {
         let ok = true;
-        if (!this.#format.isDefined("location")) {
-            console.error("Format template 'location' not found in " + this.#formatName);
+        if (!this.format.isDefined("location")) {
+            console.error("Format template 'location' not found in " + this.formatName);
             ok = false;
         }
 
-        if (!this.#format.isDefined("message")) {
-            console.error("Format template 'message' not found in " + this.#formatName);
+        if (!this.format.isDefined("message")) {
+            console.error("Format template 'message' not found in " + this.formatName);
             ok = false;
         }
 
-        if (!this.#format.isDefined("report")) {
-            console.error("Format template 'report' not found in " + this.#formatName);
+        if (!this.format.isDefined("report")) {
+            console.error("Format template 'report' not found in " + this.formatName);
             ok = false;
         }
 

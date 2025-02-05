@@ -6,7 +6,7 @@
 import { Lexer, Token } from "antlr4ng";
 
 import { AttributeDict } from "./tool/AttributeDict.js";
-import { DictType } from "./tool/DictType.js";
+import { DictType } from "./misc/types.js";
 
 /**
  * Various constant value that were scattered all over the place. Collect them here to minimize circular dependencies.

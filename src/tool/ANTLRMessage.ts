@@ -8,7 +8,7 @@ import { ST } from "stringtemplate4ts";
 import { ErrorType } from "./ErrorType.js";
 
 export class ANTLRMessage {
-    // used for location template
+    // Used for location template.
     public readonly fileName: string;
     public readonly line: number = -1;
     public readonly column: number = -1;
@@ -53,11 +53,12 @@ export class ANTLRMessage {
 
             messageST.add(attr, this.args[i]);
         }
+
         if (this.args.length < 2) {
             messageST.add("arg2", null);
         }
-        // some messages ref arg2
 
+        // Some messages ref arg2.
         if (this.e !== null) {
             messageST.add("exception", this.e);
             messageST.add("stackTrace", this.e.stack);

@@ -7,7 +7,7 @@ import { PlusBlockStartState } from "antlr4ng";
 
 import { ModelElement } from "../../misc/ModelElement.js";
 import { BlockAST } from "../../tool/ast/BlockAST.js";
-import { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { IQuantifierAST } from "../../tool/ast/IQuantifierAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { Loop } from "./Loop.js";
@@ -17,7 +17,7 @@ export class PlusBlock extends Loop {
     @ModelElement
     public error: ThrowNoViableAlt;
 
-    public constructor(factory: IOutputModelFactory, plusRoot: GrammarAST, alts: CodeBlockForAlt[]) {
+    public constructor(factory: IOutputModelFactory, plusRoot: IQuantifierAST, alts: CodeBlockForAlt[]) {
         super(factory, plusRoot, alts);
 
         const blkAST = plusRoot.getChild(0) as BlockAST;

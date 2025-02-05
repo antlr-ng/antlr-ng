@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-returns */
-
 import { writeFileSync } from "node:fs";
 
 import { Token } from "antlr4ng";
@@ -200,7 +198,8 @@ export class CodeGenerator {
 
     /**
      * What is the name of the vocab file generated for this grammar?
-     * Returns undefined if no ".tokens" file should be generated.
+     *
+     * @returns undefined if no ".tokens" file should be generated.
      */
     public getVocabFileName(): string | undefined {
         return this.g!.name + Constants.VOCAB_FILE_EXTENSION;
@@ -218,12 +217,15 @@ export class CodeGenerator {
     }
 
     /**
-     * Generate a token vocab file with all the token names/types. For example:
+     * Generates a token vocab file with all the token names/types. For example:
+     * ```
      *  ID=7
      *  FOR=8
      *  'for'=8
+     * ```
+     * This is independent of the target language and used by antlr internally.
      *
-     *  This is independent of the target language and used by antlr internally.
+     * @returns The token vocab file as a string template.
      */
     protected getTokenVocabOutput(): ST {
         const vocabFileST = new ST(CodeGenerator.vocabFilePattern);

@@ -9,7 +9,7 @@ import { Utils } from "../../misc/Utils.js";
 import type { GrammarType } from "../../support/GrammarType.js";
 import type { IToolParameters } from "../../tool-parameters.js";
 import type { IGrammarRootAST } from "../../types.js";
-import { GrammarASTVisitor } from "./GrammarASTVisitor.js";
+import { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 import { GrammarASTWithOptions } from "./GrammarASTWithOptions.js";
 
 /** This is the root node for a grammar (for the top level grammarSpec rule). */
@@ -114,7 +114,7 @@ export class GrammarRootAST extends GrammarASTWithOptions implements IGrammarRoo
         return super.getOptionString(key);
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 

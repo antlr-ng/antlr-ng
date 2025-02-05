@@ -6,10 +6,10 @@
 import type { Token } from "antlr4ng";
 
 import { GrammarAST } from "./GrammarAST.js";
-import { GrammarASTVisitor } from "./GrammarASTVisitor.js";
-import { QuantifierAST } from "./QuantifierAST.js";
+import { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
+import { IQuantifierAST } from "./IQuantifierAST.js";
 
-export class StarBlockAST extends GrammarAST implements QuantifierAST {
+export class StarBlockAST extends GrammarAST implements IQuantifierAST {
     private readonly greedy: boolean;
 
     public constructor(node: StarBlockAST);
@@ -36,7 +36,7 @@ export class StarBlockAST extends GrammarAST implements QuantifierAST {
         return new StarBlockAST(this);
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 }

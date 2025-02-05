@@ -8,7 +8,7 @@ import { CharStream, type Token } from "antlr4ng";
 import { ActionSplitter } from "../generated/ActionSplitter.js";
 import { IActionSplitterListener } from "../parse/IActionSplitterListener.js";
 
-import { DictType } from "../tool/DictType.js";
+import { DictType } from "../misc/types.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { CodeGenerator } from "./CodeGenerator.js";
@@ -109,7 +109,7 @@ export class ActionTranslator implements IActionSplitterListener {
         const translator = new ActionTranslator(factory, node);
         translator.rf = rf ?? undefined;
 
-        factory.grammar!.tool.logInfo({ component: "action-translator", msg: "translate " + action });
+        factory.grammar.tool.logInfo({ component: "action-translator", msg: "translate " + action });
         const altLabel = node.getAltLabel();
         if (rf) {
             translator.nodeContext = rf.ruleCtx;
@@ -187,7 +187,7 @@ export class ActionTranslator implements IActionSplitterListener {
             return;
         }
 
-        const r = this.factory.grammar!.getRule(name);
+        const r = this.factory.grammar.getRule(name);
         if (r !== null) {
             const ruleLabel = this.getRuleLabel(name);
 
@@ -253,7 +253,7 @@ export class ActionTranslator implements IActionSplitterListener {
 
     public nonLocalAttr(_expr: string, x: Token, y: Token): void {
         this.gen.g?.tool.logInfo({ component: "action-translator", msg: "nonLocalAttr " + x.text! + "::" + y.text! });
-        const r = this.factory.grammar!.getRule(x.text!);
+        const r = this.factory.grammar.getRule(x.text!);
         this.chunks.push(new NonLocalAttrRef(this.nodeContext, x.text!, y.text!, this.target.escapeIfNeeded(y.text!),
             r!.index));
     }
@@ -263,7 +263,7 @@ export class ActionTranslator implements IActionSplitterListener {
             component: "action-translator",
             msg: "setNonLocalAttr " + x.text! + "::" + y.text! + "=" + rhs
         });
-        const r = this.factory.grammar!.getRule(x.text!);
+        const r = this.factory.grammar.getRule(x.text!);
         const rhsChunks = ActionTranslator.translateActionChunk(this.factory, this.rf!, rhs, this.node);
         const s = new SetNonLocalAttr(this.nodeContext, x.text!, y.text!, this.target.escapeIfNeeded(y.text!),
             r!.index, rhsChunks);

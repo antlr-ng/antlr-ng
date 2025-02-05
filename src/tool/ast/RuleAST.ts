@@ -11,8 +11,8 @@ import { isTokenName } from "../../support/helpers.js";
 
 import type { ActionAST } from "./ActionAST.js";
 import type { GrammarAST } from "./GrammarAST.js";
-import type { GrammarASTVisitor } from "./GrammarASTVisitor.js";
 import { GrammarASTWithOptions } from "./GrammarASTWithOptions.js";
+import type { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 
 export class RuleAST extends GrammarASTWithOptions {
     public override readonly astType: string = "RuleAST";
@@ -54,7 +54,7 @@ export class RuleAST extends GrammarASTWithOptions {
         return null;
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 }

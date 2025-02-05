@@ -7,6 +7,7 @@ import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
 import { MultiMap } from "stringtemplate4ts";
 import { LeftRecursiveRuleAnalyzer } from "../analysis/LeftRecursiveRuleAnalyzer.js";
+import { DictType } from "../misc/types.js";
 import { Utils } from "../misc/Utils.js";
 import { ScopeParser } from "../parse/ScopeParser.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
@@ -14,7 +15,6 @@ import { AltAST } from "../tool/ast/AltAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { GrammarRootAST } from "../tool/ast/GrammarRootAST.js";
 import { RuleAST } from "../tool/ast/RuleAST.js";
-import { DictType } from "../tool/DictType.js";
 import { Grammar } from "../tool/Grammar.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { Rule } from "../tool/Rule.js";

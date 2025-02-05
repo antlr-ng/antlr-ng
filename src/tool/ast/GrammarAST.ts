@@ -14,7 +14,7 @@ import { CommonTree } from "../../tree/CommonTree.js";
 import type { IGrammarAST } from "../../types.js";
 import type { Grammar } from "../Grammar.js";
 import type { AltAST } from "./AltAST.js";
-import type { GrammarASTVisitor } from "./GrammarASTVisitor.js";
+import type { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 
 export class GrammarAST extends CommonTree implements IGrammarAST {
     /** A discriminator to distinguish between different grammar AST types without creating a circular dependency. */
@@ -111,18 +111,6 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
         return null;
     }
 
-    /*public getOutermostAltNode(): AltAST | null {
-        if (this instanceof AltAST && this.parent?.parent instanceof RuleAST) {
-            return this as AltAST;
-        }
-
-        if (this.parent) {
-            return (this.parent as GrammarAST).getOutermostAltNode();
-        }
-
-        return null;
-    }*/
-
     /**
      * Walk ancestors of this node until we find ALT with
      *  alt!=null or leftRecursiveAltInfo!=null. Then grab label if any.
@@ -218,7 +206,8 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
 
     public setText(text: string): void {
         if (this.token) {
-            this.token.text = text; // we delete surrounding tree, so ok to alter
+            // We delete surrounding tree, so ok to alter.
+            this.token.text = text;
         }
     }
 
@@ -226,7 +215,7 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
         return new GrammarAST(this);
     }
 
-    public visit<T>(v: GrammarASTVisitor<T>): T {
+    public visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
 
     }
@@ -236,7 +225,7 @@ export class GrammarAST extends CommonTree implements IGrammarAST {
             nodes.push(this);
         }
 
-        // walk all children of root.
+        // Walk all children of root.
         this.getChildren().forEach((child: GrammarAST) => {
             child.doGetNodesWithTypePreorderDFS(nodes, types);
         });

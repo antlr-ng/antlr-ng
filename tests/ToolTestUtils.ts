@@ -24,7 +24,7 @@ import { LexerATNFactory } from "../src/automata/LexerATNFactory.js";
 import { ParserATNFactory } from "../src/automata/ParserATNFactory.js";
 import type { Constructor } from "../src/misc/Utils.js";
 import { SemanticPipeline } from "../src/semantics/SemanticPipeline.js";
-import { DefaultToolListener } from "../src/tool/DefaultToolListener.js";
+import { ToolListener } from "../src/tool/ToolListener.js";
 import { Tool, type Grammar, type LexerGrammar } from "../src/tool/index.js";
 import type { InterpreterTreeTextProvider } from "./InterpreterTreeTextProvider.js";
 import { ErrorQueue } from "./support/ErrorQueue.js";
@@ -253,7 +253,7 @@ export class ToolTestUtils {
         const queue = new ErrorQueue(antlr.errorManager);
         antlr.errorManager.addListener(queue);
         if (defaultListener) {
-            antlr.errorManager.addListener(new DefaultToolListener(antlr.errorManager));
+            antlr.errorManager.addListener(new ToolListener(antlr.errorManager));
         }
 
         antlr.processGrammarsOnCommandLine();

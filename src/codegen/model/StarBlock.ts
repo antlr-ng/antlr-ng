@@ -5,7 +5,7 @@
 
 import { StarLoopEntryState } from "antlr4ng";
 
-import { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { IQuantifierAST } from "../../tool/ast/IQuantifierAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { Loop } from "./Loop.js";
@@ -13,7 +13,7 @@ import { Loop } from "./Loop.js";
 export class StarBlock extends Loop {
     public readonly loopLabel: string;
 
-    public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[]) {
+    public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: IQuantifierAST, alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST, alts);
 
         this.loopLabel = factory.getGenerator()!.target.getLoopLabel(blkOrEbnfRootAST);

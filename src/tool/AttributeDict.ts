@@ -5,17 +5,16 @@
 
 /* eslint-disable jsdoc/require-param */
 
+import { DictType } from "../misc/types.js";
 import { IAttribute } from "./IAttribute.js";
-import { DictType } from "./DictType.js";
 import type { GrammarAST } from "./ast/GrammarAST.js";
 
 /**
  * Track the attributes within retval, arg lists etc...
- * <p>
- * Each rule has potentially 3 scopes: return values,
- * parameters, and an implicitly-named scope (i.e., a scope defined in a rule).
- * Implicitly-defined scopes are named after the rule; rules and scopes then
- * must live in the same name space--no collisions allowed.
+ *
+ * Each rule has potentially 3 scopes: return values, parameters, and an implicitly-named scope (i.e., a scope
+ * defined in a rule). Implicitly-defined scopes are named after the rule; rules and scopes then must live in the same
+ * name space - no collisions allowed.
  */
 export class AttributeDict {
 
@@ -24,7 +23,6 @@ export class AttributeDict {
     public type?: DictType;
 
     /** The list of {@link IAttribute} objects. */
-
     public readonly attributes = new Map<string, IAttribute>();
 
     public constructor(type?: DictType) {

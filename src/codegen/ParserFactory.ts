@@ -10,14 +10,17 @@ import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { disjoint } from "../support/helpers.js";
 import type { IToolParameters } from "../tool-parameters.js";
 import { Alternative } from "../tool/Alternative.js";
+import type { Grammar } from "../tool/Grammar.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { Rule } from "../tool/Rule.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { BlockAST } from "../tool/ast/BlockAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
+import type { IQuantifierAST } from "../tool/ast/IQuantifierAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
 import { CodeGenerator } from "./CodeGenerator.js";
-import { DefaultOutputModelFactory } from "./DefaultOutputModelFactory.js";
+import type { IOutputModelFactory } from "./IOutputModelFactory.js";
+import type { OutputModelController } from "./OutputModelController.js";
 import { Action } from "./model/Action.js";
 import { AddToLabelList } from "./model/AddToLabelList.js";
 import { AltBlock } from "./model/AltBlock.js";
@@ -32,6 +35,8 @@ import { LL1OptionalBlockSingleAlt } from "./model/LL1OptionalBlockSingleAlt.js"
 import { LL1PlusBlockSingleAlt } from "./model/LL1PlusBlockSingleAlt.js";
 import { LL1StarBlockSingleAlt } from "./model/LL1StarBlockSingleAlt.js";
 import { LeftRecursiveRuleFunction } from "./model/LeftRecursiveRuleFunction.js";
+import type { Lexer } from "./model/Lexer.js";
+import type { LexerFile } from "./model/LexerFile.js";
 import { MatchNotSet } from "./model/MatchNotSet.js";
 import { MatchSet } from "./model/MatchSet.js";
 import { MatchToken } from "./model/MatchToken.js";
@@ -45,39 +50,56 @@ import { SrcOp } from "./model/SrcOp.js";
 import { StarBlock } from "./model/StarBlock.js";
 import { TestSetInline } from "./model/TestSetInline.js";
 import { Wildcard } from "./model/Wildcard.js";
+import type { CodeBlock } from "./model/decl/CodeBlock.js";
 import { Decl } from "./model/decl/Decl.js";
 import { RuleContextDecl } from "./model/decl/RuleContextDecl.js";
 import { TokenDecl } from "./model/decl/TokenDecl.js";
 import { TokenListDecl } from "./model/decl/TokenListDecl.js";
 
-export class ParserFactory extends DefaultOutputModelFactory {
+export class ParserFactory implements IOutputModelFactory {
+    public readonly grammar: Grammar;
+    public controller: OutputModelController;
+
+    private readonly gen: CodeGenerator;
+
     public constructor(gen: CodeGenerator, private forceAtn?: boolean) {
-        super(gen);
+        this.gen = gen;
+        this.grammar = gen.g!;
     }
 
-    public override parserFile(fileName: string, toolParameters: IToolParameters): ParserFile {
+    public parserFile(fileName: string, toolParameters: IToolParameters): ParserFile {
         return new ParserFile(this, fileName, toolParameters);
     }
 
-    public override parser(file: ParserFile): Parser {
+    public parser(file: ParserFile): Parser {
         return new Parser(this, file);
     }
 
-    public override rule(r: Rule): RuleFunction {
-        if (r instanceof LeftRecursiveRule) {
-            return new LeftRecursiveRuleFunction(this, r);
-        } else {
-            const rf = new RuleFunction(this, r);
-
-            return rf;
-        }
+    public lexerFile(fileName: string): LexerFile | undefined {
+        return undefined;
     }
 
-    public override epsilon(alt: Alternative, outerMost: boolean): CodeBlockForAlt {
+    public getGrammar(): Grammar | undefined {
+        return this.grammar;
+    }
+
+    public lexer(file: LexerFile): Lexer | undefined {
+        return undefined;
+    }
+
+    public rule(r: Rule): RuleFunction {
+        if (r instanceof LeftRecursiveRule) {
+            return new LeftRecursiveRuleFunction(this, r);
+        }
+
+        return new RuleFunction(this, r);
+    }
+
+    public epsilon(alt: Alternative, outerMost: boolean): CodeBlockForAlt {
         return this.alternative(alt, outerMost);
     }
 
-    public override alternative(alt: Alternative, outerMost: boolean): CodeBlockForAlt {
+    public alternative(alt: Alternative, outerMost: boolean): CodeBlockForAlt {
         if (outerMost) {
             return new CodeBlockForOuterMostAlt(this, alt);
         }
@@ -85,21 +107,25 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return new CodeBlockForAlt(this);
     }
 
-    public override finishAlternative(blk: CodeBlockForAlt, ops: SrcOp[] | undefined): CodeBlockForAlt {
+    public finishAlternative(blk: CodeBlockForAlt, ops: SrcOp[] | undefined): CodeBlockForAlt {
         blk.ops = ops ?? [];
 
         return blk;
     }
 
-    public override action(ast: ActionAST): SrcOp[] {
+    public stringRef(id: GrammarAST, label: GrammarAST | null): SrcOp[] | undefined {
+        return this.tokenRef(id, label, null);
+    }
+
+    public action(ast: ActionAST): SrcOp[] {
         return [new Action(this, ast)];
     }
 
-    public override sempred(ast: ActionAST): SrcOp[] {
+    public sempred(ast: ActionAST): SrcOp[] {
         return [new SemPred(this, ast)];
     }
 
-    public override ruleRef(id: GrammarAST, label: GrammarAST | null, args: GrammarAST): SrcOp[] {
+    public ruleRef(id: GrammarAST, label: GrammarAST | null, args: GrammarAST): SrcOp[] {
         const invokeOp = new InvokeRule(this, id, label);
 
         // If no manual label and action refs as token/rule not label, we need to define implicit label.
@@ -112,7 +138,11 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return [invokeOp, listLabelOp!];
     }
 
-    public override tokenRef(id: GrammarAST, labelAST: GrammarAST | null, args: GrammarAST | null): SrcOp[] {
+    public getCurrentRuleFunction(): RuleFunction | undefined {
+        return this.controller.currentRuleFunction;
+    }
+
+    public tokenRef(id: GrammarAST, labelAST: GrammarAST | null, args: GrammarAST | null): SrcOp[] {
         const matchOp = new MatchToken(this, id as TerminalAST);
 
         if (labelAST) {
@@ -147,7 +177,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return new TokenListDecl(this, this.gen.target.getListLabel(label));
     }
 
-    public override set(setAST: GrammarAST, labelAST: GrammarAST | null, invert: boolean): SrcOp[] {
+    public set(setAST: GrammarAST, labelAST: GrammarAST | null, invert: boolean): SrcOp[] {
         let matchOp: MatchSet;
         if (invert) {
             matchOp = new MatchNotSet(this, setAST);
@@ -178,7 +208,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return [matchOp, listLabelOp!];
     }
 
-    public override wildcard(ast: GrammarAST, labelAST: GrammarAST | null): SrcOp[] {
+    public wildcard(ast: GrammarAST, labelAST: GrammarAST | null): SrcOp[] {
         const wild = new Wildcard(this, ast);
 
         if (labelAST) {
@@ -201,7 +231,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return [wild, listLabelOp!];
     }
 
-    public override getChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[], labelAST: GrammarAST | null): Choice {
+    public getChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[], labelAST: GrammarAST | null): Choice {
         const decision = (blkAST.atnState as DecisionState).decision;
         let c: Choice;
         if (!this.forceAtn && disjoint(this.grammar.decisionLOOK[decision])) {
@@ -216,6 +246,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
             const d = this.getTokenLabelDecl(label);
             c.label = d;
             this.getCurrentRuleFunction()!.addContextDecl(labelAST.getAltLabel()!, d);
+
             if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
                 const listLabel = this.gen.target.getListLabel(label);
                 const l = new TokenListDecl(this, listLabel);
@@ -226,17 +257,15 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return c;
     }
 
-    public override getEBNFBlock(ebnfRoot: GrammarAST, alts: CodeBlockForAlt[]): Choice | undefined {
+    public getEBNFBlock(ebnfRoot: GrammarAST, alts: CodeBlockForAlt[]): Choice | undefined {
         if (!this.forceAtn) {
             let decision: number;
             if (ebnfRoot.getType() === ANTLRv4Parser.POSITIVE_CLOSURE) {
                 decision = (ebnfRoot.atnState as PlusLoopbackState).decision;
+            } else if (ebnfRoot.getType() === ANTLRv4Parser.CLOSURE) {
+                decision = (ebnfRoot.atnState as StarLoopEntryState).decision;
             } else {
-                if (ebnfRoot.getType() === ANTLRv4Parser.CLOSURE) {
-                    decision = (ebnfRoot.atnState as StarLoopEntryState).decision;
-                } else {
-                    decision = (ebnfRoot.atnState as DecisionState).decision;
-                }
+                decision = (ebnfRoot.atnState as DecisionState).decision;
             }
 
             if (disjoint(this.grammar.decisionLOOK[decision])) {
@@ -247,15 +276,15 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return this.getComplexEBNFBlock(ebnfRoot, alts);
     }
 
-    public override getLL1ChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[]): Choice {
+    public getLL1ChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[]): Choice {
         return new LL1AltBlock(this, blkAST, alts);
     }
 
-    public override getComplexChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[]): Choice {
+    public getComplexChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[]): Choice {
         return new AltBlock(this, blkAST, alts);
     }
 
-    public override getLL1EBNFBlock(ebnfRoot: GrammarAST, alts: CodeBlockForAlt[]): Choice | undefined {
+    public getLL1EBNFBlock(ebnfRoot: GrammarAST, alts: CodeBlockForAlt[]): Choice | undefined {
         const ebnf = ebnfRoot.getType();
         let c;
         switch (ebnf) {
@@ -296,7 +325,7 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return c;
     }
 
-    public override getComplexEBNFBlock(ebnfRoot: GrammarAST, alts: CodeBlockForAlt[]): Choice | undefined {
+    public getComplexEBNFBlock(ebnfRoot: GrammarAST, alts: CodeBlockForAlt[]): Choice | undefined {
         const ebnf = ebnfRoot.getType();
         let c;
         switch (ebnf) {
@@ -306,12 +335,12 @@ export class ParserFactory extends DefaultOutputModelFactory {
             }
 
             case ANTLRv4Parser.CLOSURE: {
-                c = new StarBlock(this, ebnfRoot, alts);
+                c = new StarBlock(this, ebnfRoot as IQuantifierAST, alts);
                 break;
             }
 
             case ANTLRv4Parser.POSITIVE_CLOSURE: {
-                c = new PlusBlock(this, ebnfRoot, alts);
+                c = new PlusBlock(this, ebnfRoot as IQuantifierAST, alts);
                 break;
             }
 
@@ -322,11 +351,40 @@ export class ParserFactory extends DefaultOutputModelFactory {
         return c;
     }
 
-    public override getLL1Test(look: IntervalSet, blkAST: GrammarAST): SrcOp[] {
+    public getLL1Test(look: IntervalSet, blkAST: GrammarAST): SrcOp[] {
         return [new TestSetInline(this, blkAST, look, this.gen.target.getInlineTestSetWordSize())];
     }
 
-    public override needsImplicitLabel(id: GrammarAST, op: ILabeledOp): boolean {
+    public getGenerator(): CodeGenerator {
+        return this.gen;
+    }
+
+    public getCurrentOuterMostAlt(): Alternative {
+        return this.controller.currentOuterMostAlt;
+    }
+
+    public getCurrentBlock(): CodeBlock {
+        return this.controller.currentBlock;
+    }
+
+    public rulePostamble(ruleFunction: RuleFunction, r: Rule): SrcOp[] | undefined {
+        if (r.namedActions.has("after") || r.namedActions.has("finally")) {
+            // See OutputModelController.buildLeftRecursiveRuleFunction and Parser.exitRule for other places
+            // which set stop.
+            const gen = this.getGenerator();
+            const codegenTemplates = gen.templates;
+            const setStopTokenAST = codegenTemplates.getInstanceOf("recRuleSetStopToken")!;
+            const setStopTokenAction = new Action(this, ruleFunction.ruleCtx, setStopTokenAST);
+            const ops = new Array<SrcOp>(1);
+            ops.push(setStopTokenAction);
+
+            return ops;
+        }
+
+        return undefined;
+    }
+
+    public needsImplicitLabel(id: GrammarAST, op: ILabeledOp): boolean {
         const currentOuterMostAlt = this.getCurrentOuterMostAlt();
         const actionRefsAsToken = currentOuterMostAlt.tokenRefsInActions.has(id.getText());
         const actionRefsAsRule = currentOuterMostAlt.ruleRefsInActions.has(id.getText());
@@ -341,18 +399,16 @@ export class ParserFactory extends DefaultOutputModelFactory {
             const implLabel = this.gen.target.getImplicitSetLabel(String(ast.token!.tokenIndex));
             d = this.getTokenLabelDecl(implLabel);
             (d as TokenDecl).isImplicit = true;
+        } else if (ast.getType() === ANTLRv4Parser.RULE_REF) { // A rule reference?
+            const r = this.grammar.getRule(ast.getText())!;
+            const implLabel = this.gen.target.getImplicitRuleLabel(ast.getText());
+            const ctxName = this.gen.target.getRuleFunctionContextStructName(r);
+            d = new RuleContextDecl(this, implLabel, ctxName);
+            (d as RuleContextDecl).isImplicit = true;
         } else {
-            if (ast.getType() === ANTLRv4Parser.RULE_REF) { // A rule reference?
-                const r = this.grammar.getRule(ast.getText())!;
-                const implLabel = this.gen.target.getImplicitRuleLabel(ast.getText());
-                const ctxName = this.gen.target.getRuleFunctionContextStructName(r);
-                d = new RuleContextDecl(this, implLabel, ctxName);
-                (d as RuleContextDecl).isImplicit = true;
-            } else {
-                const implLabel = this.gen.target.getImplicitTokenLabel(ast.getText());
-                d = this.getTokenLabelDecl(implLabel);
-                (d as TokenDecl).isImplicit = true;
-            }
+            const implLabel = this.gen.target.getImplicitTokenLabel(ast.getText());
+            d = this.getTokenLabelDecl(implLabel);
+            (d as TokenDecl).isImplicit = true;
         }
 
         op.labels.push(d);

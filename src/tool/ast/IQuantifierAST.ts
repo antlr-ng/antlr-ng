@@ -5,6 +5,6 @@
 
 import type { GrammarAST } from "./GrammarAST.js";
 
-export interface QuantifierAST extends GrammarAST {
+export interface IQuantifierAST extends GrammarAST {
     isGreedy(): boolean;
 }

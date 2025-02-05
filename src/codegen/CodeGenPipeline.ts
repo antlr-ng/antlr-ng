@@ -20,9 +20,8 @@ export class CodeGenPipeline {
     }
 
     public process(toolParameters: IToolParameters): void {
-        // all templates are generated in memory to report the most complete
-        // error information possible, but actually writing output files stops
-        // after the first error is reported
+        // All templates are generated in memory to report the most complete error information possible, but actually
+        // writing output files stops after the first error is reported.
         const errorCount = this.g.tool.errorManager.errors;
 
         if (this.g.isLexer()) {
@@ -32,6 +31,7 @@ export class CodeGenPipeline {
                     this.writeRecognizer(lexer, this.gen, true);
                 }
             }
+
             const lexer = this.gen.generateLexer(toolParameters, false);
             if (this.g.tool.errorManager.errors === errorCount) {
                 this.writeRecognizer(lexer, this.gen, false);
@@ -56,6 +56,7 @@ export class CodeGenPipeline {
                         this.gen.writeListener(listener, true);
                     }
                 }
+
                 const listener = this.gen.generateListener(false);
                 if (this.g.tool.errorManager.errors === errorCount) {
                     this.gen.writeListener(listener, false);
@@ -67,6 +68,7 @@ export class CodeGenPipeline {
                         this.gen.writeBaseListener(baseListener, true);
                     }
                 }
+
                 if (this.gen.target.wantsBaseListener()) {
                     const baseListener = this.gen.generateBaseListener(false);
                     if (this.g.tool.errorManager.errors === errorCount) {
@@ -82,6 +84,7 @@ export class CodeGenPipeline {
                         this.gen.writeVisitor(visitor, true);
                     }
                 }
+
                 const visitor = this.gen.generateVisitor(false);
                 if (this.g.tool.errorManager.errors === errorCount) {
                     this.gen.writeVisitor(visitor, false);
@@ -93,6 +96,7 @@ export class CodeGenPipeline {
                         this.gen.writeBaseVisitor(baseVisitor, true);
                     }
                 }
+
                 if (this.gen.target.wantsBaseVisitor()) {
                     const baseVisitor = this.gen.generateBaseVisitor(false);
                     if (this.g.tool.errorManager.errors === errorCount) {
@@ -101,6 +105,7 @@ export class CodeGenPipeline {
                 }
             }
         }
+
         this.gen.writeVocabFile();
     }
 

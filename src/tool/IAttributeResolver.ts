@@ -36,7 +36,7 @@ import { ActionAST } from "./ast/ActionAST.js";
  *  $s		AttributeDict: s is a global scope
  *  $s::y	Attribute: s is a global scope; y is prop within
  */
-export interface AttributeResolver {
+export interface IAttributeResolver {
     resolvesToListLabel(x: string, node: ActionAST): boolean;
     resolvesToLabel(x: string, node: ActionAST): boolean;
     resolvesToAttributeDict(x: string, node: ActionAST): boolean;

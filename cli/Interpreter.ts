@@ -9,8 +9,7 @@ import { readFile } from "fs/promises";
 
 import { CharStream, CommonToken, CommonTokenStream, DecisionInfo, ParseInfo } from "antlr4ng";
 
-import type { ANTLRToolListener } from "../src/tool/ANTLRToolListener.js";
-import { DefaultToolListener } from "../src/tool/DefaultToolListener.js";
+import { ToolListener } from "../src/tool/ToolListener.js";
 import { Grammar } from "../src/tool/Grammar.js";
 import type { GrammarParserInterpreter } from "../src/tool/GrammarParserInterpreter.js";
 import { LexerGrammar } from "../src/tool/LexerGrammar.js";
@@ -53,7 +52,7 @@ export class Interpreter {
 
     private static IgnoreTokenVocabGrammar = class IgnoreTokenVocabGrammar extends Grammar {
         public constructor(fileName: string, grammarText: string, tokenVocabSource: Grammar | undefined,
-            listener: ANTLRToolListener) {
+            listener: ToolListener) {
             super(fileName, grammarText, tokenVocabSource, listener);
         }
 
@@ -110,7 +109,7 @@ export class Interpreter {
 
         let g: Grammar;
         let lg = null;
-        const listener = new DefaultToolListener(this.tool.errorManager);
+        const listener = new ToolListener(this.tool.errorManager);
         if (interpreterOptions.grammarFileName) {
             const grammarContent = await readFile(interpreterOptions.grammarFileName, "utf8");
             g = new Interpreter.IgnoreTokenVocabGrammar(interpreterOptions.grammarFileName, grammarContent, undefined,

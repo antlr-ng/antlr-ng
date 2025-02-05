@@ -6,7 +6,7 @@
 import { ClassFactory } from "../ClassFactory.js";
 import type { ILexerGrammar, IRule, ITool } from "../types.js";
 
-import { ANTLRToolListener } from "./ANTLRToolListener.js";
+import { ToolListener } from "./ToolListener.js";
 import type { GrammarRootAST } from "./ast/GrammarRootAST.js";
 import { Grammar } from "./Grammar.js";
 
@@ -21,8 +21,8 @@ export class LexerGrammar extends Grammar implements ILexerGrammar {
 
     public constructor(grammarText: string);
     public constructor(tool: ITool, ast: GrammarRootAST);
-    public constructor(grammarText: string, listener: ANTLRToolListener);
-    public constructor(fileName: string, grammarText: string, listener: ANTLRToolListener);
+    public constructor(grammarText: string, listener: ToolListener);
+    public constructor(fileName: string, grammarText: string, listener: ToolListener);
     public constructor(...args: unknown[]) {
         switch (args.length) {
             case 1: {
@@ -35,7 +35,7 @@ export class LexerGrammar extends Grammar implements ILexerGrammar {
 
             case 2: {
                 if (typeof args[0] === "string") {
-                    const [grammarText, listener] = args as [string, ANTLRToolListener];
+                    const [grammarText, listener] = args as [string, ToolListener];
 
                     super(grammarText, listener);
 
@@ -50,7 +50,7 @@ export class LexerGrammar extends Grammar implements ILexerGrammar {
             }
 
             case 3: {
-                const [fileName, grammarText, listener] = args as [string, string, ANTLRToolListener];
+                const [fileName, grammarText, listener] = args as [string, string, ToolListener];
 
                 super(fileName, grammarText, listener);
 

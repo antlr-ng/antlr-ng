@@ -19,23 +19,21 @@ import { StarBlockAST } from "./StarBlockAST.js";
 import { TerminalAST } from "./TerminalAST.js";
 
 /**
- * A simple visitor, based upon the classic double dispatch method,
- * for walking GrammarAST trees resulting from parsing ANTLR grammars.
- * There is also the GrammarTreeVisitor.g tree grammar that looks for
- * subtree patterns and fires off high-level events as opposed to
- * "found node" events like this visitor does. Also, like all
- * visitors, the users of this interface are required to implement
- * the node visitation of the children. The GrammarTreeVisitor mechanism
- * fires events and the user is not required to do any walking code.
- *
+ * A simple visitor, based upon the classic double dispatch method, for walking GrammarAST trees resulting from
+ * parsing ANTLR grammars. There is also the GrammarTreeVisitor.g tree grammar that looks for subtree patterns and
+ * fires off high-level events as opposed to "found node" events like this visitor does. Also, like all visitors, the
+ * users of this interface are required to implement the node visitation of the children. The GrammarTreeVisitor
+ * mechanism fires events and the user is not required to do any walking code.
+ * ```
  *     GrammarAST t = ...;
  *     GrammarASTVisitor v = new ...;
  *     t.visit(v);
+ * ```
  */
-export interface GrammarASTVisitor<T> {
+export interface IGrammarASTVisitor<T> {
     /**
-     * This is the generic visitor method that will be invoked
-     *  for any other kind of AST node not covered by the other visit methods.
+     * This is the generic visitor method that will be invoked for any other kind of AST node not covered by the
+     * other visit methods.
      */
     visit(node: GrammarAST): T;
 

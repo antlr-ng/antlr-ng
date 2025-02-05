@@ -220,9 +220,9 @@ export abstract class Target {
                     case "u": { // Either unnnn or u{nnnnnn}.
                         if (literal.charAt(i + toAdvance) === "{") {
                             while (literal.charAt(i + toAdvance) !== "}") {
-                                toAdvance++;
+                                ++toAdvance;
                             }
-                            toAdvance++;
+                            ++toAdvance;
                         } else {
                             toAdvance += 4;
                         }
@@ -492,7 +492,6 @@ export abstract class Target {
                     default: {
                         break;
                     }
-
                 }
 
                 break;

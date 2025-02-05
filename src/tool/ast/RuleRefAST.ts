@@ -5,7 +5,7 @@
 
 import { CommonToken, type Token } from "antlr4ng";
 
-import { GrammarASTVisitor } from "./GrammarASTVisitor.js";
+import { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 import { GrammarASTWithOptions } from "./GrammarASTWithOptions.js";
 
 export class RuleRefAST extends GrammarASTWithOptions {
@@ -24,21 +24,22 @@ export class RuleRefAST extends GrammarASTWithOptions {
         }
     }
 
-    /** Dup token too since we overwrite during LR rule transform */
-
+    /**
+     * Duplicates token too since we overwrite during LR rule transform.
+     *
+     * @returns A new RuleRefAST node with the same token and type.
+     */
     public override dupNode(): RuleRefAST {
         const r = new RuleRefAST(this);
-        // In LR transform, we alter original token stream to make e -> e[n]
-        // Since we will be altering the dup, we need dup to have the
-        // original token.  We can set this tree (the original) to have
-        // a new token.
+        // In LR transform, we alter original token stream to make e -> e[n]. Since we will be altering the dup,
+        // we need dup to have the original token.  We can set this tree (the original) to have a new token.
         r.token = this.token;
         this.token = CommonToken.fromToken(r.token!);
 
         return r;
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 }

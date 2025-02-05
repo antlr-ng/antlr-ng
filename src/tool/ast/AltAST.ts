@@ -8,7 +8,7 @@ import { Token } from "antlr4ng";
 import { type ILeftRecursiveRuleAltInfo } from "../../analysis/ILeftRecursiveRuleAltInfo.js";
 import { type Alternative } from "../Alternative.js";
 import { type GrammarAST } from "./GrammarAST.js";
-import { type GrammarASTVisitor } from "./GrammarASTVisitor.js";
+import { type IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 import { GrammarASTWithOptions } from "./GrammarASTWithOptions.js";
 
 /** Any ALT (which can be child of ALT_REWRITE node) */
@@ -55,7 +55,7 @@ export class AltAST extends GrammarASTWithOptions {
         return new AltAST(this);
     }
 
-    public override visit<T>(v: GrammarASTVisitor<T>): T {
+    public override visit<T>(v: IGrammarASTVisitor<T>): T {
         return v.visit(this);
     }
 }

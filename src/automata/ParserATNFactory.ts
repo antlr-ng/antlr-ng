@@ -25,7 +25,7 @@ import { BlockAST } from "../tool/ast/BlockAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import { PredAST } from "../tool/ast/PredAST.js";
-import { QuantifierAST } from "../tool/ast/QuantifierAST.js";
+import { IQuantifierAST } from "../tool/ast/IQuantifierAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
@@ -543,7 +543,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         const blkEnd = blk.right;
         this.preventEpsilonOptionalBlocks.push([this.currentRule!, blkStart, blkEnd!]);
 
-        const greedy = (optAST as QuantifierAST).isGreedy();
+        const greedy = (optAST as IQuantifierAST).isGreedy();
         blkStart.nonGreedy = !greedy;
         this.epsilon(blkStart, blk.right!, !greedy);
 
@@ -569,7 +569,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         this.preventEpsilonClosureBlocks.push([this.currentRule!, blkStart, blkEnd]);
 
         const loop = this.newState(PlusLoopbackState);
-        loop.nonGreedy = !(plusAST as QuantifierAST).isGreedy();
+        loop.nonGreedy = !(plusAST as IQuantifierAST).isGreedy();
         this.atn.defineDecisionState(loop);
         const end = this.newState(LoopEndState);
         blkStart.loopBackState = loop;
@@ -579,7 +579,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         this.epsilon(blkEnd, loop); // blk can see loop back
 
         const blkAST = plusAST.getChild(0) as BlockAST;
-        if ((plusAST as QuantifierAST).isGreedy()) {
+        if ((plusAST as IQuantifierAST).isGreedy()) {
             if (this.expectNonGreedy(blkAST)) {
                 this.g.tool.errorManager.grammarError(ErrorType.EXPECTED_NON_GREEDY_WILDCARD_BLOCK, this.g.fileName,
                     plusAST.token!, plusAST.token?.text);
@@ -615,7 +615,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         this.preventEpsilonClosureBlocks.push([this.currentRule!, blkStart, blkEnd]);
 
         const entry = this.newState(StarLoopEntryState);
-        entry.nonGreedy = !(starAST as QuantifierAST).isGreedy();
+        entry.nonGreedy = !(starAST as IQuantifierAST).isGreedy();
         this.atn.defineDecisionState(entry);
         const end = this.newState(LoopEndState);
         const loop = this.newState(StarLoopbackState);
@@ -623,7 +623,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         end.loopBackState = loop;
 
         const blkAST = starAST.getChild(0) as BlockAST;
-        if ((starAST as QuantifierAST).isGreedy()) {
+        if ((starAST as IQuantifierAST).isGreedy()) {
             if (this.expectNonGreedy(blkAST)) {
                 this.g.tool.errorManager.grammarError(ErrorType.EXPECTED_NON_GREEDY_WILDCARD_BLOCK, this.g.fileName,
                     starAST.token!, starAST.token?.text);

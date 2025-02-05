@@ -64,7 +64,6 @@ export class OutputModelController {
     /** While walking code in rules, this is set to the tree walker that triggers actions. */
     private walker: SourceGenTriggers;
 
-    private root: OutputModelObject; // normally ParserFile, LexerFile, ...
     private currentRuleStack = new Array<RuleFunction>();
     private errorManager: ErrorManager;
 
@@ -80,7 +79,6 @@ export class OutputModelController {
     public buildParserOutputModel(header: boolean, toolParameters: IToolParameters): OutputModelObject {
         const gen = this.factory.getGenerator()!;
         const file = this.parserFile(gen.getRecognizerFileName(header), toolParameters);
-        this.root = file;
         file.parser = this.parser(file);
 
         const g = this.factory.grammar;
@@ -94,7 +92,6 @@ export class OutputModelController {
     public buildLexerOutputModel(header: boolean, toolParameters: IToolParameters): OutputModelObject {
         const gen = this.factory.getGenerator()!;
         const file = this.lexerFile(gen.getRecognizerFileName(header), toolParameters);
-        this.root = file;
         file.lexer = this.lexer(file);
 
         const g = this.factory.grammar;
@@ -299,10 +296,8 @@ export class OutputModelController {
                     lexer.sempredFuncs.set(r, rsf);
                 }
                 rsf.actions.set(g.sempreds.get(p)!, new Action(this.factory, p));
-            } else {
-                if (a.getType() === ANTLRv4Parser.ACTION) {
-                    raf.actions.set(g.lexerActions.get(a)!, new Action(this.factory, a));
-                }
+            } else if (a.getType() === ANTLRv4Parser.ACTION) {
+                raf.actions.set(g.lexerActions.get(a)!, new Action(this.factory, a));
             }
         }
 
@@ -385,11 +380,11 @@ export class OutputModelController {
         return undefined;
     }
 
-    public pushCurrentRule(r: RuleFunction): void {
+    private pushCurrentRule(r: RuleFunction): void {
         this.currentRuleStack.push(r);
     }
 
-    public popCurrentRule(): RuleFunction | null {
+    private popCurrentRule(): RuleFunction | null {
         if (this.currentRuleStack.length > 0) {
             return this.currentRuleStack.pop()!;
         }

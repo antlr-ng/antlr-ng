@@ -32,7 +32,7 @@ import type { IGrammar, ITool } from "../types.js";
 
 import type { CommonTree } from "../tree/CommonTree.js";
 import { ANTLRMessage } from "./ANTLRMessage.js";
-import { ANTLRToolListener } from "./ANTLRToolListener.js";
+import { ToolListener } from "./ToolListener.js";
 import type { ActionAST } from "./ast/ActionAST.js";
 import type { GrammarAST } from "./ast/GrammarAST.js";
 import type { GrammarASTWithOptions } from "./ast/GrammarASTWithOptions.js";
@@ -40,7 +40,7 @@ import type { GrammarRootAST } from "./ast/GrammarRootAST.js";
 import type { PredAST } from "./ast/PredAST.js";
 import type { TerminalAST } from "./ast/TerminalAST.js";
 import type { AttributeDict } from "./AttributeDict.js";
-import type { AttributeResolver } from "./AttributeResolver.js";
+import type { IAttributeResolver } from "./IAttributeResolver.js";
 import { ErrorType } from "./ErrorType.js";
 import type { GrammarParserInterpreter } from "./GrammarParserInterpreter.js";
 import type { IAttribute } from "./IAttribute.js";
@@ -48,7 +48,7 @@ import type { LexerGrammar } from "./LexerGrammar.js";
 import type { Rule } from "./Rule.js";
 import type { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 
-export class Grammar implements IGrammar, AttributeResolver {
+export class Grammar implements IGrammar, IAttributeResolver {
     /**
      * This value is used in the following situations to indicate that a token
      * type does not have an associated name which can be directly referenced in
@@ -252,13 +252,13 @@ export class Grammar implements IGrammar, AttributeResolver {
 
     public constructor(tool: ITool, ast: GrammarRootAST);
     /** For testing */
-    public constructor(grammarText: string, listener?: ANTLRToolListener);
+    public constructor(grammarText: string, listener?: ToolListener);
     public constructor(grammarText: string, tokenVocabSource: LexerGrammar);
     /** For testing; builds trees, does sem anal */
-    public constructor(fileName: string, grammarText: string, listener?: ANTLRToolListener);
+    public constructor(fileName: string, grammarText: string, listener?: ToolListener);
     /** For testing; builds trees, does sem anal */
     public constructor(fileName: string, grammarText: string, tokenVocabSource: Grammar | undefined,
-        listener: ANTLRToolListener);
+        listener: ToolListener);
     public constructor(...args: unknown[]) {
         if (args.length === 2 && typeof args[0] !== "string") {
             [this.tool, this.ast] = args as [ITool, GrammarRootAST];
@@ -271,7 +271,7 @@ export class Grammar implements IGrammar, AttributeResolver {
             // This branch for all testing scenarios. Must at least give the grammar text.
             let fileName = Constants.GRAMMAR_FROM_STRING_NAME;
             let grammarText = args[0] as string;
-            let listener: ANTLRToolListener | undefined;
+            let listener: ToolListener | undefined;
             let tokenVocabSource: LexerGrammar | undefined;
 
             if (args.length > 1) {
@@ -283,15 +283,15 @@ export class Grammar implements IGrammar, AttributeResolver {
                     fileName = args[0] as string;
                     grammarText = args[1];
                 } else {
-                    listener = args[1] as ANTLRToolListener;
+                    listener = args[1] as ToolListener;
                 }
 
                 if (args.length > 2) {
-                    listener = args[2] as ANTLRToolListener;
+                    listener = args[2] as ToolListener;
 
                     if (args.length > 3) {
                         tokenVocabSource = args[2] as LexerGrammar | undefined;
-                        listener = args[3] as ANTLRToolListener;
+                        listener = args[3] as ToolListener;
                     }
                 }
             }
@@ -306,7 +306,7 @@ export class Grammar implements IGrammar, AttributeResolver {
                 warning: (msg: ANTLRMessage): void => { /* ignored */ },
             };
 
-            this.tool.errorManager.addListener(hush); // we want to hush errors/warnings
+            this.tool.errorManager.addListener(hush as ToolListener); // we want to hush errors/warnings
             if (listener) {
                 this.tool.errorManager.addListener(listener);
             }
