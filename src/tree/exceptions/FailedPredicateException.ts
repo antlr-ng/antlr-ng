@@ -13,11 +13,9 @@ import { RecognitionException } from "antlr4ng";
  */
 export class FailedPredicateException extends RecognitionException {
     public ruleName: string;
-    public predicateText: string;
 
-    public constructor(ruleName: string, predicateText: string) {
+    public constructor(ruleName: string) {
         super({ message: "", recognizer: null, input: null, ctx: null });
         this.ruleName = ruleName;
-        this.predicateText = predicateText;
     }
 }

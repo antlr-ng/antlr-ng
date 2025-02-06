@@ -5,9 +5,9 @@
 
 import { RecognitionException } from "antlr4ng";
 
-import { EarlyExitException } from "../EarlyExitException.js";
-import { MismatchedSetException } from "../MismatchedSetException.js";
-import { NoViableAltException } from "../NoViableAltException.js";
+import { EarlyExitException } from "../exceptions/EarlyExitException.js";
+import { MismatchedSetException } from "../exceptions/MismatchedSetException.js";
+import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { TreeParser } from "../TreeParser.js";
 
 import type { IATNFactory, IStatePair } from "../../automata/IATNFactory.js";
@@ -311,7 +311,7 @@ export class ATNBuilder extends TreeParser {
                 this.input.consume();
                 this.state.errorRecovery = false;
             } else {
-                throw new MismatchedSetException(null);
+                throw new MismatchedSetException();
             }
         } catch (re) {
             if (re instanceof RecognitionException) {

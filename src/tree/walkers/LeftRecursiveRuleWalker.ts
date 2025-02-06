@@ -9,15 +9,13 @@ import type { AltAST } from "../../tool/ast/AltAST.js";
 import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import type { ErrorManager } from "../../tool/ErrorManager.js";
 import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
-import { EarlyExitException } from "../EarlyExitException.js";
-import { FailedPredicateException } from "../FailedPredicateException.js";
-import { MismatchedSetException } from "../MismatchedSetException.js";
-import { NoViableAltException } from "../NoViableAltException.js";
+import { EarlyExitException } from "../exceptions/EarlyExitException.js";
+import { FailedPredicateException } from "../exceptions/FailedPredicateException.js";
+import { MismatchedSetException } from "../exceptions/MismatchedSetException.js";
+import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { TreeParser } from "../TreeParser.js";
 
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-/* eslint-disable @typescript-eslint/naming-convention */
-// cspell: disable
 
 /** Find left-recursive rules */
 export class LeftRecursiveRuleWalker extends TreeParser {
@@ -301,7 +299,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 return;
             }
 
-            throw new MismatchedSetException(null);
+            throw new MismatchedSetException();
         }
     }
 
@@ -755,7 +753,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 return;
             }
 
-            throw new FailedPredicateException("recurseNoLabel", "");
+            throw new FailedPredicateException("recurseNoLabel");
         }
 
         this.match(this.input, ANTLRv4Lexer.RULE_REF);
@@ -1811,7 +1809,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         return;
                     }
 
-                    const lookahead = this.input.lookahead(1);
+                    let lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Lexer.ARG_ACTION) {
                         this.match(this.input, ANTLRv4Lexer.ARG_ACTION);
                         if (this.failed) {
@@ -1819,8 +1817,8 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         }
                     }
 
-                    const LA34_0 = this.input.lookahead(1);
-                    if ((LA34_0 === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
+                    lookahead = this.input.lookahead(1);
+                    if ((lookahead === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
                         this.elementOptions();
                         if (this.failed) {
                             return;

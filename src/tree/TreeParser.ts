@@ -14,7 +14,7 @@ import { ErrorType } from "../tool/ErrorType.js";
 import { CommonTree } from "./CommonTree.js";
 import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
 import { createRecognizerSharedState, type IRecognizerSharedState } from "./misc/IRecognizerSharedState.js";
-import { MismatchedTreeNodeException } from "./MismatchTreeNodeException.js";
+import { MismatchedTreeNodeException } from "./exceptions/MismatchTreeNodeException.js";
 
 /**
  * A parser for a stream of tree nodes. "tree grammars" result in a subclass of this. All the error reporting

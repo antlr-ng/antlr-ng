@@ -19,10 +19,10 @@ import type { ErrorManager } from "../../tool/ErrorManager.js";
 import { Grammar } from "../../tool/Grammar.js";
 import { GrammarTransformPipeline } from "../../tool/GrammarTransformPipeline.js";
 import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
-import { EarlyExitException } from "../EarlyExitException.js";
-import { FailedPredicateException } from "../FailedPredicateException.js";
-import { MismatchedSetException } from "../MismatchedSetException.js";
-import { NoViableAltException } from "../NoViableAltException.js";
+import { EarlyExitException } from "../exceptions/EarlyExitException.js";
+import { FailedPredicateException } from "../exceptions/FailedPredicateException.js";
+import { MismatchedSetException } from "../exceptions/MismatchedSetException.js";
+import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { RewriteRuleNodeStream } from "../RewriteRuleNodeStream.js";
 import { RewriteRuleSubtreeStream } from "../RewriteRuleSubtreeStream.js";
 import { TreeRewriter } from "../TreeRewriter.js";
@@ -250,7 +250,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return undefined;
                 }
 
-                throw new FailedPredicateException("setAlt", "inContext(\"RULE BLOCK\")");
+                throw new FailedPredicateException("setAlt");
             }
 
             const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
@@ -365,7 +365,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return undefined;
                 }
 
-                throw new MismatchedSetException(null, this.input);
+                throw new MismatchedSetException();
             }
 
             if (this.state.backtracking === 1) {
@@ -451,7 +451,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    throw new FailedPredicateException("blockSet", "");
+                    throw new FailedPredicateException("blockSet");
                 }
 
                 const setElement = this.setElement(inLexer);
@@ -810,7 +810,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                             return result;
                         }
-                        throw new FailedPredicateException("setElement", "");
+                        throw new FailedPredicateException("setElement");
                     }
 
                     if (this.state.backtracking === 1) {
@@ -838,7 +838,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        throw new FailedPredicateException("setElement", "");
+                        throw new FailedPredicateException("setElement");
                     }
 
                     if (this.state.backtracking === 1) {
@@ -934,7 +934,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                         return result;
                     }
-                    throw new FailedPredicateException("setElement", "inLexer");
+                    throw new FailedPredicateException("setElement");
                 }
 
                 const range = this.match(this.input, ANTLRv4Parser.RANGE)!;
@@ -974,7 +974,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    throw new FailedPredicateException("setElement", "");
+                    throw new FailedPredicateException("setElement");
                 }
 
                 if (this.state.backtracking === 1) {

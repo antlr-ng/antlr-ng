@@ -18,9 +18,9 @@ import type { BlockAST } from "../../tool/ast/BlockAST.js";
 import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import type { ErrorManager } from "../../tool/ErrorManager.js";
 import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
-import { EarlyExitException } from "../EarlyExitException.js";
+import { EarlyExitException } from "../exceptions/EarlyExitException.js";
 import { IRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
-import { NoViableAltException } from "../NoViableAltException.js";
+import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { TreeParser } from "../TreeParser.js";
 
 interface IAltResults {
