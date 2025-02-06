@@ -64,7 +64,7 @@ export class BlockSetTransformer extends TreeRewriter {
         let result: GrammarAST | undefined;
 
         try {
-            switch (this.input.LA(1)) {
+            switch (this.input.lookahead(1)) {
                 case ANTLRv4Parser.RULE: {
                     const rule = this.match(this.input, ANTLRv4Parser.RULE)!;
                     if (this.failed) {
@@ -81,7 +81,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    const lookahead = this.input.LA(1);
+                    const lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Parser.TOKEN_REF) {
                         const id = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
                         if (this.failed) {
@@ -120,7 +120,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     let matchCount = 0;
                     while (true) {
-                        const lookahead = this.input.LA(1);
+                        const lookahead = this.input.lookahead(1);
                         if (lookahead >= ANTLRv4Parser.ACTION && lookahead <= ANTLRv4Parser.WILDCARD) {
                             this.matchAny();
                             if (this.failed) {
@@ -278,7 +278,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
     private ebnfBlockSet(): GrammarAST | undefined {
         let result: GrammarAST | undefined;
-        const start = this.input.lookAhead(1) as GrammarAST;
+        const start = this.input.lookaheadType(1) as GrammarAST;
 
         const blockSetStream = new RewriteRuleSubtreeStream("rule blockSet");
         const ebnfSuffixStream = new RewriteRuleSubtreeStream("rule ebnfSuffix");
@@ -298,7 +298,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 return undefined;
             }
 
-            let last = this.input.lookAhead(1) as GrammarAST;
+            let last = this.input.lookaheadType(1) as GrammarAST;
             const blockSet = this.blockSet();
             if (this.failed) {
                 return undefined;
@@ -349,10 +349,10 @@ export class BlockSetTransformer extends TreeRewriter {
     }
 
     private ebnfSuffix(): GrammarAST | undefined {
-        const start = this.input.lookAhead(1) as GrammarAST;
+        const start = this.input.lookaheadType(1) as GrammarAST;
 
         try {
-            const lookahead = this.input.LA(1);
+            const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Parser.CLOSURE
                 || (lookahead >= ANTLRv4Parser.OPTIONAL && lookahead <= ANTLRv4Parser.POSITIVE_CLOSURE)) {
                 this.input.consume();
@@ -383,7 +383,7 @@ export class BlockSetTransformer extends TreeRewriter {
     }
 
     private blockSet(): GrammarAST | undefined {
-        const start = this.input.lookAhead(1) ?? undefined;
+        const start = this.input.lookaheadType(1) ?? undefined;
         let result: GrammarAST | undefined;
 
         const blockStream = new RewriteRuleNodeStream("token BLOCK");
@@ -428,7 +428,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return undefined;
                 }
 
-                const lookahead = this.input.LA(1);
+                const lookahead = this.input.lookahead(1);
                 if (lookahead === ANTLRv4Parser.ELEMENT_OPTIONS) {
                     const elementOptions = this.elementOptions();
                     if (this.failed) {
@@ -470,7 +470,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 let optionCount = 0;
                 while (true) {
-                    const lookahead = this.input.LA(1);
+                    const lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Parser.ALT) {
                         const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
                         if (this.failed) {
@@ -489,7 +489,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        const lookahead = this.input.LA(1);
+                        const lookahead = this.input.lookahead(1);
                         if (lookahead === ANTLRv4Parser.ELEMENT_OPTIONS) {
                             const elementOptions = this.elementOptions();
                             if (this.failed) {
@@ -613,7 +613,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                const lookahead = this.input.LA(1);
+                const lookahead = this.input.lookahead(1);
                 if (lookahead === ANTLRv4Parser.ELEMENT_OPTIONS) {
                     const elementOptions = this.elementOptions();
 
@@ -647,7 +647,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 let optionsCount = 0;
                 while (true) {
-                    const lookahead = this.input.LA(1);
+                    const lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Parser.ALT) {
                         const alt = this.match(this.input, ANTLRv4Parser.ALT)!;
 
@@ -668,7 +668,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        const lookahead = this.input.LA(1);
+                        const lookahead = this.input.lookahead(1);
                         if (lookahead === ANTLRv4Parser.ELEMENT_OPTIONS) {
                             const elementOptions = this.elementOptions();
 
@@ -775,9 +775,9 @@ export class BlockSetTransformer extends TreeRewriter {
             let first;
             let doDefault = true;
 
-            const lookahead = this.input.LA(1);
+            const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Parser.STRING_LITERAL) {
-                const lookahead2 = this.input.LA(2);
+                const lookahead2 = this.input.lookahead(2);
                 if (lookahead2 === Constants.DOWN) {
                     const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
@@ -869,7 +869,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
             } else {
                 if ((lookahead === ANTLRv4Parser.TOKEN_REF) && !inLexer) {
-                    const lookahead2 = this.input.LA(2);
+                    const lookahead2 = this.input.lookahead(2);
                     if (lookahead2 === Constants.DOWN) {
                         const tokenRef = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
                         if (this.failed) {
@@ -1019,14 +1019,14 @@ export class BlockSetTransformer extends TreeRewriter {
                 first = elementOptions;
             }
 
-            if (this.input.LA(1) === Constants.DOWN) {
+            if (this.input.lookahead(1) === Constants.DOWN) {
                 this.match(this.input, Constants.DOWN);
                 if (this.failed) {
                     return result;
                 }
 
                 while (true) {
-                    const lookahead = this.input.LA(1);
+                    const lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Parser.ASSIGN || lookahead === ANTLRv4Parser.ID) {
                         this.elementOption();
                         if (this.failed) {
@@ -1073,7 +1073,7 @@ export class BlockSetTransformer extends TreeRewriter {
         try {
             let doDefault = true;
 
-            const lookahead = this.input.LA(1);
+            const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Parser.ID) {
                 const id = this.match(this.input, ANTLRv4Parser.ID)!;
                 if (this.failed) {
@@ -1089,13 +1089,13 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 doDefault = false;
             } else if (lookahead === ANTLRv4Parser.ASSIGN) {
-                const lookahead2 = this.input.LA(2);
+                const lookahead2 = this.input.lookahead(2);
                 if (lookahead2 === Constants.DOWN) {
-                    const lookahead3 = this.input.LA(3);
+                    const lookahead3 = this.input.lookahead(3);
                     if (lookahead3 === ANTLRv4Parser.ID) {
                         doDefault = false;
 
-                        switch (this.input.LA(4)) {
+                        switch (this.input.lookahead(4)) {
                             case ANTLRv4Parser.ID: {
                                 const assign = this.match(this.input, ANTLRv4Parser.ASSIGN)!;
                                 if (this.failed) {

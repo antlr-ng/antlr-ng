@@ -73,7 +73,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             this.ruleName = id.getText()!;
         }
 
-        const lookahead = this.input.LA(1);
+        const lookahead = this.input.lookahead(1);
         if ((lookahead >= ANTLRv4Lexer.PRIVATE && lookahead <= ANTLRv4Lexer.PUBLIC)) {
             this.ruleModifier();
             if (this.failed) {
@@ -81,7 +81,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
         }
 
-        if (this.input.LA(1) === ANTLRv4Lexer.RETURNS) {
+        if (this.input.lookahead(1) === ANTLRv4Lexer.RETURNS) {
             this.match(this.input, ANTLRv4Lexer.RETURNS);
             if (this.failed) {
                 return isLeftRec;
@@ -107,7 +107,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
         }
 
-        if (this.input.LA(1) === ANTLRv4Lexer.LOCALS) {
+        if (this.input.lookahead(1) === ANTLRv4Lexer.LOCALS) {
             this.match(this.input, ANTLRv4Lexer.LOCALS);
             if (this.failed) {
                 return isLeftRec;
@@ -130,21 +130,21 @@ export class LeftRecursiveRuleWalker extends TreeParser {
         }
 
         while (true) {
-            const lookahead = this.input.LA(1);
+            const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Lexer.OPTIONS) {
                 this.match(this.input, ANTLRv4Lexer.OPTIONS);
                 if (this.failed) {
                     return isLeftRec;
                 }
 
-                if (this.input.LA(1) === Constants.DOWN) {
+                if (this.input.lookahead(1) === Constants.DOWN) {
                     this.match(this.input, Constants.DOWN);
                     if (this.failed) {
                         return isLeftRec;
                     }
 
                     while (true) {
-                        const lookahead = this.input.LA(1);
+                        const lookahead = this.input.lookahead(1);
                         if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.PUBLIC) {
                             this.matchAny();
                             if (this.failed) {
@@ -221,7 +221,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
     private exceptionGroup(): void {
         while (true) {
-            if (this.input.LA(1) === ANTLRv4Lexer.CATCH) {
+            if (this.input.lookahead(1) === ANTLRv4Lexer.CATCH) {
                 this.exceptionHandler();
                 if (this.failed) {
                     return;
@@ -231,7 +231,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
         }
 
-        if (this.input.LA(1) === ANTLRv4Lexer.FINALLY) {
+        if (this.input.lookahead(1) === ANTLRv4Lexer.FINALLY) {
             this.finallyClause();
             if (this.failed) {
                 return;
@@ -289,7 +289,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private ruleModifier(): void {
-        const lookahead = this.input.LA(1);
+        const lookahead = this.input.lookahead(1);
         if (lookahead >= ANTLRv4Lexer.PRIVATE && lookahead <= ANTLRv4Lexer.PUBLIC) {
             this.input.consume();
             this.state.errorRecovery = false;
@@ -307,7 +307,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
     private ruleBlock(): boolean {
         let result = false;
-        const start = this.input.lookAhead(1) as GrammarAST;
+        const start = this.input.lookaheadType(1) as GrammarAST;
         this.numAlts = start.children.length;
 
         this.match(this.input, ANTLRv4Lexer.BLOCK);
@@ -322,7 +322,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
         let alternativeCount = 0;
         while (true) {
-            if (this.input.LA(1) === ANTLRv4Lexer.ALT) {
+            if (this.input.lookahead(1) === ANTLRv4Lexer.ALT) {
                 const o = this.outerAlternative();
                 if (this.failed) {
                     return result;
@@ -362,9 +362,9 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
     private outerAlternative(): boolean {
         let result = false;
-        const start = this.input.lookAhead(1) as GrammarAST;
+        const start = this.input.lookaheadType(1) as GrammarAST;
 
-        if (this.input.LA(1) === ANTLRv4Lexer.ALT) {
+        if (this.input.lookahead(1) === ANTLRv4Lexer.ALT) {
             if (this.syntacticPredicate1()) {
                 this.binary();
                 if (this.failed) {
@@ -428,7 +428,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if ((this.input.LA(1) === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
+        if ((this.input.lookahead(1) === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
             this.elementOptions();
             if (this.failed) {
                 return;
@@ -457,7 +457,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
         }
 
         while (true) {
-            const lookahead = this.input.LA(1);
+            const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Lexer.ACTION
                 || lookahead === ANTLRv4Lexer.SEMPRED
                 || lookahead === ANTLRv4Lexer.EPSILON) {
@@ -491,7 +491,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if ((this.input.LA(1) === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
+        if ((this.input.lookahead(1) === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
             this.elementOptions();
             if (this.failed) {
                 return;
@@ -528,7 +528,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
         }
 
         while (true) {
-            const lookahead = this.input.LA(1);
+            const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Lexer.ACTION
                 || lookahead === ANTLRv4Lexer.SEMPRED
                 || lookahead === ANTLRv4Lexer.EPSILON) {
@@ -562,7 +562,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if (this.input.LA(1) === ANTLRv4Lexer.ELEMENT_OPTIONS) {
+        if (this.input.lookahead(1) === ANTLRv4Lexer.ELEMENT_OPTIONS) {
             this.elementOptions();
             if (this.failed) {
                 return;
@@ -576,7 +576,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
         let elementCount = 0;
         while (true) {
-            const lookahead = this.input.LA(1);
+            const lookahead = this.input.lookahead(1);
             if (this.singleAtomWithActionLookaheadValues.includes(lookahead)
                 || (lookahead >= ANTLRv4Lexer.BLOCK && lookahead <= ANTLRv4Lexer.CLOSURE)
                 || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -623,7 +623,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if (this.input.LA(1) === ANTLRv4Lexer.ELEMENT_OPTIONS) {
+        if (this.input.lookahead(1) === ANTLRv4Lexer.ELEMENT_OPTIONS) {
             this.elementOptions();
             if (this.failed) {
                 return;
@@ -632,7 +632,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
         let elementCount = 0;
         while (true) {
-            const lookahead = this.input.LA(1);
+            const lookahead = this.input.lookahead(1);
 
             if (
                 this.singleAtomWithActionLookaheadValues.includes(lookahead)
@@ -667,7 +667,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private recurse(): void {
-        switch (this.input.LA(1)) {
+        switch (this.input.lookahead(1)) {
             case ANTLRv4Lexer.ASSIGN: {
                 this.match(this.input, ANTLRv4Lexer.ASSIGN);
                 if (this.failed) {
@@ -748,7 +748,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private recurseNoLabel(): void {
-        if ((this.input.lookAhead(1)!).getText() !== this.ruleName) {
+        if ((this.input.lookaheadType(1)!).getText() !== this.ruleName) {
             if (this.state.backtracking > 0) {
                 this.failed = true;
 
@@ -770,14 +770,14 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if (this.input.LA(1) === Constants.DOWN) {
+        if (this.input.lookahead(1) === Constants.DOWN) {
             this.match(this.input, Constants.DOWN);
             if (this.failed) {
                 return;
             }
 
             while (true) {
-                const lookahed = this.input.LA(1);
+                const lookahed = this.input.lookahead(1);
                 if (lookahed === ANTLRv4Lexer.ASSIGN || lookahed === ANTLRv4Lexer.ID) {
                     this.elementOption();
                     if (this.failed) {
@@ -796,7 +796,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private elementOption(): void {
-        const lookahead = this.input.LA(1);
+        const lookahead = this.input.lookahead(1);
         if (lookahead === ANTLRv4Lexer.ID) {
             this.match(this.input, ANTLRv4Lexer.ID);
             if (this.failed) {
@@ -804,9 +804,9 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
         } else {
             if (lookahead === ANTLRv4Lexer.ASSIGN) {
-                if ((this.input.LA(2) === Constants.DOWN)) {
-                    if (this.input.LA(3) === ANTLRv4Lexer.ID) {
-                        switch (this.input.LA(4)) {
+                if ((this.input.lookahead(2) === Constants.DOWN)) {
+                    if (this.input.lookahead(3) === ANTLRv4Lexer.ID) {
+                        switch (this.input.lookahead(4)) {
                             case ANTLRv4Lexer.ID: {
                                 this.match(this.input, ANTLRv4Lexer.ASSIGN);
                                 if (this.failed) {
@@ -997,9 +997,9 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private element(): void {
-        switch (this.input.LA(1)) {
+        switch (this.input.lookahead(1)) {
             case ANTLRv4Lexer.RULE_REF: {
-                const lookahead2 = this.input.LA(2);
+                const lookahead2 = this.input.lookahead(2);
                 if (lookahead2 === Constants.DOWN) {
                     this.atom();
                     if (this.failed) {
@@ -1174,7 +1174,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
                 let setElementCount = 0;
                 while (true) {
-                    const lookahead = this.input.LA(1);
+                    const lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Lexer.STRING_LITERAL || lookahead === ANTLRv4Lexer.TOKEN_REF) {
                         this.setElement();
                         if (this.failed) {
@@ -1241,9 +1241,9 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private epsilonElement(): void {
-        switch (this.input.LA(1)) {
+        switch (this.input.lookahead(1)) {
             case ANTLRv4Lexer.ACTION: {
-                const lookahead2 = this.input.LA(2);
+                const lookahead2 = this.input.lookahead(2);
                 if (lookahead2 === Constants.DOWN) {
                     this.match(this.input, ANTLRv4Lexer.ACTION);
                     if (this.failed) {
@@ -1298,7 +1298,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             case ANTLRv4Lexer.SEMPRED: {
-                const lookahead2 = this.input.LA(2);
+                const lookahead2 = this.input.lookahead(2);
                 if ((lookahead2 === Constants.DOWN)) {
                     this.match(this.input, ANTLRv4Lexer.SEMPRED);
                     if (this.failed) {
@@ -1372,9 +1372,9 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private setElement(): void {
-        const lookahead = this.input.LA(1);
+        const lookahead = this.input.lookahead(1);
         if ((lookahead === ANTLRv4Lexer.STRING_LITERAL)) {
-            const lookahead2 = this.input.LA(2);
+            const lookahead2 = this.input.lookahead(2);
             if (lookahead2 === Constants.DOWN) {
                 this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
                 if (this.failed) {
@@ -1421,7 +1421,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 }
             }
         } else if ((lookahead === ANTLRv4Lexer.TOKEN_REF)) {
-            const lookahead2 = this.input.LA(2);
+            const lookahead2 = this.input.lookahead(2);
             if (lookahead2 === Constants.DOWN) {
                 this.match(this.input, ANTLRv4Lexer.TOKEN_REF);
                 if (this.failed) {
@@ -1480,7 +1480,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private ebnf(): void {
-        switch (this.input.LA(1)) {
+        switch (this.input.lookahead(1)) {
             case ANTLRv4Lexer.BLOCK: {
                 this.block();
                 if (this.failed) {
@@ -1585,7 +1585,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if ((this.input.LA(1) === ANTLRv4Lexer.ACTION)) {
+        if ((this.input.lookahead(1) === ANTLRv4Lexer.ACTION)) {
             this.match(this.input, ANTLRv4Lexer.ACTION);
             if (this.failed) {
                 return;
@@ -1594,7 +1594,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
         let altCount = 0;
         while (true) {
-            if (this.input.LA(1) === ANTLRv4Lexer.ALT) {
+            if (this.input.lookahead(1) === ANTLRv4Lexer.ALT) {
                 this.alternative();
                 if (this.failed) {
                     return;
@@ -1633,7 +1633,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if ((this.input.LA(1) === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
+        if ((this.input.lookahead(1) === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
             this.elementOptions();
             if (this.failed) {
                 return;
@@ -1642,7 +1642,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
         let elementCount = 0;
         while (true) {
-            const lookahead = this.input.LA(1);
+            const lookahead = this.input.lookahead(1);
             if (this.singleAtomWithActionLookaheadValues.includes(lookahead)
                 || (lookahead >= ANTLRv4Lexer.BLOCK && lookahead <= ANTLRv4Lexer.CLOSURE)
                 || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -1685,7 +1685,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 || (lookahead >= ANTLRv4Lexer.SET && lookahead <= ANTLRv4Lexer.WILDCARD);
         };
 
-        switch (this.input.LA(1)) {
+        switch (this.input.lookahead(1)) {
             case ANTLRv4Lexer.RULE_REF: {
                 alt = 1;
 
@@ -1693,7 +1693,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             case ANTLRv4Lexer.STRING_LITERAL: {
-                const lookahead2 = this.input.LA(2);
+                const lookahead2 = this.input.lookahead(2);
                 if (lookahead2 === Constants.DOWN) {
                     alt = 2;
                 } else {
@@ -1723,7 +1723,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             case ANTLRv4Lexer.TOKEN_REF: {
-                const lookahead2 = this.input.LA(2);
+                const lookahead2 = this.input.lookahead(2);
                 if (lookahead2 === Constants.DOWN) {
                     alt = 4;
                 } else {
@@ -1753,7 +1753,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             case ANTLRv4Lexer.WILDCARD: {
-                const lookahead2 = this.input.LA(2);
+                const lookahead2 = this.input.lookahead(2);
                 if (lookahead2 === Constants.DOWN) {
                     alt = 6;
                 } else {
@@ -1805,13 +1805,13 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                if (this.input.LA(1) === Constants.DOWN) {
+                if (this.input.lookahead(1) === Constants.DOWN) {
                     this.match(this.input, Constants.DOWN);
                     if (this.failed) {
                         return;
                     }
 
-                    const lookahead = this.input.LA(1);
+                    const lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Lexer.ARG_ACTION) {
                         this.match(this.input, ANTLRv4Lexer.ARG_ACTION);
                         if (this.failed) {
@@ -1819,7 +1819,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         }
                     }
 
-                    const LA34_0 = this.input.LA(1);
+                    const LA34_0 = this.input.lookahead(1);
                     if ((LA34_0 === ANTLRv4Lexer.ELEMENT_OPTIONS)) {
                         this.elementOptions();
                         if (this.failed) {
@@ -2027,7 +2027,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
      * @returns `true` if the element rule is a viable candidate for the current input, otherwise `false`.
      */
     private predictElement(): boolean {
-        const alt = this.input.LA(1);
+        const alt = this.input.lookahead(1);
         switch (alt) {
             case ANTLRv4Lexer.STRING_LITERAL:
             case ANTLRv4Lexer.TOKEN_REF:
@@ -2047,12 +2047,12 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             case ANTLRv4Lexer.RULE_REF: {
-                const la = this.input.LA(2);
+                const la = this.input.lookahead(2);
                 if (la === ANTLRv4Lexer.ARG_ACTION || la === ANTLRv4Lexer.ELEMENT_OPTIONS) {
                     return true;
                 }
 
-                if (la === Constants.UP && this.input.lookAhead(1)!.getText() === this.ruleName) {
+                if (la === Constants.UP && this.input.lookaheadType(1)!.getText() === this.ruleName) {
                     return false;
                 }
 
@@ -2062,8 +2062,8 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             case ANTLRv4Lexer.ASSIGN:
             case ANTLRv4Lexer.PLUS_ASSIGN: {
                 // LA(2) is DOWN, LA(3) is ID.
-                if (this.input.LA(4) === ANTLRv4Lexer.RULE_REF) {
-                    if (this.input.lookAhead(4)!.getText() === this.ruleName) {
+                if (this.input.lookahead(4) === ANTLRv4Lexer.RULE_REF) {
+                    if (this.input.lookaheadType(4)!.getText() === this.ruleName) {
                         return false;
                     }
                 }

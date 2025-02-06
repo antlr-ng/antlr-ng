@@ -3,11 +3,10 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { Token } from "antlr4ng";
+import { CommonToken, Token } from "antlr4ng";
 
 import { Constants } from "../Constants.js";
-import type { CommonTree } from "./CommonTree.js";
-import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
+import { CommonTree } from "./CommonTree.js";
 
 /**
  * Return a node stream from a doubly-linked tree whose nodes know what child index they are. No remove() is supported.
@@ -17,11 +16,10 @@ import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 export class TreeIterator {
 
     /** Navigation nodes to return during walk and at end. */
-    public up: CommonTree;
-    public down: CommonTree;
-    public eof: CommonTree;
+    public static readonly up = new CommonTree(CommonToken.fromType(Constants.UP, "UP"));
+    public static readonly down = new CommonTree(CommonToken.fromType(Constants.DOWN, "DOWN"));
+    public static readonly eof = new CommonTree(CommonToken.fromType(Token.EOF, "EOF"));
 
-    protected adaptor: CommonTreeAdaptor;
     protected root: CommonTree | undefined;
     protected tree: CommonTree | undefined;
     protected firstTime = true;
@@ -29,26 +27,9 @@ export class TreeIterator {
     /** If we emit UP/DOWN nodes, we need to spit out multiple nodes per next() call. */
     protected nodes: CommonTree[] = [];
 
-    public constructor(tree: CommonTree);
-    public constructor(adaptor: CommonTreeAdaptor, tree: CommonTree);
-    public constructor(...args: unknown[]) {
-        let tree;
-        let adaptor;
-
-        if (args.length === 1) {
-            [tree] = args as [CommonTree];
-
-            adaptor = new CommonTreeAdaptor();
-        } else {
-            [adaptor, tree] = args as [CommonTreeAdaptor, CommonTree];
-        }
-
-        this.adaptor = adaptor;
+    public constructor(tree: CommonTree) {
         this.tree = tree;
         this.root = tree;
-        this.down = adaptor.create(Constants.DOWN, "DOWN");
-        this.up = adaptor.create(Constants.UP, "UP");
-        this.eof = adaptor.create(Token.EOF, "EOF");
     }
 
     public reset(): void {
@@ -81,7 +62,7 @@ export class TreeIterator {
         if (this.firstTime) { // initial condition
             this.firstTime = false;
             if (this.tree?.children.length === 0) { // single node tree (special)
-                this.nodes.push(this.eof);
+                this.nodes.push(TreeIterator.eof);
 
                 return this.tree;
             }
@@ -96,7 +77,7 @@ export class TreeIterator {
 
         // no nodes left?
         if (this.tree === undefined) {
-            return this.eof;
+            return TreeIterator.eof;
         }
 
         // next node will be child 0 if any children
@@ -104,7 +85,7 @@ export class TreeIterator {
             this.tree = this.tree.children[0];
             this.nodes.push(this.tree); // real node is next after DOWN
 
-            return this.down;
+            return TreeIterator.down;
         }
 
         // if no children, look for next sibling of tree or ancestor
@@ -112,7 +93,7 @@ export class TreeIterator {
         // while we're out of siblings, keep popping back up towards root
         while (parent !== null &&
             this.tree.childIndex + 1 >= parent.children.length) {
-            this.nodes.push(this.up); // we're moving back up
+            this.nodes.push(TreeIterator.up); // we're moving back up
             this.tree = parent;
             parent = this.tree.parent;
         }
@@ -120,7 +101,7 @@ export class TreeIterator {
         // no nodes left?
         if (parent === null) {
             this.tree = undefined; // back at root? nothing left then
-            this.nodes.push(this.eof); // add to queue, might have UP nodes in there
+            this.nodes.push(TreeIterator.eof); // add to queue, might have UP nodes in there
 
             return this.nodes.shift();
         }

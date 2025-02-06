@@ -26,8 +26,8 @@ export class TreeRewriter extends TreeParser {
     public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream, state?: IRecognizerSharedState) {
         state ??= createRecognizerSharedState();
         super(errorManager, input, state);
-        this.originalAdaptor = input.getTreeAdaptor();
-        this.originalTokenStream = input.getTokenStream();
+        this.originalAdaptor = input.adaptor;
+        this.originalTokenStream = input.tokens;
     }
 
     public downUp(t: CommonTree, showTransformations?: boolean): CommonTree {
@@ -71,10 +71,10 @@ export class TreeRewriter extends TreeParser {
 
     private applyOnce = (t: CommonTree, whichRule: () => CommonTree | undefined): CommonTree => {
         try {
-            // share TreeParser object but not parsing-related state
+            // Share TreeParser object but not parsing-related state.
             this.state = createRecognizerSharedState();
             const input = new CommonTreeNodeStream(this.originalAdaptor, t);
-            input.setTokenStream(this.originalTokenStream);
+            input.tokens = this.originalTokenStream;
             this.input = input;
 
             this.setBacktrackingLevel(1);
