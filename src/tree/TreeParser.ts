@@ -10,12 +10,11 @@ import { Token, type RecognitionException } from "antlr4ng";
 import { Constants } from "../Constants.js";
 import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { ErrorManager } from "../tool/ErrorManager.js";
+import { ErrorType } from "../tool/ErrorType.js";
 import { CommonTree } from "./CommonTree.js";
-import type { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
 import { createRecognizerSharedState, type IRecognizerSharedState } from "./misc/IRecognizerSharedState.js";
 import { MismatchedTreeNodeException } from "./MismatchTreeNodeException.js";
-import { ErrorType } from "../tool/ErrorType.js";
 
 /**
  * A parser for a stream of tree nodes. "tree grammars" result in a subclass of this. All the error reporting
@@ -44,7 +43,7 @@ export class TreeParser {
     /**
      * The worker for inContext. It's static and full of parameters for testing purposes.
      */
-    public static inContext(adaptor: CommonTreeAdaptor, tokenNames: string[], t: CommonTree,
+    public static inContext(tokenNames: string[], t: CommonTree,
         context: string): boolean {
         if (context.match(TreeParser.dotdot)) { // don't allow "..", must be "..."
             throw new Error("invalid syntax: ..");
@@ -58,7 +57,7 @@ export class TreeParser {
         context = context.trim();
         const nodes = context.split(/\s+/);
         let ni = nodes.length - 1;
-        let run: CommonTree | null = adaptor.getParent(t);
+        let run: CommonTree | null = t.parent;
         while (ni >= 0 && run !== null) {
             if (nodes[ni] === "...") {
                 // walk upwards until we see nodes[ni-1] then continue walking
@@ -68,7 +67,7 @@ export class TreeParser {
 
                 // ... at start is no-op
                 const goal = nodes[ni - 1];
-                const ancestor = TreeParser.getAncestor(adaptor, tokenNames, run, goal);
+                const ancestor = TreeParser.getAncestor(tokenNames, run, goal);
                 if (ancestor === null) {
                     return false;
                 }
@@ -77,14 +76,14 @@ export class TreeParser {
                 ni--;
             }
 
-            const name = tokenNames[adaptor.getType(run)];
+            const name = tokenNames[run.getType()];
             if (name !== nodes[ni]) {
                 return false;
             }
 
             // advance to parent and to previous element in context node list
             ni--;
-            run = adaptor.getParent(run);
+            run = run.parent;
         }
 
         if (run === null && ni >= 0) {
@@ -96,15 +95,15 @@ export class TreeParser {
     }
 
     /** Helper for static inContext */
-    private static getAncestor(adaptor: CommonTreeAdaptor, tokenNames: string[], t: CommonTree | null,
+    private static getAncestor(tokenNames: string[], t: CommonTree | null,
         goal: string): CommonTree | null {
         while (t !== null) {
-            const name = tokenNames[adaptor.getType(t)];
+            const name = tokenNames[t.getType()];
             if (name === goal) {
                 return t;
             }
 
-            t = adaptor.getParent(t);
+            t = t.parent;
         }
 
         return null;
@@ -120,7 +119,7 @@ export class TreeParser {
         this.state.failed = false;
 
         let lookAhead = this.input.lookAhead(1);
-        if (lookAhead && this.input.getTreeAdaptor().getChildCount(lookAhead) === 0) {
+        if (lookAhead && lookAhead.children.length === 0) {
             this.input.consume(); // Not subtree, consume 1 node and return.
 
             return;
@@ -129,12 +128,12 @@ export class TreeParser {
         // Current node is a subtree, skip to corresponding UP. Must count nesting level to get right UP
         let level = 0;
         if (lookAhead) {
-            let tokenType = this.input.getTreeAdaptor().getType(lookAhead);
+            let tokenType = lookAhead.getType();
             while (tokenType !== Token.EOF && !(tokenType === Constants.UP && level === 0)) {
                 this.input.consume();
                 lookAhead = this.input.lookAhead(1);
                 if (lookAhead) {
-                    tokenType = this.input.getTreeAdaptor().getType(lookAhead);
+                    tokenType = lookAhead.getType();
                     if (tokenType === Constants.DOWN) {
                         level++;
                     } else {
@@ -161,8 +160,7 @@ export class TreeParser {
      *  There is no way to force the first node to be the root.
      */
     public inContext(context: string): boolean {
-        return TreeParser.inContext(this.input.getTreeAdaptor(), this.getTokenNames(), this.input.lookAhead(1)!,
-            context);
+        return TreeParser.inContext(this.getTokenNames(), this.input.lookAhead(1)!, context);
     }
 
     /**

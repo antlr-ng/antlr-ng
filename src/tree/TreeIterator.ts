@@ -70,17 +70,17 @@ export class TreeIterator {
             return false;
         }
 
-        if (this.adaptor.getChildCount(this.tree) > 0) {
+        if (this.tree.children.length > 0) {
             return true;
         }
 
-        return this.adaptor.getParent(this.tree) !== null; // back at root?
+        return this.tree.parent !== null; // back at root?
     }
 
     public nextTree(): CommonTree | undefined {
         if (this.firstTime) { // initial condition
             this.firstTime = false;
-            if (this.adaptor.getChildCount(this.tree ?? null) === 0) { // single node tree (special)
+            if (this.tree?.children.length === 0) { // single node tree (special)
                 this.nodes.push(this.eof);
 
                 return this.tree;
@@ -100,21 +100,21 @@ export class TreeIterator {
         }
 
         // next node will be child 0 if any children
-        if (this.adaptor.getChildCount(this.tree) > 0) {
-            this.tree = this.adaptor.getChild(this.tree, 0)!;
+        if (this.tree.children.length > 0) {
+            this.tree = this.tree.children[0];
             this.nodes.push(this.tree); // real node is next after DOWN
 
             return this.down;
         }
 
         // if no children, look for next sibling of tree or ancestor
-        let parent = this.adaptor.getParent(this.tree);
+        let parent = this.tree.parent;
         // while we're out of siblings, keep popping back up towards root
         while (parent !== null &&
-            this.adaptor.getChildIndex(this.tree) + 1 >= this.adaptor.getChildCount(parent)) {
+            this.tree.childIndex + 1 >= parent.children.length) {
             this.nodes.push(this.up); // we're moving back up
             this.tree = parent;
-            parent = this.adaptor.getParent(this.tree);
+            parent = this.tree.parent;
         }
 
         // no nodes left?
@@ -127,8 +127,8 @@ export class TreeIterator {
 
         // must have found a node with an unvisited sibling
         // move to it and return it
-        const nextSiblingIndex = this.adaptor.getChildIndex(this.tree) + 1;
-        this.tree = this.adaptor.getChild(parent, nextSiblingIndex)!;
+        const nextSiblingIndex = this.tree.childIndex + 1;
+        this.tree = parent.children[nextSiblingIndex];
         this.nodes.push(this.tree); // add to queue, might have UP nodes in there
 
         return this.nodes.shift();

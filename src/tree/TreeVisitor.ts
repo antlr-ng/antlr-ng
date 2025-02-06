@@ -6,19 +6,12 @@
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
 import { CommonTree } from "./CommonTree.js";
-import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import type { TreeVisitorAction } from "./TreeVisitorAction.js";
 
 /**
  * Do a depth first walk of a tree, applying pre() and post() actions as we discover and finish nodes.
  */
 export class TreeVisitor {
-    protected adaptor: CommonTreeAdaptor;
-
-    public constructor(adaptor?: CommonTreeAdaptor) {
-        this.adaptor = adaptor ?? new CommonTreeAdaptor();
-    }
-
     /**
      * Visit every node in tree t and trigger an action for each node
      *  before/after having visited all of its children.
@@ -37,11 +30,11 @@ export class TreeVisitor {
         }
 
         for (let i = 0; i < t.children.length; i++) {
-            const child = this.adaptor.getChild(t, i)!;
+            const child = t.children[i];
             const visitResult = this.visit(child, action);
-            const childAfterVisit = this.adaptor.getChild(t, i)!;
+            const childAfterVisit = t.children[i];
             if (visitResult !== childAfterVisit) { // result & child differ?
-                this.adaptor.setChild(t, i, visitResult); // update with new child
+                t.setChild(i, visitResult); // update with new child
             }
         }
 

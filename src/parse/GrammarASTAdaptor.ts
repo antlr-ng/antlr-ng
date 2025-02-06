@@ -58,10 +58,6 @@ export class GrammarASTAdaptor extends CommonTreeAdaptor implements IGrammarASTA
         return super.create.apply(this, args) as GrammarAST;
     }
 
-    public override dupNode(t: GrammarAST): GrammarAST {
-        return t.dupNode();
-    }
-
     static {
         ClassFactory.createGrammarASTAdaptor = (input?: CharStream) => {
             return new GrammarASTAdaptor(input);

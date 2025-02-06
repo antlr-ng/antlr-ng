@@ -85,7 +85,7 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
      */
     public override remove(): CommonTree {
         const result = super.remove();
-        if (this.p === 0 && this.hasPositionInformation(this.prevElement)) {
+        if (this.p === 0 && this.prevElement && this.hasPositionInformation(this.prevElement)) {
             this.previousLocationElement = this.prevElement;
         }
 
@@ -93,7 +93,7 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
     }
 
     public isEOF(o: CommonTree): boolean {
-        return this.adaptor.getType(o) === Token.EOF;
+        return o.getType() === Token.EOF;
     }
 
     public setUniqueNavigationNodes(uniqueNavigationNodes: boolean): void { /**/ }
@@ -128,7 +128,9 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public LA(i: number): number {
-        return this.adaptor.getType(this.lookAhead(i));
+        const tree = this.lookAhead(i);
+
+        return tree ? tree.getType() : Token.INVALID_TYPE;
     }
 
     /**
@@ -179,9 +181,9 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
         return this.previousLocationElement;
     }
 
-    public hasPositionInformation(node: CommonTree | null): boolean {
-        const token = this.adaptor.getToken(node);
-        if (token === null) {
+    public hasPositionInformation(node: CommonTree): boolean {
+        const token = node.token;
+        if (token === undefined) {
             return false;
         }
 
@@ -192,23 +194,17 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
         return true;
     }
 
-    // TREE REWRITE INTERFACE
-
-    public replaceChildren(parent: CommonTree, startChildIndex: number, stopChildIndex: number, t: CommonTree): void {
-        this.adaptor.replaceChildren(parent, startChildIndex, stopChildIndex, t);
-    }
-
     /** For debugging; destructive: moves tree iterator to end. */
     public toTokenTypeString(): string {
         this.reset();
         let buf = "";
         let o = this.lookAhead(1)!;
-        let type = this.adaptor.getType(o);
+        let type = o.getType();
         while (type !== Token.EOF) {
             buf += " " + type;
             this.consume();
             o = this.lookAhead(1)!;
-            type = this.adaptor.getType(o);
+            type = o.getType();
         }
 
         return buf.toString();
@@ -229,7 +225,7 @@ export class CommonTreeNodeStream extends LookaheadStream<CommonTree> {
             }
         }
 
-        if (this.level === 0 && this.adaptor.isNil(t)) { // if nil root, scarf nil, DOWN
+        if (this.level === 0 && t.isNil()) { // if nil root, scarf nil, DOWN
             this.hasNilRoot = true;
             t = this.it.nextTree()!; // t is now DOWN, so get first real node next
             this.level++;

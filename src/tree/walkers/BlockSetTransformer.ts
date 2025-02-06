@@ -333,7 +333,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 root0.addChild(root1);
 
                 result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                this.input.replaceChildren(start.parent!, start.childIndex, last.childIndex, result);
+                start.parent?.replaceChildren(start.childIndex, last.childIndex, result);
 
                 GrammarTransformPipeline.setGrammarPtr(this.g, result);
             }
@@ -578,7 +578,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     root0.addChild(root1);
                     result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                    this.input.replaceChildren(result.parent!, start!.childIndex, start!.childIndex, result);
+                    result.parent?.replaceChildren(start!.childIndex, start!.childIndex, result);
                 }
             } else {
                 let first;
@@ -750,7 +750,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     setElementStream.reset();
                     root0.addChild(root1);
                     result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
-                    this.input.replaceChildren(result.parent!, start!.childIndex, start!.childIndex, result);
+                    result.parent?.replaceChildren(start!.childIndex, start!.childIndex, result);
                 }
             }
 

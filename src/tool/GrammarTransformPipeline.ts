@@ -41,7 +41,7 @@ export class GrammarTransformPipeline {
     /** Utility visitor that sets grammar ptr in each node */
     public static setGrammarPtr(g: Grammar, tree: GrammarAST): void {
         // ensure each node has pointer to surrounding grammar
-        const v = new TreeVisitor(new GrammarASTAdaptor());
+        const v = new TreeVisitor();
         v.visit(tree, new class implements TreeVisitorAction<GrammarAST> {
             public pre(t: GrammarAST): GrammarAST {
                 t.g = g;
@@ -377,7 +377,7 @@ export class GrammarTransformPipeline {
         // COPY OPTIONS
         const optionsRoot = combinedContext.getFirstChildWithType(ANTLRv4Parser.OPTIONS) as GrammarAST | null;
         if (optionsRoot !== null && optionsRoot.children.length !== 0) {
-            const lexerOptionsRoot = adaptor.dupNode(optionsRoot);
+            const lexerOptionsRoot = optionsRoot.dupNode();
             lexerAST.addChild(lexerOptionsRoot);
             const options = optionsRoot.children;
             for (const o of options) {

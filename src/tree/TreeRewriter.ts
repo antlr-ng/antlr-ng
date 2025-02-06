@@ -32,7 +32,7 @@ export class TreeRewriter extends TreeParser {
 
     public downUp(t: CommonTree, showTransformations?: boolean): CommonTree {
         this.showTransformations = showTransformations ?? false;
-        const v = new TreeVisitor(new CommonTreeAdaptor());
+        const v = new TreeVisitor();
         const actions = new class implements TreeVisitorAction<CommonTree> {
             public constructor(private $outer: TreeRewriter) {
             }
