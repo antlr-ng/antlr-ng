@@ -12,7 +12,6 @@ import type { ErrorManager } from "../tool/ErrorManager.js";
 import type { CommonTree } from "./CommonTree.js";
 import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
-import { createRecognizerSharedState, IRecognizerSharedState } from "./misc/IRecognizerSharedState.js";
 import { TreeParser } from "./TreeParser.js";
 import { TreeVisitor } from "./TreeVisitor.js";
 import type { TreeVisitorAction } from "./TreeVisitorAction.js";
@@ -23,9 +22,8 @@ export class TreeRewriter extends TreeParser {
     protected originalTokenStream: TokenStream;
     protected originalAdaptor: CommonTreeAdaptor;
 
-    public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream, state?: IRecognizerSharedState) {
-        state ??= createRecognizerSharedState();
-        super(errorManager, input, state);
+    public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream) {
+        super(errorManager, input);
         this.originalAdaptor = input.adaptor;
         this.originalTokenStream = input.tokens;
     }
@@ -71,15 +69,13 @@ export class TreeRewriter extends TreeParser {
 
     private applyOnce = (t: CommonTree, whichRule: () => CommonTree | undefined): CommonTree => {
         try {
-            // Share TreeParser object but not parsing-related state.
-            this.state = createRecognizerSharedState();
             const input = new CommonTreeNodeStream(this.originalAdaptor, t);
             input.tokens = this.originalTokenStream;
             this.input = input;
 
-            this.setBacktrackingLevel(1);
+            this.backtracking = 1;
             const r = whichRule();
-            this.setBacktrackingLevel(0);
+            this.backtracking = 0;
             if (this.failed) {
                 return t;
             }

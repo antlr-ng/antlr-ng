@@ -67,7 +67,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return isLeftRec;
         }
 
-        if (this.state.backtracking === 0) {
+        if (this.backtracking === 0) {
             this.ruleName = id.getText()!;
         }
 
@@ -95,7 +95,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 return isLeftRec;
             }
 
-            if (this.state.backtracking === 0) {
+            if (this.backtracking === 0) {
                 this.setReturnValues(a);
             }
 
@@ -193,7 +193,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return false;
         }
 
-        if (this.state.backtracking !== 0) {
+        if (this.backtracking !== 0) {
             isLeftRec = false;
         }
 
@@ -290,10 +290,10 @@ export class LeftRecursiveRuleWalker extends TreeParser {
         const lookahead = this.input.lookahead(1);
         if (lookahead >= ANTLRv4Lexer.PRIVATE && lookahead <= ANTLRv4Lexer.PUBLIC) {
             this.input.consume();
-            this.state.errorRecovery = false;
+            this.errorRecovery = false;
             this.failed = false;
         } else {
-            if (this.state.backtracking > 0) {
+            if (this.backtracking > 0) {
                 this.failed = true;
 
                 return;
@@ -326,11 +326,11 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return result;
                 }
 
-                if (this.state.backtracking === 0 && o) {
+                if (this.backtracking === 0 && o) {
                     result = true;
                 }
 
-                if (this.state.backtracking === 0) {
+                if (this.backtracking === 0) {
                     this.currentOuterAltNumber++;
                 }
             } else {
@@ -338,7 +338,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     break;
                 }
 
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return result;
@@ -369,7 +369,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return result;
                 }
 
-                if (this.state.backtracking === 0) {
+                if (this.backtracking === 0) {
                     this.binaryAlt(start as AltAST, this.currentOuterAltNumber);
                     result = true;
                 }
@@ -379,7 +379,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return result;
                 }
 
-                if (this.state.backtracking === 0) {
+                if (this.backtracking === 0) {
                     this.prefixAlt(start as AltAST, this.currentOuterAltNumber);
                 }
             } else if (this.syntacticPredicate3()) {
@@ -388,7 +388,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return result;
                 }
 
-                if (this.state.backtracking === 0) {
+                if (this.backtracking === 0) {
                     this.suffixAlt(start as AltAST, this.currentOuterAltNumber);
                     result = true;
                 }
@@ -398,12 +398,12 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return result;
                 }
 
-                if (this.state.backtracking === 0) {
+                if (this.backtracking === 0) {
                     this.otherAlt(start as AltAST, this.currentOuterAltNumber);
                 }
             }
         } else {
-            if (this.state.backtracking > 0) {
+            if (this.backtracking > 0) {
                 this.failed = true;
 
                 return result;
@@ -473,7 +473,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if (this.state.backtracking === 0) {
+        if (this.backtracking === 0) {
             this.setAltAssoc(alt as AltAST, this.currentOuterAltNumber);
         }
     }
@@ -508,7 +508,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     break;
                 }
 
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -544,7 +544,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if (this.state.backtracking === 0) {
+        if (this.backtracking === 0) {
             this.setAltAssoc(alt as AltAST, this.currentOuterAltNumber);
         }
     }
@@ -588,7 +588,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     break;
                 }
 
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -605,7 +605,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if (this.state.backtracking === 0 && alt) {
+        if (this.backtracking === 0 && alt) {
             this.setAltAssoc(alt as AltAST, this.currentOuterAltNumber);
         }
     }
@@ -646,7 +646,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     break;
                 }
 
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -734,7 +734,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             default: {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -747,7 +747,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
     private recurseNoLabel(): void {
         if ((this.input.lookaheadType(1)!).getText() !== this.ruleName) {
-            if (this.state.backtracking > 0) {
+            if (this.backtracking > 0) {
                 this.failed = true;
 
                 return;
@@ -922,7 +922,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                             }
 
                             default: {
-                                if (this.state.backtracking > 0) {
+                                if (this.backtracking > 0) {
                                     this.failed = true;
 
                                     return;
@@ -944,7 +944,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
                         }
                     } else {
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return;
@@ -964,7 +964,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         }
                     }
                 } else {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return;
@@ -983,7 +983,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     }
                 }
             } else {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -1013,7 +1013,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         return;
                     }
                 } else {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return;
@@ -1183,7 +1183,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                             break;
                         }
 
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return;
@@ -1227,7 +1227,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             default: {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -1274,7 +1274,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     }
 
                 } else {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return;
@@ -1327,7 +1327,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         return;
                     }
                 } else {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return;
@@ -1357,7 +1357,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             default: {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -1401,7 +1401,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
             } else {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -1448,7 +1448,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
             } else {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -1467,7 +1467,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
         } else {
-            if (this.state.backtracking > 0) {
+            if (this.backtracking > 0) {
                 this.failed = true;
 
                 return;
@@ -1561,7 +1561,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             default: {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -1602,7 +1602,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     break;
                 }
 
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -1654,7 +1654,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     break;
                 }
 
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -1698,7 +1698,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     if (matchesLookahead(lookahead2)) {
                         alt = 3;
                     } else {
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return;
@@ -1728,7 +1728,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     if (matchesLookahead(lookahead2)) {
                         alt = 5;
                     } else {
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return;
@@ -1758,7 +1758,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     if (matchesLookahead(lookahead2)) {
                         alt = 7;
                     } else {
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return;
@@ -1786,7 +1786,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
 
             default: {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return;
@@ -1969,7 +1969,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     }
 
     private syntacticPredicate1(): boolean {
-        this.state.backtracking++;
+        this.backtracking++;
         const start = this.input.mark();
         const lastIndex = this.input.index;
 
@@ -1979,14 +1979,14 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
         this.input.seek(lastIndex);
         this.input.release(start);
-        this.state.backtracking--;
+        this.backtracking--;
         this.failed = false;
 
         return success;
     }
 
     private syntacticPredicate2(): boolean {
-        this.state.backtracking++;
+        this.backtracking++;
         const start = this.input.mark();
         const lastIndex = this.input.index;
 
@@ -1996,14 +1996,14 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
         this.input.seek(lastIndex);
         this.input.release(start);
-        this.state.backtracking--;
+        this.backtracking--;
         this.failed = false;
 
         return success;
     }
 
     private syntacticPredicate3(): boolean {
-        this.state.backtracking++;
+        this.backtracking++;
         const start = this.input.mark();
         const lastIndex = this.input.index;
 
@@ -2013,7 +2013,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
         this.input.seek(lastIndex);
         this.input.release(start);
-        this.state.backtracking--;
+        this.backtracking--;
         this.failed = false;
 
         return success;

@@ -20,11 +20,10 @@ import type { PredAST } from "../../tool/ast/PredAST.js";
 import type { TerminalAST } from "../../tool/ast/TerminalAST.js";
 import type { ErrorManager } from "../../tool/ErrorManager.js";
 import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
-import { createRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
 
 export class ATNBuilder extends TreeParser {
     public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream, private factory: IATNFactory) {
-        super(errorManager, input, createRecognizerSharedState());
+        super(errorManager, input);
     }
 
     public ruleBlock(ebnfRoot: GrammarAST | null): IStatePair | undefined {
@@ -309,7 +308,7 @@ export class ATNBuilder extends TreeParser {
         try {
             if (this.input.lookahead(1) === ANTLRv4Lexer.ID || this.input.lookahead(1) === ANTLRv4Lexer.INT) {
                 this.input.consume();
-                this.state.errorRecovery = false;
+                this.errorRecovery = false;
             } else {
                 throw new MismatchedSetException();
             }

@@ -13,7 +13,6 @@ import type { ErrorManager } from "../tool/ErrorManager.js";
 import { ErrorType } from "../tool/ErrorType.js";
 import { CommonTree } from "./CommonTree.js";
 import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
-import { createRecognizerSharedState, type IRecognizerSharedState } from "./misc/IRecognizerSharedState.js";
 import { MismatchedTreeNodeException } from "./exceptions/MismatchTreeNodeException.js";
 
 /**
@@ -28,73 +27,25 @@ export class TreeParser {
     protected errorManager: ErrorManager;
 
     /**
-     * State of a lexer, parser, or tree parser are collected into a state object so the state can be shared.
-     * This sharing is needed to have one grammar import others and share same error variables and other state
-     * variables.  It's a kind of explicit multiple inheritance via delegation of methods and shared state.
+     * This is true when we see an error and before having successfully matched a token. Prevents generation of more
+     * than one error message per error.
      */
-    protected state: IRecognizerSharedState;
+    protected errorRecovery = false;
 
-    public constructor(errorManager: ErrorManager, input?: CommonTreeNodeStream, state?: IRecognizerSharedState) {
+    /**
+     * In lieu of a return value, this indicates that a rule or token has failed to match. Reset to false upon valid
+     * token match.
+     */
+    protected failed = false;
+
+    /** If 0, no backtracking is going on. Safe to exec actions etc... If > 0 then it's the level of backtracking. */
+    protected backtracking = 0;
+
+    public constructor(errorManager: ErrorManager, input?: CommonTreeNodeStream) {
         this.errorManager = errorManager;
-        this.state = state ?? createRecognizerSharedState();
         this.input = input ?? new CommonTreeNodeStream(new CommonTree());
     }
 
-    /**
-     * The worker for inContext. It's static and full of parameters for testing purposes.
-     */
-    public static inContext(tokenNames: string[], t: CommonTree,
-        context: string): boolean {
-        if (context.match(TreeParser.dotdot)) { // don't allow "..", must be "..."
-            throw new Error("invalid syntax: ..");
-        }
-
-        if (context.match(TreeParser.doubleEtc)) { // don't allow double "..."
-            throw new Error("invalid syntax: ... ...");
-        }
-
-        context = context.replaceAll("\\.\\.\\.", " ... "); // ensure spaces around ...
-        context = context.trim();
-        const nodes = context.split(/\s+/);
-        let ni = nodes.length - 1;
-        let run: CommonTree | null = t.parent;
-        while (ni >= 0 && run !== null) {
-            if (nodes[ni] === "...") {
-                // walk upwards until we see nodes[ni-1] then continue walking
-                if (ni === 0) {
-                    return true;
-                }
-
-                // ... at start is no-op
-                const goal = nodes[ni - 1];
-                const ancestor = TreeParser.getAncestor(tokenNames, run, goal);
-                if (ancestor === null) {
-                    return false;
-                }
-
-                run = ancestor;
-                ni--;
-            }
-
-            const name = tokenNames[run.getType()];
-            if (name !== nodes[ni]) {
-                return false;
-            }
-
-            // advance to parent and to previous element in context node list
-            ni--;
-            run = run.parent;
-        }
-
-        if (run === null && ni >= 0) {
-            return false;
-        }
-
-        // at root but more nodes to match
-        return true;
-    }
-
-    /** Helper for static inContext */
     private static getAncestor(tokenNames: string[], t: CommonTree | null,
         goal: string): CommonTree | null {
         while (t !== null) {
@@ -110,22 +61,22 @@ export class TreeParser {
     }
 
     /**
-     * Match '.' in tree parser has special meaning.  Skip node or
-     *  entire tree if node has children.  If children, scan until
-     *  corresponding UP node.
+     * Match '.' in tree parser has special meaning. Skip node or entire tree if node has children. If children,
+     * scan until corresponding UP node.
      */
     public matchAny(): void {
-        this.state.errorRecovery = false;
-        this.state.failed = false;
+        this.errorRecovery = false;
+        this.failed = false;
 
         let lookAhead = this.input.lookaheadType(1);
         if (lookAhead && lookAhead.children.length === 0) {
-            this.input.consume(); // Not subtree, consume 1 node and return.
+            // Not subtree - consume 1 node and return.
+            this.input.consume();
 
             return;
         }
 
-        // Current node is a subtree, skip to corresponding UP. Must count nesting level to get right UP
+        // Current node is a subtree, skip to corresponding UP. Must count nesting level to get right UP.
         let level = 0;
         if (lookAhead) {
             let tokenType = lookAhead.getType();
@@ -135,32 +86,70 @@ export class TreeParser {
                 if (lookAhead) {
                     tokenType = lookAhead.getType();
                     if (tokenType === Constants.DOWN) {
-                        level++;
+                        ++level;
                     } else {
                         if (tokenType === Constants.UP) {
-                            level--;
+                            --level;
                         }
                     }
                 }
             }
         }
 
-        this.input.consume(); // consume UP
+        this.input.consume(); // Consume UP.
     }
 
     /**
-     * Check if current node in input has a context.  Context means sequence
-     *  of nodes towards root of tree.  For example, you might say context
-     *  is "MULT" which means my parent must be MULT.  "CLASS VARDEF" says
-     *  current node must be child of a VARDEF and whose parent is a CLASS node.
-     *  You can use "..." to mean zero-or-more nodes.  "METHOD ... VARDEF"
-     *  means my parent is VARDEF and somewhere above that is a METHOD node.
-     *  The first node in the context is not necessarily the root.  The context
-     *  matcher stops matching and returns true when it runs out of context.
-     *  There is no way to force the first node to be the root.
+     * Check if current node in input has a context.  Context means sequence of nodes towards root of tree. For
+     * example, you might say context is "MULT" which means my parent must be MULT. "CLASS VARDEF" says current node
+     * must be child of a VARDEF and whose parent is a CLASS node. You can use "..." to mean zero-or-more nodes.
+     * "METHOD ... VARDEF" means my parent is VARDEF and somewhere above that is a METHOD node. The first node in t
+     * he context is not necessarily the root. The context matcher stops matching and returns true when it runs out
+     * of context. There is no way to force the first node to be the root.
      */
     public inContext(context: string): boolean {
-        return TreeParser.inContext(this.getTokenNames(), this.input.lookaheadType(1)!, context);
+        context = context.trim();
+        const nodes = context.split(/\s+/);
+        let ni = nodes.length - 1;
+
+        const t = this.input.lookaheadType(1)!;
+        const tokenNames = this.getTokenNames();
+
+        let run: CommonTree | null = t.parent;
+        while (ni >= 0 && run !== null) {
+            if (nodes[ni] === "...") {
+                // Walk upwards until we see nodes[ni - 1] then continue walking.
+                if (ni === 0) {
+                    return true;
+                }
+
+                // ... at start is no-op.
+                const goal = nodes[ni - 1];
+                const ancestor = TreeParser.getAncestor(tokenNames, run, goal);
+                if (ancestor === null) {
+                    return false;
+                }
+
+                run = ancestor;
+                ni--;
+            }
+
+            const name = tokenNames[run.getType()];
+            if (name !== nodes[ni]) {
+                return false;
+            }
+
+            // Advance to parent and to previous element in context node list.
+            ni--;
+            run = run.parent;
+        }
+
+        if (run === null && ni >= 0) {
+            return false;
+        }
+
+        // At root but more nodes to match.
+        return true;
     }
 
     /**
@@ -168,18 +157,18 @@ export class TreeParser {
      * that fails, throw MismatchedTokenException.
      */
     public match<T extends GrammarAST = GrammarAST>(input: CommonTreeNodeStream, ttype: number): T | null {
-        this.state.failed = false;
+        this.failed = false;
 
         const matchedSymbol = input.lookaheadType(1) as T | null;
         if (input.lookahead(1) === ttype) {
             input.consume();
-            this.state.errorRecovery = false;
+            this.errorRecovery = false;
 
             return matchedSymbol;
         }
 
-        if (this.state.backtracking > 0) {
-            this.state.failed = true;
+        if (this.backtracking > 0) {
+            this.failed = true;
 
             return matchedSymbol;
         }
@@ -204,27 +193,12 @@ export class TreeParser {
      */
     public reportError(e: RecognitionException): void {
         // If we've already reported an error and have not matched a token yet successfully, don't report any errors.
-        if (this.state.errorRecovery) {
+        if (this.errorRecovery) {
             return;
         }
 
-        this.state.syntaxErrors++;
-        this.state.errorRecovery = true;
-
+        this.errorRecovery = true;
         this.errorManager.toolError(ErrorType.INTERNAL_ERROR, e);
-    }
-
-    protected setBacktrackingLevel(n: number): void {
-        this.state.backtracking = n;
-    }
-
-    /** Return whether or not a backtracking attempt failed. */
-    protected get failed(): boolean {
-        return this.state.failed;
-    }
-
-    protected set failed(value: boolean) {
-        this.state.failed = value;
     }
 
     /**

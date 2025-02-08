@@ -26,7 +26,6 @@ import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { RewriteRuleNodeStream } from "../RewriteRuleNodeStream.js";
 import { RewriteRuleSubtreeStream } from "../RewriteRuleSubtreeStream.js";
 import { TreeRewriter } from "../TreeRewriter.js";
-import { createRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
 
 export class BlockSetTransformer extends TreeRewriter {
     // Needed for context in the inContext method.
@@ -52,7 +51,7 @@ export class BlockSetTransformer extends TreeRewriter {
     private adaptor = new GrammarASTAdaptor();
 
     public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream, grammar: Grammar) {
-        super(errorManager, input, createRecognizerSharedState());
+        super(errorManager, input);
         this.g = grammar;
     }
 
@@ -72,7 +71,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     let first;
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         first = rule;
                     }
 
@@ -88,7 +87,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             this.currentRuleName = id?.getText();
                             result = first;
                             if (result?.parent?.isNil()) {
@@ -101,7 +100,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             this.currentRuleName = id?.getText();
                             result = first;
                             if (result?.parent?.isNil()) {
@@ -109,7 +108,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
                         }
                     } else {
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return result;
@@ -127,7 +126,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                 return result;
                             }
 
-                            if (this.state.backtracking === 1) {
+                            if (this.backtracking === 1) {
                                 result = first;
                                 if (result?.parent?.isNil()) {
                                     result = result.parent as GrammarAST;
@@ -138,7 +137,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                 break;
                             }
 
-                            if (this.state.backtracking > 0) {
+                            if (this.backtracking > 0) {
                                 this.failed = true;
 
                                 return result;
@@ -155,7 +154,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         result = first;
                         if (result?.parent?.isNil()) {
                             result = result.parent as GrammarAST;
@@ -172,11 +171,11 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     let first;
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         first = setAlt!;
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         result = first;
                         if (result?.parent?.isNil()) {
                             result = result.parent as GrammarAST;
@@ -194,7 +193,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         result = ebnfBlockSet;
                         if (result?.parent?.isNil()) {
                             result = result.parent as GrammarAST;
@@ -210,7 +209,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         result = blockSet;
                         if (result?.parent?.isNil()) {
                             result = result.parent as GrammarAST;
@@ -221,7 +220,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
 
                 default: {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return result;
@@ -244,7 +243,7 @@ export class BlockSetTransformer extends TreeRewriter {
     private setAlt(): GrammarAST | undefined {
         try {
             if (!(this.inContext("RULE BLOCK"))) {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return undefined;
@@ -258,7 +257,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 return undefined;
             }
 
-            if (this.state.backtracking === 1) {
+            if (this.backtracking === 1) {
                 if (alt.parent?.isNil()) {
                     return alt.parent as GrammarAST;
                 }
@@ -289,7 +288,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 return undefined;
             }
 
-            if (this.state.backtracking === 1) {
+            if (this.backtracking === 1) {
                 ebnfSuffixStream.add(ebnfSuffix ?? null);
             }
 
@@ -304,7 +303,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 return undefined;
             }
 
-            if (this.state.backtracking === 1) {
+            if (this.backtracking === 1) {
                 blockSetStream.add(blockSet ?? null);
             }
 
@@ -322,7 +321,7 @@ export class BlockSetTransformer extends TreeRewriter {
             // token list labels:
             // rule list labels:
             // wildcard labels:
-            if (this.state.backtracking === 1) {
+            if (this.backtracking === 1) {
                 const root0 = new GrammarAST();
                 const root1 = this.adaptor.becomeRoot(ebnfSuffixStream.nextNode(), new GrammarAST()) as GrammarAST;
                 const root2 = this.adaptor.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK), new GrammarAST());
@@ -356,10 +355,10 @@ export class BlockSetTransformer extends TreeRewriter {
             if (lookahead === ANTLRv4Parser.CLOSURE
                 || (lookahead >= ANTLRv4Parser.OPTIONAL && lookahead <= ANTLRv4Parser.POSITIVE_CLOSURE)) {
                 this.input.consume();
-                this.state.errorRecovery = false;
+                this.errorRecovery = false;
                 this.failed = false;
             } else {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return undefined;
@@ -368,7 +367,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 throw new MismatchedSetException();
             }
 
-            if (this.state.backtracking === 1) {
+            if (this.backtracking === 1) {
                 return start.dupNode();
             }
         } catch (re) {
@@ -403,7 +402,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return undefined;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     blockStream.add(block);
                     first = block;
                 }
@@ -418,7 +417,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return undefined;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     altStream.add(alt);
                     first2 = alt;
                 }
@@ -435,7 +434,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return undefined;
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         elementOptionsStream.add(elementOptions ?? null);
                         result = first;
                         if (result?.parent?.isNil()) {
@@ -445,7 +444,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
 
                 if ((alt as AltAST).altLabel) {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return result;
@@ -459,7 +458,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     setElementStream.add(setElement ?? null);
                 }
 
@@ -477,7 +476,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             altStream.add(alt);
                             if (first2 === undefined) {
                                 first2 = alt;
@@ -496,7 +495,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                 return result;
                             }
 
-                            if (this.state.backtracking === 1) {
+                            if (this.backtracking === 1) {
                                 elementOptionsStream.add(elementOptions ?? null);
 
                                 result = first;
@@ -511,7 +510,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             setElementStream.add(setElement ?? null);
                         }
 
@@ -520,7 +519,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             result = first;
                             if (result?.parent?.isNil()) {
                                 result = result.parent as GrammarAST;
@@ -531,7 +530,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             break;
                         }
 
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return result;
@@ -555,7 +554,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 // token list labels:
                 // rule list labels:
                 // wildcard labels:
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     const root0 = new GrammarAST();
                     const root1 = this.adaptor.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK,
                         block.token), new GrammarAST()) as GrammarAST;
@@ -588,7 +587,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     blockStream.add(block);
                     first = block;
                 }
@@ -603,7 +602,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     altStream.add(alt);
                     first = alt;
                 }
@@ -621,7 +620,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         elementOptionsStream.add(elementOptions ?? null);
 
                         result = first;
@@ -636,7 +635,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     setElementStream.add(setElement ?? null);
                 }
 
@@ -655,7 +654,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             altStream.add(alt);
 
                             if (first === null) {
@@ -676,7 +675,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                 return result;
                             }
 
-                            if (this.state.backtracking === 1) {
+                            if (this.backtracking === 1) {
                                 elementOptionsStream.add(elementOptions ?? null);
 
                                 result = first;
@@ -691,7 +690,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             setElementStream.add(setElement ?? null);
                         }
 
@@ -700,7 +699,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             result = first;
                             if (result?.parent?.isNil()) {
                                 result = result.parent as GrammarAST;
@@ -711,7 +710,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             break;
                         }
 
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return result;
@@ -735,7 +734,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 // token list labels:
                 // rule list labels:
                 // wildcard labels:
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     const root0 = new GrammarAST();
                     const root1 = this.adaptor.becomeRoot(this.adaptor.create(ANTLRv4Parser.SET, block.token!,
                         "SET"), new GrammarAST());
@@ -754,7 +753,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
             }
 
-            if (this.state.backtracking === 1) {
+            if (this.backtracking === 1) {
                 GrammarTransformPipeline.setGrammarPtr(this.g, result!);
             }
         } catch (re) {
@@ -785,7 +784,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         first = a;
                     }
 
@@ -805,7 +804,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     if (!((!inLexer || CharSupport.getCharValueFromGrammarCharLiteral(a.getText()) !== -1))) {
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return result;
@@ -813,7 +812,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         throw new FailedPredicateException("setElement");
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         result = first ?? undefined;
                         if (result?.parent?.isNil()) {
                             result = result.parent as GrammarAST;
@@ -827,12 +826,12 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         first = a;
                     }
 
                     if (!((!inLexer || CharSupport.getCharValueFromGrammarCharLiteral(a.getText()) !== -1))) {
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return result;
@@ -841,7 +840,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         throw new FailedPredicateException("setElement");
                     }
 
-                    if (this.state.backtracking === 1) {
+                    if (this.backtracking === 1) {
                         result = first;
                         if (result?.parent?.isNil()) {
                             result = result.parent as GrammarAST;
@@ -850,7 +849,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     doDefault = false;
                 } else {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return result;
@@ -876,7 +875,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             first = tokenRef;
                         }
 
@@ -895,7 +894,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             result = first ?? undefined;
                             if (result?.parent?.isNil()) {
                                 result = result.parent as GrammarAST;
@@ -910,11 +909,11 @@ export class BlockSetTransformer extends TreeRewriter {
                                 return result;
                             }
 
-                            if (this.state.backtracking === 1) {
+                            if (this.backtracking === 1) {
                                 first = tokenRef;
                             }
 
-                            if (this.state.backtracking === 1) {
+                            if (this.backtracking === 1) {
                                 result = first ?? undefined;
                                 if (result?.parent?.isNil()) {
                                     result = result.parent as GrammarAST;
@@ -929,7 +928,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
             if (doDefault) {
                 if (!inLexer) {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return result;
@@ -942,7 +941,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     first = range;
                 }
 
@@ -968,7 +967,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                 if (!((CharSupport.getCharValueFromGrammarCharLiteral(a.getText()) !== -1 &&
                     CharSupport.getCharValueFromGrammarCharLiteral(b.getText()) !== -1))) {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return result;
@@ -977,7 +976,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     throw new FailedPredicateException("setElement");
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     result = first;
                     if (result?.parent?.isNil()) {
                         result = result.parent as GrammarAST;
@@ -985,7 +984,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
             }
 
-            if (this.state.backtracking === 1) {
+            if (this.backtracking === 1) {
                 result = first;
                 if (result?.parent?.isNil()) {
                     result = result.parent as GrammarAST;
@@ -1015,7 +1014,7 @@ export class BlockSetTransformer extends TreeRewriter {
             }
 
             let first;
-            if (this.state.backtracking === 1) {
+            if (this.backtracking === 1) {
                 first = elementOptions;
             }
 
@@ -1033,7 +1032,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        if (this.state.backtracking === 1) {
+                        if (this.backtracking === 1) {
                             result = first;
                             if (result?.parent?.isNil()) {
                                 result = result.parent as GrammarAST;
@@ -1050,7 +1049,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 }
             }
 
-            if (this.state.backtracking === 1) {
+            if (this.backtracking === 1) {
                 result = first;
                 if (result?.parent?.isNil()) {
                     result = result.parent as GrammarAST;
@@ -1080,7 +1079,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     result = id;
                     if (result.parent?.isNil()) {
                         result = result.parent as GrammarAST;
@@ -1122,7 +1121,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     return result;
                                 }
 
-                                if (this.state.backtracking === 1) {
+                                if (this.backtracking === 1) {
                                     result = assign;
                                     if (result.parent?.isNil()) {
                                         result = result.parent as GrammarAST;
@@ -1140,7 +1139,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     return result;
                                 }
 
-                                if (this.state.backtracking === 1) {
+                                if (this.backtracking === 1) {
                                     first = assign;
                                 }
 
@@ -1164,7 +1163,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     return result;
                                 }
 
-                                if (this.state.backtracking === 1) {
+                                if (this.backtracking === 1) {
                                     result = first;
                                     if (result?.parent?.isNil()) {
                                         result = result.parent as GrammarAST;
@@ -1182,7 +1181,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     return result;
                                 }
 
-                                if (this.state.backtracking === 1) {
+                                if (this.backtracking === 1) {
                                     first = assign;
                                 }
 
@@ -1206,7 +1205,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     return result;
                                 }
 
-                                if (this.state.backtracking === 1) {
+                                if (this.backtracking === 1) {
                                     result = first;
                                     if (result?.parent?.isNil()) {
                                         result = result.parent as GrammarAST;
@@ -1223,7 +1222,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
 
                             default: {
-                                if (this.state.backtracking > 0) {
+                                if (this.backtracking > 0) {
                                     this.failed = true;
 
                                     return result;
@@ -1244,7 +1243,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
                         }
                     } else {
-                        if (this.state.backtracking > 0) {
+                        if (this.backtracking > 0) {
                             this.failed = true;
 
                             return result;
@@ -1263,7 +1262,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         }
                     }
                 } else {
-                    if (this.state.backtracking > 0) {
+                    if (this.backtracking > 0) {
                         this.failed = true;
 
                         return result;
@@ -1282,7 +1281,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
                 }
             } else {
-                if (this.state.backtracking > 0) {
+                if (this.backtracking > 0) {
                     this.failed = true;
 
                     return result;
@@ -1300,7 +1299,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     first = assign;
                 }
 
@@ -1326,7 +1325,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                if (this.state.backtracking === 1) {
+                if (this.backtracking === 1) {
                     result = first;
                     if (result?.parent?.isNil()) {
                         result = result.parent as GrammarAST;

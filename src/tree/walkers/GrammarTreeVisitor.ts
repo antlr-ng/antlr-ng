@@ -7,7 +7,6 @@ import { RecognitionException } from "antlr4ng";
 
 import { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
 import { EarlyExitException } from "../exceptions/EarlyExitException.js";
-import { createRecognizerSharedState, IRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
 import { MismatchedSetException } from "../exceptions/MismatchedSetException.js";
 import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { TreeParser } from "../TreeParser.js";
@@ -49,8 +48,8 @@ export class GrammarTreeVisitor extends TreeParser {
 
     protected currentModeName = Constants.DEFAULT_MODE_NAME;
 
-    public constructor(errorManager: ErrorManager, input?: CommonTreeNodeStream, state?: IRecognizerSharedState) {
-        super(errorManager, input, state ?? createRecognizerSharedState());
+    public constructor(errorManager: ErrorManager, input?: CommonTreeNodeStream,) {
+        super(errorManager, input);
     }
 
     public override getTokenNames(): string[] {
@@ -363,7 +362,7 @@ export class GrammarTreeVisitor extends TreeParser {
             if (lookahead === ANTLRv4Parser.ID || lookahead === ANTLRv4Parser.INT
                 || lookahead === ANTLRv4Parser.STRING_LITERAL) {
                 this.input.consume();
-                this.state.errorRecovery = false;
+                this.errorRecovery = false;
             } else {
                 throw new MismatchedSetException();
             }
@@ -912,7 +911,7 @@ export class GrammarTreeVisitor extends TreeParser {
             if (lookahead === ANTLRv4Parser.FRAGMENT
                 || (lookahead >= ANTLRv4Parser.PRIVATE && lookahead <= ANTLRv4Parser.PUBLIC)) {
                 this.input.consume();
-                this.state.errorRecovery = false;
+                this.errorRecovery = false;
             } else {
                 throw new MismatchedSetException();
             }
@@ -1417,7 +1416,7 @@ export class GrammarTreeVisitor extends TreeParser {
             const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Parser.ID || lookahead === ANTLRv4Parser.INT) {
                 this.input.consume();
-                this.state.errorRecovery = false;
+                this.errorRecovery = false;
             } else {
                 throw new MismatchedSetException();
             }
@@ -1676,7 +1675,7 @@ export class GrammarTreeVisitor extends TreeParser {
             if (this.input.lookahead(1) === ANTLRv4Parser.ASSIGN
                 || this.input.lookahead(1) === ANTLRv4Parser.PLUS_ASSIGN) {
                 this.input.consume();
-                this.state.errorRecovery = false;
+                this.errorRecovery = false;
             } else {
                 throw new MismatchedSetException();
             }
@@ -1772,7 +1771,7 @@ export class GrammarTreeVisitor extends TreeParser {
             if (lookahead === ANTLRv4Parser.CLOSURE
                 || (lookahead >= ANTLRv4Parser.OPTIONAL && lookahead <= ANTLRv4Parser.POSITIVE_CLOSURE)) {
                 this.input.consume();
-                this.state.errorRecovery = false;
+                this.errorRecovery = false;
             } else {
                 throw new MismatchedSetException();
             }

@@ -19,7 +19,6 @@ import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import type { ErrorManager } from "../../tool/ErrorManager.js";
 import type { CommonTreeNodeStream } from "../CommonTreeNodeStream.js";
 import { EarlyExitException } from "../exceptions/EarlyExitException.js";
-import { IRecognizerSharedState } from "../misc/IRecognizerSharedState.js";
 import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { TreeParser } from "../TreeParser.js";
 
@@ -67,20 +66,8 @@ export class SourceGenTriggers extends TreeParser {
 
     private controller?: OutputModelController;
 
-    public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream,
-        stateOrController?: IRecognizerSharedState | OutputModelController) {
-        let state: IRecognizerSharedState | undefined;
-        let controller: OutputModelController | undefined;
-
-        if (stateOrController instanceof OutputModelController) {
-            state = undefined;
-            controller = stateOrController;
-        } else {
-            state = stateOrController;
-            controller = undefined;
-        }
-
-        super(errorManager, input, state);
+    public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream, controller?: OutputModelController) {
+        super(errorManager, input);
         this.controller = controller;
     }
 
