@@ -17,7 +17,7 @@ import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import { dupTree } from "../support/helpers.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { AltAST } from "../tool/ast/AltAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
@@ -119,14 +119,14 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
                 if (a === Associativity.Left.toString()) {
                     assoc = Associativity.Left;
                 } else {
-                    this.tool.errorManager.grammarError(ErrorType.ILLEGAL_OPTION_VALUE, t.g.fileName,
+                    this.tool.errorManager.grammarError(IssueCode.IllegalOptionValue, t.g.fileName,
                         t.getOptionAST("assoc")!.token!, "assoc", assoc);
                 }
             }
         }
 
         if (this.altAssociativity.get(alt) && this.altAssociativity.get(alt) !== assoc) {
-            this.tool.errorManager.toolError(ErrorType.INTERNAL_ERROR, "all operators of alt " + alt +
+            this.tool.errorManager.toolError(IssueCode.InternalError, "all operators of alt " + alt +
                 " of left-recursive rule must have same associativity");
         }
         this.altAssociativity.set(alt, assoc);

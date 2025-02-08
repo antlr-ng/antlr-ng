@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { ErrorType } from "../src/tool/ErrorType.js";
+import { IssueCode, issueTypes } from "../src/tool/Issues.js";
 import { ToolTestUtils } from "./ToolTestUtils.js";
 import { antlrVersion } from "../src/tool-parameters.js";
 
@@ -22,62 +22,61 @@ describe("TestToolSyntaxErrors", () => {
         "grammar A;\n" +
         "",
         // YIELDS
-        "error(" + ErrorType.NO_RULES.code + "): A.g4::: grammar A has no rules\n",
+        "error(" + IssueCode.NoRules + "): A.g4::: grammar A has no rules\n",
 
         "lexer grammar A;\n" +
         "",
-        "error(" + ErrorType.NO_RULES.code + "): A.g4::: grammar A has no rules\n",
+        "error(" + IssueCode.NoRules + "): A.g4::: grammar A has no rules\n",
 
         "A;",
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:1:0: syntax error: mismatched input 'A' expecting " +
+        "error(" + IssueCode.SyntaxError + "): A.g4:1:0: syntax error: mismatched input 'A' expecting " +
         "{'grammar', 'lexer', 'parser'}\n",
 
         "grammar ;",
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:1:8: syntax error: missing {RULE_REF, TOKEN_REF} at ';'\n",
+        "error(" + IssueCode.SyntaxError + "): A.g4:1:8: syntax error: missing {RULE_REF, TOKEN_REF} at ';'\n",
 
         "grammar A\n" +
         "a : ID ;\n",
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:0: syntax error: missing SEMI at 'a'\n",
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:0: syntax error: missing SEMI at 'a'\n",
 
         "grammar A;\n" +
         "a : ID ;;\n" +
         "b : B ;",
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:8: syntax error: mismatched input ';' expecting {<EOF>, " +
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:8: syntax error: mismatched input ';' expecting {<EOF>, " +
         "'mode'}\n",
 
         "grammar A;;\n" +
         "a : ID ;\n",
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A;.g4:1:10: syntax error: extraneous input ';' expecting " +
+        "error(" + IssueCode.SyntaxError + "): A;.g4:1:10: syntax error: extraneous input ';' expecting " +
         "{<EOF>, AT, CHANNELS, 'fragment', 'import', 'mode', OPTIONS, RULE_REF, TOKEN_REF, TOKENS, 'private', " +
         "'protected', 'public'}\n",
 
         "grammar A;\n" +
         "a @init : ID ;\n",
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:8: syntax error: mismatched input ':' expecting " +
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:8: syntax error: mismatched input ':' expecting " +
         "BEGIN_ACTION\n",
 
         "grammar A;\n" +
         "a  ( A | B ) D ;\n" +
         "b : B ;",
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:3: syntax error: mismatched input '(' expecting {AT, " +
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:3: syntax error: mismatched input '(' expecting {AT, " +
         "COLON, 'locals', OPTIONS, 'returns', 'throws', BEGIN_ARGUMENT}\n" +
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:7: syntax error: mismatched input '|' expecting " +
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:7: syntax error: mismatched input '|' expecting " +
         "{COLON, OPTIONS}\n" +
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:11: syntax error: mismatched input ')' expecting {COLON, " +
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:11: syntax error: mismatched input ')' expecting {COLON, " +
         "OPTIONS}\n" +
-        "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:15: syntax error: mismatched input ';' expecting {COLON, " +
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:15: syntax error: mismatched input ';' expecting {COLON, " +
         "OPTIONS}\n",
     ];
 
     it("AllErrorCodesDistinct", () => {
-        const errors = Object.keys(ErrorType);
-        const codes = new Set<number>();
-        for (const error of Object.values(ErrorType)) {
-            const code = (error as ErrorType).code;
+        const issues = Object.keys(IssueCode);
+        const codes = new Set<IssueCode>();
+        for (const [code] of issueTypes) {
             codes.add(code); // Duplicates would just be ignored.
         }
 
-        expect(codes.size).toBe(errors.length);
+        expect(codes.size).toBe(issues.length / 2); // IssueCode is an enum with two entries per value.
     });
 
     it("testA", () => {
@@ -89,7 +88,7 @@ describe("TestToolSyntaxErrors", () => {
             "grammar A;\n" +
             "a : : A ;\n" +
             "b : B ;",
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:4: syntax error: no viable alternative at input ':'\n",
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:4: syntax error: no viable alternative at input ':'\n",
         ];
         ToolTestUtils.testErrors(pair, true);
     });
@@ -99,7 +98,7 @@ describe("TestToolSyntaxErrors", () => {
             "grammar A;\n" +
             "a : A \n" +
             "b : B ;",
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:3:2: syntax error: no viable alternative at input ':'\n",
+            "error(" + IssueCode.SyntaxError + "): A.g4:3:2: syntax error: no viable alternative at input ':'\n",
         ];
         ToolTestUtils.testErrors(pair, true);
     });
@@ -109,7 +108,7 @@ describe("TestToolSyntaxErrors", () => {
             "lexer grammar A;\n" +
             "A : 'a' \n" +
             "B : 'b' ;",
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:3:2: syntax error: mismatched input ':' expecting SEMI\n",
+            "error(" + IssueCode.SyntaxError + "): A.g4:3:2: syntax error: mismatched input ':' expecting SEMI\n",
         ];
         ToolTestUtils.testErrors(pair, true);
     });
@@ -119,7 +118,7 @@ describe("TestToolSyntaxErrors", () => {
             "grammar A;\n" +
             "a : A \n" +
             "b[int i] returns [int y] : B ;",
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:3:9: syntax error: no viable alternative at input " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:3:9: syntax error: no viable alternative at input " +
             "'returns'\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -132,8 +131,8 @@ describe("TestToolSyntaxErrors", () => {
             "  catch [Exception e] {...}\n" +
             "b : B ;\n",
 
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:3:2: syntax error: no viable alternative at input " +
-            "'catch'\nerror(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:4:2: syntax error: no viable alternative at " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:3:2: syntax error: no viable alternative at input " +
+            "'catch'\nerror(" + IssueCode.SyntaxError + "): A.g4:4:2: syntax error: no viable alternative at " +
             "input ':'\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -145,8 +144,8 @@ describe("TestToolSyntaxErrors", () => {
             "a : A \n" +
             "  catch [Exception e] {...}\n",
 
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:3:2: syntax error: no viable alternative at input " +
-            "'catch'\nerror(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:4:0: syntax error: missing SEMI at '<EOF>'\n"
+            "error(" + IssueCode.SyntaxError + "): A.g4:3:2: syntax error: no viable alternative at input " +
+            "'catch'\nerror(" + IssueCode.SyntaxError + "): A.g4:4:0: syntax error: missing SEMI at '<EOF>'\n"
         ];
         ToolTestUtils.testErrors(pair, true);
     });
@@ -157,8 +156,8 @@ describe("TestToolSyntaxErrors", () => {
             "a @ options {k=1;} : A ;\n" +
             "b : B ;",
 
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:4: syntax error: extraneous input 'options {' " +
-            "expecting {RULE_REF, TOKEN_REF}\nerror(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:14: syntax error: " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:4: syntax error: extraneous input 'options {' " +
+            "expecting {RULE_REF, TOKEN_REF}\nerror(" + IssueCode.SyntaxError + "): A.g4:2:14: syntax error: " +
             "mismatched input '=' expecting BEGIN_ACTION\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -170,7 +169,7 @@ describe("TestToolSyntaxErrors", () => {
             "a } : A ;\n" +
             "b : B ;",
 
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:2: syntax error: extraneous input '}' expecting " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:2: syntax error: extraneous input '}' expecting " +
             "{AT, COLON, 'locals', OPTIONS, 'returns', 'throws', BEGIN_ARGUMENT}\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -183,7 +182,7 @@ describe("TestToolSyntaxErrors", () => {
             "mode foo;\n" +
             "b : B ;",
 
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:4:0: syntax error: extraneous input 'b' expecting " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:4:0: syntax error: extraneous input 'b' expecting " +
             "{<EOF>, 'mode'}\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -201,7 +200,7 @@ describe("TestToolSyntaxErrors", () => {
             "a : 'x\n" +
             "  ;\n",
 
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:4: syntax error: no viable alternative " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:4: syntax error: no viable alternative " +
             "at input ''x'\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -217,7 +216,7 @@ describe("TestToolSyntaxErrors", () => {
             "grammar A;\n" +
             "_a : 'x' ;\n",
 
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:0: syntax error: token recognition error at: '_'\n"
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:0: syntax error: token recognition error at: '_'\n"
         ];
         ToolTestUtils.testErrors(pair, true);
     });
@@ -292,9 +291,9 @@ describe("TestToolSyntaxErrors", () => {
             "X : 'foo1' -> popmode;\n" + // "meant" to use -> popMode
             "Y : 'foo2' -> token(Foo);", // "meant" to use -> type(Foo)
 
-            "error(" + ErrorType.INVALID_LEXER_COMMAND.code + "): A.g4:4:14: lexer command popmode does not exist " +
+            "error(" + IssueCode.InvalidLexerCommand + "): A.g4:4:14: lexer command popmode does not exist " +
             "or is not supported by the current target\n" +
-            "error(" + ErrorType.INVALID_LEXER_COMMAND.code + "): A.g4:5:14: lexer command token does not exist or " +
+            "error(" + IssueCode.InvalidLexerCommand + "): A.g4:5:14: lexer command token does not exist or " +
             "is not supported by the current target\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -308,9 +307,9 @@ describe("TestToolSyntaxErrors", () => {
             "X : 'foo1' -> popMode(Foo);\n" + // "meant" to use -> popMode
             "Y : 'foo2' -> type;", // "meant" to use -> type(Foo)
 
-            "error(" + ErrorType.UNWANTED_LEXER_COMMAND_ARGUMENT.code + "): A.g4:4:14: lexer command popMode does " +
+            "error(" + IssueCode.UnwantedLexerCommandArgument + "): A.g4:4:14: lexer command popMode does " +
             "not take any arguments\n" +
-            "error(" + ErrorType.MISSING_LEXER_COMMAND_ARGUMENT.code + "): A.g4:5:14: missing argument for lexer " +
+            "error(" + IssueCode.MisingLexerCommandArgument + "): A.g4:5:14: missing argument for lexer " +
             "command type\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -326,7 +325,7 @@ describe("TestToolSyntaxErrors", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n",
 
-            "error(" + ErrorType.RULE_REDEFINITION.code + "): Oops.g4:4:0: rule ret_ty redefinition; previous at " +
+            "error(" + IssueCode.RuleRedefinition + "): Oops.g4:4:0: rule ret_ty redefinition; previous at " +
             "line 3\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -341,11 +340,11 @@ describe("TestToolSyntaxErrors", () => {
             + "z1 : ('foo' | 'bar'? 'bar2'?)*;\n"
             + "z2 : ('foo' | 'bar' 'bar2'? | 'bar2')*;\n";
         const expected =
-            "error(" + ErrorType.EPSILON_CLOSURE.code + "): A.g4:3:0: rule y1 contains a closure with at least one " +
+            "error(" + IssueCode.EpsilonClosure + "): A.g4:3:0: rule y1 contains a closure with at least one " +
             "alternative that can match an empty string\n" +
-            "error(" + ErrorType.EPSILON_CLOSURE.code + "): A.g4:4:0: rule y2 contains a closure with at least one " +
+            "error(" + IssueCode.EpsilonClosure + "): A.g4:4:0: rule y2 contains a closure with at least one " +
             "alternative that can match an empty string\n" +
-            "error(" + ErrorType.EPSILON_CLOSURE.code + "): A.g4:5:0: rule z1 contains a closure with at least one " +
+            "error(" + IssueCode.EpsilonClosure + "): A.g4:5:0: rule z1 contains a closure with at least one " +
             "alternative that can match an empty string\n";
 
         const pair = [
@@ -363,7 +362,7 @@ describe("TestToolSyntaxErrors", () => {
             "s : (a a)* ;\n" +
             "a : 'foo'* ;\n";
         const expected =
-            "error(" + ErrorType.EPSILON_CLOSURE.code + "): T.g4:2:0: rule s contains a closure with at least one " +
+            "error(" + IssueCode.EpsilonClosure + "): T.g4:2:0: rule s contains a closure with at least one " +
             "alternative that can match an empty string\n";
 
         const pair = [
@@ -382,7 +381,7 @@ describe("TestToolSyntaxErrors", () => {
             "fragment FRAGMENT: ('x'|)+;";
 
         const expected =
-            "error(" + ErrorType.EPSILON_CLOSURE.code + "): T.g4:3:9: rule FRAGMENT contains a closure with at " +
+            "error(" + IssueCode.EpsilonClosure + "): T.g4:3:9: rule FRAGMENT contains a closure with at " +
             "least one alternative that can match an empty string\n";
 
         const pair = [
@@ -401,7 +400,7 @@ describe("TestToolSyntaxErrors", () => {
             "EofInAlternative: 'y' ('z' | EOF);";
 
         const expected =
-            "error(" + ErrorType.EOF_CLOSURE.code + "): EofClosure.g4:2:0: rule EofClosure contains a closure with " +
+            "error(" + IssueCode.EofClosure + "): EofClosure.g4:2:0: rule EofClosure contains a closure with " +
             "at least one alternative that can match EOF\n";
 
         const pair = [
@@ -419,7 +418,7 @@ describe("TestToolSyntaxErrors", () => {
             "s : (a a)? ;\n" +
             "a : 'foo'* ;\n";
         const expected =
-            "warning(" + ErrorType.EPSILON_OPTIONAL.code + "): T.g4:2:0: rule s contains an optional block with at " +
+            "warning(" + IssueCode.EpsilonOptional + "): T.g4:2:0: rule s contains an optional block with at " +
             "least one alternative that can match an empty string\n";
 
         const pair = [
@@ -438,9 +437,9 @@ describe("TestToolSyntaxErrors", () => {
             + "z1 : ('foo' | 'bar'? 'bar2'?)?;\n"
             + "z2 : ('foo' | 'bar' 'bar2'? | 'bar2')?;\n";
         const expected =
-            "warning(" + ErrorType.EPSILON_OPTIONAL.code + "): A.g4:3:0: rule y contains an optional block with at " +
+            "warning(" + IssueCode.EpsilonOptional + "): A.g4:3:0: rule y contains an optional block with at " +
             "least one alternative that can match an empty string\n" +
-            "warning(" + ErrorType.EPSILON_OPTIONAL.code + "): A.g4:4:0: rule z1 contains an optional block with at " +
+            "warning(" + IssueCode.EpsilonOptional + "): A.g4:4:0: rule z1 contains an optional block with at " +
             "least one alternative that can match an empty string\n";
 
         const pair = [
@@ -490,31 +489,31 @@ describe("TestToolSyntaxErrors", () => {
             "lexer grammar A;\n"
             + "WHITESPACE : (\" \" | \"\\t\" | \"\\n\" | \"\\r\" | \"\\f\");\n";
         const expected =
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:14: syntax error: token recognition error at: '\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:16: syntax error: token recognition error at: '\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:20: syntax error: token recognition error at: '\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:21: syntax error: token recognition error at: '\\'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:22: syntax error: no viable alternative at input " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:14: syntax error: token recognition error at: '\"'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:16: syntax error: token recognition error at: '\"'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:20: syntax error: token recognition error at: '\"'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:21: syntax error: token recognition error at: '\\'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:22: syntax error: no viable alternative at input " +
             "'t'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:23: syntax error: token recognition error at: '\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:27: syntax error: token recognition error at: '\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:28: syntax error: token recognition error at: '\\'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:25: syntax error: mismatched input '|' expecting " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:23: syntax error: token recognition error at: '\"'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:27: syntax error: token recognition error at: '\"'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:28: syntax error: token recognition error at: '\\'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:25: syntax error: mismatched input '|' expecting " +
             "{AT, COLON, 'locals', OPTIONS, 'returns', 'throws', BEGIN_ARGUMENT}\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:30: syntax error: token recognition error at: '\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:34: syntax error: token recognition error at: '\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:35: syntax error: token recognition error at: '\\'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:32: syntax error: mismatched input '|' expecting " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:30: syntax error: token recognition error at: '\"'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:34: syntax error: token recognition error at: '\"'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:35: syntax error: token recognition error at: '\\'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:32: syntax error: mismatched input '|' expecting " +
             "{AT, COLON, 'locals', OPTIONS, 'returns', 'throws', BEGIN_ARGUMENT}\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:37: syntax error: token recognition error at: '\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:41: syntax error: token recognition error at: '\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:42: syntax error: token recognition error at: '\\'" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:37: syntax error: token recognition error at: '\"'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:41: syntax error: token recognition error at: '\"'\n" +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:42: syntax error: token recognition error at: '\\'" +
             "\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:39: syntax error: mismatched input '|' expecting " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:39: syntax error: mismatched input '|' expecting " +
             "{AT, COLON, 'locals', OPTIONS, 'returns', 'throws', BEGIN_ARGUMENT}\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:44: syntax error: token recognition error at: " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:44: syntax error: token recognition error at: " +
             "'\"'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): A.g4:2:45: syntax error: mismatched input ')' expecting " +
+            "error(" + IssueCode.SyntaxError + "): A.g4:2:45: syntax error: mismatched input ')' expecting " +
             "{AT, COLON, 'locals', OPTIONS, 'returns', 'throws', BEGIN_ARGUMENT}\n";
 
         const pair = [
@@ -534,8 +533,8 @@ describe("TestToolSyntaxErrors", () => {
             "lexer grammar A;\n" +
             "STRING : '\\\"' '\\\"' 'x' ;";
         const expected =
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): A.g4:2:10: invalid escape sequence \\\"\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): A.g4:2:15: invalid escape sequence \\\"\n";
+            "error(" + IssueCode.InvalidEscapeSequence + "): A.g4:2:10: invalid escape sequence \\\"\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): A.g4:2:15: invalid escape sequence \\\"\n";
 
         const pair = [
             grammar,
@@ -546,7 +545,7 @@ describe("TestToolSyntaxErrors", () => {
     });
 
     /**
-     * This test ensures that the {@link ErrorType#INVALID_ESCAPE_SEQUENCE}
+     * This test ensures that the {@link IssueCode#INVALID_ESCAPE_SEQUENCE}
      * error is not reported for escape sequences that are known to be valid.
      */
     it("testValidEscapeSequences", () => {
@@ -575,9 +574,9 @@ describe("TestToolSyntaxErrors", () => {
             "lexer grammar A;\n" +
             "RULE : 'Foo \\uAABG \\x \\u';\n";
         const expected =
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): A.g4:2:12: invalid escape sequence \\uAABG\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): A.g4:2:19: invalid escape sequence \\x\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): A.g4:2:22: invalid escape sequence \\u\n";
+            "error(" + IssueCode.InvalidEscapeSequence + "): A.g4:2:12: invalid escape sequence \\uAABG\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): A.g4:2:19: invalid escape sequence \\x\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): A.g4:2:22: invalid escape sequence \\u\n";
 
         const pair = [
             grammar,
@@ -600,15 +599,15 @@ describe("TestToolSyntaxErrors", () => {
             "Error3: '';\n" +
             "NotError: ' ';";
         const expected =
-            "error(" + ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED.code + "): T.g4:2:8: string literals and sets " +
+            "error(" + IssueCode.EmptyStringAndSetsNotAllowed + "): T.g4:2:8: string literals and sets " +
             "cannot be empty: ''\n" +
-            "error(" + ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED.code + "): T.g4:2:16: string literals and sets " +
+            "error(" + IssueCode.EmptyStringAndSetsNotAllowed + "): T.g4:2:16: string literals and sets " +
             "cannot be empty: ''\n" +
-            "error(" + ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED.code + "): T.g4:3:8: string literals and sets " +
+            "error(" + IssueCode.EmptyStringAndSetsNotAllowed + "): T.g4:3:8: string literals and sets " +
             "cannot be empty: ''\n" +
-            "error(" + ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED.code + "): T.g4:4:15: string literals and sets " +
+            "error(" + IssueCode.EmptyStringAndSetsNotAllowed + "): T.g4:4:15: string literals and sets " +
             "cannot be empty: ''\n" +
-            "error(" + ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED.code + "): T.g4:5:8: string literals and sets " +
+            "error(" + IssueCode.EmptyStringAndSetsNotAllowed + "): T.g4:5:8: string literals and sets " +
             "cannot be empty: ''\n";
 
         const pair = [
@@ -634,19 +633,19 @@ describe("TestToolSyntaxErrors", () => {
             "EMPTY_CHAR_SET_WITH_INVALID_ESCAPE_SEQUENCE: [\\'];"; // https://github.com/antlr/antlr4/issues/1556
 
         const expected =
-            "error(" + ErrorType.INVALID_LITERAL_IN_LEXER_SET.code + "): Test.g4:2:30: multi-character literals are " +
+            "error(" + IssueCode.InvalidLiteralInLexerSet + "): Test.g4:2:30: multi-character literals are " +
             "not allowed in lexer sets: 'GH'\n" +
-            "error(" + ErrorType.INVALID_LITERAL_IN_LEXER_SET.code + "): Test.g4:2:36: multi-character literals are " +
+            "error(" + IssueCode.InvalidLiteralInLexerSet + "): Test.g4:2:36: multi-character literals are " +
             "not allowed in lexer sets: 'LM'\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:3:30: invalid escape sequence \\u24\\u\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:3:40: invalid escape sequence \\{\n" +
-            "error(" + ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED.code + "): Test.g4:4:30: string literals and " +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:3:30: invalid escape sequence \\u24\\u\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:3:40: invalid escape sequence \\{\n" +
+            "error(" + IssueCode.EmptyStringAndSetsNotAllowed + "): Test.g4:4:30: string literals and " +
             "sets cannot be empty: 'F'..'A'\n" +
-            "error(" + ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED.code + "): Test.g4:5:30: string literals and " +
+            "error(" + IssueCode.EmptyStringAndSetsNotAllowed + "): Test.g4:5:30: string literals and " +
             "sets cannot be empty: 'f'..'a'\n" +
-            "error(" + ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED.code + "): Test.g4:5:36: string literals and " +
+            "error(" + IssueCode.EmptyStringAndSetsNotAllowed + "): Test.g4:5:36: string literals and " +
             "sets cannot be empty: []\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:10:84: invalid escape sequence \\'\n";
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:10:84: invalid escape sequence \\'\n";
 
         const pair = [
             grammar,
@@ -674,23 +673,23 @@ describe("TestToolSyntaxErrors", () => {
             "EMOJI_MODIFIER: [\\p{Grapheme_Cluster_Break=E_Base}];\n";
 
         const expected =
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:2:32: invalid escape sequence \\u{}\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:3:41: invalid escape sequence \\u{\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:4:35: invalid escape sequence \\u{110\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:5:32: invalid escape sequence \\p{}\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:6:41: invalid escape sequence \\p{\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:7:41: invalid escape sequence \\P{}\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:8:34: invalid escape sequence " +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:2:32: invalid escape sequence \\u{}\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:3:41: invalid escape sequence \\u{\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:4:35: invalid escape sequence \\u{110\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:5:32: invalid escape sequence \\p{}\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:6:41: invalid escape sequence \\p{\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:7:41: invalid escape sequence \\P{}\n" +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:8:34: invalid escape sequence " +
             "\\p{NotAProperty}\n" +
-            "error(" + ErrorType.INVALID_ESCAPE_SEQUENCE.code + "): Test.g4:9:43: invalid escape sequence " +
+            "error(" + IssueCode.InvalidEscapeSequence + "): Test.g4:9:43: invalid escape sequence " +
             "\\P{NotAProperty}\n" +
-            "error(" + ErrorType.UNICODE_PROPERTY_NOT_ALLOWED_IN_RANGE.code + "): Test.g4:10:39: unicode property " +
+            "error(" + IssueCode.UnicodePropertyNotAllowedInRange + "): Test.g4:10:39: unicode property " +
             "escapes not allowed in lexer charset range: [\\p{Uppercase_Letter}-\\p{Lowercase_Letter}]\n" +
-            "error(" + ErrorType.UNICODE_PROPERTY_NOT_ALLOWED_IN_RANGE.code + "): Test.g4:11:41: unicode property " +
+            "error(" + IssueCode.UnicodePropertyNotAllowedInRange + "): Test.g4:11:41: unicode property " +
             "escapes not allowed in lexer charset range: [\\p{Letter}-Z]\n" +
-            "error(" + ErrorType.UNICODE_PROPERTY_NOT_ALLOWED_IN_RANGE.code + "): Test.g4:12:41: unicode property " +
+            "error(" + IssueCode.UnicodePropertyNotAllowedInRange + "): Test.g4:12:41: unicode property " +
             "escapes not allowed in lexer charset range: [A-\\p{Number}]\n" +
-            "error(" + ErrorType.UNICODE_PROPERTY_NOT_ALLOWED_IN_RANGE.code + "): Test.g4:13:48: unicode property " +
+            "error(" + IssueCode.UnicodePropertyNotAllowedInRange + "): Test.g4:13:48: unicode property " +
             "escapes not allowed in lexer charset range: [\\P{Uppercase_Letter}-\\P{Number}]\n";
 
         const pair = [
@@ -702,7 +701,7 @@ describe("TestToolSyntaxErrors", () => {
     });
 
     /**
-     * This test ensures the {@link ErrorType#UNRECOGNIZED_ASSOC_OPTION} warning
+     * This test ensures the {@link IssueCode#UNRECOGNIZED_ASSOC_OPTION} warning
      * is produced as described in the documentation.
      */
     it("testUnrecognizedAssocOption", () => {
@@ -713,7 +712,7 @@ describe("TestToolSyntaxErrors", () => {
             "  |<assoc=right> x '*' x   // ok\n" +
             "  ;\n";
         const expected =
-            "warning(" + ErrorType.UNRECOGNIZED_ASSOC_OPTION.code + "): A.g4:3:10: rule x contains an assoc terminal " +
+            "warning(" + IssueCode.UnrecognizedAsscoOption + "): A.g4:3:10: rule x contains an assoc terminal " +
             "option in an unrecognized location\n";
 
         const pair = [
@@ -725,7 +724,7 @@ describe("TestToolSyntaxErrors", () => {
     });
 
     /**
-     * This test ensures the {@link ErrorType#FRAGMENT_ACTION_IGNORED} warning
+     * This test ensures the {@link IssueCode#FRAGMENT_ACTION_IGNORED} warning
      * is produced as described in the documentation.
      */
     it("testFragmentActionIgnored", () => {
@@ -742,9 +741,9 @@ describe("TestToolSyntaxErrors", () => {
             "Y2 : 'x' {more();}  // warning 158\n" +
             "   ;\n";
         const expected =
-            "warning(" + ErrorType.FRAGMENT_ACTION_IGNORED.code + "): A.g4:7:12: fragment rule X2 contains an " +
+            "warning(" + IssueCode.FragmentActionIgnored + "): A.g4:7:12: fragment rule X2 contains an " +
             "action or command which can never be executed\n" +
-            "warning(" + ErrorType.FRAGMENT_ACTION_IGNORED.code + "): A.g4:10:9: fragment rule Y2 contains an " +
+            "warning(" + IssueCode.FragmentActionIgnored + "): A.g4:10:9: fragment rule Y2 contains an " +
             "action or command which can never be executed\n";
 
         const pair = [
@@ -766,7 +765,7 @@ describe("TestToolSyntaxErrors", () => {
             "WS : ' ';\n" +
             " EOF : 'a';\n";
         const expected =
-            "error(" + ErrorType.RESERVED_RULE_NAME.code + "): A.g4:3:1: cannot declare a rule with reserved " +
+            "error(" + IssueCode.ReservedRuleName + "): A.g4:3:1: cannot declare a rule with reserved " +
             "name EOF\n";
 
         const pair = [
@@ -790,9 +789,9 @@ describe("TestToolSyntaxErrors", () => {
             "start : 'T' EOF;\n" +
             "Something : 'something' -> channel(CUSTOM);";
         const expected =
-            "error(" + ErrorType.CANNOT_CREATE_TARGET_GENERATOR.code + "):  ANTLR cannot generate Foo code as of " +
+            "error(" + IssueCode.CannotCreateTargetGenerator + "):  ANTLR cannot generate Foo code as of " +
             "version " + antlrVersion + "\n" +
-            "error(" + ErrorType.IMPLICIT_STRING_DEFINITION.code + "): T.g4:3:8: cannot create implicit token for " +
+            "error(" + IssueCode.ImplicitStringDefinition + "): T.g4:3:8: cannot create implicit token for " +
             "string literal in non-combined grammar: 'T'\n";
         const pair = [
             grammar,
@@ -813,9 +812,9 @@ describe("TestToolSyntaxErrors", () => {
             "options { language=Foo; }\n" +
             "start : 'T' EOF;\n";
         const expected =
-            "error(" + ErrorType.CANNOT_CREATE_TARGET_GENERATOR.code + "):  ANTLR cannot generate Foo code as of " +
+            "error(" + IssueCode.CannotCreateTargetGenerator + "):  ANTLR cannot generate Foo code as of " +
             "version " + antlrVersion + "\n" +
-            "error(" + ErrorType.IMPLICIT_STRING_DEFINITION.code + "): T.g4:3:8: cannot create implicit token for " +
+            "error(" + IssueCode.ImplicitStringDefinition + "): T.g4:3:8: cannot create implicit token for " +
             "string literal in non-combined grammar: 'T'\n";
 
         const pair = [
@@ -856,7 +855,7 @@ describe("TestToolSyntaxErrors", () => {
             "start : EOF;\n";
 
         const expected =
-            "error(" + ErrorType.CHANNELS_BLOCK_IN_PARSER_GRAMMAR.code + "): T.g4:3:0: custom channels are not " +
+            "error(" + IssueCode.ChannelsBlockInParserGrammar + "): T.g4:3:0: custom channels are not " +
             "supported in parser grammars\n";
 
         const pair = [grammar, expected];
@@ -878,11 +877,11 @@ describe("TestToolSyntaxErrors", () => {
             "WHITESPACE: [ \\t]+      -> channel(WHITESPACE_CHANNEL);\n";
 
         const expected =
-            "error(" + ErrorType.CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_CHANNEL_NAME.code + "): T.g4:10:35: " +
+            "error(" + IssueCode.ConstantValueIsNotARecognizedChannelName + "): T.g4:10:35: " +
             "COMMENT_CHANNEL is not a recognized channel name\n" +
-            "error(" + ErrorType.CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_CHANNEL_NAME.code + "): T.g4:11:35: " +
+            "error(" + IssueCode.ConstantValueIsNotARecognizedChannelName + "): T.g4:11:35: " +
             "WHITESPACE_CHANNEL is not a recognized channel name\n" +
-            "error(" + ErrorType.CHANNELS_BLOCK_IN_COMBINED_GRAMMAR.code + "): T.g4:3:0: custom channels are not " +
+            "error(" + IssueCode.ChannelsBlockInCombinedGrammar + "): T.g4:3:0: custom channels are not " +
             "supported in combined grammars\n";
 
         const pair = [grammar, expected];
@@ -910,7 +909,7 @@ describe("TestToolSyntaxErrors", () => {
 
         // WHITESPACE_CHANNEL and COMMENT_CHANNEL are defined, but NEWLINE_CHANNEL is not
         const expected =
-            "error(" + ErrorType.CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_CHANNEL_NAME.code + "): T.g4:10:34: " +
+            "error(" + IssueCode.ConstantValueIsNotARecognizedChannelName + "): T.g4:10:34: " +
             "NEWLINE_CHANNEL is not a recognized channel name\n";
 
         const pair = [grammar, expected];
@@ -922,7 +921,7 @@ describe("TestToolSyntaxErrors", () => {
         const grammar =
             "grammar T;\n" +
             "a:  'A'..'Z' ;\n";
-        const expected = "error(" + ErrorType.SYNTAX_ERROR.code + "): T.g4:2:7: syntax error: no viable alternative " +
+        const expected = "error(" + IssueCode.SyntaxError + "): T.g4:2:7: syntax error: no viable alternative " +
             "at input '..'\n";
 
         const pair = [
@@ -947,8 +946,8 @@ describe("TestToolSyntaxErrors", () => {
             "A : h=~('b'|'c') ;";
         ToolTestUtils.testErrors([
             grammar,
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): T.g4:3:4: syntax error: no viable alternative at input 'h'\n" +
-            "error(" + ErrorType.SYNTAX_ERROR.code + "): T.g4:3:5: syntax error: mismatched input '=' expecting " +
+            "error(" + IssueCode.SyntaxError + "): T.g4:3:4: syntax error: no viable alternative at input 'h'\n" +
+            "error(" + IssueCode.SyntaxError + "): T.g4:3:5: syntax error: mismatched input '=' expecting " +
             "{AT, COLON, 'locals', OPTIONS, 'returns', 'throws', BEGIN_ARGUMENT}\n"
         ], false);
     });

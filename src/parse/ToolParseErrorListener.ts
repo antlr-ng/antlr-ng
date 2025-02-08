@@ -8,7 +8,7 @@ import {
 } from "antlr4ng";
 
 import type { Tool } from "../Tool.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 
 export class ToolParseErrorListener extends BaseErrorListener {
     public constructor(private tool: Tool) {
@@ -19,6 +19,6 @@ export class ToolParseErrorListener extends BaseErrorListener {
         offendingSymbol: S | null, line: number, charPositionInLine: number, msg: string,
         e: RecognitionException | null): void {
         const sourceName = recognizer.inputStream?.getSourceName() ?? "<unknown>";
-        this.tool.errorManager.syntaxError(ErrorType.SYNTAX_ERROR, sourceName, line, charPositionInLine, e, msg);
+        this.tool.errorManager.syntaxError(IssueCode.SyntaxError, sourceName, line, charPositionInLine, e, msg);
     }
 }

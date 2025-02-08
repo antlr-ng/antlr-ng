@@ -27,7 +27,7 @@ import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import { PredAST } from "../tool/ast/PredAST.js";
 import { IQuantifierAST } from "../tool/ast/IQuantifierAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { LexerGrammar } from "../tool/LexerGrammar.js";
 import { Rule } from "../tool/Rule.js";
@@ -103,7 +103,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
 
                 const analyzer = new LL1Analyzer(this.atn);
                 if (analyzer.look(startState, atnState2).contains(Token.EPSILON)) {
-                    this.g.tool.errorManager.grammarError(ErrorType.EPSILON_OPTIONAL, this.g.fileName,
+                    this.g.tool.errorManager.grammarError(IssueCode.EpsilonOptional, this.g.fileName,
                         (rule.ast.children[0] as GrammarAST).token!, rule.name);
                     continue optionalCheck;
                 }
@@ -157,7 +157,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
 
     /** Not valid for non-lexers. */
     public range(a: GrammarAST, b: GrammarAST): IStatePair | null {
-        this.g.tool.errorManager.grammarError(ErrorType.TOKEN_RANGE_IN_PARSER, this.g.fileName, a.token!, a.token?.text,
+        this.g.tool.errorManager.grammarError(IssueCode.TplemjRangeInParser, this.g.fileName, a.token!, a.token?.text,
             b.token?.text);
 
         // From a..b, yield ATN for just a.
@@ -390,7 +390,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
     protected _ruleRef(node: GrammarAST): IStatePair | null {
         const r = this.g.getRule(node.getText());
         if (r === null) {
-            this.g.tool.errorManager.grammarError(ErrorType.INTERNAL_ERROR, this.g.fileName, node.token!,
+            this.g.tool.errorManager.grammarError(IssueCode.InternalError, this.g.fileName, node.token!,
                 "Rule " + node.getText() + " undefined");
 
             return null;
@@ -440,14 +440,14 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
 
             if (lookahead.contains(Token.EPSILON)) {
                 const errorType = rule instanceof LeftRecursiveRule
-                    ? ErrorType.EPSILON_LR_FOLLOW
-                    : ErrorType.EPSILON_CLOSURE;
+                    ? IssueCode.EpsilonLrFollow
+                    : IssueCode.EpsilonClosure;
                 this.g.tool.errorManager.grammarError(errorType, this.g.fileName,
                     (rule.ast.children[0] as GrammarAST).token!, rule.name);
             }
 
             if (lookahead.contains(Token.EOF)) {
-                this.g.tool.errorManager.grammarError(ErrorType.EOF_CLOSURE, this.g.fileName,
+                this.g.tool.errorManager.grammarError(IssueCode.EofClosure, this.g.fileName,
                     (rule.ast.children[0] as GrammarAST).token!, rule.name);
             }
         }
@@ -581,7 +581,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         const blkAST = plusAST.children[0] as BlockAST;
         if ((plusAST as IQuantifierAST).isGreedy()) {
             if (this.expectNonGreedy(blkAST)) {
-                this.g.tool.errorManager.grammarError(ErrorType.EXPECTED_NON_GREEDY_WILDCARD_BLOCK, this.g.fileName,
+                this.g.tool.errorManager.grammarError(IssueCode.ExpectedNonGreedyWildcardBlock, this.g.fileName,
                     plusAST.token!, plusAST.token?.text);
             }
 
@@ -625,7 +625,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         const blkAST = starAST.children[0] as BlockAST;
         if ((starAST as IQuantifierAST).isGreedy()) {
             if (this.expectNonGreedy(blkAST)) {
-                this.g.tool.errorManager.grammarError(ErrorType.EXPECTED_NON_GREEDY_WILDCARD_BLOCK, this.g.fileName,
+                this.g.tool.errorManager.grammarError(IssueCode.ExpectedNonGreedyWildcardBlock, this.g.fileName,
                     starAST.token!, starAST.token?.text);
             }
 

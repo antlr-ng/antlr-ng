@@ -11,7 +11,7 @@ import { Constants } from "../Constants.js";
 import { Character } from "../support/Character.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { AttributeDict } from "../tool/AttributeDict.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import { IAttribute } from "../tool/IAttribute.js";
 
@@ -165,7 +165,7 @@ export class ScopeParser {
         }
 
         if (start < 0) {
-            g.tool.errorManager.grammarError(ErrorType.CANNOT_FIND_ATTRIBUTE_NAME_IN_DECL, g.fileName, a?.token ?? null,
+            g.tool.errorManager.grammarError(IssueCode.CannotFindAttributeNameInDecl, g.fileName, a?.token ?? null,
                 decl);
         }
 
@@ -218,7 +218,7 @@ export class ScopeParser {
 
         if (start === -1) {
             start = 0;
-            g.tool.errorManager.grammarError(ErrorType.CANNOT_FIND_ATTRIBUTE_NAME_IN_DECL, g.fileName, a?.token ?? null,
+            g.tool.errorManager.grammarError(IssueCode.CannotFindAttributeNameInDecl, g.fileName, a?.token ?? null,
                 decl);
         }
 

@@ -12,7 +12,7 @@ import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { Constants } from "../Constants.js";
 import { LeftRecursiveRuleTransformer } from "../analysis/LeftRecursiveRuleTransformer.js";
 import { isTokenName } from "../support/helpers.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import { LexerGrammar } from "../tool/LexerGrammar.js";
 import { Rule } from "../tool/Rule.js";
@@ -203,7 +203,7 @@ export class SemanticPipeline {
         // Create token types for tokens { A, B, C } aliases.
         for (const alias of tokensDefs) {
             if (g.getTokenType(alias.getText()) !== Token.INVALID_TYPE) {
-                this.g.tool.errorManager.grammarError(ErrorType.TOKEN_NAME_REASSIGNMENT, g.fileName, alias.token!,
+                this.g.tool.errorManager.grammarError(IssueCode.TokenNameReassignment, g.fileName, alias.token!,
                     alias.getText());
             }
 
@@ -213,7 +213,7 @@ export class SemanticPipeline {
         // Define token types for token refs like id, int.
         for (const idAST of tokenIDs) {
             if (g.getTokenType(idAST.getText()) === Token.INVALID_TYPE) {
-                this.g.tool.errorManager.grammarError(ErrorType.IMPLICIT_TOKEN_DEFINITION, g.fileName, idAST.token!,
+                this.g.tool.errorManager.grammarError(IssueCode.ImplicitTokenDefinition, g.fileName, idAST.token!,
                     idAST.getText());
             }
 
@@ -227,7 +227,7 @@ export class SemanticPipeline {
             }
 
             if (g.getTokenType(termAST.getText()) === Token.INVALID_TYPE) {
-                this.g.tool.errorManager.grammarError(ErrorType.IMPLICIT_STRING_DEFINITION, g.fileName, termAST.token!,
+                this.g.tool.errorManager.grammarError(IssueCode.ImplicitStringDefinition, g.fileName, termAST.token!,
                     termAST.getText());
             }
         }
@@ -253,19 +253,19 @@ export class SemanticPipeline {
             // can be declared. This method does not verify that channels do not alias rules, because rule names are
             // not associated with constant values in ANTLR grammar semantics.
             if (g.getTokenType(channelName) !== Token.INVALID_TYPE) {
-                this.g.tool.errorManager.grammarError(ErrorType.CHANNEL_CONFLICTS_WITH_TOKEN, g.fileName,
+                this.g.tool.errorManager.grammarError(IssueCode.ChannelConflictsWithToken, g.fileName,
                     channel.token!, channelName);
             }
 
             if (Constants.COMMON_CONSTANTS.has(channelName)) {
-                this.g.tool.errorManager.grammarError(ErrorType.CHANNEL_CONFLICTS_WITH_COMMON_CONSTANTS, g.fileName,
+                this.g.tool.errorManager.grammarError(IssueCode.ChannelConflictsWithCommonConstants, g.fileName,
                     channel.token!, channelName);
             }
 
             if (outermost instanceof LexerGrammar) {
                 const lexerGrammar = outermost;
                 if (lexerGrammar.modes.has(channelName)) {
-                    this.g.tool.errorManager.grammarError(ErrorType.CHANNEL_CONFLICTS_WITH_MODE, g.fileName,
+                    this.g.tool.errorManager.grammarError(IssueCode.ChannelConflictsWithMode, g.fileName,
                         channel.token!, channelName);
                 }
             }

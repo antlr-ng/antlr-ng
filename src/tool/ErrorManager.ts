@@ -11,11 +11,10 @@ import { ErrorBuffer, IST, STGroup, STGroupString } from "stringtemplate4ts";
 import { basename } from "path";
 
 import { ANTLRMessage } from "./ANTLRMessage.js";
-import { ErrorSeverity, severityMap } from "./ErrorSeverity.js";
-import { ErrorType } from "./ErrorType.js";
 import { GrammarSemanticsMessage } from "./GrammarSemanticsMessage.js";
 import { GrammarSyntaxMessage } from "./GrammarSyntaxMessage.js";
 import { ToolListener } from "./ToolListener.js";
+import { IssueCode, IssueSeverity, severityMap } from "./Issues.js";
 
 // The supported ANTLR message formats. Using ST here is overkill and will later be replaced with a simple solution.
 const messageFormats = new Map<string, string>([
@@ -45,7 +44,7 @@ export class ErrorManager {
     public warnings: number;
 
     /** All errors that have been generated */
-    public errorTypes = new Set<ErrorType>();
+    public errorTypes = new Set<IssueCode>();
 
     /** The group of templates that represent the current message format. */
     private format: STGroup;
@@ -106,7 +105,7 @@ export class ErrorManager {
         const longMessages = this.longMessages;
         const messageST = msg.getMessageTemplate(longMessages ?? false);
         const locationST = this.getLocationFormat();
-        const reportST = this.getReportFormat(msg.errorType.severity);
+        const reportST = this.getReportFormat(msg.issue.severity);
         const messageFormatST = this.getMessageFormat();
 
         let locationValid = false;
@@ -135,7 +134,7 @@ export class ErrorManager {
             locationValid = true;
         }
 
-        messageFormatST.add("id", msg.errorType.code);
+        messageFormatST.add("id", msg.issueCode);
         messageFormatST.add("text", messageST);
 
         if (locationValid) {
@@ -151,11 +150,11 @@ export class ErrorManager {
      * Raise a predefined message with some number of parameters for the StringTemplate but for which there
      * is no location information possible.
      *
-     * @param errorType The Message Descriptor
+     * @param errorType The identifier of the issue.
      * @param args The arguments to pass to the StringTemplate
      */
-    public toolError(errorType: ErrorType, ...args: unknown[]): void;
-    public toolError(errorType: ErrorType, e: Error, ...args: unknown[]): void;
+    public toolError(errorType: IssueCode, ...args: unknown[]): void;
+    public toolError(errorType: IssueCode, e: Error, ...args: unknown[]): void;
     public toolError(...allArgs: unknown[]): void {
         let msg: ANTLRMessage;
 
@@ -163,28 +162,28 @@ export class ErrorManager {
             throw new Error("Invalid number of arguments");
         }
 
-        const errorType = allArgs.shift() as ErrorType;
+        const issueType = allArgs.shift() as IssueCode;
 
         if (allArgs.length > 0) {
             const error = allArgs[0];
             if (error instanceof Error) {
                 allArgs.shift();
-                msg = new ANTLRMessage(errorType, "", error, -1, -1, ...allArgs);
+                msg = new ANTLRMessage(issueType, "", error, -1, -1, ...allArgs);
             } else {
-                msg = new ANTLRMessage(errorType, "", -1, -1, ...allArgs);
+                msg = new ANTLRMessage(issueType, "", -1, -1, ...allArgs);
             }
         } else {
-            msg = new ANTLRMessage(errorType, "", -1, -1);
+            msg = new ANTLRMessage(issueType, "", -1, -1);
         }
 
-        this.emit(errorType, msg);
+        this.emit(msg);
     }
 
-    public grammarError(errorType: ErrorType, fileName: string, position: { line: number, column: number; } | null,
+    public grammarError(errorType: IssueCode, fileName: string, position: { line: number, column: number; } | null,
         ...args: unknown[]): void {
         const msg = new GrammarSemanticsMessage(errorType, fileName, position?.line ?? -1, position?.column ?? -1,
             ...args);
-        this.emit(errorType, msg);
+        this.emit(msg);
     }
 
     public addListener(tl: ToolListener): void {
@@ -202,10 +201,10 @@ export class ErrorManager {
         this.listeners = [];
     }
 
-    public syntaxError(errorType: ErrorType, fileName: string, line: number, column: number,
+    public syntaxError(errorType: IssueCode, fileName: string, line: number, column: number,
         antlrException: RecognitionException | null, ...args: unknown[]): void {
         const msg = new GrammarSyntaxMessage(errorType, fileName, line, column, antlrException, ...args);
-        this.emit(errorType, msg);
+        this.emit(msg);
     }
 
     public info(msg: string): void {
@@ -243,38 +242,37 @@ export class ErrorManager {
         }
 
         if (this.warningsAreErrors) {
-            this.emit(ErrorType.WARNING_TREATED_AS_ERROR, new ANTLRMessage(ErrorType.WARNING_TREATED_AS_ERROR,
-                msg.fileName, msg.line, msg.column));
+            this.emit(new ANTLRMessage(IssueCode.WarningTreatedAsErrors, msg.fileName, msg.line, msg.column));
         }
     }
 
-    public emit(errorType: ErrorType, msg: ANTLRMessage): void {
-        switch (errorType.severity) {
-            case ErrorSeverity.WarningOneOff: {
-                if (this.errorTypes.has(errorType)) {
+    public emit(msg: ANTLRMessage): void {
+        switch (msg.issue.severity) {
+            case IssueSeverity.WarningOneOff: {
+                if (this.errorTypes.has(msg.issueCode)) {
                     break;
                 }
 
                 // [fall-through]
             }
 
-            case ErrorSeverity.Warning: {
+            case IssueSeverity.Warning: {
                 this.warnings++;
                 this.warning(msg);
 
                 break;
             }
 
-            case ErrorSeverity.ErrorOneOff: {
-                if (this.errorTypes.has(errorType)) {
+            case IssueSeverity.ErrorOneOff: {
+                if (this.errorTypes.has(msg.issueCode)) {
                     break;
                 }
 
                 // [fall-through]
             }
 
-            case ErrorSeverity.Error:
-            case ErrorSeverity.Fatal: {
+            case IssueSeverity.Error:
+            case IssueSeverity.Fatal: {
                 this.error(msg);
                 break;
             }
@@ -282,7 +280,7 @@ export class ErrorManager {
             default:
         }
 
-        this.errorTypes.add(errorType);
+        this.errorTypes.add(msg.issueCode);
     }
 
     /**
@@ -293,7 +291,7 @@ export class ErrorManager {
         return this.format.getInstanceOf("location")!;
     }
 
-    private getReportFormat(severity: ErrorSeverity): IST | null {
+    private getReportFormat(severity: IssueSeverity): IST | null {
         const st = this.format.getInstanceOf("report");
         st?.add("type", severityMap.get(severity));
 

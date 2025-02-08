@@ -5,7 +5,7 @@
 
 import { ST } from "stringtemplate4ts";
 
-import { ErrorType } from "./ErrorType.js";
+import { IssueCode, issueTypes, type IssueDetails } from "./Issues.js";
 
 export class ANTLRMessage {
     // Used for location template.
@@ -15,15 +15,17 @@ export class ANTLRMessage {
 
     public readonly args: unknown[] = [];
 
-    public readonly errorType: ErrorType;
+    public readonly issueCode: IssueCode;
+    public readonly issue: IssueDetails;
 
     private readonly e: Error | null = null;
 
-    public constructor(errorType: ErrorType, fileName: string, line: number, column: number, ...args: unknown[]);
-    public constructor(errorType: ErrorType, fileName: string, e: Error | null, line: number, column: number,
+    public constructor(errorType: IssueCode, fileName: string, line: number, column: number, ...args: unknown[]);
+    public constructor(errorType: IssueCode, fileName: string, e: Error | null, line: number, column: number,
         ...args: unknown[]);
     public constructor(...args: unknown[]) {
-        this.errorType = args.shift() as ErrorType;
+        this.issueCode = args.shift() as IssueCode;
+        this.issue = issueTypes.get(this.issueCode)!;
         this.fileName = args.shift() as string;
 
         let next = args.shift();
@@ -41,8 +43,8 @@ export class ANTLRMessage {
     }
 
     public getMessageTemplate(verbose: boolean): ST {
-        const messageST = new ST(this.errorType.msg);
-        messageST.impl!.name = this.errorType.name;
+        const messageST = new ST(this.issue.message);
+        messageST.impl!.name = IssueCode[this.issueCode];
 
         messageST.add("verbose", verbose);
         for (let i = 0; i < this.args.length; i++) {
@@ -71,13 +73,9 @@ export class ANTLRMessage {
     }
 
     public toString(): string {
-        return "Message{" +
-            "errorType=" + this.errorType.name +
-            ", args=" + this.args.join(", ") +
-            ", e=" + String(this.e) +
-            ", fileName='" + this.fileName + "'" +
-            ", line=" + String(this.line) +
-            ", charPosition=" + String(this.column) +
-            "}";
+        const name = IssueCode[this.issueCode];
+
+        return `Message{errorType=${name}, args=${this.args.join(", ")}, e=${this.e}, fileName=` +
+            `'${this.fileName}', line=${this.line}, charPosition=${this.column}}`;
     }
 }

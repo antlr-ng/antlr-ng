@@ -7,11 +7,10 @@
 
 import { describe, it } from "vitest";
 
-import { ErrorType } from "../src/tool/ErrorType.js";
+import { IssueCode } from "../src/tool/Issues.js";
 import { ToolTestUtils } from "./ToolTestUtils.js";
 
 describe("TestLeftRecursionToolIssues", () => {
-
     it("testCheckForNonLeftRecursiveRule", () => {
         const grammar =
             "grammar T;\n" +
@@ -20,7 +19,7 @@ describe("TestLeftRecursionToolIssues", () => {
             "  ;\n" +
             "ID : 'a'..'z'+ ;\n" +
             "WS : (' '|'\\n') -> skip ;\n";
-        const expected = "error(" + ErrorType.NO_NON_LR_ALTS.code + "): T.g4:3:0: left recursive rule a must contain " +
+        const expected = "error(" + IssueCode.NoNonLrAlts + "): T.g4:3:0: left recursive rule a must contain " +
             "an alternative which is not left recursive\n";
         ToolTestUtils.testErrors([grammar, expected], false);
     });
@@ -34,7 +33,7 @@ describe("TestLeftRecursionToolIssues", () => {
             "  ;\n" +
             "ID : 'a'..'z'+ ;\n" +
             "WS : (' '|'\\n') -> skip ;\n";
-        const expected = "error(" + ErrorType.EPSILON_LR_FOLLOW.code + "): T.g4:3:0: left recursive rule a " +
+        const expected = "error(" + IssueCode.EpsilonLrFollow + "): T.g4:3:0: left recursive rule a " +
             "contains a left recursive alternative which can be followed by the empty string\n";
         ToolTestUtils.testErrors([grammar, expected], false);
     });
@@ -54,7 +53,7 @@ describe("TestLeftRecursionToolIssues", () => {
             "atom[Scope scope]\n" +
             "    : 'dummy'\n" +
             "    ;\n";
-        const expected = "error(" + ErrorType.NONCONFORMING_LR_RULE.code + "): T.g4:6:0: rule expressionA is left " +
+        const expected = "error(" + IssueCode.NonconformingLrRule + "): T.g4:6:0: rule expressionA is left " +
             "recursive but doesn't conform to a pattern ANTLR can handle\n";
         ToolTestUtils.testErrors([grammar, expected], false);
     });
@@ -66,7 +65,7 @@ describe("TestLeftRecursionToolIssues", () => {
             "a[int i] : 'x'\n" +
             "  | a[3] 'y'\n" +
             "  ;";
-        const expected = "error(" + ErrorType.NONCONFORMING_LR_RULE.code + "): T.g4:2:0: rule a is left recursive " +
+        const expected = "error(" + IssueCode.NonconformingLrRule + "): T.g4:2:0: rule a is left recursive " +
             "but doesn't conform to a pattern ANTLR can handle\n";
         ToolTestUtils.testErrors([grammar, expected], false);
     });
@@ -79,7 +78,7 @@ describe("TestLeftRecursionToolIssues", () => {
             "  | a[3] 'y'\n" +
             "  ;";
         const expected =
-            "error(" + ErrorType.NONCONFORMING_LR_RULE.code + "): T.g4:2:0: rule a is left recursive but doesn't " +
+            "error(" + IssueCode.NonconformingLrRule + "): T.g4:2:0: rule a is left recursive but doesn't " +
             "conform to a pattern ANTLR can handle\n";
         ToolTestUtils.testErrors([grammar, expected], false);
     });
@@ -91,7 +90,7 @@ describe("TestLeftRecursionToolIssues", () => {
             "a : a | b ;\n" +
             "b : 'B' ;\n";
         const expected =
-            "error(" + ErrorType.NONCONFORMING_LR_RULE.code + "): T.g4:2:0: rule a is left recursive but doesn't " +
+            "error(" + IssueCode.NonconformingLrRule + "): T.g4:2:0: rule a is left recursive but doesn't " +
             "conform to a pattern ANTLR can handle\n";
         ToolTestUtils.testErrors([grammar, expected], false);
     });

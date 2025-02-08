@@ -5,7 +5,7 @@
 
 import { Character } from "./support/Character.js";
 import { ErrorManager } from "./tool/ErrorManager.js";
-import { ErrorType } from "./tool/ErrorType.js";
+import { IssueCode } from "./tool/Issues.js";
 import type { ActionAST } from "./tool/ast/ActionAST.js";
 import type { GrammarAST } from "./tool/ast/GrammarAST.js";
 import type { RuleAST } from "./tool/ast/RuleAST.js";
@@ -22,7 +22,7 @@ export class UndefChecker extends GrammarTreeVisitor {
 
     public override tokenRef(ref: TerminalAST): void {
         if (ref.getText() === "EOF") {
-            // this is a special predefined reference
+            // This is a special predefined reference.
             return;
         }
 
@@ -38,11 +38,11 @@ export class UndefChecker extends GrammarTreeVisitor {
         if (Character.isUpperCase(this.currentRuleName!.codePointAt(0)!) &&
             Character.isLowerCase(ref.getText().codePointAt(0)!)) {
             this.badRef = true;
-            this.errorManager.grammarError(ErrorType.PARSER_RULE_REF_IN_LEXER_RULE,
+            this.errorManager.grammarError(IssueCode.ParserRuleRefInLexerRule,
                 fileName, ref.token!, ref.getText(), this.currentRuleName);
         } else if (!ruleAST) {
             this.badRef = true;
-            this.errorManager.grammarError(ErrorType.UNDEFINED_RULE_REF, fileName, ref.token!, ref.getText());
+            this.errorManager.grammarError(IssueCode.UndefinedRuleRef, fileName, ref.token!, ref.getText());
         }
     }
 

@@ -10,7 +10,7 @@ import { Token, type RecognitionException } from "antlr4ng";
 import { Constants } from "../Constants.js";
 import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { ErrorManager } from "../tool/ErrorManager.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { CommonTree } from "./CommonTree.js";
 import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
 import { MismatchedTreeNodeException } from "./exceptions/MismatchTreeNodeException.js";
@@ -194,7 +194,7 @@ export class TreeParser {
         }
 
         this.errorRecovery = true;
-        this.errorManager.toolError(ErrorType.INTERNAL_ERROR, e);
+        this.errorManager.toolError(IssueCode.InternalError, e);
     }
 
     /**

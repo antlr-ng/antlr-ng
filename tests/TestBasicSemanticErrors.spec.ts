@@ -9,7 +9,7 @@ import { describe, it } from "vitest";
 
 import { ST } from "stringtemplate4ts";
 
-import { ErrorType } from "../src/tool/ErrorType.js";
+import { IssueCode } from "../src/tool/Issues.js";
 import { ToolTestUtils } from "./ToolTestUtils.js";
 
 describe("TestBasicSemanticErrors", () => {
@@ -33,20 +33,20 @@ describe("TestBasicSemanticErrors", () => {
         "c : ID<blue> ID<x=y> ;",
 
         // YIELDS
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): U.g4:2:10: unsupported option foo\n" +
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): U.g4:2:19: unsupported option k\n" +
-        "error(" + ErrorType.TOKEN_NAMES_MUST_START_UPPER.code + "): U.g4:5:8: token names must start with an " +
+        "warning(" + IssueCode.IllegalOption + "): U.g4:2:10: unsupported option foo\n" +
+        "warning(" + IssueCode.IllegalOption + "): U.g4:2:19: unsupported option k\n" +
+        "error(" + IssueCode.TokenNamesMustStartUpper + "): U.g4:5:8: token names must start with an " +
         "uppercase letter: f\n" +
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): U.g4:9:10: unsupported option x\n" +
-        "error(" + ErrorType.REPEATED_PREQUEL.code + "): U.g4:9:0: repeated grammar prequel spec (options, tokens," +
+        "warning(" + IssueCode.IllegalOption + "): U.g4:9:10: unsupported option x\n" +
+        "error(" + IssueCode.RepeatedPrequel + "): U.g4:9:0: repeated grammar prequel spec (options, tokens," +
         " or import); please merge\n" +
-        "error(" + ErrorType.REPEATED_PREQUEL.code + "): U.g4:8:0: repeated grammar prequel spec (options, tokens, " +
+        "error(" + IssueCode.RepeatedPrequel + "): U.g4:8:0: repeated grammar prequel spec (options, tokens, " +
         "or import); please merge\n" +
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): U.g4:12:10: unsupported option blech\n" +
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): U.g4:12:21: unsupported option greedy\n" +
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): U.g4:15:16: unsupported option ick\n" +
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): U.g4:15:25: unsupported option greedy\n" +
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): U.g4:16:16: unsupported option x\n",
+        "warning(" + IssueCode.IllegalOption + "): U.g4:12:10: unsupported option blech\n" +
+        "warning(" + IssueCode.IllegalOption + "): U.g4:12:21: unsupported option greedy\n" +
+        "warning(" + IssueCode.IllegalOption + "): U.g4:15:16: unsupported option ick\n" +
+        "warning(" + IssueCode.IllegalOption + "): U.g4:15:25: unsupported option greedy\n" +
+        "warning(" + IssueCode.IllegalOption + "): U.g4:16:16: unsupported option x\n",
     ];
 
     it("testU", (): void => {
@@ -65,7 +65,7 @@ describe("TestBasicSemanticErrors", () => {
             "";
 
         const expected =
-            "error(" + ErrorType.LABEL_BLOCK_NOT_A_SET.code + "): T.g4:2:5: label op assigned to a block which " +
+            "error(" + IssueCode.LabelBlockNotASet + "): T.g4:2:5: label op assigned to a block which " +
             "is not a set\n";
 
         ToolTestUtils.testErrors([grammar, expected]);
@@ -80,25 +80,25 @@ describe("TestBasicSemanticErrors", () => {
             "expr : '=';\n";
 
         const expected =
-            "error(" + ErrorType.ARG_CONFLICTS_WITH_RULE.code + "): T.g4:2:7: parameter expr conflicts with rule " +
+            "error(" + IssueCode.ArgConflictsWithRule + "): T.g4:2:7: parameter expr conflicts with rule " +
             "with same name\n" +
-            "error(" + ErrorType.RETVAL_CONFLICTS_WITH_RULE.code + "): T.g4:2:26: return value expr conflicts with " +
+            "error(" + IssueCode.RetvalConflkictsWithRule + "): T.g4:2:26: return value expr conflicts with " +
             "rule with same name\n" +
-            "error(" + ErrorType.LOCAL_CONFLICTS_WITH_RULE.code + "): T.g4:3:12: local expr conflicts with rule " +
+            "error(" + IssueCode.LocalConflictsWithRule + "): T.g4:3:12: local expr conflicts with rule " +
             "with same name\n" +
-            "error(" + ErrorType.RETVAL_CONFLICTS_WITH_ARG.code + "): T.g4:2:26: return value expr conflicts with " +
+            "error(" + IssueCode.RetValuConflictsWithArg + "): T.g4:2:26: return value expr conflicts with " +
             "parameter with same name\n" +
-            "error(" + ErrorType.LOCAL_CONFLICTS_WITH_ARG.code + "): T.g4:3:12: local expr conflicts with parameter" +
+            "error(" + IssueCode.LocalConflictsWithArg + "): T.g4:3:12: local expr conflicts with parameter" +
             " with same name\n" +
-            "error(" + ErrorType.LOCAL_CONFLICTS_WITH_RETVAL.code + "): T.g4:3:12: local expr conflicts with return" +
+            "error(" + IssueCode.LocalConflictsWithRetval + "): T.g4:3:12: local expr conflicts with return" +
             " value with same name\n" +
-            "error(" + ErrorType.LABEL_CONFLICTS_WITH_RULE.code + "): T.g4:4:4: label expr conflicts with rule with" +
+            "error(" + IssueCode.LabelConflictsWithRule + "): T.g4:4:4: label expr conflicts with rule with" +
             " same name\n" +
-            "error(" + ErrorType.LABEL_CONFLICTS_WITH_ARG.code + "): T.g4:4:4: label expr conflicts with parameter" +
+            "error(" + IssueCode.LabelConflictsWithArg + "): T.g4:4:4: label expr conflicts with parameter" +
             " with same name\n" +
-            "error(" + ErrorType.LABEL_CONFLICTS_WITH_RETVAL.code + "): T.g4:4:4: label expr conflicts with return" +
+            "error(" + IssueCode.LabelConflictsWithRetval + "): T.g4:4:4: label expr conflicts with return" +
             " value with same name\n" +
-            "error(" + ErrorType.LABEL_CONFLICTS_WITH_LOCAL.code + "): T.g4:4:4: label expr conflicts with local" +
+            "error(" + IssueCode.LabelConflictsWithLocal + "): T.g4:4:4: label expr conflicts with local" +
             " with same name\n";
 
         const grammarST = new ST(grammarTemplate);

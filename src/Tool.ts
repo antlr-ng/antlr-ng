@@ -30,7 +30,7 @@ import { ParseTreeToASTConverter } from "./support/ParseTreeToASTConverter.js";
 import { BuildDependencyGenerator } from "./tool/BuildDependencyGenerator.js";
 import { DOTGenerator } from "./tool/DOTGenerator.js";
 import { ErrorManager } from "./tool/ErrorManager.js";
-import { ErrorType } from "./tool/ErrorType.js";
+import { IssueCode } from "./tool/Issues.js";
 import type { Grammar } from "./tool/Grammar.js";
 import { GrammarTransformPipeline } from "./tool/GrammarTransformPipeline.js";
 import type { LexerGrammar } from "./tool/LexerGrammar.js";
@@ -66,7 +66,7 @@ export class Tool implements ITool {
         this.errorManager = new ErrorManager(this.toolParameters.msgFormat, this.toolParameters.longMessages,
             this.toolParameters.warningsAreErrors);
         if (args && args.length > 0 && this.grammarFiles.length === 0) {
-            this.errorManager.toolError(ErrorType.NO_GRAMMARS_FOUND);
+            this.errorManager.toolError(IssueCode.NoGrammarsFound);
         }
     }
 
@@ -80,7 +80,7 @@ export class Tool implements ITool {
                     const logName = antlr.logMgr.save();
                     console.log("wrote " + logName);
                 } catch (ioe) {
-                    antlr.errorManager.toolError(ErrorType.INTERNAL_ERROR, ioe);
+                    antlr.errorManager.toolError(IssueCode.InternalError, ioe);
                 }
             }
         }
@@ -229,7 +229,7 @@ export class Tool implements ITool {
                 const fileName = this.getOutputFile(g, g.name + ".interp");
                 writeFileSync(fileName, interpFile);
             } catch (ioe) {
-                this.errorManager.toolError(ErrorType.CANNOT_WRITE_FILE, ioe);
+                this.errorManager.toolError(IssueCode.CannotWriteFile, ioe);
             }
         }
 
@@ -273,7 +273,7 @@ export class Tool implements ITool {
             const prev = ruleToAST.get(ruleName);
             if (prev) {
                 const prevChild = prev.children[0] as GrammarAST;
-                this.errorManager.grammarError(ErrorType.RULE_REDEFINITION, g.fileName, id.token!, ruleName,
+                this.errorManager.grammarError(IssueCode.RuleRedefinition, g.fileName, id.token!, ruleName,
                     prevChild.token!.line);
                 redefinition = true;
                 continue;
@@ -372,7 +372,7 @@ export class Tool implements ITool {
 
             return this.parse(fileName, input);
         } catch (ioe) {
-            this.errorManager.toolError(ErrorType.CANNOT_OPEN_FILE, ioe, fileName);
+            this.errorManager.toolError(IssueCode.CannotOpenFile, ioe, fileName);
             throw ioe;
         }
     }
@@ -412,7 +412,7 @@ export class Tool implements ITool {
             }
 
             if (!importedFile) {
-                this.errorManager.grammarError(ErrorType.CANNOT_FIND_IMPORTED_GRAMMAR, g.fileName, nameNode.token!,
+                this.errorManager.grammarError(IssueCode.CannotFindImportedGrammar, g.fileName, nameNode.token!,
                     name);
 
                 return null;
@@ -468,7 +468,7 @@ export class Tool implements ITool {
                     const dot = dotGenerator.getDOTFromState(g.atn!.ruleToStartState[r.index]!, g.isLexer());
                     this.writeDOTFile(g, r, dot);
                 } catch (ioe) {
-                    this.errorManager.toolError(ErrorType.CANNOT_WRITE_FILE, ioe);
+                    this.errorManager.toolError(IssueCode.CannotWriteFile, ioe);
                     throw ioe;
                 }
             }

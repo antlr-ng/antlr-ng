@@ -31,8 +31,8 @@ import { GrammarType } from "../support/GrammarType.js";
 import type { IGrammar, ITool } from "../types.js";
 
 import type { CommonTree } from "../tree/CommonTree.js";
+import type { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 import { ANTLRMessage } from "./ANTLRMessage.js";
-import { ToolListener } from "./ToolListener.js";
 import type { ActionAST } from "./ast/ActionAST.js";
 import type { GrammarAST } from "./ast/GrammarAST.js";
 import type { GrammarASTWithOptions } from "./ast/GrammarASTWithOptions.js";
@@ -40,13 +40,13 @@ import type { GrammarRootAST } from "./ast/GrammarRootAST.js";
 import type { PredAST } from "./ast/PredAST.js";
 import type { TerminalAST } from "./ast/TerminalAST.js";
 import type { AttributeDict } from "./AttributeDict.js";
-import type { IAttributeResolver } from "./IAttributeResolver.js";
-import { ErrorType } from "./ErrorType.js";
+import { IssueCode } from "./Issues.js";
 import type { GrammarParserInterpreter } from "./GrammarParserInterpreter.js";
 import type { IAttribute } from "./IAttribute.js";
+import type { IAttributeResolver } from "./IAttributeResolver.js";
 import type { LexerGrammar } from "./LexerGrammar.js";
 import type { Rule } from "./Rule.js";
-import type { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
+import { ToolListener } from "./ToolListener.js";
 
 export class Grammar implements IGrammar, IAttributeResolver {
     /**
@@ -478,7 +478,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
                 }
 
             } catch {
-                this.tool.errorManager.grammarError(ErrorType.ERROR_READING_IMPORTED_GRAMMAR, importedGrammarName,
+                this.tool.errorManager.grammarError(IssueCode.ErrorReadingImportedGrammar, importedGrammarName,
                     t.token!, importedGrammarName, this.name);
 
                 continue;
@@ -1262,7 +1262,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
     public getLanguage(): SupportedLanguage {
         const language = this.getOptionString("language") as SupportedLanguage | undefined;
         if (language && !targetLanguages.includes(language)) {
-            this.tool.errorManager.toolError(ErrorType.CANNOT_CREATE_TARGET_GENERATOR, language);
+            this.tool.errorManager.toolError(IssueCode.CannotCreateTargetGenerator, language);
         }
 
         return language ?? "Java";

@@ -10,7 +10,7 @@ import { AutoIndentWriter, ST, StringWriter, type IST, type STGroup } from "stri
 
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import { OutputModelObject } from "./model/OutputModelObject.js";
 import { OutputModelController } from "./OutputModelController.js";
@@ -159,7 +159,7 @@ export class CodeGenerator {
             writeFileSync(fileName, w.toString(), "utf8");
         } catch (cause) {
             if (cause instanceof Error) {
-                this.g!.tool.errorManager.toolError(ErrorType.CANNOT_WRITE_FILE, cause, fileName);
+                this.g!.tool.errorManager.toolError(IssueCode.CannotWriteFile, cause, fileName);
             } else {
                 throw cause;
             }

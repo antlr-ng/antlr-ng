@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 
 import { convertMapToString } from "../src/support/helpers.js";
-import { ErrorType } from "../src/tool/ErrorType.js";
+import { IssueCode } from "../src/tool/Issues.js";
 import { GrammarSemanticsMessage } from "../src/tool/GrammarSemanticsMessage.js";
 import { Grammar } from "../src/tool/index.js";
 import { ErrorQueue } from "./support/ErrorQueue.js";
@@ -37,7 +37,7 @@ describe("TestCompositeGrammars", () => {
     const checkGrammarSemanticsWarning = (errorQueue: ErrorQueue, expectedMessage: GrammarSemanticsMessage): void => {
         let foundMsg;
         for (const m of errorQueue.warnings) {
-            if (m.errorType === expectedMessage.errorType) {
+            if (m.issueCode === expectedMessage.issueCode) {
                 foundMsg = m;
             }
         }
@@ -285,7 +285,7 @@ describe("TestCompositeGrammars", () => {
             expect(queue.all).toHaveLength(1);
 
             const msg = queue.all[0];
-            expect(msg.errorType).toBe(ErrorType.MODE_NOT_IN_LEXER);
+            expect(msg.issueCode).toBe(IssueCode.ModeNotInLexer);
             expect(msg.args[0]).toBe("X");
             expect(msg.line).toBe(3);
             expect(msg.column).toBe(5);
@@ -367,7 +367,7 @@ describe("TestCompositeGrammars", () => {
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "--lib", tempDir);
             const msg = queue.errors[0];
 
-            expect(msg.errorType).toBe(ErrorType.UNDEFINED_RULE_REF);
+            expect(msg.issueCode).toBe(IssueCode.UndefinedRuleRef);
             expect(msg.args[0]).toBe("c");
             expect(msg.line).toBe(2);
             expect(msg.column).toBe(10);
@@ -397,7 +397,7 @@ describe("TestCompositeGrammars", () => {
             writeFileSync(join(tempDir, "M.g4"), master);
 
             const queue = ToolTestUtils.antlrOnFile(tempDir, "Java", "M.g4", false, "-o", outdir);
-            expect(queue.all[0].errorType).toBe(ErrorType.CANNOT_FIND_IMPORTED_GRAMMAR);
+            expect(queue.all[0].issueCode).toBe(IssueCode.CannotFindImportedGrammar);
         } finally {
             rmSync(tempDir, { recursive: true });
         }
@@ -492,7 +492,7 @@ describe("TestCompositeGrammars", () => {
             g.tool.process(g, false);
 
             const expectedArg = "S";
-            const expectedMsgID = ErrorType.OPTIONS_IN_DELEGATE;
+            const expectedMsgID = IssueCode.OptionsInDelegate;
             const expectedMessage = new GrammarSemanticsMessage(expectedMsgID, g.fileName, -1, -1, expectedArg);
             checkGrammarSemanticsWarning(queue, expectedMessage);
 
@@ -523,7 +523,7 @@ describe("TestCompositeGrammars", () => {
             g.tool.errorManager.addListener(errors);
             g.tool.process(g, false);
 
-            expect(errors.errors[0].errorType).toBe(ErrorType.SYNTAX_ERROR);
+            expect(errors.errors[0].issueCode).toBe(IssueCode.SyntaxError);
         } finally {
             rmSync(tempDir, { recursive: true });
         }

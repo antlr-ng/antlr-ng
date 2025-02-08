@@ -4,7 +4,7 @@
  */
 
 import { Character } from "../support/Character.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 
@@ -36,7 +36,7 @@ export class RangeBorderCharactersData {
             }
 
             if (notImpliedCharacters.length > 0) {
-                grammar.tool.errorManager.grammarError(ErrorType.RANGE_PROBABLY_CONTAINS_NOT_IMPLIED_CHARACTERS,
+                grammar.tool.errorManager.grammarError(IssueCode.RangeProbablyContainsNotImpliedCharacter,
                     grammar.fileName, tree.token!, String.fromCodePoint(from), String.fromCodePoint(to),
                     notImpliedCharacters.toString());
             }

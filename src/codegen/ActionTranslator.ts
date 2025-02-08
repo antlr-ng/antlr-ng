@@ -9,7 +9,7 @@ import { ActionSplitter } from "../generated/ActionSplitter.js";
 import { IActionSplitterListener } from "../parse/IActionSplitterListener.js";
 
 import { DictType } from "../misc/types.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { CodeGenerator } from "./CodeGenerator.js";
 import { IOutputModelFactory } from "./IOutputModelFactory.js";
@@ -209,7 +209,7 @@ export class ActionTranslator implements IActionSplitterListener {
         const a = this.node.resolver.resolveToAttribute(x.text!, y.text!, this.node);
         if (a === null) {
             // Added in response to https://github.com/antlr/antlr4/issues/1211.
-            this.gen.g!.tool.errorManager.grammarError(ErrorType.UNKNOWN_SIMPLE_ATTRIBUTE,
+            this.gen.g!.tool.errorManager.grammarError(IssueCode.UnknownSimpleAttribute,
                 this.gen.g!.fileName, x, x.text, "rule");
 
             return;

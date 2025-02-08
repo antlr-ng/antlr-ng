@@ -5,7 +5,7 @@
 
 import { IntervalSet, LL1Analyzer, Token } from "antlr4ng";
 import { disjoint } from "../support/helpers.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { LeftRecursionDetector } from "./LeftRecursionDetector.js";
@@ -41,7 +41,7 @@ export class AnalysisPipeline {
             const analyzer = new LL1Analyzer(this.g.atn!);
             const look = analyzer.look(this.g.atn!.ruleToStartState[rule.index]!, undefined);
             if (look.contains(Token.EPSILON)) {
-                this.g.tool.errorManager.grammarError(ErrorType.EPSILON_TOKEN, this.g.fileName,
+                this.g.tool.errorManager.grammarError(IssueCode.EpsilonToken, this.g.fileName,
                     (rule.ast.children[0] as GrammarAST).token!, rule.name);
             }
         }

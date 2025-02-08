@@ -17,7 +17,7 @@ import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import type { IToolParameters } from "../tool-parameters.js";
 import { Alternative } from "../tool/Alternative.js";
 import type { ErrorManager } from "../tool/ErrorManager.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { Rule } from "../tool/Rule.js";
@@ -251,7 +251,7 @@ export class OutputModelController {
             if (altActionST.impl!.formalArguments!.has("isListLabel")) {
                 altActionST.add("isListLabel", altInfo.isListLabel);
             } else if (altInfo.isListLabel) {
-                this.errorManager.toolError(ErrorType.CODE_TEMPLATE_ARG_ISSUE, templateName, "isListLabel");
+                this.errorManager.toolError(IssueCode.CodeTemaplateArgIssue, templateName, "isListLabel");
             }
 
             const decl = ruleFunction.altLabelCtxs!.get(altInfo.altLabel!)!;

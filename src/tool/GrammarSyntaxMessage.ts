@@ -6,16 +6,11 @@
 import type { RecognitionException } from "antlr4ng";
 
 import { ANTLRMessage } from "./ANTLRMessage.js";
-import { ErrorType } from "./ErrorType.js";
+import { IssueCode } from "./Issues.js";
 
-/**
- * A problem with the syntax of your antlr grammar such as
- *  "The '{' came as a complete surprise to me at this point in your program"
- */
+/** A problem with the syntax of your antlr grammar. */
 export class GrammarSyntaxMessage extends ANTLRMessage {
-    public constructor(type: ErrorType,
-        fileName: string,
-        line: number, column: number,
+    public constructor(type: IssueCode, fileName: string, line: number, column: number,
         antlrException: RecognitionException | null, ...args: unknown[]) {
         super(type, fileName, antlrException, line, column, ...args);
     }

@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { ErrorType } from "../src/tool/ErrorType.js";
+import { IssueCode } from "../src/tool/Issues.js";
 import { LexerGrammar } from "../src/tool/index.js";
 import { ToolTestUtils } from "./ToolTestUtils.js";
 import { convertArrayToString, convertMapToString } from "../src/support/helpers.js";
@@ -29,19 +29,19 @@ describe("TestSymbolIssues", () => {
         "\n" +
         "ID : 'a'..'z'+ ID ;",
         // YIELDS
-        "error(" + ErrorType.ACTION_REDEFINITION.code + "): A.g4:5:1: redefinition of members action\n" +
-        "error(" + ErrorType.ACTION_REDEFINITION.code + "): A.g4:7:1: redefinition of header action\n" +
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): A.g4:2:10: unsupported option opt\n" +
-        "warning(" + ErrorType.ILLEGAL_OPTION.code + "): A.g4:2:21: unsupported option k\n" +
-        "error(" + ErrorType.ACTION_REDEFINITION.code + "): A.g4:5:1: redefinition of members action\n" +
-        "warning(" + ErrorType.IMPLICIT_TOKEN_DEFINITION.code +
+        "error(" + IssueCode.ActionRedefinition + "): A.g4:5:1: redefinition of members action\n" +
+        "error(" + IssueCode.ActionRedefinition + "): A.g4:7:1: redefinition of header action\n" +
+        "warning(" + IssueCode.IllegalOption + "): A.g4:2:10: unsupported option opt\n" +
+        "warning(" + IssueCode.IllegalOption + "): A.g4:2:21: unsupported option k\n" +
+        "error(" + IssueCode.ActionRedefinition + "): A.g4:5:1: redefinition of members action\n" +
+        "warning(" + IssueCode.ImplicitTokenDefinition +
         "): A.g4:9:27: implicit definition of token X in parser\n" +
-        "warning(" + ErrorType.IMPLICIT_TOKEN_DEFINITION.code +
+        "warning(" + IssueCode.ImplicitTokenDefinition +
         "): A.g4:10:20: implicit definition of token Y in parser\n" +
-        "warning(" + ErrorType.IMPLICIT_TOKEN_DEFINITION.code +
+        "warning(" + IssueCode.ImplicitTokenDefinition +
         "): A.g4:11:4: implicit definition of token FJKD in parser\n" +
-        "error(" + ErrorType.RULE_HAS_NO_ARGS.code + "): A.g4:9:37: rule b has no defined parameters\n" +
-        "error(" + ErrorType.MISSING_RULE_ARGS.code + "): A.g4:10:31: missing argument(s) on rule reference: a\n"
+        "error(" + IssueCode.RuleHasNoArgs + "): A.g4:9:37: rule b has no defined parameters\n" +
+        "error(" + IssueCode.MissingRuleArgs + "): A.g4:10:31: missing argument(s) on rule reference: a\n"
     ];
 
     const testDataB = [
@@ -55,15 +55,15 @@ describe("TestSymbolIssues", () => {
         "\n" +
         "s : FOO ;",
         // YIELDS
-        "error(" + ErrorType.LABEL_CONFLICTS_WITH_RULE.code
+        "error(" + IssueCode.LabelConflictsWithRule
         + "): B.g4:4:4: label s conflicts with rule with same name\n" +
-        "error(" + ErrorType.LABEL_CONFLICTS_WITH_RULE.code +
+        "error(" + IssueCode.LabelConflictsWithRule +
         "): B.g4:4:9: label b conflicts with rule with same name\n" +
-        "error(" + ErrorType.LABEL_CONFLICTS_WITH_TOKEN.code +
+        "error(" + IssueCode.LabelConflictsWithToken +
         "): B.g4:4:15: label X conflicts with token with same name\n" +
-        "error(" + ErrorType.LABEL_TYPE_CONFLICT.code +
+        "error(" + IssueCode.LabelTypeConflict +
         "): B.g4:6:9: label x type mismatch with previous definition: TOKEN_LIST_LABEL!=TOKEN_LABEL\n" +
-        "error(" + ErrorType.IMPLICIT_STRING_DEFINITION.code +
+        "error(" + IssueCode.ImplicitStringDefinition +
         "): B.g4:4:20: cannot create implicit token for string literal in non-combined grammar: '.'\n"
     ];
 
@@ -80,9 +80,9 @@ describe("TestSymbolIssues", () => {
         "        :       ID ;",
 
         // YIELDS
-        "error(" + ErrorType.LABEL_CONFLICTS_WITH_ARG.code +
+        "error(" + IssueCode.LabelConflictsWithArg +
         "): D.g4:4:21: label j conflicts with parameter with same name\n" +
-        "error(" + ErrorType.RETVAL_CONFLICTS_WITH_ARG.code +
+        "error(" + IssueCode.RetValuConflictsWithArg +
         "): D.g4:6:22: return value i conflicts with parameter with same name\n"
     ];
 
@@ -97,7 +97,7 @@ describe("TestSymbolIssues", () => {
         "a : A ;\n",
 
         // YIELDS
-        "warning(" + ErrorType.TOKEN_NAME_REASSIGNMENT.code + "): E.g4:3:4: token name A is already defined\n"
+        "warning(" + IssueCode.TokenNameReassignment + "): E.g4:3:4: token name A is already defined\n"
     ];
 
     const testDataF = [
@@ -111,7 +111,7 @@ describe("TestSymbolIssues", () => {
         "M1: 'b';\n",
 
         // YIELDS
-        "error(" + ErrorType.MODE_CONFLICTS_WITH_TOKEN.code +
+        "error(" + IssueCode.ModeConflictsWithToken +
         "): F.g4:3:0: mode M1 conflicts with token with same name\n"
     ];
 
@@ -163,7 +163,7 @@ describe("TestSymbolIssues", () => {
             "mode X;\n" +
             "fragment B : 'b';",
 
-            "error(" + ErrorType.MODE_WITHOUT_RULES.code +
+            "error(" + IssueCode.ModeWithoutRules +
             "): L.g4:3:5: lexer mode X must contain at least one non-fragment rule\n"
         ];
 
@@ -179,9 +179,9 @@ describe("TestSymbolIssues", () => {
             "  B : C;\n" +
             "  fragment C : A | (A C)?;",
 
-            "warning(" + ErrorType.EPSILON_TOKEN.code +
+            "warning(" + IssueCode.EpsilonToken +
             "): L.g4:3:0: non-fragment lexer rule WS can match the empty string\n" +
-            "warning(" + ErrorType.EPSILON_TOKEN.code +
+            "warning(" + IssueCode.EpsilonToken +
             "): L.g4:5:2: non-fragment lexer rule B can match the empty string\n"
         ];
 
@@ -200,13 +200,13 @@ describe("TestSymbolIssues", () => {
             "mode M;\n" +
             "C: 'c';",
 
-            "error(" + ErrorType.RESERVED_RULE_NAME.code +
+            "error(" + IssueCode.ReservedRuleName +
             "): L.g4:5:0: cannot declare a rule with reserved name MIN_CHAR_VALUE\n" +
-            "error(" + ErrorType.MODE_CONFLICTS_WITH_COMMON_CONSTANTS.code +
+            "error(" + IssueCode.ModeConflictsWithCommonConstants +
             "): L.g4:4:0: cannot use or declare mode with reserved name MAX_CHAR_VALUE\n" +
-            "error(" + ErrorType.CHANNEL_CONFLICTS_WITH_COMMON_CONSTANTS.code +
+            "error(" + IssueCode.ChannelConflictsWithCommonConstants +
             "): L.g4:2:11: cannot use or declare channel with reserved name SKIP\n" +
-            "error(" + ErrorType.CHANNEL_CONFLICTS_WITH_COMMON_CONSTANTS.code +
+            "error(" + IssueCode.ChannelConflictsWithCommonConstants +
             "): L.g4:2:17: cannot use or declare channel with reserved name HIDDEN\n"
         ];
 
@@ -223,11 +223,11 @@ describe("TestSymbolIssues", () => {
             "E: 'e' -> type(EOF);\n" +
             "F: 'f' -> pushMode(DEFAULT_MODE);",
 
-            "error(" + ErrorType.CHANNEL_CONFLICTS_WITH_COMMON_CONSTANTS.code +
+            "error(" + IssueCode.ChannelConflictsWithCommonConstants +
             "): L.g4:2:18: cannot use or declare channel with reserved name SKIP\n" +
-            "error(" + ErrorType.TOKEN_CONFLICTS_WITH_COMMON_CONSTANTS.code +
+            "error(" + IssueCode.TokenConflictsWithCommonConstants +
             "): L.g4:3:15: cannot use or declare token with reserved name MORE\n" +
-            "error(" + ErrorType.MODE_CONFLICTS_WITH_COMMON_CONSTANTS.code +
+            "error(" + IssueCode.ModeConflictsWithCommonConstants +
             "): L.g4:4:15: cannot use or declare mode with reserved name SKIP\n"
         ];
 
@@ -244,11 +244,11 @@ describe("TestSymbolIssues", () => {
             "mode MODE1;\n" +
             "MODE1_TOKEN: 'qwer';",
 
-            "error(" + ErrorType.CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_TOKEN_NAME.code +
+            "error(" + IssueCode.ConstantValueIsNotARecognizedTokenName +
             "): L.g4:4:22: CHANNEL1 is not a recognized token name\n" +
-            "error(" + ErrorType.CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_CHANNEL_NAME.code +
+            "error(" + IssueCode.ConstantValueIsNotARecognizedChannelName +
             "): L.g4:4:41: MODE1 is not a recognized channel name\n" +
-            "error(" + ErrorType.CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_MODE_NAME.code +
+            "error(" + IssueCode.ConstantValueIsNotARecognizedModeName +
             "): L.g4:4:54: TOKEN1 is not a recognized mode name\n"
         ];
 
@@ -272,10 +272,10 @@ describe("TestSymbolIssues", () => {
             "MODE2_TOKEN1: 'g' -> type(TEST1), type(TEST2);\n" +
             "MODE2_TOKEN2: 'h' -> channel(CHANNEL1), channel(CHANNEL2), channel(DEFAULT_TOKEN_CHANNEL);",
 
-            "warning(" + ErrorType.DUPLICATED_COMMAND.code + "): Lexer.g4:4:27: duplicated command mode\n" +
-            "warning(" + ErrorType.DUPLICATED_COMMAND.code + "): Lexer.g4:12:34: duplicated command type\n" +
-            "warning(" + ErrorType.DUPLICATED_COMMAND.code + "): Lexer.g4:13:40: duplicated command channel\n" +
-            "warning(" + ErrorType.DUPLICATED_COMMAND.code + "): Lexer.g4:13:59: duplicated command channel\n"
+            "warning(" + IssueCode.DuplicatedCommand + "): Lexer.g4:4:27: duplicated command mode\n" +
+            "warning(" + IssueCode.DuplicatedCommand + "): Lexer.g4:12:34: duplicated command type\n" +
+            "warning(" + IssueCode.DuplicatedCommand + "): Lexer.g4:13:40: duplicated command channel\n" +
+            "warning(" + IssueCode.DuplicatedCommand + "): Lexer.g4:13:59: duplicated command channel\n"
         ];
 
         ToolTestUtils.testErrors(test, false);
@@ -302,19 +302,19 @@ describe("TestSymbolIssues", () => {
             "T10: 'a10' -> type(TYPE1), channel(CHANNEL1);\n" +
             "T11: 'a11' -> channel(CHANNEL1), type(TYPE1);",
 
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code + "): L.g4:5:20: incompatible commands skip and more\n" +
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code + "): L.g4:6:20: incompatible commands skip and type\n" +
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code +
+            "warning(" + IssueCode.IncompatibleCommands + "): L.g4:5:20: incompatible commands skip and more\n" +
+            "warning(" + IssueCode.IncompatibleCommands + "): L.g4:6:20: incompatible commands skip and type\n" +
+            "warning(" + IssueCode.IncompatibleCommands +
             "): L.g4:7:20: incompatible commands skip and channel\n" +
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code + "): L.g4:8:20: incompatible commands more and type\n" +
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code +
+            "warning(" + IssueCode.IncompatibleCommands + "): L.g4:8:20: incompatible commands more and type\n" +
+            "warning(" + IssueCode.IncompatibleCommands +
             "): L.g4:9:20: incompatible commands more and channel\n" +
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code + "): L.g4:10:20: incompatible commands more and skip\n" +
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code + "): L.g4:11:27: incompatible commands type and skip\n" +
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code + "): L.g4:12:27: incompatible commands type and more\n" +
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code +
+            "warning(" + IssueCode.IncompatibleCommands + "): L.g4:10:20: incompatible commands more and skip\n" +
+            "warning(" + IssueCode.IncompatibleCommands + "): L.g4:11:27: incompatible commands type and skip\n" +
+            "warning(" + IssueCode.IncompatibleCommands + "): L.g4:12:27: incompatible commands type and more\n" +
+            "warning(" + IssueCode.IncompatibleCommands +
             "): L.g4:13:33: incompatible commands channel and skip\n" +
-            "warning(" + ErrorType.INCOMPATIBLE_COMMANDS.code +
+            "warning(" + IssueCode.IncompatibleCommands +
             "): L.g4:14:33: incompatible commands channel and more\n"
         ];
 
@@ -364,16 +364,16 @@ describe("TestSymbolIssues", () => {
             "B: 'b';\n" +
             "C: 'c';\n",
 
-            "error(" + ErrorType.LABEL_TYPE_CONFLICT.code +
+            "error(" + IssueCode.LabelTypeConflict +
             "): L.g4:8:13: label t2=b type mismatch with previous definition: t2=a\n" +
-            "error(" + ErrorType.LABEL_TYPE_CONFLICT.code +
+            "error(" + IssueCode.LabelTypeConflict +
             "): L.g4:11:15: label t3+=c type mismatch with previous definition: t3+=a\n" +
 
-            "error(" + ErrorType.LABEL_TYPE_CONFLICT.code +
+            "error(" + IssueCode.LabelTypeConflict +
             "): L.g4:24:0: label t7 type mismatch with previous definition: TOKEN_LABEL!=RULE_LABEL\n" +
-            "error(" + ErrorType.LABEL_TYPE_CONFLICT.code +
+            "error(" + IssueCode.LabelTypeConflict +
             "): L.g4:24:0: label t71 type mismatch with previous definition: RULE_LABEL!=TOKEN_LABEL\n" +
-            "error(" + ErrorType.LABEL_TYPE_CONFLICT.code +
+            "error(" + IssueCode.LabelTypeConflict +
             "): L.g4:24:0: label t72 type mismatch with previous definition: RULE_LABEL!=TOKEN_LABEL\n"
         ];
 
@@ -414,9 +414,9 @@ describe("TestSymbolIssues", () => {
             "B: 'b';\n" +
             "C: 'c';\n",
 
-            "error(" + ErrorType.LABEL_TYPE_CONFLICT.code +
+            "error(" + IssueCode.LabelTypeConflict +
             "): L.g4:3:0: label left type mismatch with previous definition: TOKEN_LABEL!=RULE_LABEL\n" +
-            "error(" + ErrorType.LABEL_TYPE_CONFLICT.code +
+            "error(" + IssueCode.LabelTypeConflict +
             "): L.g4:3:0: label right type mismatch with previous definition: RULE_LABEL!=TOKEN_LABEL\n"
         ];
 
@@ -433,15 +433,15 @@ describe("TestSymbolIssues", () => {
             "TOKEN_RANGE_WITHOUT_COLLISION: '_' | [a-zA-Z];\n" +
             "TOKEN_RANGE_WITH_ESCAPED_CHARS: [\\n-\\r] | '\\n'..'\\r';",
 
-            "warning(" + ErrorType.CHARACTERS_COLLISION_IN_SET.code +
+            "warning(" + IssueCode.CharactersCollisionInSet +
             "): L.g4:2:18: chars a-f used multiple times in set [aa-f]\n" +
-            "warning(" + ErrorType.CHARACTERS_COLLISION_IN_SET.code +
+            "warning(" + IssueCode.CharactersCollisionInSet +
             "): L.g4:3:18: chars D-J used multiple times in set [A-FD-J]\n" +
-            "warning(" + ErrorType.CHARACTERS_COLLISION_IN_SET.code +
+            "warning(" + IssueCode.CharactersCollisionInSet +
             "): L.g4:4:35: chars O-V used multiple times in set 'Z' | 'K'..'R' | 'O'..'V'\n" +
-            "warning(" + ErrorType.CHARACTERS_COLLISION_IN_SET.code +
+            "warning(" + IssueCode.CharactersCollisionInSet +
             "): L.g4::: chars 'g' used multiple times in set 'g'..'l'\n" +
-            "warning(" + ErrorType.CHARACTERS_COLLISION_IN_SET.code +
+            "warning(" + IssueCode.CharactersCollisionInSet +
             "): L.g4::: chars '\\n' used multiple times in set '\\n'..'\\r'\n"
         ];
 
@@ -456,13 +456,13 @@ describe("TestSymbolIssues", () => {
             "TOKEN_RANGE_2:    'g'..'l' | 'G'..'L';\n" +
             "TOKEN_RANGE_3:    'm'..'q' | [M-Q];\n",
 
-            "warning(" + ErrorType.CHARACTERS_COLLISION_IN_SET.code +
+            "warning(" + IssueCode.CharactersCollisionInSet +
             "): L.g4:3:18: chars a-f used multiple times in set [a-fA-F0-9]\n" +
-            "warning(" + ErrorType.CHARACTERS_COLLISION_IN_SET.code +
+            "warning(" + IssueCode.CharactersCollisionInSet +
             "): L.g4:4:29: chars g-l used multiple times in set 'g'..'l' | 'G'..'L'\n" +
-            "warning(" + ErrorType.CHARACTERS_COLLISION_IN_SET.code +
+            "warning(" + IssueCode.CharactersCollisionInSet +
             "): L.g4::: chars 'M' used multiple times in set 'M'..'Q' | 'm'..'q'\n" +
-            "warning(" + ErrorType.CHARACTERS_COLLISION_IN_SET.code +
+            "warning(" + IssueCode.CharactersCollisionInSet +
             "): L.g4::: chars 'm' used multiple times in set 'M'..'Q' | 'm'..'q'\n"
         ];
 
@@ -506,25 +506,25 @@ describe("TestSymbolIssues", () => {
             "\n" +
             "fragment A: 'A';",
 
-            "warning(" + ErrorType.TOKEN_UNREACHABLE.code +
+            "warning(" + IssueCode.TokenUnreachable +
             "): Test.g4:4:0: One of the token TOKEN3 values unreachable. asdf is always overlapped by token TOKEN1\n" +
-            "warning(" + ErrorType.TOKEN_UNREACHABLE.code +
+            "warning(" + IssueCode.TokenUnreachable +
             "): Test.g4:5:0: One of the token TOKEN4 values unreachable. qwer is always overlapped by token TOKEN1\n" +
-            "warning(" + ErrorType.TOKEN_UNREACHABLE.code +
+            "warning(" + IssueCode.TokenUnreachable +
             "): Test.g4:7:0: One of the token TOKEN6 values unreachable. asdf is always overlapped by token TOKEN1\n" +
-            "warning(" + ErrorType.TOKEN_UNREACHABLE.code +
+            "warning(" + IssueCode.TokenUnreachable +
             "): Test.g4:7:0: One of the token TOKEN6 values unreachable. asdf is always overlapped by token TOKEN3\n" +
-            "warning(" + ErrorType.TOKEN_UNREACHABLE.code +
+            "warning(" + IssueCode.TokenUnreachable +
             "): Test.g4:9:0: One of the token TOKEN8 values unreachable. ab is always overlapped by token TOKEN8\n" +
-            "warning(" + ErrorType.TOKEN_UNREACHABLE.code +
+            "warning(" + IssueCode.TokenUnreachable +
             "): Test.g4:11:0: One of the token TOKEN9 values unreachable. qwer is always overlapped by token TOKEN9\n" +
-            "warning(" + ErrorType.TOKEN_UNREACHABLE.code +
+            "warning(" + IssueCode.TokenUnreachable +
             "): Test.g4:12:0: One of the token TOKEN10 values unreachable. \\r\\n is always " +
             "overlapped by token TOKEN10\n" +
-            "warning(" + ErrorType.TOKEN_UNREACHABLE.code +
+            "warning(" + IssueCode.TokenUnreachable +
             "): Test.g4:13:0: One of the token TOKEN11 values unreachable. \\r\\n is always " +
             "overlapped by token TOKEN10\n" +
-            "warning(" + ErrorType.TOKEN_UNREACHABLE.code +
+            "warning(" + IssueCode.TokenUnreachable +
             "): Test.g4:13:0: One of the token TOKEN11 values unreachable. \\r\\n is always " +
             "overlapped by token TOKEN10\n"
         ];
@@ -538,9 +538,9 @@ describe("TestSymbolIssues", () => {
             "options { caseInsensitive = badValue; }\n" +
             "TOKEN_1 options { caseInsensitive = badValue; } : [A-F]+;\n",
 
-            "warning(" + ErrorType.ILLEGAL_OPTION_VALUE.code +
+            "warning(" + IssueCode.IllegalOptionValue +
             "): L.g4:2:28: unsupported option value caseInsensitive=badValue\n" +
-            "warning(" + ErrorType.ILLEGAL_OPTION_VALUE.code +
+            "warning(" + IssueCode.IllegalOptionValue +
             "): L.g4:3:36: unsupported option value caseInsensitive=badValue\n"
         ];
 
@@ -553,7 +553,7 @@ describe("TestSymbolIssues", () => {
             "options { caseInsensitive = true; }\n" +
             "TOKEN options { caseInsensitive = true; } : [A-F]+;\n",
 
-            "warning(" + ErrorType.REDUNDANT_CASE_INSENSITIVE_LEXER_RULE_OPTION.code +
+            "warning(" + IssueCode.RedundantCaseInsensitiveLexerRuleOption +
             "): L.g4:3:16: caseInsensitive lexer rule option is redundant because its value equals to " +
             "global value (true)\n"
         ];
@@ -564,7 +564,7 @@ describe("TestSymbolIssues", () => {
             "options { caseInsensitive = false; }\n" +
             "TOKEN options { caseInsensitive = false; } : [A-F]+;\n",
 
-            "warning(" + ErrorType.REDUNDANT_CASE_INSENSITIVE_LEXER_RULE_OPTION.code +
+            "warning(" + IssueCode.RedundantCaseInsensitiveLexerRuleOption +
             "): L.g4:3:16: caseInsensitive lexer rule option is redundant because its value equals to " +
             "global value (false)\n"
         ];
@@ -576,7 +576,7 @@ describe("TestSymbolIssues", () => {
             "grammar G;\n" +
             "root options { caseInsensitive=true; } : 'token';",
 
-            "warning(" + ErrorType.ILLEGAL_OPTION.code + "): G.g4:2:15: unsupported option caseInsensitive\n"
+            "warning(" + IssueCode.IllegalOption + "): G.g4:2:15: unsupported option caseInsensitive\n"
         ];
 
         ToolTestUtils.testErrors(test, false);
@@ -590,10 +590,10 @@ describe("TestSymbolIssues", () => {
             "TOKEN3: [А-я]; // OK since range does not contain intermediate characters\n" +
             "TOKEN4: '\\u0100'..'\\u1fff'; // OK since range borders are unicode characters",
 
-            "warning(" + ErrorType.RANGE_PROBABLY_CONTAINS_NOT_IMPLIED_CHARACTERS.code +
+            "warning(" + IssueCode.RangeProbablyContainsNotImpliedCharacter +
             "): Test.g4:2:8: Range A..g probably contains not implied characters [\\]^_`. Both bounds should " +
             "be defined in lower or UPPER case\n" +
-            "warning(" + ErrorType.RANGE_PROBABLY_CONTAINS_NOT_IMPLIED_CHARACTERS.code +
+            "warning(" + IssueCode.RangeProbablyContainsNotImpliedCharacter +
             "): Test.g4:3:8: Range C..m probably contains not implied characters [\\]^_`. Both bounds should " +
             "be defined in lower or UPPER case\n"
         ];
@@ -607,7 +607,7 @@ describe("TestSymbolIssues", () => {
             "options { caseInsensitive=true; }\n" +
             "TOKEN: [A-z];",
 
-            "warning(" + ErrorType.RANGE_PROBABLY_CONTAINS_NOT_IMPLIED_CHARACTERS.code +
+            "warning(" + IssueCode.RangeProbablyContainsNotImpliedCharacter +
             "): Test.g4:3:7: Range A..z probably contains not implied characters [\\]^_`. Both bounds should " +
             "be defined in lower or UPPER case\n"
         ];
@@ -629,8 +629,8 @@ describe("TestSymbolIssues", () => {
             "a: 'a';\n" +
             "b: 'b';",
 
-            //"error(" + ErrorType.INTERNAL_ERROR.code + "): Test.g4:2:30: internal error: Rule error undefined \n"
-            "error(" + ErrorType.RULE_HAS_NO_ARGS.code + "): Test.g4:2:13: rule b has no defined parameters\n"
+            //"error(" + IssueCode.INTERNAL_ERROR + "): Test.g4:2:30: internal error: Rule error undefined \n"
+            "error(" + IssueCode.RuleHasNoArgs + "): Test.g4:2:13: rule b has no defined parameters\n"
         ];
 
         ToolTestUtils.testErrors(test, false);

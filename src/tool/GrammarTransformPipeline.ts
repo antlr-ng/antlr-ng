@@ -7,10 +7,10 @@
 
 import { CommonToken } from "antlr4ng";
 
+import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 import { TreeVisitor } from "../tree/TreeVisitor.js";
 import type { TreeVisitorAction } from "../tree/TreeVisitorAction.js";
-import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { BlockSetTransformer } from "../tree/walkers/BlockSetTransformer.js";
 
 import { Constants } from "../Constants.js";
@@ -20,7 +20,7 @@ import { GrammarToken } from "../parse/GrammarToken.js";
 import { GrammarType } from "../support/GrammarType.js";
 import { dupTree, isTokenName } from "../support/helpers.js";
 import type { CommonTree } from "../tree/CommonTree.js";
-import { ErrorType } from "./ErrorType.js";
+import { IssueCode } from "./Issues.js";
 import { Grammar } from "./Grammar.js";
 import { AltAST } from "./ast/AltAST.js";
 import { BlockAST } from "./ast/BlockAST.js";
@@ -227,7 +227,7 @@ export class GrammarTransformPipeline {
                     namedActions.set(scopeName!, mapping);
                 } else {
                     if (prevAction.g === at.g) {
-                        this.tool.errorManager.grammarError(ErrorType.ACTION_REDEFINITION, at.g.fileName, name.token!,
+                        this.tool.errorManager.grammarError(IssueCode.ActionRedefinition, at.g.fileName, name.token!,
                             name.getText());
                     } else {
                         let s1 = prevAction.getText();
@@ -333,7 +333,7 @@ export class GrammarTransformPipeline {
                 }
 
                 if (hasNewOption) {
-                    this.tool.errorManager.grammarError(ErrorType.OPTIONS_IN_DELEGATE, optionsRoot.g.fileName,
+                    this.tool.errorManager.grammarError(IssueCode.OptionsInDelegate, optionsRoot.g.fileName,
                         optionsRoot.token!, imp.name);
                 }
             }

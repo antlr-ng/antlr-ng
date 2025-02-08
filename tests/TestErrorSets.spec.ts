@@ -6,7 +6,7 @@
 import { describe, it } from "vitest";
 
 import { ToolTestUtils } from "./ToolTestUtils.js";
-import { ErrorType } from "../src/tool/ErrorType.js";
+import { IssueCode } from "../src/tool/Issues.js";
 
 /** Test errors with the set stuff in lexer and parser */
 describe("TestErrorSets", () => {
@@ -17,7 +17,7 @@ describe("TestErrorSets", () => {
             "a : A {System.out.println($A.text);} ;\n" +
             "A : ~('a'|B) ;\n" +
             "B : 'b' ;\n",
-            "error(" + ErrorType.UNSUPPORTED_REFERENCE_IN_LEXER_SET.code +
+            "error(" + IssueCode.UnsupportedReferenceInLexerSet +
             "): T.g4:3:10: rule reference B is not currently supported in a set\n"
         ];
         ToolTestUtils.testErrors(pair);
@@ -30,7 +30,7 @@ describe("TestErrorSets", () => {
             "a : A {System.out.println($A.text);} ;\n" +
             "A : ~('a'|'aa') ;\n" +
             "B : 'b' ;\n",
-            "error(" + ErrorType.INVALID_LITERAL_IN_LEXER_SET.code +
+            "error(" + IssueCode.InvalidLiteralInLexerSet +
             "): T.g4:3:10: multi-character literals are not allowed in lexer sets: 'aa'\n"
         ];
 

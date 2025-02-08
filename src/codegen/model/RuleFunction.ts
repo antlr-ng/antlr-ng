@@ -15,7 +15,7 @@ import type { CommonTree } from "../../tree/CommonTree.js";
 import { FrequencySet } from "../../misc/FrequencySet.js";
 import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarASTAdaptor } from "../../parse/GrammarASTAdaptor.js";
-import { ErrorType } from "../../tool/ErrorType.js";
+import { IssueCode } from "../../tool/Issues.js";
 import { Rule } from "../../tool/Rule.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { AltAST } from "../../tool/ast/AltAST.js";
@@ -297,7 +297,7 @@ export class RuleFunction extends OutputModelObject {
                 new CommonTreeNodeStream(new GrammarASTAdaptor(), ast));
             visitor.outerAlternative();
             if (visitor.frequencies.length !== 1) {
-                errorManager.toolError(ErrorType.INTERNAL_ERROR);
+                errorManager.toolError(IssueCode.InternalError);
 
                 return [new FrequencySet<string>(), new FrequencySet<string>()];
             }
@@ -305,7 +305,7 @@ export class RuleFunction extends OutputModelObject {
             return [visitor.minFrequencies[0], visitor.frequencies[0]];
         } catch (ex) {
             if (ex instanceof RecognitionException) {
-                errorManager.toolError(ErrorType.INTERNAL_ERROR, ex);
+                errorManager.toolError(IssueCode.InternalError, ex);
 
                 return [new FrequencySet<string>(), new FrequencySet<string>()];
             } else {

@@ -19,7 +19,7 @@ import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import { EscapeSequenceParsing, ResultType } from "../misc/EscapeSequenceParsing.js";
 import { Character } from "../support/Character.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { LexerGrammar } from "../tool/LexerGrammar.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
@@ -195,11 +195,11 @@ export class LexerATNFactory extends ParserATNFactory {
                 if (c !== -1) {
                     this.checkCharAndAddToSet(associatedAST, set, c);
                 } else {
-                    this.g.tool.errorManager.grammarError(ErrorType.INVALID_LITERAL_IN_LEXER_SET,
+                    this.g.tool.errorManager.grammarError(IssueCode.InvalidLiteralInLexerSet,
                         this.g.fileName, t.token!, t.getText());
                 }
             } else if (t.getType() === ANTLRv4Parser.TOKEN_REF) {
-                this.g.tool.errorManager.grammarError(ErrorType.UNSUPPORTED_REFERENCE_IN_LEXER_SET,
+                this.g.tool.errorManager.grammarError(IssueCode.UnsupportedReferenceInLexerSet,
                     this.g.fileName, t.token!, t.getText());
             }
         }
@@ -295,7 +295,7 @@ export class LexerATNFactory extends ParserATNFactory {
                     case ResultType.Invalid: {
                         const invalid = text.substring(escapeParseResult.startOffset,
                             escapeParseResult.startOffset + escapeParseResult.parseLength);
-                        this.g.tool.errorManager.grammarError(ErrorType.INVALID_ESCAPE_SEQUENCE,
+                        this.g.tool.errorManager.grammarError(IssueCode.InvalidEscapeSequence,
                             this.g.fileName, charSetAST.token!, invalid);
                         state = ICharSetParseState.error;
 
@@ -322,7 +322,7 @@ export class LexerATNFactory extends ParserATNFactory {
             } else {
                 if (c === 0x2D && !state.inRange && i !== 0 && i !== text.length - 1 && state.mode !== Mode.None) {
                     if (state.mode === Mode.PrevProperty) {
-                        this.g.tool.errorManager.grammarError(ErrorType.UNICODE_PROPERTY_NOT_ALLOWED_IN_RANGE,
+                        this.g.tool.errorManager.grammarError(IssueCode.UnicodePropertyNotAllowedInRange,
                             this.g.fileName, charSetAST.token!, charSetAST.getText());
                         state = ICharSetParseState.error;
                     } else {
@@ -349,7 +349,7 @@ export class LexerATNFactory extends ParserATNFactory {
         this.applyPrevState(charSetAST, set, state);
 
         if (set.length === 0) {
-            this.g.tool.errorManager.grammarError(ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED, this.g.fileName,
+            this.g.tool.errorManager.grammarError(IssueCode.EmptyStringAndSetsNotAllowed, this.g.fileName,
                 charSetAST.token!, "[]");
         }
 
@@ -371,13 +371,13 @@ export class LexerATNFactory extends ParserATNFactory {
         let result = true;
         if (leftValue === -1) {
             result = false;
-            this.g.tool.errorManager.grammarError(ErrorType.INVALID_LITERAL_IN_LEXER_SET, this.g.fileName,
+            this.g.tool.errorManager.grammarError(IssueCode.InvalidLiteralInLexerSet, this.g.fileName,
                 leftNode.token!, leftNode.getText());
         }
 
         if (rightValue === -1) {
             result = false;
-            this.g.tool.errorManager.grammarError(ErrorType.INVALID_LITERAL_IN_LEXER_SET, this.g.fileName,
+            this.g.tool.errorManager.grammarError(IssueCode.InvalidLiteralInLexerSet, this.g.fileName,
                 rightNode.token!, rightNode.getText());
         }
 
@@ -386,7 +386,7 @@ export class LexerATNFactory extends ParserATNFactory {
         }
 
         if (rightValue < leftValue) {
-            this.g.tool.errorManager.grammarError(ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED, this.g.fileName,
+            this.g.tool.errorManager.grammarError(IssueCode.EmptyStringAndSetsNotAllowed, this.g.fileName,
                 leftNode.parent!.token!, leftNode.getText() + ".." + rightNode.getText());
 
             return false;
@@ -404,7 +404,7 @@ export class LexerATNFactory extends ParserATNFactory {
         // Fall back to standard action generation for the command.
         const cmdST = this.codegenTemplates.getInstanceOf("Lexer" + CharSupport.capitalize(id.getText()) + "Command");
         if (cmdST === null) {
-            this.g.tool.errorManager.grammarError(ErrorType.INVALID_LEXER_COMMAND, this.g.fileName, id.token!,
+            this.g.tool.errorManager.grammarError(IssueCode.InvalidLexerCommand, this.g.fileName, id.token!,
                 id.getText());
 
             return this.epsilon(id);
@@ -414,8 +414,8 @@ export class LexerATNFactory extends ParserATNFactory {
         const containsArg = cmdST.impl?.formalArguments?.has("arg") ?? false;
         if (callCommand !== containsArg) {
             const errorType = callCommand
-                ? ErrorType.UNWANTED_LEXER_COMMAND_ARGUMENT
-                : ErrorType.MISSING_LEXER_COMMAND_ARGUMENT;
+                ? IssueCode.UnwantedLexerCommandArgument
+                : IssueCode.MisingLexerCommandArgument;
             this.g.tool.errorManager.grammarError(errorType, this.g.fileName, id.token!, id.getText());
 
             return this.epsilon(id);
@@ -436,7 +436,7 @@ export class LexerATNFactory extends ParserATNFactory {
         codePoint: number): ICharSetParseState {
         if (state.inRange) {
             if (state.prevCodePoint > codePoint) {
-                this.g.tool.errorManager.grammarError(ErrorType.EMPTY_STRINGS_AND_SETS_NOT_ALLOWED, this.g.fileName,
+                this.g.tool.errorManager.grammarError(IssueCode.EmptyStringAndSetsNotAllowed, this.g.fileName,
                     charSetAST.token!, CharSupport.getRangeEscapedString(state.prevCodePoint, codePoint));
             }
 
@@ -461,7 +461,7 @@ export class LexerATNFactory extends ParserATNFactory {
         state: ICharSetParseState,
         property: IntervalSet): ICharSetParseState {
         if (state.inRange) {
-            this.g.tool.errorManager.grammarError(ErrorType.UNICODE_PROPERTY_NOT_ALLOWED_IN_RANGE, this.g.fileName,
+            this.g.tool.errorManager.grammarError(IssueCode.UnicodePropertyNotAllowedInRange, this.g.fileName,
                 charSetAST.token!, charSetAST.getText());
 
             return ICharSetParseState.error;
@@ -559,7 +559,7 @@ export class LexerATNFactory extends ParserATNFactory {
                                 const charsString = (a === b)
                                     ? String.fromCodePoint(a)
                                     : String.fromCodePoint(a) + "-" + String.fromCodePoint(b);
-                                this.g.tool.errorManager.grammarError(ErrorType.CHARACTERS_COLLISION_IN_SET,
+                                this.g.tool.errorManager.grammarError(IssueCode.CharactersCollisionInSet,
                                     this.g.fileName, ast.token!, charsString, setText);
                                 charactersCollision = true;
 
@@ -685,7 +685,7 @@ export class LexerATNFactory extends ParserATNFactory {
         // Command combinations list: https://github.com/antlr/antlr4/issues/1388#issuecomment-263344701
         if (command !== "pushMode" && command !== "popMode") {
             if (this.ruleCommands.includes(command)) {
-                this.g.tool.errorManager.grammarError(ErrorType.DUPLICATED_COMMAND, this.g.fileName, commandToken,
+                this.g.tool.errorManager.grammarError(IssueCode.DuplicatedCommand, this.g.fileName, commandToken,
                     command);
             }
 
@@ -715,7 +715,7 @@ export class LexerATNFactory extends ParserATNFactory {
             }
 
             if (firstCommand) {
-                this.g.tool.errorManager.grammarError(ErrorType.INCOMPATIBLE_COMMANDS, this.g.fileName, commandToken,
+                this.g.tool.errorManager.grammarError(IssueCode.IncompatibleCommands, this.g.fileName, commandToken,
                     firstCommand, command);
             }
         }
@@ -733,7 +733,7 @@ export class LexerATNFactory extends ParserATNFactory {
         }
 
         if (Constants.COMMON_CONSTANTS.has(modeName)) {
-            this.g.tool.errorManager.grammarError(ErrorType.MODE_CONFLICTS_WITH_COMMON_CONSTANTS, this.g.fileName,
+            this.g.tool.errorManager.grammarError(IssueCode.ModeConflictsWithCommonConstants, this.g.fileName,
                 token, token.text);
 
             return undefined;
@@ -747,7 +747,7 @@ export class LexerATNFactory extends ParserATNFactory {
 
         const result = Number.parseInt(modeName);
         if (isNaN(result)) {
-            this.g.tool.errorManager.grammarError(ErrorType.CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_MODE_NAME,
+            this.g.tool.errorManager.grammarError(IssueCode.ConstantValueIsNotARecognizedModeName,
                 this.g.fileName, token, token.text);
 
             return undefined;
@@ -766,7 +766,7 @@ export class LexerATNFactory extends ParserATNFactory {
         }
 
         if (Constants.COMMON_CONSTANTS.has(tokenName)) {
-            this.g.tool.errorManager.grammarError(ErrorType.TOKEN_CONFLICTS_WITH_COMMON_CONSTANTS, this.g.fileName,
+            this.g.tool.errorManager.grammarError(IssueCode.TokenConflictsWithCommonConstants, this.g.fileName,
                 token, token.text);
 
             return undefined;
@@ -779,7 +779,7 @@ export class LexerATNFactory extends ParserATNFactory {
 
         const result = Number.parseInt(tokenName);
         if (isNaN(result)) {
-            this.g.tool.errorManager.grammarError(ErrorType.CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_TOKEN_NAME,
+            this.g.tool.errorManager.grammarError(IssueCode.ConstantValueIsNotARecognizedTokenName,
                 this.g.fileName, token, token.text);
 
             return undefined;
@@ -802,7 +802,7 @@ export class LexerATNFactory extends ParserATNFactory {
         }
 
         if (Constants.COMMON_CONSTANTS.has(channelName)) {
-            this.g.tool.errorManager.grammarError(ErrorType.CHANNEL_CONFLICTS_WITH_COMMON_CONSTANTS, this.g.fileName,
+            this.g.tool.errorManager.grammarError(IssueCode.ChannelConflictsWithCommonConstants, this.g.fileName,
                 token, token.text);
 
             return undefined;
@@ -815,7 +815,7 @@ export class LexerATNFactory extends ParserATNFactory {
 
         const result = Number.parseInt(channelName);
         if (isNaN(result)) {
-            this.g.tool.errorManager.grammarError(ErrorType.CONSTANT_VALUE_IS_NOT_A_RECOGNIZED_CHANNEL_NAME,
+            this.g.tool.errorManager.grammarError(IssueCode.ConstantValueIsNotARecognizedChannelName,
                 this.g.fileName, token, token.text);
 
             return undefined;

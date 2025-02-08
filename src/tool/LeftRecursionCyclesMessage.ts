@@ -6,7 +6,7 @@
 import type { Token } from "antlr4ng";
 
 import { ANTLRMessage } from "./ANTLRMessage.js";
-import { ErrorType } from "./ErrorType.js";
+import { IssueCode } from "./Issues.js";
 import { type Rule } from "./Rule.js";
 
 export class LeftRecursionCyclesMessage extends ANTLRMessage {
@@ -14,7 +14,7 @@ export class LeftRecursionCyclesMessage extends ANTLRMessage {
         const token = LeftRecursionCyclesMessage.getStartTokenOfFirstRule(cycles);
         const line = token?.line ?? -1;
         const column = token?.column ?? -1;
-        super(ErrorType.LEFT_RECURSION_CYCLES, fileName, line, column, cycles);
+        super(IssueCode.LeftRecursionCycles, fileName, line, column, cycles);
     }
 
     protected static getStartTokenOfFirstRule(cycles: Rule[][]): Token | undefined {

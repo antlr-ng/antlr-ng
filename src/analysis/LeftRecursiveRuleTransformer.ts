@@ -23,7 +23,7 @@ import { BasicSemanticChecks } from "../semantics/BasicSemanticChecks.js";
 import { RuleCollector } from "../semantics/RuleCollector.js";
 import { ParseTreeToASTConverter } from "../support/ParseTreeToASTConverter.js";
 import { isTokenName } from "../support/helpers.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import { GrammarTransformPipeline } from "../tool/GrammarTransformPipeline.js";
 import { LabelElementPair } from "../tool/LabelElementPair.js";
@@ -70,7 +70,7 @@ export class LeftRecursiveRuleTransformer {
                     if (fitsPattern) {
                         leftRecursiveRuleNames.push(r.name);
                     } else { // Better given an error that non-conforming left-recursion exists.
-                        this.g.tool.errorManager.grammarError(ErrorType.NONCONFORMING_LR_RULE, this.g.fileName,
+                        this.g.tool.errorManager.grammarError(IssueCode.NonconformingLrRule, this.g.fileName,
                             (r.ast.children[0] as GrammarAST).token!, r.name);
                     }
                 }
@@ -154,7 +154,7 @@ export class LeftRecursiveRuleTransformer {
         r.recPrimaryAlts = new Array<ILeftRecursiveRuleAltInfo>();
         r.recPrimaryAlts.push(...leftRecursiveRuleWalker.prefixAndOtherAlts);
         if (r.recPrimaryAlts.length === 0) {
-            this.g.tool.errorManager.grammarError(ErrorType.NO_NON_LR_ALTS, this.g.fileName,
+            this.g.tool.errorManager.grammarError(IssueCode.NoNonLrAlts, this.g.fileName,
                 (r.ast.children[0] as GrammarAST).token!, r.name);
         }
 
@@ -219,7 +219,7 @@ export class LeftRecursiveRuleTransformer {
 
             return ruleAST;
         } catch (e) {
-            this.g.tool.errorManager.toolError(ErrorType.INTERNAL_ERROR, e, ruleStart,
+            this.g.tool.errorManager.toolError(IssueCode.InternalError, e, ruleStart,
                 "error parsing rule created during left-recursion detection: " + ruleText);
         }
 

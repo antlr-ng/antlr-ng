@@ -17,7 +17,7 @@ import { AltAST } from "../tool/ast/AltAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
 import { AttributeDict } from "../tool/AttributeDict.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import { LabelElementPair } from "../tool/LabelElementPair.js";
 import { LabelType } from "../tool/LabelType.js";
@@ -92,7 +92,7 @@ export class SymbolChecks {
             if (!scopeActions.has(name)) {
                 scopeActions.add(name);
             } else {
-                this.g.tool.errorManager.grammarError(ErrorType.ACTION_REDEFINITION, this.g.fileName, nameNode.token!,
+                this.g.tool.errorManager.grammarError(IssueCode.ActionRedefinition, this.g.fileName, nameNode.token!,
                     name);
             }
         }
@@ -145,47 +145,47 @@ export class SymbolChecks {
     public checkForLabelConflict(r: Rule, labelID: GrammarAST): void {
         const name = labelID.getText();
         if (this.nameToRuleMap.has(name)) {
-            const errorType = ErrorType.LABEL_CONFLICTS_WITH_RULE;
+            const errorType = IssueCode.LabelConflictsWithRule;
             this.g.tool.errorManager.grammarError(errorType, this.g.fileName, labelID.token!, name, r.name);
         }
 
         if (this.tokenIDs.has(name)) {
-            const errorType = ErrorType.LABEL_CONFLICTS_WITH_TOKEN;
+            const errorType = IssueCode.LabelConflictsWithToken;
             this.g.tool.errorManager.grammarError(errorType, this.g.fileName, labelID.token!, name, r.name);
         }
 
         if (r.args?.get(name)) {
-            const errorType = ErrorType.LABEL_CONFLICTS_WITH_ARG;
+            const errorType = IssueCode.LabelConflictsWithArg;
             this.g.tool.errorManager.grammarError(errorType, this.g.fileName, labelID.token!, name, r.name);
         }
 
         if (r.retvals?.get(name)) {
-            const errorType = ErrorType.LABEL_CONFLICTS_WITH_RETVAL;
+            const errorType = IssueCode.LabelConflictsWithRetval;
             this.g.tool.errorManager.grammarError(errorType, this.g.fileName, labelID.token!, name, r.name);
         }
 
         if (r.locals?.get(name)) {
-            const errorType = ErrorType.LABEL_CONFLICTS_WITH_LOCAL;
+            const errorType = IssueCode.LabelConflictsWithLocal;
             this.g.tool.errorManager.grammarError(errorType, this.g.fileName, labelID.token!, name, r.name);
         }
     }
 
     public checkForAttributeConflicts(r: Rule): void {
         this.checkDeclarationRuleConflicts(r, r.args, new Set(this.nameToRuleMap.keys()),
-            ErrorType.ARG_CONFLICTS_WITH_RULE);
-        this.checkDeclarationRuleConflicts(r, r.args, this.tokenIDs, ErrorType.ARG_CONFLICTS_WITH_TOKEN);
+            IssueCode.ArgConflictsWithRule);
+        this.checkDeclarationRuleConflicts(r, r.args, this.tokenIDs, IssueCode.ArgConflictsWithToken);
 
         this.checkDeclarationRuleConflicts(r, r.retvals, new Set(this.nameToRuleMap.keys()),
-            ErrorType.RETVAL_CONFLICTS_WITH_RULE);
-        this.checkDeclarationRuleConflicts(r, r.retvals, this.tokenIDs, ErrorType.RETVAL_CONFLICTS_WITH_TOKEN);
+            IssueCode.RetvalConflkictsWithRule);
+        this.checkDeclarationRuleConflicts(r, r.retvals, this.tokenIDs, IssueCode.RetvalConflictsWithToken);
 
         this.checkDeclarationRuleConflicts(r, r.locals, new Set(this.nameToRuleMap.keys()),
-            ErrorType.LOCAL_CONFLICTS_WITH_RULE);
-        this.checkDeclarationRuleConflicts(r, r.locals, this.tokenIDs, ErrorType.LOCAL_CONFLICTS_WITH_TOKEN);
+            IssueCode.LocalConflictsWithRule);
+        this.checkDeclarationRuleConflicts(r, r.locals, this.tokenIDs, IssueCode.LocalConflictsWithToken);
 
-        this.checkLocalConflictingDeclarations(r, r.retvals, r.args, ErrorType.RETVAL_CONFLICTS_WITH_ARG);
-        this.checkLocalConflictingDeclarations(r, r.locals, r.args, ErrorType.LOCAL_CONFLICTS_WITH_ARG);
-        this.checkLocalConflictingDeclarations(r, r.locals, r.retvals, ErrorType.LOCAL_CONFLICTS_WITH_RETVAL);
+        this.checkLocalConflictingDeclarations(r, r.retvals, r.args, IssueCode.RetValuConflictsWithArg);
+        this.checkLocalConflictingDeclarations(r, r.locals, r.args, IssueCode.LocalConflictsWithArg);
+        this.checkLocalConflictingDeclarations(r, r.locals, r.retvals, IssueCode.LocalConflictsWithRetval);
     }
 
     public checkForModeConflicts(g: Grammar): void {
@@ -194,13 +194,13 @@ export class SymbolChecks {
             for (const modeName of lexerGrammar.modes.keys()) {
                 if (modeName !== "DEFAULT_MODE" && this.reservedNames.has(modeName)) {
                     const rule = lexerGrammar.modes.get(modeName)![0];
-                    this.g.tool.errorManager.grammarError(ErrorType.MODE_CONFLICTS_WITH_COMMON_CONSTANTS, g.fileName,
+                    this.g.tool.errorManager.grammarError(IssueCode.ModeConflictsWithCommonConstants, g.fileName,
                         rule.ast.parent!.token!, modeName);
                 }
 
                 if (g.getTokenType(modeName) !== Token.INVALID_TYPE) {
                     const rule = lexerGrammar.modes.get(modeName)![0];
-                    this.g.tool.errorManager.grammarError(ErrorType.MODE_CONFLICTS_WITH_TOKEN, g.fileName,
+                    this.g.tool.errorManager.grammarError(IssueCode.ModeConflictsWithToken, g.fileName,
                         rule.ast.parent!.token!, modeName);
                 }
             }
@@ -259,9 +259,9 @@ export class SymbolChecks {
             const r = g.getRule(ruleName);
             const arg = ref.getFirstChildWithType(ANTLRv4Parser.ARG_ACTION) as GrammarAST | null;
             if (arg !== null && r?.args === undefined) {
-                this.g.tool.errorManager.grammarError(ErrorType.RULE_HAS_NO_ARGS, g.fileName, ref.token!, ruleName);
+                this.g.tool.errorManager.grammarError(IssueCode.RuleHasNoArgs, g.fileName, ref.token!, ruleName);
             } else if (arg === null && r?.args !== undefined) {
-                this.g.tool.errorManager.grammarError(ErrorType.MISSING_RULE_ARGS, g.fileName, ref.token!, ruleName);
+                this.g.tool.errorManager.grammarError(IssueCode.MissingRuleArgs, g.fileName, ref.token!, ruleName);
             }
         }
     }
@@ -273,17 +273,17 @@ export class SymbolChecks {
             g.tool.logInfo({ component: "semantics", msg: grammar.getText() + "." + rule.getText() });
             const delegate = g.getImportedGrammar(grammar.getText());
             if (delegate === null) {
-                this.g.tool.errorManager.grammarError(ErrorType.NO_SUCH_GRAMMAR_SCOPE, g.fileName, grammar.token!,
+                this.g.tool.errorManager.grammarError(IssueCode.NoSuchGrammarScope, g.fileName, grammar.token!,
                     grammar.getText(), rule.getText());
             } else if (g.getRule(grammar.getText(), rule.getText()) === null) {
-                this.g.tool.errorManager.grammarError(ErrorType.NO_SUCH_RULE_IN_SCOPE, g.fileName, rule.token!,
+                this.g.tool.errorManager.grammarError(IssueCode.NoSuchRuleInScope, g.fileName, rule.token!,
                     grammar.getText(), rule.getText());
             }
         }
     }
 
     protected checkDeclarationRuleConflicts(r: Rule, attributes: AttributeDict | undefined, ruleNames: Set<string>,
-        errorType: ErrorType): void {
+        errorType: IssueCode): void {
         if (!attributes) {
             return;
         }
@@ -297,7 +297,7 @@ export class SymbolChecks {
     }
 
     protected checkLocalConflictingDeclarations(r: Rule, attributes: AttributeDict | undefined,
-        referenceAttributes: AttributeDict | undefined, errorType: ErrorType): void {
+        referenceAttributes: AttributeDict | undefined, errorType: IssueCode): void {
         if (!attributes || !referenceAttributes) {
             return;
         }
@@ -312,7 +312,7 @@ export class SymbolChecks {
     protected checkReservedNames(rules: Rule[]): void {
         for (const rule of rules) {
             if (this.reservedNames.has(rule.name)) {
-                this.g.tool.errorManager.grammarError(ErrorType.RESERVED_RULE_NAME, this.g.fileName,
+                this.g.tool.errorManager.grammarError(IssueCode.ReservedRuleName, this.g.fileName,
                     (rule.ast.children[0] as GrammarAST).token!, rule.name);
             }
         }
@@ -361,7 +361,7 @@ export class SymbolChecks {
             const token = r instanceof LeftRecursiveRule
                 ? (r.ast.children[0] as GrammarAST).token!
                 : labelPair.label.token;
-            this.g.tool.errorManager.grammarError(ErrorType.LABEL_TYPE_CONFLICT, this.g.fileName, token!,
+            this.g.tool.errorManager.grammarError(IssueCode.LabelTypeConflict, this.g.fileName, token!,
                 labelPair.label.getText(), labelPair.type + "!=" + prevLabelPair.type);
         }
 
@@ -374,7 +374,7 @@ export class SymbolChecks {
                 : labelPair.label.token;
             const prevLabelOp = prevLabelPair.type === LabelType.RuleListLabel ? "+=" : "=";
             const labelOp = labelPair.type === LabelType.RuleListLabel ? "+=" : "=";
-            this.g.tool.errorManager.grammarError(ErrorType.LABEL_TYPE_CONFLICT, this.g.fileName, token!,
+            this.g.tool.errorManager.grammarError(IssueCode.LabelTypeConflict, this.g.fileName, token!,
                 labelPair.label.getText() + labelOp + labelPair.element.getText(),
                 prevLabelPair.label.getText() + prevLabelOp + prevLabelPair.element.getText());
         }
@@ -439,7 +439,7 @@ export class SymbolChecks {
             for (let j = secondTokenInd; j < secondTokenStringValues.length; j++) {
                 const str2 = secondTokenStringValues[j];
                 if (str1 === str2) {
-                    this.g.tool.errorManager.grammarError(ErrorType.TOKEN_UNREACHABLE, g.fileName,
+                    this.g.tool.errorManager.grammarError(IssueCode.TokenUnreachable, g.fileName,
                         (rule2.ast.children[0] as GrammarAST).token!, rule2.name, str2, rule1.name);
                 }
             }

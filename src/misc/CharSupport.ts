@@ -7,7 +7,7 @@ import { IntervalSet } from "antlr4ng";
 
 import { Character } from "../support/Character.js";
 import type { IPosition } from "../support/helpers.js";
-import { ErrorType } from "../tool/ErrorType.js";
+import { IssueCode } from "../tool/Issues.js";
 import type { Grammar } from "../tool/Grammar.js";
 
 export class CharSupport {
@@ -109,7 +109,7 @@ export class CharSupport {
         const reportError = (invalid: string, offset: number) => {
             reported = true;
             if (grammar && position) {
-                grammar.tool.errorManager.grammarError(ErrorType.INVALID_ESCAPE_SEQUENCE,
+                grammar.tool.errorManager.grammarError(IssueCode.InvalidEscapeSequence,
                     grammar.fileName, { line: position.line, column: position.column + offset },
                     invalid);
             }
