@@ -3,9 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-param */
-// cspell: ignore topdown, bottomup
-
 import { RecognitionException, type TokenStream } from "antlr4ng";
 
 import type { ErrorManager } from "../tool/ErrorManager.js";
@@ -17,10 +14,8 @@ import { TreeVisitor } from "./TreeVisitor.js";
 import type { TreeVisitorAction } from "./TreeVisitorAction.js";
 
 export class TreeRewriter extends TreeParser {
-
-    protected showTransformations = false;
-    protected originalTokenStream: TokenStream;
-    protected originalAdaptor: CommonTreeAdaptor;
+    private originalTokenStream: TokenStream;
+    private originalAdaptor: CommonTreeAdaptor;
 
     public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream) {
         super(errorManager, input);
@@ -28,12 +23,10 @@ export class TreeRewriter extends TreeParser {
         this.originalTokenStream = input.tokens;
     }
 
-    public downUp(t: CommonTree, showTransformations?: boolean): CommonTree {
-        this.showTransformations = showTransformations ?? false;
+    public downUp(t: CommonTree): CommonTree {
         const v = new TreeVisitor();
         const actions = new class implements TreeVisitorAction<CommonTree> {
-            public constructor(private $outer: TreeRewriter) {
-            }
+            public constructor(private $outer: TreeRewriter) { }
 
             public pre(t: CommonTree): CommonTree {
                 return this.$outer.applyOnce(t, this.$outer.topdown);
@@ -49,9 +42,8 @@ export class TreeRewriter extends TreeParser {
     }
 
     /**
-     * Methods the down-up strategy uses to do the up and down rules.
-     * To override, just define tree grammar rule topdown and turn on
-     * filter=true.
+     * Methods the down-up strategy uses to do the up and down rules. To override, just define tree grammar rule
+     * topdown and turn on filter = true.
      *
      * @returns the tree created from applying the down-up rules
      */
@@ -80,10 +72,6 @@ export class TreeRewriter extends TreeParser {
                 return t;
             }
 
-            if (this.showTransformations && r && t !== r) {
-                this.reportTransformation(t, r);
-            }
-
             if (r) {
                 return r;
             }
@@ -107,14 +95,6 @@ export class TreeRewriter extends TreeParser {
         }
 
         return t;
-    }
-
-    /**
-     * Override this if you need transformation tracing to go somewhere
-     *  other than stdout or if you're not using Tree-derived trees.
-     */
-    private reportTransformation(oldTree: CommonTree, newTree: CommonTree): void {
-        console.log(`${oldTree.toStringTree()} -> ${newTree.toStringTree()}`);
     }
 
 }

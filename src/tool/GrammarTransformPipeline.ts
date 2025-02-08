@@ -436,7 +436,7 @@ export class GrammarTransformPipeline {
             combinedRulesRoot.deleteChild(r);
         }
 
-        // Will track 'if' from IF : 'if' ; rules to avoid defining new token for 'if'
+        // Will track 'if' from IF : 'if' ; rules to avoid defining new token for 'if'.
         const litAliases = Grammar.getStringLiteralAliasesFromLexerRules(lexerAST);
 
         const stringLiterals = combinedGrammar.getStringLiterals();

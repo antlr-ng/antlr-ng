@@ -16,13 +16,10 @@ import { CommonTreeNodeStream } from "./CommonTreeNodeStream.js";
 import { MismatchedTreeNodeException } from "./exceptions/MismatchTreeNodeException.js";
 
 /**
- * A parser for a stream of tree nodes. "tree grammars" result in a subclass of this. All the error reporting
+ * A parser for a stream of tree nodes. Tree walkers result in a subclass of this. All the error reporting
  * and recovery is shared with Parser via the BaseRecognizer superclass.
  */
 export class TreeParser {
-    private static dotdot = /.*[^.]\\.\\.[^.].*/g;
-    private static doubleEtc = /.*\\.\\.\\.\\s+\\.\\.\\..*/g;
-
     protected input: CommonTreeNodeStream;
     protected errorManager: ErrorManager;
 
@@ -46,8 +43,7 @@ export class TreeParser {
         this.input = input ?? new CommonTreeNodeStream(new CommonTree());
     }
 
-    private static getAncestor(tokenNames: string[], t: CommonTree | null,
-        goal: string): CommonTree | null {
+    private static getAncestor(tokenNames: string[], t: CommonTree | null, goal: string): CommonTree | null {
         while (t !== null) {
             const name = tokenNames[t.getType()];
             if (name === goal) {

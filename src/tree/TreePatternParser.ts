@@ -19,21 +19,19 @@ export class TreePatternParser {
     public constructor(tokenizer: TreePatternLexer, wizard: TreeWizard) {
         this.tokenizer = tokenizer;
         this.wizard = wizard;
-        this.ttype = tokenizer.nextToken(); // kickstart
+        this.ttype = tokenizer.nextToken();
     }
 
     public pattern(): CommonTree | null {
         if (this.ttype === TreePatternLexer.BEGIN) {
             return this.parseTree();
-        } else {
-            if (this.ttype === TreePatternLexer.ID) {
-                const node = this.parseNode();
-                if (this.ttype === TreePatternLexer.EOF) {
-                    return node;
-                }
-
-                return null; // extra junk on end
+        } else if (this.ttype === TreePatternLexer.ID) {
+            const node = this.parseNode();
+            if (this.ttype === TreePatternLexer.EOF) {
+                return node;
             }
+
+            return null; // Extra junk on end.
         }
 
         return null;
@@ -50,10 +48,10 @@ export class TreePatternParser {
             return null;
         }
 
-        while (this.ttype === TreePatternLexer.BEGIN ||
-            this.ttype === TreePatternLexer.ID ||
-            this.ttype === TreePatternLexer.PERCENT ||
-            this.ttype === TreePatternLexer.DOT) {
+        while (this.ttype === TreePatternLexer.BEGIN
+            || this.ttype === TreePatternLexer.ID
+            || this.ttype === TreePatternLexer.PERCENT
+            || this.ttype === TreePatternLexer.DOT) {
             if (this.ttype === TreePatternLexer.BEGIN) {
                 const subtree = this.parseTree();
                 if (subtree) {
@@ -78,7 +76,7 @@ export class TreePatternParser {
     }
 
     public parseNode(): CommonTree | null {
-        // "%label:" prefix
+        // "%label:" prefix.
         let label = null;
         if (this.ttype === TreePatternLexer.PERCENT) {
             this.ttype = this.tokenizer.nextToken();
@@ -86,13 +84,13 @@ export class TreePatternParser {
                 return null;
             }
 
-            label = this.tokenizer.sval.toString();
+            label = this.tokenizer.stringValue;
             this.ttype = this.tokenizer.nextToken();
             if (this.ttype !== TreePatternLexer.COLON) {
                 return null;
             }
 
-            this.ttype = this.tokenizer.nextToken(); // move to ID following colon
+            this.ttype = this.tokenizer.nextToken(); // Move to ID following colon.
         }
 
         // Wildcard?
@@ -107,27 +105,27 @@ export class TreePatternParser {
             return node;
         }
 
-        // "ID" or "ID[arg]"
+        // "ID" or "ID[arg]".
         if (this.ttype !== TreePatternLexer.ID) {
             return null;
         }
 
-        const tokenName = this.tokenizer.sval.toString();
+        const tokenName = this.tokenizer.stringValue;
         this.ttype = this.tokenizer.nextToken();
         if (tokenName === "nil") {
             return new TreePattern();
         }
 
+        // Check for arg.
         let text = tokenName;
-        // check for arg
         let arg = null;
         if (this.ttype === TreePatternLexer.ARG) {
-            arg = this.tokenizer.sval.toString();
+            arg = this.tokenizer.stringValue;
             text = arg;
             this.ttype = this.tokenizer.nextToken();
         }
 
-        // create node
+        // Create node.
         const treeNodeType = this.wizard.getTokenType(tokenName);
         if (treeNodeType === Token.INVALID_TYPE) {
             return null;

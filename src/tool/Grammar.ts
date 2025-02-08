@@ -406,7 +406,6 @@ export class Grammar implements IGrammar, IAttributeResolver {
             "(RULE %name:TOKEN_REF (BLOCK (LEXER_ALT_ACTION (ALT %lit:STRING_LITERAL) (LEXER_ACTION_CALL . .))))",
             "(RULE %name:TOKEN_REF (BLOCK (LEXER_ALT_ACTION (ALT %lit:STRING_LITERAL) . (LEXER_ACTION_CALL . .))))",
             "(RULE %name:TOKEN_REF (BLOCK (LEXER_ALT_ACTION (ALT %lit:STRING_LITERAL) (LEXER_ACTION_CALL . .) .)))",
-            // TODO: allow doc comment in there
         ];
 
         const wiz = new TreeWizard(ANTLRv4Parser.symbolicNames);
@@ -440,8 +439,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
         if (wiz.parse(r, pattern, nodes)) {
             const litNode = nodes.get("lit")!;
             const nameNode = nodes.get("name")!;
-            const pair = [nameNode, litNode] as [GrammarAST, GrammarAST];
-            lexerRuleToStringLiteral.push(pair);
+            lexerRuleToStringLiteral.push([nameNode, litNode]);
 
             return true;
         }
