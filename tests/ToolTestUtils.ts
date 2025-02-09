@@ -28,6 +28,7 @@ import { ToolListener } from "../src/tool/ToolListener.js";
 import { Tool, type Grammar, type LexerGrammar } from "../src/tool/index.js";
 import type { InterpreterTreeTextProvider } from "./InterpreterTreeTextProvider.js";
 import { ErrorQueue } from "./support/ErrorQueue.js";
+import { Constants } from "../src/Constants.js";
 
 export type MethodKeys<T extends Parser> = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -175,15 +176,16 @@ export class ToolTestUtils {
     }
 
     public static getFilenameFromFirstLineOfGrammar(line: string): string {
-        let fileName = "A" + Tool.GRAMMAR_EXTENSION;
+        let fileName = "A" + Constants.GrammarExtension;
         const grIndex = line.lastIndexOf("grammar");
         const semi = line.lastIndexOf(";");
         if (grIndex >= 0 && semi >= 0) {
             const space = line.indexOf(" ", grIndex);
-            fileName = line.substring(space + 1, semi) + Tool.GRAMMAR_EXTENSION;
+            fileName = line.substring(space + 1, semi) + Constants.GrammarExtension;
         }
-        if (fileName.length === Tool.GRAMMAR_EXTENSION.length) {
-            fileName = "A" + Tool.GRAMMAR_EXTENSION;
+
+        if (fileName.length === Constants.GrammarExtension.length) {
+            fileName = "A" + Constants.GrammarExtension;
         }
 
         return fileName;

@@ -246,7 +246,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
             const input = CharStream.fromString(grammarText);
             input.name = this.fileName;
 
-            const root = this.tool.parse(this.fileName, input);
+            const root = this.tool.parse(input);
             if (!root) {
                 throw new Error("Could not parse grammar");
             }
@@ -295,7 +295,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
         const input = CharStream.fromString(grammarText);
         input.name = basename(fileName);
 
-        const root = grammar.tool.parse(fileName, input);
+        const root = grammar.tool.parse(input);
         if (!root) {
             throw new Error("Could not parse grammar");
         }

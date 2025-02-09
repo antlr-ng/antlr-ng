@@ -3,6 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import { IntStream } from "antlr4ng";
+
 import { Character } from "./support/Character.js";
 import { ErrorManager } from "./tool/ErrorManager.js";
 import { IssueCode } from "./tool/Issues.js";
@@ -33,13 +35,13 @@ export class UndefChecker extends GrammarTreeVisitor {
 
     public override ruleRef(ref: GrammarAST, arg: ActionAST | null): void {
         const ruleAST: RuleAST | undefined = this.ruleToAST.get(ref.getText());
-        const fileName = ref.token?.inputStream?.getSourceName() ?? "<unknown>";
+        const fileName = ref.token?.inputStream?.getSourceName() ?? IntStream.UNKNOWN_SOURCE_NAME;
 
         if (Character.isUpperCase(this.currentRuleName!.codePointAt(0)!) &&
             Character.isLowerCase(ref.getText().codePointAt(0)!)) {
             this.badRef = true;
-            this.errorManager.grammarError(IssueCode.ParserRuleRefInLexerRule,
-                fileName, ref.token!, ref.getText(), this.currentRuleName);
+            this.errorManager.grammarError(IssueCode.ParserRuleRefInLexerRule, fileName, ref.token!, ref.getText(),
+                this.currentRuleName);
         } else if (!ruleAST) {
             this.badRef = true;
             this.errorManager.grammarError(IssueCode.UndefinedRuleRef, fileName, ref.token!, ref.getText());

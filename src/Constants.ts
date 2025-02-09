@@ -12,6 +12,11 @@ import { AttributeDict } from "./tool/AttributeDict.js";
  * Various constant value that were scattered all over the place. Collect them here to minimize circular dependencies.
  */
 export class Constants {
+    public static readonly GrammarExtension = ".g4";
+    public static readonly LegacyGrammarExtension = ".g";
+
+    public static readonly AllGrammarExtensions = [Constants.GrammarExtension, Constants.LegacyGrammarExtension];
+
     public static readonly DefaultNodeName = "DEFAULT_MODE";
 
     public static readonly PrecedenceOptionName = "p";

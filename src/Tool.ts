@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-param, jsdoc/require-returns */
-
 import { ATNSerializer, CharStream, CommonTokenStream } from "antlr4ng";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join } from "node:path";
@@ -19,7 +17,6 @@ import { LexerATNFactory } from "./automata/LexerATNFactory.js";
 import { ParserATNFactory } from "./automata/ParserATNFactory.js";
 import { CodeGenPipeline } from "./codegen/CodeGenPipeline.js";
 import { CodeGenerator } from "./codegen/CodeGenerator.js";
-import { parseToolParameters, type IToolParameters } from "./tool-parameters.js";
 import { Graph } from "./misc/Graph.js";
 import { ToolANTLRLexer } from "./parse/ToolANTLRLexer.js";
 import { ToolANTLRParser } from "./parse/ToolANTLRParser.js";
@@ -27,26 +24,23 @@ import { SemanticPipeline } from "./semantics/SemanticPipeline.js";
 import { GrammarType } from "./support/GrammarType.js";
 import { LogManager } from "./support/LogManager.js";
 import { ParseTreeToASTConverter } from "./support/ParseTreeToASTConverter.js";
+import { convertArrayToString } from "./support/helpers.js";
+import { parseToolParameters, type IToolParameters } from "./tool-parameters.js";
 import { BuildDependencyGenerator } from "./tool/BuildDependencyGenerator.js";
 import { DOTGenerator } from "./tool/DOTGenerator.js";
 import { ErrorManager } from "./tool/ErrorManager.js";
-import { IssueCode } from "./tool/Issues.js";
 import type { Grammar } from "./tool/Grammar.js";
 import { GrammarTransformPipeline } from "./tool/GrammarTransformPipeline.js";
+import { IssueCode } from "./tool/Issues.js";
 import type { LexerGrammar } from "./tool/LexerGrammar.js";
 import { Rule } from "./tool/Rule.js";
 import { GrammarAST } from "./tool/ast/GrammarAST.js";
 import { GrammarRootAST } from "./tool/ast/GrammarRootAST.js";
 import type { RuleAST } from "./tool/ast/RuleAST.js";
 import type { IGrammar, ITool } from "./types.js";
-import { convertArrayToString } from "./support/helpers.js";
+import { Constants } from "./Constants.js";
 
 export class Tool implements ITool {
-    public static readonly GRAMMAR_EXTENSION = ".g4";
-    public static readonly LEGACY_GRAMMAR_EXTENSION = ".g";
-
-    public static readonly ALL_GRAMMAR_EXTENSIONS = [Tool.GRAMMAR_EXTENSION, Tool.LEGACY_GRAMMAR_EXTENSION];
-
     public logMgr = new LogManager();
 
     public readonly errorManager;
@@ -126,7 +120,14 @@ export class Tool implements ITool {
         return content.toString();
     }
 
-    /** Manually get option node from tree; return null if not defined. */
+    /**
+     * Manually get option node from tree.
+     *
+     * @param root The root of the grammar tree.
+     * @param option The name of the option to find.
+     *
+     * @returns The option node or null if not found.
+     */
     private static findOptionValueAST(root: GrammarRootAST, option: string): GrammarAST | null {
         const options = root.getFirstChildWithType(ANTLRv4Parser.OPTIONS) as GrammarAST | null;
         if (options !== null && options.children.length > 0) {
@@ -159,11 +160,12 @@ export class Tool implements ITool {
     };
 
     /**
-     * To process a grammar, we load all of its imported grammars into
-     * subordinate grammar objects. Then we merge the imported rules
-     * into the root grammar. If a root grammar is a combined grammar,
-     * we have to extract the implicit lexer. Once all this is done, we
-     * process the lexer first, if present, and then the parser grammar
+     * To process a grammar, we load all of its imported grammars into subordinate grammar objects. Then we merge the
+     * imported rules into the root grammar. If a root grammar is a combined grammar, we have to extract the implicit
+     * lexer. Once all this is done, we process the lexer first, if present, and then the parser grammar
+     *
+     * @param g The grammar to process.
+     * @param genCode Whether to generate code or not.
      */
     public process(g: Grammar, genCode: boolean): void {
         g.loadImportedGrammars(new Set());
@@ -173,7 +175,8 @@ export class Tool implements ITool {
 
         let lexerAST: GrammarRootAST | undefined;
         if (g.ast.grammarType === GrammarType.Combined) {
-            lexerAST = transform.extractImplicitLexer(g); // alters g.ast
+            // Alters g.ast.
+            lexerAST = transform.extractImplicitLexer(g);
             if (lexerAST) {
                 lexerAST.toolParameters = this.toolParameters;
                 const lexerGrammar = ClassFactory.createLexerGrammar(this, lexerAST);
@@ -220,7 +223,7 @@ export class Tool implements ITool {
 
         g.atn = factory.createATN();
         if (this.toolParameters.atn) {
-            this.generateATNs(g);
+            this.exportATNDotFiles(g);
         }
 
         if (genCode && g.tool.getNumErrors() === 0) {
@@ -250,11 +253,13 @@ export class Tool implements ITool {
     }
 
     /**
-     * Important enough to avoid multiple definitions that we do very early,
-     * right after AST construction. Also check for undefined rules in
-     * parser/lexer to avoid exceptions later. Return true if we find multiple
-     * definitions of the same rule or a reference to an undefined rule or
-     * parser rule ref in lexer rule.
+     * Important enough to avoid multiple definitions that we do very early, right after AST construction. Also check
+     * for undefined rules in parser/lexer to avoid exceptions later. Return true if we find multiple definitions of
+     * the same rule or a reference to an undefined rule or parser rule ref in lexer rule.
+     *
+     * @param g The grammar to check.
+     *
+     * @returns true if there are issues with the rules.
      */
     public checkForRuleIssues(g: Grammar): boolean {
         // check for redefined rules
@@ -314,16 +319,16 @@ export class Tool implements ITool {
                     vocabName = vocabName.substring(1, len - 1);
                 }
 
-                // If the name contains a path delimited by forward slashes,
-                // use only the part after the last slash as the name
+                // If the name contains a path delimited by forward slashes, use only the part after the last slash
+                // as the name
                 const lastSlash = vocabName.lastIndexOf("/");
                 if (lastSlash >= 0) {
                     vocabName = vocabName.substring(lastSlash + 1);
                 }
                 g.addEdge(grammarName, vocabName);
             }
-            // add cycle to graph so we always process a grammar if no error
-            // even if no dependency
+
+            // Add cycle to graph so we always process a grammar if no error even if no dependency.
             g.addEdge(grammarName, grammarName);
         }
 
@@ -343,21 +348,25 @@ export class Tool implements ITool {
     };
 
     /**
-         Given the raw AST of a grammar, create a grammar object
-        associated with the AST. Once we have the grammar object, ensure
-        that all nodes in tree referred to this grammar. Later, we will
-        use it for error handling and generally knowing from where a rule
-        comes from.
+     * Given the raw AST of a grammar, create a grammar object associated with the AST. Once we have the grammar object,
+     * ensure that all nodes in tree referred to this grammar. Later, we will use it for error handling and generally
+     * knowing from where a rule comes from.
+     *
+     * @param grammarAST The raw AST of the grammar.
+     *
+     * @returns The grammar object.
      */
     public createGrammar(grammarAST: GrammarRootAST): IGrammar {
         let g: IGrammar;
+
+        // Using a class factory here to avoid circular dependencies.
         if (grammarAST.grammarType === GrammarType.Lexer) {
             g = ClassFactory.createLexerGrammar(this, grammarAST);
         } else {
             g = ClassFactory.createGrammar(this, grammarAST);
         }
 
-        // ensure each node has pointer to surrounding grammar
+        // Ensure each node has pointer to surrounding grammar.
         GrammarTransformPipeline.setGrammarPtr(g, grammarAST);
 
         return g;
@@ -370,7 +379,7 @@ export class Tool implements ITool {
             const input = CharStream.fromString(content);
             input.name = basename(fileName);
 
-            return this.parse(fileName, input);
+            return this.parse(input);
         } catch (ioe) {
             this.errorManager.toolError(IssueCode.CannotOpenFile, ioe, fileName);
             throw ioe;
@@ -378,10 +387,13 @@ export class Tool implements ITool {
     }
 
     /**
-     * Convenience method to load and process an ANTLR grammar. Useful
-     *  when creating interpreters.  If you need to access to the lexer
-     *  grammar created while processing a combined grammar, use
-     *  getImplicitLexer() on returned grammar.
+     * Convenience method to load and process an ANTLR grammar. Useful when creating interpreters. If you need to
+     * access to the lexer grammar created while processing a combined grammar, use getImplicitLexer() on returned
+     * grammar.
+     *
+     * @param fileName The name of the grammar file to load.
+     *
+     * @returns The grammar object.
      */
     public loadGrammar(fileName: string): Grammar {
         const grammarAST = this.parseGrammar(fileName)!;
@@ -392,10 +404,12 @@ export class Tool implements ITool {
     }
 
     /**
-     * Try current dir then dir of g then lib dir
+     * Try current dir then dir of g then lib dir.
      *
      * @param g The grammar to import.
      * @param nameNode The node associated with the imported grammar name.
+     *
+     * @returns The imported grammar or null if not found.
      */
     public loadImportedGrammar(g: Grammar, nameNode: GrammarAST): Grammar | null {
         const name = nameNode.getText();
@@ -404,7 +418,7 @@ export class Tool implements ITool {
             g.tool.logInfo({ component: "grammar", msg: `load ${name} from ${g.fileName}` });
 
             let importedFile;
-            for (const extension of Tool.ALL_GRAMMAR_EXTENSIONS) {
+            for (const extension of Constants.AllGrammarExtensions) {
                 importedFile = this.getImportedGrammarFile(g, name + extension);
                 if (importedFile) {
                     break;
@@ -412,8 +426,7 @@ export class Tool implements ITool {
             }
 
             if (!importedFile) {
-                this.errorManager.grammarError(IssueCode.CannotFindImportedGrammar, g.fileName, nameNode.token!,
-                    name);
+                this.errorManager.grammarError(IssueCode.CannotFindImportedGrammar, g.fileName, nameNode.token!, name);
 
                 return null;
             }
@@ -422,7 +435,8 @@ export class Tool implements ITool {
             const content = readFileSync(importedFile, { encoding: grammarEncoding });
             const input = CharStream.fromString(content);
             input.name = basename(importedFile);
-            const result = this.parse(g.fileName, input);
+
+            const result = this.parse(input);
             if (!result) {
                 return null;
             }
@@ -436,10 +450,10 @@ export class Tool implements ITool {
     }
 
     public parseGrammarFromString(grammar: string): GrammarRootAST | undefined {
-        return this.parse("<string>", CharStream.fromString(grammar));
+        return this.parse(CharStream.fromString(grammar));
     }
 
-    public parse(fileName: string, input: CharStream): GrammarRootAST | undefined {
+    public parse(input: CharStream): GrammarRootAST | undefined {
         const lexer = new ToolANTLRLexer(input, this);
         const tokens = new CommonTokenStream(lexer);
         const p = new ToolANTLRParser(tokens, this);
@@ -455,7 +469,7 @@ export class Tool implements ITool {
         return result;
     }
 
-    public generateATNs(g: Grammar): void {
+    public exportATNDotFiles(g: Grammar): void {
         const dotGenerator = new DOTGenerator(g);
         const grammars = new Array<Grammar>();
         grammars.push(g);
@@ -476,22 +490,19 @@ export class Tool implements ITool {
     }
 
     /**
-     * This method is used by all code generators to create new output
-     *  files. If the outputDir set by -o is not present it will be created.
-     *  The final filename is sensitive to the output directory and
-     *  the directory where the grammar file was found.  If -o is /tmp
-     *  and the original grammar file was foo/t.g4 then output files
-     *  go in /tmp/foo.
+     * This method is used by all code generators to create new output files. If the outputDir set by -o is not present
+     * it will be created. The final filename is sensitive to the output directory and the directory where the grammar
+     * file was found. If -o is /tmp and the original grammar file was foo/t.g4 then output files go in /tmp/foo.
      *
-     *  The output dir -o spec takes precedence if it's absolute.
-     *  E.g., if the grammar file dir is absolute the output dir is given
-     *  precedence. "-o /tmp /usr/lib/t.g4" results in "/tmp/T.java" as
-     *  output (assuming t.g4 holds T.java).
+     * The output dir -o spec takes precedence if it's absolute. E.g., if the grammar file dir is absolute the output
+     * dir is given precedence. "-o /tmp /usr/lib/t.g4" results in "/tmp/T.java" as output (assuming t.g4 holds T.java).
      *
-     *  If no -o is specified, then just write to the directory where the
-     *  grammar file was found.
+     * If no -o is specified, then just write to the directory where the grammar file was found.
      *
-     *  If outputDirectory==null then write a String.
+     * @param g The grammar for which we are generating a file.
+     * @param fileName The name of the file to generate.
+     *
+     * @returns The full path to the output file.
      */
     public getOutputFile(g: Grammar, fileName: string): string {
         const outputDir = this.getOutputDirectory(g.fileName);
@@ -507,9 +518,12 @@ export class Tool implements ITool {
     public getImportedGrammarFile(g: Grammar, fileName: string): string | undefined {
         let candidate = fileName;
         if (!existsSync(candidate)) {
-            const parentDir = dirname(g.fileName); // Check the parent dir of input directory.
+            // Check the parent dir of input directory..
+            const parentDir = dirname(g.fileName);
             candidate = join(parentDir, fileName);
-            if (!existsSync(candidate)) { // try in lib dir
+
+            // Try in lib dir.
+            if (!existsSync(candidate)) {
                 const libDirectory = this.toolParameters.lib;
                 if (libDirectory) {
                     candidate = join(libDirectory, fileName);
@@ -526,12 +540,11 @@ export class Tool implements ITool {
     }
 
     /**
-     * Return the location where ANTLR will generate output files for a given
-     * file. This is a base directory and output files will be relative to
-     * here in some cases such as when -o option is used and input files are
+     * @returns the location where ANTLR will generate output files for a given file. This is a base directory and
+     * output files will be relative to here in some cases such as when -o option is used and input files are
      * given relative to the input directory.
      *
-     * @param fileNameWithPath path to input source
+     * @param fileNameWithPath path to input source.
      */
     public getOutputDirectory(fileNameWithPath: string): string {
         const dirName = dirname(fileNameWithPath);
