@@ -225,8 +225,8 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         const right = this.newState(BasicState);
 
         let p: AbstractPredicateTransition;
-        if (pred.getOptionString(Constants.PRECEDENCE_OPTION_NAME)) {
-            const precedence = Number.parseInt(pred.getOptionString(Constants.PRECEDENCE_OPTION_NAME) ?? "0");
+        if (pred.getOptionString(Constants.PrecedenceOptionName)) {
+            const precedence = Number.parseInt(pred.getOptionString(Constants.PrecedenceOptionName) ?? "0");
             p = new PrecedencePredicateTransition(right, precedence);
         } else {
             const isCtxDependent = UseDefAnalyzer.actionIsContextDependent(pred);
@@ -402,8 +402,8 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         const ast = node as GrammarASTWithOptions;
 
         let precedence = 0;
-        if (ast.getOptionString(Constants.PRECEDENCE_OPTION_NAME)) {
-            precedence = Number.parseInt(ast.getOptionString(Constants.PRECEDENCE_OPTION_NAME) ?? "0");
+        if (ast.getOptionString(Constants.PrecedenceOptionName)) {
+            precedence = Number.parseInt(ast.getOptionString(Constants.PrecedenceOptionName) ?? "0");
         }
 
         const call = new RuleTransition(start, r.index, precedence, right);

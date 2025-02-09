@@ -8,7 +8,6 @@ import { ST } from "stringtemplate4ts";
 import { IssueCode, issueTypes, type IssueDetails } from "./Issues.js";
 
 export class ANTLRMessage {
-    // Used for location template.
     public readonly fileName: string;
     public readonly line: number = -1;
     public readonly column: number = -1;

@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-param */
-
 import { DictType } from "../misc/types.js";
 import { IAttribute } from "./IAttribute.js";
 import type { GrammarAST } from "./ast/GrammarAST.js";
@@ -50,6 +48,8 @@ export class AttributeDict {
     }
 
     /**
+     * @param other The other {@link AttributeDict} to compare with.
+     *
      * @returns the set of keys that collide from {@code this} and {@code other}.
      */
     public intersection(other: AttributeDict | null): Set<string> {

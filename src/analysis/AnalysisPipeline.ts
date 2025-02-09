@@ -48,7 +48,7 @@ export class AnalysisPipeline {
     }
 
     private processParser(): void {
-        this.g.decisionLOOK = new Array<IntervalSet[]>(this.g.atn!.getNumberOfDecisions() + 1);
+        this.g.decisionLookahead = new Array<IntervalSet[]>(this.g.atn!.getNumberOfDecisions() + 1);
         for (const s of this.g.atn!.decisionToState) {
             this.g.tool.logInfo({
                 component: "LL1",
@@ -64,8 +64,8 @@ export class AnalysisPipeline {
                 this.g.tool.logInfo({ component: "LL1", msg: "look=" + look });
             }
 
-            Utils.setSize(this.g.decisionLOOK, s.decision + 1);
-            this.g.decisionLOOK[s.decision] = look;
+            Utils.setSize(this.g.decisionLookahead, s.decision + 1);
+            this.g.decisionLookahead[s.decision] = look;
             this.g.tool.logInfo({ component: "LL1", msg: "LL(1)? " + disjoint(look) });
         }
     }

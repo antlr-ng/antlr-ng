@@ -75,7 +75,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         first = rule;
                     }
 
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     if (this.failed) {
                         return result;
                     }
@@ -149,7 +149,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         ++matchCount;
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
                     if (this.failed) {
                         return result;
                     }
@@ -292,7 +292,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 ebnfSuffixStream.add(ebnfSuffix ?? null);
             }
 
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
             if (this.failed) {
                 return undefined;
             }
@@ -307,7 +307,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 blockSetStream.add(blockSet ?? null);
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
             if (this.failed) {
                 return undefined;
             }
@@ -407,7 +407,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     first = block;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return undefined;
                 }
@@ -422,7 +422,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     first2 = alt;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return undefined;
                 }
@@ -462,7 +462,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     setElementStream.add(setElement ?? null);
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return result;
                 }
@@ -483,7 +483,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
                         }
 
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         if (this.failed) {
                             return result;
                         }
@@ -514,7 +514,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             setElementStream.add(setElement ?? null);
                         }
 
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                         if (this.failed) {
                             return result;
                         }
@@ -542,7 +542,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     ++optionCount;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return result;
                 }
@@ -592,7 +592,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     first = block;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return result;
                 }
@@ -607,7 +607,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     first = alt;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return result;
                 }
@@ -639,7 +639,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     setElementStream.add(setElement ?? null);
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return result;
                 }
@@ -662,7 +662,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             }
                         }
 
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         if (this.failed) {
                             return result;
                         }
@@ -694,7 +694,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             setElementStream.add(setElement ?? null);
                         }
 
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                         if (this.failed) {
                             return result;
                         }
@@ -722,7 +722,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     ++optionsCount;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return result;
                 }
@@ -777,7 +777,7 @@ export class BlockSetTransformer extends TreeRewriter {
             const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Parser.STRING_LITERAL) {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
 
                     if (this.failed) {
@@ -788,7 +788,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         first = a;
                     }
 
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     if (this.failed) {
                         return result;
                     }
@@ -798,7 +798,7 @@ export class BlockSetTransformer extends TreeRewriter {
                         return result;
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
                     if (this.failed) {
                         return result;
                     }
@@ -820,7 +820,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
 
                     doDefault = false;
-                } else if (lookahead2 === Constants.UP) {
+                } else if (lookahead2 === Constants.Up) {
                     const a = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
                     if (this.failed) {
                         return result;
@@ -869,7 +869,7 @@ export class BlockSetTransformer extends TreeRewriter {
             } else {
                 if ((lookahead === ANTLRv4Parser.TOKEN_REF) && !inLexer) {
                     const lookahead2 = this.input.lookahead(2);
-                    if (lookahead2 === Constants.DOWN) {
+                    if (lookahead2 === Constants.Down) {
                         const tokenRef = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
                         if (this.failed) {
                             return result;
@@ -879,7 +879,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             first = tokenRef;
                         }
 
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         if (this.failed) {
                             return result;
                         }
@@ -889,7 +889,7 @@ export class BlockSetTransformer extends TreeRewriter {
                             return result;
                         }
 
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                         if (this.failed) {
                             return result;
                         }
@@ -903,7 +903,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                         doDefault = false;
                     } else {
-                        if (lookahead2 === Constants.UP) {
+                        if (lookahead2 === Constants.Up) {
                             const tokenRef = this.match(this.input, ANTLRv4Parser.TOKEN_REF)!;
                             if (this.failed) {
                                 return result;
@@ -945,7 +945,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     first = range;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return result;
                 }
@@ -960,7 +960,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return result;
                 }
@@ -1018,8 +1018,8 @@ export class BlockSetTransformer extends TreeRewriter {
                 first = elementOptions;
             }
 
-            if (this.input.lookahead(1) === Constants.DOWN) {
-                this.match(this.input, Constants.DOWN);
+            if (this.input.lookahead(1) === Constants.Down) {
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return result;
                 }
@@ -1043,7 +1043,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     }
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return result;
                 }
@@ -1089,7 +1089,7 @@ export class BlockSetTransformer extends TreeRewriter {
                 doDefault = false;
             } else if (lookahead === ANTLRv4Parser.ASSIGN) {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     const lookahead3 = this.input.lookahead(3);
                     if (lookahead3 === ANTLRv4Parser.ID) {
                         doDefault = false;
@@ -1101,7 +1101,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     return result;
                                 }
 
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 if (this.failed) {
                                     return result;
                                 }
@@ -1116,7 +1116,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     return result;
                                 }
 
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
                                 if (this.failed) {
                                     return result;
                                 }
@@ -1143,7 +1143,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     first = assign;
                                 }
 
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 if (this.failed) {
                                     return result;
                                 }
@@ -1158,7 +1158,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     return result;
                                 }
 
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
                                 if (this.failed) {
                                     return result;
                                 }
@@ -1185,7 +1185,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     first = assign;
                                 }
 
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 if (this.failed) {
                                     return result;
                                 }
@@ -1200,7 +1200,7 @@ export class BlockSetTransformer extends TreeRewriter {
                                     return result;
                                 }
 
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
                                 if (this.failed) {
                                     return result;
                                 }
@@ -1303,7 +1303,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     first = assign;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
 
                 if (this.failed) {
                     return result;
@@ -1319,7 +1319,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     return result;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
 
                 if (this.failed) {
                     return result;

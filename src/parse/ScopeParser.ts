@@ -3,17 +3,16 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { CommonToken } from "antlr4ng";
+import { CommonToken, Token } from "antlr4ng";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
-import { Constants } from "../Constants.js";
 import { Character } from "../support/Character.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { AttributeDict } from "../tool/AttributeDict.js";
-import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import { IAttribute } from "../tool/IAttribute.js";
+import { IssueCode } from "../tool/Issues.js";
 
 /**
  * Parse args, return values, locals
@@ -136,7 +135,7 @@ export class ScopeParser {
 
             const offset = (action.token as CommonToken).start;
             attr.token = CommonToken.fromSource([null, action.token!.inputStream], ANTLRv4Parser.ID,
-                Constants.DEFAULT_TOKEN_CHANNEL, offset + declOffset + idStart + 1, offset + declOffset + idStop);
+                Token.DEFAULT_CHANNEL, offset + declOffset + idStart + 1, offset + declOffset + idStop);
             attr.token.line = line;
             attr.token.column = charPositionInLine;
         }

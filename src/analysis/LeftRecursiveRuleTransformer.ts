@@ -85,14 +85,14 @@ export class LeftRecursiveRuleTransformer {
             }
 
             const rule = r as GrammarASTWithOptions;
-            if (rule.getOptionString(Constants.PRECEDENCE_OPTION_NAME)) {
+            if (rule.getOptionString(Constants.PrecedenceOptionName)) {
                 // Already has arg; must be in rewritten rule.
                 continue;
             }
 
             if (leftRecursiveRuleNames.includes(rule.getText())) {
                 // Found ref to recursive rule not already rewritten with arg.
-                rule.setOption(Constants.PRECEDENCE_OPTION_NAME,
+                rule.setOption(Constants.PrecedenceOptionName,
                     new GrammarASTAdaptor().create(ANTLRv4Parser.INT, "0"));
             }
         }

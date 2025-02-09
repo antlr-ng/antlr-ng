@@ -7,12 +7,11 @@ import type { IAttribute } from "./IAttribute.js";
 import { ActionAST } from "./ast/ActionAST.js";
 
 /**
- * Grammars, rules, and alternatives all have symbols visible to
- *  actions.  To evaluate attr exprs, ask action for its resolver
- *  then ask resolver to look up various symbols. Depending on the context,
- *  some symbols are available at some aren't.
+ * Grammars, rules, and alternatives all have symbols visible to actions. To evaluate attr exprs, ask action for its
+ * resolver then ask resolver to look up various symbols. Depending on the context, some symbols are available at
+ * some aren't.
  *
- *  Alternative level:
+ * Alternative level:
  *
  *  $x		Attribute: rule arguments, return values, predefined rule prop.
  * 			AttributeDict: references to tokens and token labels in the

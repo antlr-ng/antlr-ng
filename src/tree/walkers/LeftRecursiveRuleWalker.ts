@@ -57,7 +57,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return isLeftRec;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return isLeftRec;
         }
@@ -85,7 +85,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 return isLeftRec;
             }
 
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
             if (this.failed) {
                 return isLeftRec;
             }
@@ -99,7 +99,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 this.setReturnValues(a);
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
             if (this.failed) {
                 return isLeftRec;
             }
@@ -111,7 +111,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 return isLeftRec;
             }
 
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
             if (this.failed) {
                 return isLeftRec;
             }
@@ -121,7 +121,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 return isLeftRec;
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
             if (this.failed) {
                 return isLeftRec;
             }
@@ -135,8 +135,8 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return isLeftRec;
                 }
 
-                if (this.input.lookahead(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN);
+                if (this.input.lookahead(1) === Constants.Down) {
+                    this.match(this.input, Constants.Down);
                     if (this.failed) {
                         return isLeftRec;
                     }
@@ -153,7 +153,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         }
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
                     if (this.failed) {
                         return isLeftRec;
                     }
@@ -164,7 +164,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return isLeftRec;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return isLeftRec;
                 }
@@ -179,7 +179,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return isLeftRec;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return isLeftRec;
                 }
@@ -202,7 +202,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return isLeftRec;
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return isLeftRec;
         }
@@ -243,7 +243,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return;
         }
@@ -258,7 +258,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return;
         }
@@ -270,7 +270,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return;
         }
@@ -280,7 +280,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return;
         }
@@ -313,7 +313,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return result;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return result;
         }
@@ -350,7 +350,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             alternativeCount++;
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return result;
         }
@@ -421,7 +421,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return;
         }
@@ -468,7 +468,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return;
         }
@@ -484,7 +484,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return;
         }
@@ -539,7 +539,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return;
         }
@@ -555,7 +555,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return;
         }
@@ -600,7 +600,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             elementCount++;
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return;
         }
@@ -616,7 +616,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return;
         }
@@ -658,7 +658,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             elementCount++;
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return;
         }
@@ -672,7 +672,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -687,7 +687,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -701,7 +701,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -716,7 +716,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -768,8 +768,8 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        if (this.input.lookahead(1) === Constants.DOWN) {
-            this.match(this.input, Constants.DOWN);
+        if (this.input.lookahead(1) === Constants.Down) {
+            this.match(this.input, Constants.Down);
             if (this.failed) {
                 return;
             }
@@ -786,7 +786,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 }
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
             if (this.failed) {
                 return;
             }
@@ -802,7 +802,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
         } else {
             if (lookahead === ANTLRv4Lexer.ASSIGN) {
-                if ((this.input.lookahead(2) === Constants.DOWN)) {
+                if ((this.input.lookahead(2) === Constants.Down)) {
                     if (this.input.lookahead(3) === ANTLRv4Lexer.ID) {
                         switch (this.input.lookahead(4)) {
                             case ANTLRv4Lexer.ID: {
@@ -811,7 +811,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                                     return;
                                 }
 
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 if (this.failed) {
                                     return;
                                 }
@@ -826,7 +826,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                                     return;
                                 }
 
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
                                 if (this.failed) {
                                     return;
                                 }
@@ -840,7 +840,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                                     return;
                                 }
 
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 if (this.failed) {
                                     return;
                                 }
@@ -855,7 +855,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                                     return;
                                 }
 
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
                                 if (this.failed) {
                                     return;
                                 }
@@ -869,7 +869,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                                     return;
                                 }
 
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 if (this.failed) {
                                     return;
                                 }
@@ -884,7 +884,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                                     return;
                                 }
 
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
                                 if (this.failed) {
                                     return;
                                 }
@@ -898,7 +898,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                                     return;
                                 }
 
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 if (this.failed) {
                                     return;
                                 }
@@ -913,7 +913,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                                     return;
                                 }
 
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
                                 if (this.failed) {
                                     return;
                                 }
@@ -998,12 +998,12 @@ export class LeftRecursiveRuleWalker extends TreeParser {
         switch (this.input.lookahead(1)) {
             case ANTLRv4Lexer.RULE_REF: {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     this.atom();
                     if (this.failed) {
                         return;
                     }
-                } else if ((lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                } else if ((lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                     || this.singleAtomLookaheadValues.includes(lookahead2)
                     || (lookahead2 >= ANTLRv4Lexer.BLOCK && lookahead2 <= ANTLRv4Lexer.CLOSURE)
                     || (lookahead2 >= ANTLRv4Lexer.OPTIONAL && lookahead2 <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -1053,7 +1053,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1064,7 +1064,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1078,7 +1078,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1093,7 +1093,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1107,7 +1107,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1122,7 +1122,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1136,7 +1136,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1151,7 +1151,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1165,7 +1165,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1195,7 +1195,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     setElementCount++;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1242,13 +1242,13 @@ export class LeftRecursiveRuleWalker extends TreeParser {
         switch (this.input.lookahead(1)) {
             case ANTLRv4Lexer.ACTION: {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     this.match(this.input, ANTLRv4Lexer.ACTION);
                     if (this.failed) {
                         return;
                     }
 
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     if (this.failed) {
                         return;
                     }
@@ -1258,12 +1258,12 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         return;
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
                     if (this.failed) {
                         return;
                     }
                 } else if (
-                    (lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                    (lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                     || this.singleAtomLookaheadValues.includes(lookahead2)
                     || (lookahead2 >= ANTLRv4Lexer.BLOCK && lookahead2 <= ANTLRv4Lexer.CLOSURE)
                     || (lookahead2 >= ANTLRv4Lexer.OPTIONAL && lookahead2 <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -1297,13 +1297,13 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
             case ANTLRv4Lexer.SEMPRED: {
                 const lookahead2 = this.input.lookahead(2);
-                if ((lookahead2 === Constants.DOWN)) {
+                if ((lookahead2 === Constants.Down)) {
                     this.match(this.input, ANTLRv4Lexer.SEMPRED);
                     if (this.failed) {
                         return;
                     }
 
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     if (this.failed) {
                         return;
                     }
@@ -1313,11 +1313,11 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         return;
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
                     if (this.failed) {
                         return;
                     }
-                } else if ((lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                } else if ((lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                     || this.singleAtomLookaheadValues.includes(lookahead2)
                     || (lookahead2 >= ANTLRv4Lexer.BLOCK && lookahead2 <= ANTLRv4Lexer.CLOSURE)
                     || (lookahead2 >= ANTLRv4Lexer.OPTIONAL && lookahead2 <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -1373,13 +1373,13 @@ export class LeftRecursiveRuleWalker extends TreeParser {
         const lookahead = this.input.lookahead(1);
         if ((lookahead === ANTLRv4Lexer.STRING_LITERAL)) {
             const lookahead2 = this.input.lookahead(2);
-            if (lookahead2 === Constants.DOWN) {
+            if (lookahead2 === Constants.Down) {
                 this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
                 if (this.failed) {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1389,11 +1389,11 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
-            } else if (lookahead2 === Constants.UP
+            } else if (lookahead2 === Constants.Up
                 || lookahead2 === ANTLRv4Lexer.STRING_LITERAL
                 || lookahead2 === ANTLRv4Lexer.TOKEN_REF) {
                 this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
@@ -1420,13 +1420,13 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             }
         } else if ((lookahead === ANTLRv4Lexer.TOKEN_REF)) {
             const lookahead2 = this.input.lookahead(2);
-            if (lookahead2 === Constants.DOWN) {
+            if (lookahead2 === Constants.Down) {
                 this.match(this.input, ANTLRv4Lexer.TOKEN_REF);
                 if (this.failed) {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1436,11 +1436,11 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
-            } else if (lookahead2 === Constants.UP
+            } else if (lookahead2 === Constants.Up
                 || lookahead2 === ANTLRv4Lexer.STRING_LITERAL
                 || lookahead2 === ANTLRv4Lexer.TOKEN_REF) {
                 this.match(this.input, ANTLRv4Lexer.TOKEN_REF);
@@ -1494,7 +1494,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1504,7 +1504,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1518,7 +1518,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1528,7 +1528,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1542,7 +1542,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1552,7 +1552,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1578,7 +1578,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return;
         }
@@ -1614,7 +1614,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             altCount++;
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return;
         }
@@ -1626,7 +1626,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             return;
         }
 
-        this.match(this.input, Constants.DOWN);
+        this.match(this.input, Constants.Down);
         if (this.failed) {
             return;
         }
@@ -1666,7 +1666,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             elementCount++;
         }
 
-        this.match(this.input, Constants.UP);
+        this.match(this.input, Constants.Up);
         if (this.failed) {
             return;
         }
@@ -1676,7 +1676,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
         let alt = 8;
 
         const matchesLookahead = (lookahead: number): boolean => {
-            return (lookahead >= Constants.UP && lookahead <= ANTLRv4Lexer.ACTION)
+            return (lookahead >= Constants.Up && lookahead <= ANTLRv4Lexer.ACTION)
                 || this.singleAtomLookaheadValues.includes(lookahead)
                 || (lookahead >= ANTLRv4Lexer.BLOCK && lookahead <= ANTLRv4Lexer.CLOSURE)
                 || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -1692,7 +1692,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
             case ANTLRv4Lexer.STRING_LITERAL: {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     alt = 2;
                 } else {
                     if (matchesLookahead(lookahead2)) {
@@ -1722,7 +1722,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
             case ANTLRv4Lexer.TOKEN_REF: {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     alt = 4;
                 } else {
                     if (matchesLookahead(lookahead2)) {
@@ -1752,7 +1752,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
             case ANTLRv4Lexer.WILDCARD: {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     alt = 6;
                 } else {
                     if (matchesLookahead(lookahead2)) {
@@ -1803,8 +1803,8 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                if (this.input.lookahead(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN);
+                if (this.input.lookahead(1) === Constants.Down) {
+                    this.match(this.input, Constants.Down);
                     if (this.failed) {
                         return;
                     }
@@ -1825,7 +1825,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                         }
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     if (this.failed) {
                         return;
@@ -1841,7 +1841,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1851,7 +1851,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1874,7 +1874,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1884,7 +1884,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1907,7 +1907,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1917,7 +1917,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -1940,7 +1940,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 if (this.failed) {
                     return;
                 }
@@ -1955,7 +1955,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (this.failed) {
                     return;
                 }
@@ -2050,7 +2050,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                     return true;
                 }
 
-                if (la === Constants.UP && this.input.lookaheadType(1)!.getText() === this.ruleName) {
+                if (la === Constants.Up && this.input.lookaheadType(1)!.getText() === this.ruleName) {
                     return false;
                 }
 

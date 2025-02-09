@@ -654,13 +654,12 @@ describe("TestATNConstruction", () => {
 
     /**
      * Test for https://github.com/antlr/antlr4/issues/1369
-     *  Repeated edges:
-
-     RuleStop_e_3->BlockEnd_26
-     RuleStop_e_3->BlockEnd_26
-     RuleStop_e_3->BlockEnd_26
-
-     * @throws Exception
+     * Repeated edges:
+     * ```
+     * RuleStop_e_3->BlockEnd_26
+     * RuleStop_e_3->BlockEnd_26
+     * RuleStop_e_3->BlockEnd_26
+     * ```
      */
     it("testForRepeatedTransitionsToStopState", (): void => {
         // This is a left recursive rule which is rewritten to use precedence predicates, hence the pred entries.

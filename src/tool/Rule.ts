@@ -3,17 +3,15 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-param, jsdoc/require-returns */
-
 import { type IComparable } from "antlr4ng";
 
 import { MurmurHash } from "../support/MurmurHash.js";
 import type { IRule } from "../types.js";
 import { Alternative } from "./Alternative.js";
 import { AttributeDict } from "./AttributeDict.js";
-import { IAttributeResolver } from "./IAttributeResolver.js";
 import { Grammar } from "./Grammar.js";
 import { IAttribute } from "./IAttribute.js";
+import { IAttributeResolver } from "./IAttributeResolver.js";
 import { LabelElementPair } from "./LabelElementPair.js";
 import { LabelType } from "./LabelType.js";
 import { ActionAST } from "./ast/ActionAST.js";
@@ -24,12 +22,8 @@ import { RuleAST } from "./ast/RuleAST.js";
 
 export class Rule implements IAttributeResolver, IComparable, IRule {
     public static readonly validLexerCommands = new Set<string>([
-        "mode", "pushMode", "type", "channel",
-        "popMode", "skip", "more"
+        "mode", "pushMode", "type", "channel", "popMode", "skip", "more"
     ]);
-
-    /** A discriminator to distinguish between different rule types without creating a circular dependency. */
-    public readonly ruleType: string = "Rule";
 
     public readonly name: string;
     public modifiers?: GrammarAST[];
@@ -42,49 +36,48 @@ export class Rule implements IAttributeResolver, IComparable, IRule {
     /** In which grammar does this rule live? */
     public readonly g: Grammar;
 
-    /** If we're in a lexer grammar, we might be in a mode */
+    /** If we're in a lexer grammar, we might be in a mode. */
     public readonly mode?: string;
 
-    /** If null then use value from global option that is false by default */
+    /** If null then use value from global option that is false by default. */
     public readonly caseInsensitive: boolean;
 
     /**
-     * Map a name to an action for this rule like @init {...}.
-     *  The code generator will use this to fill holes in the rule template.
-     *  I track the AST node for the action in case I need the line number
-     *  for errors.
+     * Map a name to an action for this rule like @init {...}. The code generator will use this to fill holes in the
+     * rule template. I track the AST node for the action in case I need the line number for errors.
      */
     public namedActions = new Map<string, ActionAST>();
 
     /**
-     * Track exception handlers; points at "catch" node of (catch exception action)
-     *  don't track finally action
+     * Track exception handlers; points at "catch" node of (catch exception action) don't track finally action.
      */
     public exceptions = new Array<GrammarAST>();
 
     /**
-     * Track all executable actions other than named actions like @init
-     *  and catch/finally (not in an alt). Also tracks predicates, rewrite actions.
-     *  We need to examine these actions before code generation so
-     *  that we can detect refs to $rule.attr etc...
+     * Track all executable actions other than named actions like @init and catch/finally (not in an alt). Also tracks
+     * predicates, rewrite actions. We need to examine these actions before code generation so that we can detect
+     * refs to $rule.attr etc...
      *
-     *  This tracks per rule; Alternative objs also track per alt.
+     * This tracks per rule. Alternative objs also track per alt.
      */
     public actions = new Array<ActionAST>();
 
-    public finallyAction?: ActionAST; // Set by SymbolCollector.
+    /** Set by SymbolCollector. */
+    public finallyAction?: ActionAST;
 
     public readonly numberOfAlts: number;
 
-    public isStartRule = true; // nobody calls us
+    /** Nobody calls us. */
+    public isStartRule = true;
 
     /** 1..n alts */
     public alt: Alternative[] = [];
 
-    /** All rules have unique index 0..n-1 */
+    /** All rules have unique index 0..n - 1. */
     public index: number;
 
-    public actionIndex = -1; // if lexer; 0..n-1 for n actions in a rule
+    /** If lexer; 0..n-1 for n actions in a rule. */
+    public actionIndex = -1;
 
     public constructor(g: Grammar, name: string, ast: RuleAST, numberOfAlts: number, lexerMode?: string,
         caseInsensitive?: boolean) {
@@ -120,7 +113,11 @@ export class Rule implements IAttributeResolver, IComparable, IRule {
         }
     }
 
-    /** Lexer actions are numbered across rules 0..n-1 */
+    /**
+     * Lexer actions are numbered across rules 0..n - 1.
+     *
+     * @param actionAST The action to define.
+     */
     public defineLexerAction(actionAST: ActionAST): void {
         this.actionIndex = this.g.lexerActions.size;
         if (!this.g.lexerActions.has(actionAST)) {
@@ -198,16 +195,21 @@ export class Rule implements IAttributeResolver, IComparable, IRule {
         return this.getAltLabels() !== null;
     }
 
-    /** Used for recursive rules (subclass), which have 1 alt, but many original alts */
+    /**
+     * Used for recursive rules (subclass), which have 1 alt, but many original alts.
+     *
+     * @returns The original alt number for this rule.
+     */
     public getOriginalNumberOfAlts(): number {
         return this.numberOfAlts;
     }
 
     /**
-     * Get {@code #} labels. The keys of the map are the labels applied to outer
-     * alternatives of a lexer rule, and the values are collections of pairs
-     * (alternative number and {@link AltAST}) identifying the alternatives with
+     * Gets `#` labels. The keys of the map are the labels applied to outer alternatives of a lexer rule, and the
+     * values are collections of pairs (alternative number and {@link AltAST}) identifying the alternatives with
      * this label. Unlabeled alternatives are not included in the result.
+     *
+     * @returns A map of `#` labels to their AST nodes they are applied to, or `null` if no such labels are present.
      */
     public getAltLabels(): Map<string, Array<[number, AltAST]>> | null {
         const labels = new Map<string, Array<[number, AltAST]>>();
@@ -249,7 +251,7 @@ export class Rule implements IAttributeResolver, IComparable, IRule {
 
     /** $x Attribute: rule arguments, return values, predefined rule prop. */
     public resolveToAttribute(x: string, node: ActionAST | null): IAttribute | null;
-    /** $x.y Attribute: x is surrounding rule, label ref (in any alts) */
+    /** $x.y Attribute: x is surrounding rule, label ref (in any alts). */
     public resolveToAttribute(x: string, y: string, node: ActionAST | null): IAttribute | null;
     public resolveToAttribute(...args: unknown[]): IAttribute | null {
         if (args.length === 3) {
@@ -305,17 +307,15 @@ export class Rule implements IAttributeResolver, IComparable, IRule {
     public resolvesToLabel(x: string, node: ActionAST): boolean {
         const anyLabelDef = this.getAnyLabelDef(x);
 
-        return anyLabelDef !== null &&
-            (anyLabelDef.type === LabelType.RuleLabel ||
-                anyLabelDef.type === LabelType.TokenLabel);
+        return anyLabelDef !== null
+            && (anyLabelDef.type === LabelType.RuleLabel || anyLabelDef.type === LabelType.TokenLabel);
     }
 
     public resolvesToListLabel(x: string, node: ActionAST): boolean {
         const anyLabelDef = this.getAnyLabelDef(x);
 
-        return anyLabelDef !== null &&
-            (anyLabelDef.type === LabelType.RuleListLabel ||
-                anyLabelDef.type === LabelType.TokenListLabel);
+        return anyLabelDef !== null
+            && (anyLabelDef.type === LabelType.RuleListLabel || anyLabelDef.type === LabelType.TokenListLabel);
     }
 
     public resolvesToToken(x: string, node: ActionAST): boolean {

@@ -6,7 +6,7 @@
 // cspell: ignore RULEMODIFIERS, ruleref
 
 import {
-    CommonToken, ParserRuleContext, type TerminalNode, type TokenStream
+    CommonToken, ParserRuleContext, Token, type TerminalNode, type TokenStream
 } from "antlr4ng";
 
 import {
@@ -23,7 +23,6 @@ import {
     type TerminalDefContext, type TokensSpecContext, type WildcardContext
 } from "../generated/ANTLRv4Parser.js";
 
-import { Constants } from "../Constants.js";
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
 import type { Constructor } from "../misc/Utils.js";
 import { Grammar } from "../tool/Grammar.js";
@@ -928,7 +927,7 @@ export class ParseTreeToASTConverter {
         let token;
         if (context instanceof ParserRuleContext) {
             token = CommonToken.fromSource([context.start!.tokenSource, context.start!.inputStream], type,
-                Constants.DEFAULT_TOKEN_CHANNEL, context.start!.start, context.start!.stop);
+                Token.DEFAULT_CHANNEL, context.start!.start, context.start!.stop);
             token.tokenIndex = context.start!.tokenIndex;
             token.line = context.start!.line;
             token.column = context.start!.column;

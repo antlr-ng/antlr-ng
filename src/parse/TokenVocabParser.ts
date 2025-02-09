@@ -52,7 +52,7 @@ export class TokenVocabParser {
                     tokenType = Number.parseInt(tokenTypeS);
                 } catch {
                     this.g.tool.errorManager.toolError(IssueCode.TokensFileSyntaxError,
-                        vocabName + Constants.VOCAB_FILE_EXTENSION, " bad token type: " + tokenTypeS,
+                        vocabName + Constants.VocabFileExtension, " bad token type: " + tokenTypeS,
                         lineNum);
                     tokenType = Token.INVALID_TYPE;
                 }
@@ -62,7 +62,7 @@ export class TokenVocabParser {
                 maxTokenType = Math.max(maxTokenType, tokenType);
             } else if (tokenDef.length > 0) {
                 this.g.tool.errorManager.toolError(IssueCode.TokensFileSyntaxError,
-                    vocabName + Constants.VOCAB_FILE_EXTENSION, " bad token def: " + tokenDef, lineNum);
+                    vocabName + Constants.VocabFileExtension, " bad token def: " + tokenDef, lineNum);
             }
         }
 
@@ -85,7 +85,7 @@ export class TokenVocabParser {
         }
 
         try {
-            let name = join(this.libDirectory ?? ".", vocabName + Constants.VOCAB_FILE_EXTENSION);
+            let name = join(this.libDirectory ?? ".", vocabName + Constants.VocabFileExtension);
             if (existsSync(name)) {
                 return readFileSync(name, "utf8");
             }
@@ -93,7 +93,7 @@ export class TokenVocabParser {
             // We did not find the vocab file in the lib directory, so we need to look for it in the output directory
             // which is where .tokens files are generated (in the base, not relative to the input location.)
             if (this.outputDirectory) {
-                name = join(this.outputDirectory, vocabName + Constants.VOCAB_FILE_EXTENSION);
+                name = join(this.outputDirectory, vocabName + Constants.VocabFileExtension);
                 if (existsSync(name)) {
                     return readFileSync(name, "utf8");
                 }
@@ -102,7 +102,7 @@ export class TokenVocabParser {
             // Still not found? Use the grammar's soruce folder then.
             name = dirname(this.g.fileName);
             if (name) {
-                name = join(name, vocabName + Constants.VOCAB_FILE_EXTENSION);
+                name = join(name, vocabName + Constants.VocabFileExtension);
                 if (existsSync(name)) {
                     return readFileSync(name, "utf8");
                 }

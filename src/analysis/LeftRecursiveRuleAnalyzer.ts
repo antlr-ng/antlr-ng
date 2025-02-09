@@ -7,7 +7,7 @@
 
 import { fileURLToPath } from "node:url";
 
-import { CommonToken, IntervalSet, type TokenStream } from "antlr4ng";
+import { CommonToken, IntervalSet, Token, type TokenStream } from "antlr4ng";
 import { STGroupFile, type STGroup } from "stringtemplate4ts";
 
 import { Constants } from "../Constants.js";
@@ -265,7 +265,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
             predST.add("ruleName", this.ruleName);
             altST.add("pred", predST);
             altST.add("alt", altInfo);
-            altST.add("precOption", Constants.PRECEDENCE_OPTION_NAME);
+            altST.add("precOption", Constants.PrecedenceOptionName);
             altST.add("opPrec", this.precedence(alt));
             ruleST.add("opAlts", altST);
         }
@@ -288,7 +288,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
             const rightmost = ruleRef === outerAltRuleRefs[outerAltRuleRefs.length - 1];
             if (recursive && rightmost) {
                 const dummyValueNode = new GrammarAST(CommonToken.fromType(ANTLRv4Parser.INT, "" + prec));
-                ruleRef.setOption(Constants.PRECEDENCE_OPTION_NAME, dummyValueNode);
+                ruleRef.setOption(Constants.PrecedenceOptionName, dummyValueNode);
             }
         }
 
@@ -409,7 +409,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
 
             // Are there args on a rule?
             if (tok.type === ANTLRv4Parser.RULE_REF) {
-                while (i <= tokenStopIndex && this.tokenStream.get(i).channel !== Constants.DEFAULT_TOKEN_CHANNEL) {
+                while (i <= tokenStopIndex && this.tokenStream.get(i).channel !== Token.DEFAULT_CHANNEL) {
                     ++i;
                 }
 

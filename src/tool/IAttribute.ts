@@ -7,9 +7,7 @@ import type { Token } from "antlr4ng";
 
 import { AttributeDict } from "./AttributeDict.js";
 
-/**
- * Track the names of attributes defined in arg lists, return values,scope blocks etc...
- */
+/** Track the names of attributes defined in arg lists, return values,scope blocks etc... */
 export interface IAttribute {
     /** The entire declaration such as "String foo" or "x:int" */
     decl?: string;

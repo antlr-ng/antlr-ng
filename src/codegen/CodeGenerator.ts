@@ -202,7 +202,7 @@ export class CodeGenerator {
      * @returns undefined if no ".tokens" file should be generated.
      */
     public getVocabFileName(): string | undefined {
-        return this.g!.name + Constants.VOCAB_FILE_EXTENSION;
+        return this.g!.name + Constants.VocabFileExtension;
     }
 
     public getHeaderFileName(): string | undefined {

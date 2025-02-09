@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-param, jsdoc/require-returns */
-
 import { CommonToken } from "antlr4ng";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
@@ -20,8 +18,8 @@ import { GrammarToken } from "../parse/GrammarToken.js";
 import { GrammarType } from "../support/GrammarType.js";
 import { dupTree, isTokenName } from "../support/helpers.js";
 import type { CommonTree } from "../tree/CommonTree.js";
-import { IssueCode } from "./Issues.js";
 import { Grammar } from "./Grammar.js";
+import { IssueCode } from "./Issues.js";
 import { AltAST } from "./ast/AltAST.js";
 import { BlockAST } from "./ast/BlockAST.js";
 import { GrammarAST } from "./ast/GrammarAST.js";
@@ -32,15 +30,16 @@ import { TerminalAST } from "./ast/TerminalAST.js";
 
 /** Handle left-recursion and block-set transforms */
 export class GrammarTransformPipeline {
-    public g: Grammar;
+    public constructor(private g: Grammar, private tool: Tool) { }
 
-    public constructor(g: Grammar, private tool: Tool) {
-        this.g = g;
-    }
-
-    /** Utility visitor that sets grammar ptr in each node */
+    /**
+     * Utility visitor that sets grammar ptr in each node
+     *
+     * @param g The grammar to set.
+     * @param tree The tree to visit.
+     */
     public static setGrammarPtr(g: Grammar, tree: GrammarAST): void {
-        // ensure each node has pointer to surrounding grammar
+        // Ensure each node has pointer to surrounding grammar.
         const v = new TreeVisitor();
         v.visit(tree, new class implements TreeVisitorAction<GrammarAST> {
             public pre(t: GrammarAST): GrammarAST {
@@ -61,21 +60,20 @@ export class GrammarTransformPipeline {
             const elWithOpt = t.parent;
             if (elWithOpt instanceof GrammarASTWithOptions) {
                 const options = elWithOpt.getOptions();
-                if (options.has(Constants.TOKENINDEX_OPTION_NAME)) {
+                if (options.has(Constants.TokenIndexOptionName)) {
                     const newTok = new GrammarToken(g, elWithOpt.token!);
-                    newTok.originalTokenIndex = parseInt(options.get(Constants.TOKENINDEX_OPTION_NAME)!.getText(), 10);
+                    newTok.originalTokenIndex = parseInt(options.get(Constants.TokenIndexOptionName)!.getText(), 10);
                     elWithOpt.token = newTok;
 
                     const originalNode = g.ast.getNodeWithTokenIndex(newTok.getTokenIndex());
                     if (originalNode) {
-                        // update the AST node start/stop index to match the values
-                        // of the corresponding node in the original parse tree.
+                        // Update the AST node start/stop index to match the values of the corresponding node in the
+                        // original parse tree.
                         elWithOpt.setTokenStartIndex(originalNode.getTokenStartIndex());
                         elWithOpt.setTokenStopIndex(originalNode.getTokenStopIndex());
                     } else {
-                        // the original AST node could not be located by index;
-                        // make sure to assign valid values for the start/stop
-                        // index so toTokenString will not throw exceptions.
+                        // The original AST node could not be located by index. Make sure to assign valid values for
+                        // the start/stop index so toTokenString will not throw exceptions.
                         elWithOpt.setTokenStartIndex(newTok.getTokenIndex());
                         elWithOpt.setTokenStopIndex(newTok.getTokenIndex());
                     }
@@ -101,21 +99,18 @@ export class GrammarTransformPipeline {
         transformer.downUp(root);
     }
 
-    public expandParameterizedLoop(t: GrammarAST): GrammarAST {
-        // todo: update grammar, alter AST
-        return t;
-    }
-
     /**
-     * Merge all the rules, token definitions, and named actions from
-     * imported grammars into the root grammar tree.  Perform:
+     * Merges all the rules, token definitions, and named actions from imported grammars into the root grammar tree.
+     * Perform:
      *
-     *  (tokens { X (= Y 'y')) + (tokens { Z )	->	(tokens { X (= Y 'y') Z)
-     *  (@ members {foo}) + (@ members {bar})	->	(@ members {foobar})
-     *  (RULES (RULE x y)) + (RULES (RULE z))	->	(RULES (RULE x y z))
+     * (tokens { X (= Y 'y')) + (tokens { Z )	->	(tokens { X (= Y 'y') Z)
+     * (@ members {foo}) + (@ members {bar})	->	(@ members {foobar})
+     * (RULES (RULE x y)) + (RULES (RULE z))	->	(RULES (RULE x y z))
      * Rules in root prevent same rule from being appended to RULES node.
      *
      * The goal is a complete combined grammar so we can ignore subordinate grammars.
+     *
+     * @param rootGrammar The root grammar to integrate the imported grammars into.
      */
     public integrateImportedGrammars(rootGrammar: Grammar): void {
         const imports = rootGrammar.getAllImportedGrammars();
@@ -130,17 +125,17 @@ export class GrammarTransformPipeline {
         let tokensRoot = root.getFirstChildWithType(ANTLRv4Parser.TOKENS) as GrammarAST | null;
         const actionRoots = root.getNodesWithType(ANTLRv4Parser.AT);
 
-        // Compute list of rules in root grammar and ensure we have a RULES node
+        // Compute list of rules in root grammar and ensure we have a RULES node.
         const rootRulesRoot = root.getFirstChildWithType(ANTLRv4Parser.RULES) as GrammarAST;
         const rootRuleNames = new Set<string>();
 
-        // make list of rules we have in root grammar
+        // Make list of rules we have in root grammar.
         const rootRules = rootRulesRoot.getNodesWithType(ANTLRv4Parser.RULE);
         for (const r of rootRules) {
             rootRuleNames.add(r.children[0].getText());
         }
 
-        // make list of modes we have in root grammar
+        // Make list of modes we have in root grammar.
         const rootModes = root.getNodesWithType(ANTLRv4Parser.MODE);
         const rootModeNames = new Set<string>();
         for (const m of rootModes) {
@@ -148,7 +143,7 @@ export class GrammarTransformPipeline {
         }
 
         for (const imp of imports) {
-            // COPY CHANNELS
+            // Copy channels.
             const importedChannelRoot = imp.ast.getFirstChildWithType(ANTLRv4Parser.CHANNELS) as GrammarAST | null;
             if (importedChannelRoot !== null) {
                 rootGrammar.tool.logInfo({
@@ -170,6 +165,7 @@ export class GrammarTransformPipeline {
                                 break;
                             }
                         }
+
                         if (!channelIsInRootGrammar) {
                             channelsRoot.addChild(channel.dupNode());
                         }
@@ -177,7 +173,7 @@ export class GrammarTransformPipeline {
                 }
             }
 
-            // COPY TOKENS
+            // Copy tokens.
             const importedTokensRoot = imp.ast.getFirstChildWithType(ANTLRv4Parser.TOKENS) as GrammarAST | null;
             if (importedTokensRoot !== null) {
                 rootGrammar.tool.logInfo({
@@ -198,7 +194,7 @@ export class GrammarTransformPipeline {
             allActionRoots.push(...actionRoots);
             allActionRoots.push(...importedActionRoots);
 
-            // COPY ACTIONS
+            // Copy actions.
             const namedActions = new Map<string, Map<string, GrammarAST>>();
             rootGrammar.tool.logInfo({
                 component: "grammar",
@@ -240,28 +236,26 @@ export class GrammarTransformPipeline {
                 }
             }
 
-            // at this point, we have complete list of combined actions,
-            // some of which are already living in root grammar.
-            // Merge in any actions not in root grammar into root's tree.
+            // At this point, we have complete list of combined actions, some of which are already living in root
+            // grammar. Merge in any actions not in root grammar into root's tree.
             for (const [scopeName, mapping] of namedActions) {
                 for (const [name, action] of mapping) {
                     rootGrammar.tool.logInfo({
                         component: "grammar",
                         msg: `${action.g.name} ${scopeName}:${name}=${action.getText()}`
                     });
+
                     if (action.g !== rootGrammar) {
                         root.insertChild(1, action.parent!);
                     }
                 }
             }
 
-            // COPY MODES
-            // The strategy is to copy all the mode sections rules across to any
-            // mode section in the new grammar with the same name or a new
-            // mode section if no matching mode is resolved. Rules which are
-            // already in the new grammar are ignored for copy. If the mode
-            // section being added ends up empty it is not added to the merged
-            // grammar.
+            // Copy modes.
+            // The strategy is to copy all the mode sections rules across to any mode section in the new grammar with
+            // the same name or a new mode section if no matching mode is resolved. Rules which are already in the
+            // new grammar are ignored for copy. If the mode section being added ends up empty it is not added to the
+            // merged grammar.
             const modes = imp.ast.getNodesWithType(ANTLRv4Parser.MODE);
             for (const m of modes) {
                 rootGrammar.tool.logInfo({ component: "grammar", msg: `imported mode: ${m.toStringTree()}` });
@@ -300,7 +294,7 @@ export class GrammarTransformPipeline {
                 }
             }
 
-            // COPY RULES
+            // Copy rules.
             // Rules copied in the mode copy phase are not copied again.
             const rules = imp.ast.getNodesWithType(ANTLRv4Parser.RULE);
             for (const r of rules) {
@@ -308,15 +302,15 @@ export class GrammarTransformPipeline {
                 const name = r.children[0].getText();
                 const rootAlreadyHasRule = rootRuleNames.has(name);
                 if (!rootAlreadyHasRule) {
-                    rootRulesRoot.addChild(r); // merge in if not overridden
+                    // Merge in if not overridden.
+                    rootRulesRoot.addChild(r);
                     rootRuleNames.add(name);
                 }
             }
 
             const optionsRoot = imp.ast.getFirstChildWithType(ANTLRv4Parser.OPTIONS) as GrammarAST | null;
             if (optionsRoot !== null) {
-                // suppress the warning if the options match the options specified
-                // in the root grammar
+                // Suppress the warning if the options match the options specified in the root grammar:
                 // https://github.com/antlr/antlr4/issues/707
                 let hasNewOption = false;
                 for (const [key] of imp.ast.getOptions()) {
@@ -338,33 +332,36 @@ export class GrammarTransformPipeline {
                 }
             }
         }
+
         rootGrammar.tool.logInfo({ component: "grammar", msg: `Grammar: ${rootGrammar.ast.toStringTree()}` });
     }
 
     /**
      * Build lexer grammar from combined grammar that looks like:
      *
-     *  (COMBINED_GRAMMAR A
-     *      (tokens { X (= Y 'y'))
-     *      (OPTIONS (= x 'y'))
-     *      (@ members {foo})
-     *      (@ lexer header {package jj;})
-     *      (RULES (RULE .+)))
+     * (COMBINED_GRAMMAR A
+     *     (tokens { X (= Y 'y'))
+     *     (OPTIONS (= x 'y'))
+     *     (@ members {foo})
+     *     (@ lexer header {package jj;})
+     *     (RULES (RULE .+)))
      *
-     *  Move rules and actions to new tree, don't dup. Split AST apart.
-     *  We'll have this Grammar share token symbols later; don't generate
-     *  tokenVocab or tokens{} section.  Copy over named actions.
+     * Move rules and actions to new tree, don't dup. Split AST apart. We'll have this grammar to share token symbols
+     * later. Don't generate  tokenVocab or tokens{} section. Copy over named actions.
      *
-     *  Side-effects: it removes children from GRAMMAR &amp; RULES nodes
-     *                in combined AST.  Anything cut out is dup'd before
-     *                adding to lexer to avoid "who's ur daddy" issues
+     * Side-effects: it removes children from GRAMMAR & RULES nodes in combined AST. Anything cut out is dup'd before
+     * adding to lexer to avoid "who's ur daddy" issues.
+     *
+     * @param combinedGrammar The combined grammar to extract the implicit lexer from.
+     *
+     * @returns The lexer grammar AST.
      */
     public extractImplicitLexer(combinedGrammar: Grammar): GrammarRootAST | undefined {
         const combinedContext = combinedGrammar.ast;
         const adaptor = new GrammarASTAdaptor();
         const elements = combinedContext.children;
 
-        // MAKE A GRAMMAR ROOT and ID
+        // Make a grammar root and id.
         const lexerName = `${combinedContext.children[0].getText()}Lexer`;
 
         const lexerAST = new GrammarRootAST(CommonToken.fromType(ANTLRv4Parser.GRAMMAR, "LEXER_GRAMMAR"),
@@ -374,7 +371,7 @@ export class GrammarTransformPipeline {
         lexerAST.token!.inputStream = combinedContext.token!.inputStream;
         lexerAST.addChild(adaptor.create(ANTLRv4Parser.ID, lexerName));
 
-        // COPY OPTIONS
+        // Copy options.
         const optionsRoot = combinedContext.getFirstChildWithType(ANTLRv4Parser.OPTIONS) as GrammarAST | null;
         if (optionsRoot !== null && optionsRoot.children.length !== 0) {
             const lexerOptionsRoot = optionsRoot.dupNode();
@@ -392,7 +389,7 @@ export class GrammarTransformPipeline {
             }
         }
 
-        // COPY all named actions, but only move those with lexer:: scope
+        // Copy all named actions, but only move those with lexer scope.
         const actionsWeMoved = new Array<GrammarAST>();
         for (const e of elements) {
             if (e.getType() === ANTLRv4Parser.AT) {
@@ -412,8 +409,7 @@ export class GrammarTransformPipeline {
             return lexerAST;
         }
 
-        // MOVE lexer rules
-
+        // Move lexer rules.
         const lexerRulesRoot = adaptor.create(ANTLRv4Parser.RULES, "RULES");
         lexerAST.addChild(lexerRulesRoot);
         const rulesWeMoved = new Array<GrammarAST>();
@@ -438,16 +434,14 @@ export class GrammarTransformPipeline {
 
         // Will track 'if' from IF : 'if' ; rules to avoid defining new token for 'if'.
         const litAliases = Grammar.getStringLiteralAliasesFromLexerRules(lexerAST);
-
         const stringLiterals = combinedGrammar.getStringLiterals();
 
-        // add strings from combined grammar (and imported grammars) into lexer
-        // put them first as they are keywords; must resolve ambigs to these rules
-        //		tool.log("grammar", "strings from parser: "+stringLiterals);
+        // Add strings from combined grammar (and imported grammars) into lexer put them first as they are keywords.
+        // Must resolve ambigs to these rules tool.log("grammar", "strings from parser: "+stringLiterals).
         let insertIndex = 0;
         nextLit:
         for (const lit of stringLiterals) {
-            // if lexer already has a rule for literal, continue
+            // If lexer already has a rule for literal, continue.
             if (litAliases !== null) {
                 for (const pair of litAliases) {
                     const litAST = pair[1];
@@ -458,10 +452,10 @@ export class GrammarTransformPipeline {
                 }
             }
 
-            // create for each literal: (RULE <unique-name> (BLOCK (ALT <lit>))
+            // Create for each literal: (RULE <unique-name> (BLOCK (ALT <lit>)).
             const ruleName = combinedGrammar.getStringLiteralLexerRuleName(lit);
 
-            // can't use wizard; need special node types
+            // Can't use wizard. Need special node types.
             const litRule = new RuleAST(ANTLRv4Parser.RULE);
             const blk = new BlockAST(ANTLRv4Parser.BLOCK);
             const alt = new AltAST(ANTLRv4Parser.ALT);
@@ -475,13 +469,13 @@ export class GrammarTransformPipeline {
             litRule.addChild(blk);
             lexerRulesRoot.insertChild(insertIndex, litRule);
 
-            lexerRulesRoot.freshenParentAndChildIndexes(); // reset indexes and set litRule parent
+            // Reset indexes and set litRule parent.
+            lexerRulesRoot.freshenParentAndChildIndexes();
 
-            // next literal will be added after the one just added
+            // Next literal will be added after the one just added.
             insertIndex++;
         }
 
-        // TODO: take out after stable if slow
         lexerAST.sanityCheckParentAndChildIndexes();
         combinedContext.sanityCheckParentAndChildIndexes();
 

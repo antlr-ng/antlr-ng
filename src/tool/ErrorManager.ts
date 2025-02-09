@@ -11,12 +11,10 @@ import { ErrorBuffer, IST, STGroup, STGroupString } from "stringtemplate4ts";
 import { basename } from "path";
 
 import { ANTLRMessage } from "./ANTLRMessage.js";
-import { GrammarSemanticsMessage } from "./GrammarSemanticsMessage.js";
-import { GrammarSyntaxMessage } from "./GrammarSyntaxMessage.js";
-import { ToolListener } from "./ToolListener.js";
 import { IssueCode, IssueSeverity, severityMap } from "./Issues.js";
+import { ToolListener } from "./ToolListener.js";
 
-// The supported ANTLR message formats. Using ST here is overkill and will later be replaced with a simple solution.
+// The supported ANTLR message formats. Using ST here is overkill and will later be replaced with a simpler solution.
 const messageFormats = new Map<string, string>([
     ["antlr", `
 location(file, line, column) ::= "<file>:<line>:<column>:"
@@ -125,10 +123,8 @@ export class ErrorManager {
                 // Don't show path to file in messages in ANTLR format, they're too long.
                 displayFileName = basename(msg.fileName);
             } else {
-                // For other message formats, use the full filename in the
-                // message. This assumes that these formats are intended to
-                // be parsed by IDEs, and so they need the full path to
-                // resolve correctly.
+                // For other message formats, use the full filename in the message. This assumes that these formats
+                // are intended to be parsed by IDEs, and so they need the full path to resolve correctly.
             }
             locationST.add("file", displayFileName);
             locationValid = true;
@@ -181,7 +177,7 @@ export class ErrorManager {
 
     public grammarError(errorType: IssueCode, fileName: string, position: { line: number, column: number; } | null,
         ...args: unknown[]): void {
-        const msg = new GrammarSemanticsMessage(errorType, fileName, position?.line ?? -1, position?.column ?? -1,
+        const msg = new ANTLRMessage(errorType, fileName, position?.line ?? -1, position?.column ?? -1,
             ...args);
         this.emit(msg);
     }
@@ -203,7 +199,7 @@ export class ErrorManager {
 
     public syntaxError(errorType: IssueCode, fileName: string, line: number, column: number,
         antlrException: RecognitionException | null, ...args: unknown[]): void {
-        const msg = new GrammarSyntaxMessage(errorType, fileName, line, column, antlrException, ...args);
+        const msg = new ANTLRMessage(errorType, fileName, antlrException, line, column, ...args);
         this.emit(msg);
     }
 
@@ -284,8 +280,7 @@ export class ErrorManager {
     }
 
     /**
-     * Return a StringTemplate that refers to the current format used for
-     * emitting messages.
+     * Return a StringTemplate that refers to the current format used for emitting messages.
      */
     private getLocationFormat(): IST {
         return this.format.getInstanceOf("location")!;

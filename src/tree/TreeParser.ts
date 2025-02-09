@@ -76,15 +76,15 @@ export class TreeParser {
         let level = 0;
         if (lookAhead) {
             let tokenType = lookAhead.getType();
-            while (tokenType !== Token.EOF && !(tokenType === Constants.UP && level === 0)) {
+            while (tokenType !== Token.EOF && !(tokenType === Constants.Up && level === 0)) {
                 this.input.consume();
                 lookAhead = this.input.lookaheadType(1);
                 if (lookAhead) {
                     tokenType = lookAhead.getType();
-                    if (tokenType === Constants.DOWN) {
+                    if (tokenType === Constants.Down) {
                         ++level;
                     } else {
-                        if (tokenType === Constants.UP) {
+                        if (tokenType === Constants.Up) {
                             --level;
                         }
                     }

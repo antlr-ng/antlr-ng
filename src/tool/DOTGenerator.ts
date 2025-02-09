@@ -9,10 +9,9 @@ import { fileURLToPath } from "node:url";
 
 import {
     ATNConfig, ATNState, AbstractPredicateTransition, ActionTransition, AtomTransition, BlockEndState, BlockStartState,
-    DFA, DFAState, DecisionState, NotSetTransition, PlusBlockStartState, PlusLoopbackState,
-    RangeTransition, RuleStartState, RuleStopState, RuleTransition, SetTransition, StarBlockStartState,
-    StarLoopEntryState, StarLoopbackState,
-    Token,
+    DFA, DFAState, DecisionState, NotSetTransition, PlusBlockStartState, PlusLoopbackState, RangeTransition,
+    RuleStartState, RuleStopState, RuleTransition, SetTransition, StarBlockStartState, StarLoopEntryState,
+    StarLoopbackState, Token,
 } from "antlr4ng";
 import { STGroupFile, IST } from "stringtemplate4ts";
 
@@ -21,19 +20,15 @@ import { Grammar } from "./Grammar.js";
 
 /** The DOT (part of graphviz) generation aspect. */
 export class DOTGenerator {
-    public static readonly STRIP_NONREDUCED_STATES = false;
-
-    /** Library of output templates; use {@code <attrname>} format. */
+    /** Library of output templates; use `<attrname>` format. */
     private static readonly templatePath = fileURLToPath(new URL("../../templates/dot/graphs.stg", import.meta.url));
 
     private static readonly stLib = new STGroupFile(this.templatePath);
 
-    protected arrowhead = "normal";
-    protected rankdir = "LR";
+    private arrowhead = "normal";
+    private rankdir = "LR";
+    private grammar: Grammar;
 
-    protected grammar: Grammar;
-
-    /** This aspect is associated with a grammar */
     public constructor(grammar: Grammar) {
         this.grammar = grammar;
     }
@@ -45,7 +40,7 @@ export class DOTGenerator {
     public getDOTFromState(startState: ATNState, isLexer = false, ruleNames?: string[]): string {
         ruleNames ??= Array.from(this.grammar.rules.keys());
 
-        // The output DOT graph for visualization
+        // The output DOT graph for visualization.
         const markedStates = new Set<ATNState>();
         const dot = DOTGenerator.stLib.getInstanceOf("atn");
         if (!dot) {
@@ -68,19 +63,19 @@ export class DOTGenerator {
             }
             markedStates.add(s);
 
-            // don't go past end of rule node to the follow states
+            // Don't go past end of rule node to the follow states.
             if (s instanceof RuleStopState) {
                 continue;
             }
 
-            // make a DOT edge for each transition
+            // Make a DOT edge for each transition.
             let edgeST: IST | null;
             for (let i = 0; i < s.transitions.length; ++i) {
                 const edge = s.transitions[i];
                 if (edge instanceof RuleTransition) {
                     const rr = (edge);
 
-                    // don't jump to other rules, but display edge to follow node
+                    // Don't jump to other rules, but display edge to follow node.
                     edgeST = DOTGenerator.stLib.getInstanceOf("edge");
                     if (!edgeST) {
                         throw new Error("no such template: edge");
@@ -253,7 +248,7 @@ export class DOTGenerator {
         dot.add("startState", dfa.s0.stateNumber);
         dot.add("rankdir", this.rankdir);
 
-        // define stop states first; seems to be a bug in DOT where double circle
+        // Define stop states first; seems to be a bug in DOT where double circle.
         for (const d of dfa.getStates()) {
             if (!d.isAcceptState) {
                 continue;
@@ -295,7 +290,7 @@ export class DOTGenerator {
                     continue;
                 }
 
-                const ttype = i - 1; // we shift up for EOF as -1 for parser
+                const ttype = i - 1; // We shift up for EOF as -1 for parser.
                 let label = ttype.toString();
                 if (isLexer) {
                     label = "'" + this.getEdgeLabel(String.fromCodePoint(i)) + "'";
@@ -336,7 +331,7 @@ export class DOTGenerator {
             const alts = s.getAltSet();
             if (alts !== null) {
                 buf += "\\n";
-                // separate alts
+                // Separate alts.
                 const altList = Array.from(alts);
                 altList.sort();
                 const configurations = s.configs;
@@ -347,8 +342,7 @@ export class DOTGenerator {
                     }
                     buf += `alt${alt}:`;
 
-                    // get a list of configs for just this alt
-                    // it will help us print better later
+                    // Get a list of configs for just this alt it will help us print better later.
                     const configsInAlt = new Array<ATNConfig>();
                     for (const c of configurations) {
                         if (c.alt !== alt) {
@@ -361,11 +355,12 @@ export class DOTGenerator {
                     let n = 0;
                     for (let cIndex = 0; cIndex < configsInAlt.length; cIndex++) {
                         const c = configsInAlt[cIndex];
-                        n++;
+                        ++n;
                         buf += c.toString(null, false);
                         if ((cIndex + 1) < configsInAlt.length) {
                             buf += ", ";
                         }
+
                         if (n % 5 === 0 && (configsInAlt.length - cIndex) > 3) {
                             buf += "\\n";
                         }
@@ -379,20 +374,17 @@ export class DOTGenerator {
 
             if (s instanceof BlockStartState) {
                 stateLabel += "&rarr;\\n";
-            } else {
-                if (s instanceof BlockEndState) {
-                    stateLabel += "&larr;\\n";
-                }
+            } else if (s instanceof BlockEndState) {
+                stateLabel += "&larr;\\n";
             }
 
             stateLabel += s.stateNumber.toString();
             if (s instanceof PlusBlockStartState || s instanceof PlusLoopbackState) {
                 stateLabel += "+";
-            } else {
-                if (s instanceof StarBlockStartState || s instanceof StarLoopEntryState
-                    || s instanceof StarLoopbackState) {
-                    stateLabel += "*";
-                }
+            } else if (s instanceof StarBlockStartState
+                || s instanceof StarLoopEntryState
+                || s instanceof StarLoopbackState) {
+                stateLabel += "*";
             }
 
             if (s instanceof DecisionState && s.decision >= 0) {
@@ -404,7 +396,7 @@ export class DOTGenerator {
     }
 
     /**
-     * Fix edge strings so they print out in DOT properly.
+     * Fixes edge strings so they print out in DOT properly.
      */
     private getEdgeLabel(label: string): string {
         label = label.replaceAll("\\", "\\\\");

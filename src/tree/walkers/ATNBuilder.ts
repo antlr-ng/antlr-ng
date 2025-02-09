@@ -31,24 +31,24 @@ export class ATNBuilder extends TreeParser {
 
         try {
             const block = this.match(this.input, ANTLRv4Lexer.BLOCK)!;
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
 
             if (this.input.lookahead(1) === ANTLRv4Lexer.OPTIONS) {
                 this.match(this.input, ANTLRv4Lexer.OPTIONS);
-                if (this.input.lookahead(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN);
+                if (this.input.lookahead(1) === Constants.Down) {
+                    this.match(this.input, Constants.Down);
 
                     while (true) {
                         const lookahead = this.input.lookahead(1);
                         if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
                             this.matchAny();
                         } else {
-                            if (lookahead === Constants.UP) {
+                            if (lookahead === Constants.Up) {
                                 break;
                             }
                         }
                     }
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
                 }
             }
 
@@ -75,7 +75,7 @@ export class ATNBuilder extends TreeParser {
                 ++altCount;
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
 
             return this.factory.block(block as BlockAST, ebnfRoot, alts);
         } catch (re) {
@@ -92,26 +92,26 @@ export class ATNBuilder extends TreeParser {
     private block(ebnfRoot: GrammarAST | null): IStatePair | undefined {
         try {
             const block = this.match(this.input, ANTLRv4Lexer.BLOCK)!;
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
 
             if (this.input.lookahead(1) === ANTLRv4Lexer.OPTIONS) {
                 this.match(this.input, ANTLRv4Lexer.OPTIONS);
 
-                if (this.input.lookahead(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN);
+                if (this.input.lookahead(1) === Constants.Down) {
+                    this.match(this.input, Constants.Down);
 
                     while (true) {
                         const lookahead = this.input.lookahead(1);
                         if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
                             this.matchAny();
                         } else {
-                            if (lookahead === Constants.UP) {
+                            if (lookahead === Constants.Up) {
                                 break;
                             }
                         }
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
                 }
             }
 
@@ -136,7 +136,7 @@ export class ATNBuilder extends TreeParser {
                 altCount++;
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
 
             return this.factory.block(block as BlockAST, ebnfRoot, alts);
         } catch (re) {
@@ -154,11 +154,11 @@ export class ATNBuilder extends TreeParser {
         try {
             if (this.input.lookahead(1) === ANTLRv4Lexer.LEXER_ALT_ACTION) {
                 this.match(this.input, ANTLRv4Lexer.LEXER_ALT_ACTION);
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
 
                 const a = this.alternative();
                 const commands = this.lexerCommands();
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
 
                 if (a && commands) {
                     return this.factory.lexerAltCommands(a, commands);
@@ -169,19 +169,19 @@ export class ATNBuilder extends TreeParser {
                 const current = this.input.lookaheadType(1)!;
                 if (current.children[0].getType() === ANTLRv4Lexer.EPSILON) {
                     this.match(this.input, ANTLRv4Lexer.ALT);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
 
                     if (this.input.lookahead(1) === ANTLRv4Lexer.ELEMENT_OPTIONS) {
                         this.elementOptions();
                     }
 
                     const epsilon = this.match(this.input, ANTLRv4Lexer.EPSILON)!;
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     return this.factory.epsilon(epsilon);
                 } else {
                     this.match(this.input, ANTLRv4Lexer.ALT);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
 
                     if (this.input.lookahead(1) === ANTLRv4Lexer.ELEMENT_OPTIONS) {
                         this.elementOptions();
@@ -216,7 +216,7 @@ export class ATNBuilder extends TreeParser {
                         cnt9++;
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     return this.factory.alt(els);
                 }
@@ -273,11 +273,11 @@ export class ATNBuilder extends TreeParser {
             const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Lexer.LEXER_ACTION_CALL) {
                 this.match(this.input, ANTLRv4Lexer.LEXER_ACTION_CALL);
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
 
                 const id = this.match(this.input, ANTLRv4Lexer.ID)!;
                 const expression = this.lexerCommandExpr();
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
 
                 if (!expression) {
                     return undefined;
@@ -359,14 +359,14 @@ export class ATNBuilder extends TreeParser {
 
                 case ANTLRv4Lexer.ACTION: {
                     const lookahead = this.input.lookahead(2);
-                    if (lookahead === Constants.DOWN) {
+                    if (lookahead === Constants.Down) {
                         const action = this.match(this.input, ANTLRv4Lexer.ACTION)!;
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         this.matchAny();
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
 
                         result = this.factory.action(action as ActionAST);
-                    } else if ((lookahead >= Constants.UP && lookahead <= ANTLRv4Lexer.ACTION)
+                    } else if ((lookahead >= Constants.Up && lookahead <= ANTLRv4Lexer.ACTION)
                         || lookahead === ANTLRv4Lexer.ASSIGN || lookahead === ANTLRv4Lexer.DOT
                         || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead === ANTLRv4Lexer.NOT
                         || lookahead === ANTLRv4Lexer.PLUS_ASSIGN || lookahead === ANTLRv4Lexer.RANGE
@@ -395,14 +395,14 @@ export class ATNBuilder extends TreeParser {
 
                 case ANTLRv4Lexer.SEMPRED: {
                     const lookahead = this.input.lookahead(2);
-                    if (lookahead === Constants.DOWN) {
+                    if (lookahead === Constants.Down) {
                         const sempred = this.match(this.input, ANTLRv4Lexer.SEMPRED)!;
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         this.matchAny();
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
 
                         result = this.factory.sempred(sempred as PredAST);
-                    } else if ((lookahead >= Constants.UP && lookahead <= ANTLRv4Lexer.ACTION)
+                    } else if ((lookahead >= Constants.Up && lookahead <= ANTLRv4Lexer.ACTION)
                         || lookahead === ANTLRv4Lexer.ASSIGN || lookahead === ANTLRv4Lexer.DOT
                         || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead === ANTLRv4Lexer.NOT
                         || lookahead === ANTLRv4Lexer.PLUS_ASSIGN || lookahead === ANTLRv4Lexer.RANGE
@@ -432,10 +432,10 @@ export class ATNBuilder extends TreeParser {
 
                 case ANTLRv4Lexer.NOT: {
                     this.match(this.input, ANTLRv4Lexer.NOT);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
 
                     result = this.blockSet(true);
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     break;
                 }
@@ -467,11 +467,11 @@ export class ATNBuilder extends TreeParser {
             const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Lexer.ASSIGN) {
                 this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
                 this.match(this.input, ANTLRv4Lexer.ID);
 
                 const element = this.element();
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
                 if (element) {
                     return this.factory.label(element);
                 }
@@ -480,11 +480,11 @@ export class ATNBuilder extends TreeParser {
             } else {
                 if (lookahead === ANTLRv4Lexer.PLUS_ASSIGN) {
                     this.match(this.input, ANTLRv4Lexer.PLUS_ASSIGN);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     this.match(this.input, ANTLRv4Lexer.ID);
 
                     const element = this.element();
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
                     if (element) {
                         return this.factory.listLabel(element);
                     }
@@ -513,30 +513,30 @@ export class ATNBuilder extends TreeParser {
             switch (this.input.lookahead(1)) {
                 case ANTLRv4Lexer.OPTIONAL: {
                     this.match(this.input, ANTLRv4Lexer.OPTIONAL);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
 
                     result = this.block(start);
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     break;
                 }
 
                 case ANTLRv4Lexer.CLOSURE: {
                     this.match(this.input, ANTLRv4Lexer.CLOSURE);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
 
                     result = this.block(start);
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     break;
                 }
 
                 case ANTLRv4Lexer.POSITIVE_CLOSURE: {
                     this.match(this.input, ANTLRv4Lexer.POSITIVE_CLOSURE);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
 
                     result = this.block(start);
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     break;
                 }
@@ -568,7 +568,7 @@ export class ATNBuilder extends TreeParser {
             const start = this.input.lookaheadType(1)!;
 
             this.match(this.input, ANTLRv4Lexer.SET);
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
 
             let elementCount = 0;
             const alts = new Array<GrammarAST>();
@@ -592,7 +592,7 @@ export class ATNBuilder extends TreeParser {
                 ++elementCount;
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
 
             return this.factory.set((start as GrammarAST), alts, invert);
         } catch (re) {
@@ -613,12 +613,12 @@ export class ATNBuilder extends TreeParser {
             switch (this.input.lookahead(1)) {
                 case ANTLRv4Lexer.STRING_LITERAL: {
                     const lookahead = this.input.lookahead(2);
-                    if (lookahead === Constants.DOWN) {
+                    if (lookahead === Constants.Down) {
                         this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         this.matchAny();
-                        this.match(this.input, Constants.UP);
-                    } else if (lookahead === Constants.UP || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET
+                        this.match(this.input, Constants.Up);
+                    } else if (lookahead === Constants.Up || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET
                         || lookahead === ANTLRv4Lexer.RANGE || lookahead === ANTLRv4Lexer.STRING_LITERAL
                         || lookahead === ANTLRv4Lexer.TOKEN_REF) {
                         this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
@@ -640,12 +640,12 @@ export class ATNBuilder extends TreeParser {
 
                 case ANTLRv4Lexer.TOKEN_REF: {
                     const lookahead = this.input.lookahead(2);
-                    if (lookahead === Constants.DOWN) {
+                    if (lookahead === Constants.Down) {
                         this.match(this.input, ANTLRv4Lexer.TOKEN_REF);
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         this.matchAny();
-                        this.match(this.input, Constants.UP);
-                    } else if (lookahead === Constants.UP || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET
+                        this.match(this.input, Constants.Up);
+                    } else if (lookahead === Constants.Up || lookahead === ANTLRv4Lexer.LEXER_CHAR_SET
                         || lookahead === ANTLRv4Lexer.RANGE || lookahead === ANTLRv4Lexer.STRING_LITERAL
                         || lookahead === ANTLRv4Lexer.TOKEN_REF) {
                         this.match(this.input, ANTLRv4Lexer.TOKEN_REF);
@@ -667,10 +667,10 @@ export class ATNBuilder extends TreeParser {
 
                 case ANTLRv4Lexer.RANGE: {
                     this.match(this.input, ANTLRv4Lexer.RANGE);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
                     this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     break;
                 }
@@ -708,26 +708,26 @@ export class ATNBuilder extends TreeParser {
 
                 case ANTLRv4Lexer.DOT: {
                     const lookahead2 = this.input.lookahead(2);
-                    if (lookahead2 === Constants.DOWN) {
+                    if (lookahead2 === Constants.Down) {
                         const lookahead3 = this.input.lookahead(3);
                         if (lookahead3 === ANTLRv4Lexer.ID) {
                             const lookahead4 = this.input.lookahead(4);
                             if (lookahead4 === ANTLRv4Lexer.STRING_LITERAL || lookahead4 === ANTLRv4Lexer.TOKEN_REF) {
                                 this.match(this.input, ANTLRv4Lexer.DOT);
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 this.match(this.input, ANTLRv4Lexer.ID);
 
                                 const result = this.terminal();
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
 
                                 return result;
                             } else if (lookahead4 === ANTLRv4Lexer.RULE_REF) {
                                 this.match(this.input, ANTLRv4Lexer.DOT);
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 this.match(this.input, ANTLRv4Lexer.ID);
 
                                 const result = this.ruleref();
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
 
                                 return result;
                             } else {
@@ -776,15 +776,15 @@ export class ATNBuilder extends TreeParser {
 
                 case ANTLRv4Lexer.WILDCARD: {
                     const lookahead2 = this.input.lookahead(2);
-                    if (lookahead2 === Constants.DOWN) {
+                    if (lookahead2 === Constants.Down) {
                         this.match(this.input, ANTLRv4Lexer.WILDCARD);
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         this.matchAny();
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
 
                         return this.factory.wildcard((start));
                     } else if (lookahead2 === ANTLRv4Lexer.EOF
-                        || (lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                        || (lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                         || lookahead2 === ANTLRv4Lexer.ASSIGN || lookahead2 === ANTLRv4Lexer.DOT
                         || lookahead2 === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead2 === ANTLRv4Lexer.NOT
                         || lookahead2 === ANTLRv4Lexer.PLUS_ASSIGN || lookahead2 === ANTLRv4Lexer.RANGE
@@ -844,14 +844,14 @@ export class ATNBuilder extends TreeParser {
             const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Lexer.RULE_REF) {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     switch (this.input.lookahead(3)) {
                         case ANTLRv4Lexer.ARG_ACTION: {
                             const lookahead4 = this.input.lookahead(4);
                             if (lookahead4 === ANTLRv4Lexer.ELEMENT_OPTIONS) {
                                 alt = 1;
                             } else {
-                                if (lookahead4 === Constants.UP) {
+                                if (lookahead4 === Constants.Up) {
                                     alt = 2;
                                 } else {
                                     const mark = this.input.mark();
@@ -879,7 +879,7 @@ export class ATNBuilder extends TreeParser {
                             break;
                         }
 
-                        case Constants.UP: {
+                        case Constants.Up: {
                             alt = 2;
 
                             break;
@@ -900,7 +900,7 @@ export class ATNBuilder extends TreeParser {
                         }
                     }
                 } else if (lookahead2 === ANTLRv4Lexer.EOF
-                    || (lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                    || (lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                     || lookahead2 === ANTLRv4Lexer.ASSIGN || lookahead2 === ANTLRv4Lexer.DOT
                     || lookahead2 === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead2 === ANTLRv4Lexer.NOT
                     || lookahead2 === ANTLRv4Lexer.PLUS_ASSIGN || lookahead2 === ANTLRv4Lexer.RANGE
@@ -932,7 +932,7 @@ export class ATNBuilder extends TreeParser {
             switch (alt) {
                 case 1: {
                     const ruleRef = this.match(this.input, ANTLRv4Lexer.RULE_REF)!;
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
 
                     const lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Lexer.ARG_ACTION) {
@@ -940,36 +940,36 @@ export class ATNBuilder extends TreeParser {
                     }
 
                     this.match(this.input, ANTLRv4Lexer.ELEMENT_OPTIONS);
-                    if (this.input.lookahead(1) === Constants.DOWN) {
-                        this.match(this.input, Constants.DOWN);
+                    if (this.input.lookahead(1) === Constants.Down) {
+                        this.match(this.input, Constants.Down);
 
                         while (true) {
                             const lookahead = this.input.lookahead(1);
                             if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
                                 this.matchAny();
-                            } else if (lookahead === Constants.UP) {
+                            } else if (lookahead === Constants.Up) {
                                 break;
                             }
                         }
 
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     return this.factory.ruleRef(ruleRef) ?? undefined;
                 }
 
                 case 2: {
                     const ruleRef = this.match(this.input, ANTLRv4Lexer.RULE_REF)!;
-                    if (this.input.lookahead(1) === Constants.DOWN) {
-                        this.match(this.input, Constants.DOWN);
+                    if (this.input.lookahead(1) === Constants.Down) {
+                        this.match(this.input, Constants.Down);
 
                         if (this.input.lookahead(1) === ANTLRv4Lexer.ARG_ACTION) {
                             this.match(this.input, ANTLRv4Lexer.ARG_ACTION);
                         }
 
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                     }
 
                     return this.factory.ruleRef(ruleRef) ?? undefined;
@@ -993,10 +993,10 @@ export class ATNBuilder extends TreeParser {
     private range(): IStatePair | undefined {
         try {
             this.match(this.input, ANTLRv4Lexer.RANGE);
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
             const a = this.match(this.input, ANTLRv4Lexer.STRING_LITERAL)!;
             const b = this.match(this.input, ANTLRv4Lexer.STRING_LITERAL)!;
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
 
             return this.factory.range(a, b) ?? undefined;
         } catch (re) {
@@ -1018,11 +1018,11 @@ export class ATNBuilder extends TreeParser {
             const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Lexer.STRING_LITERAL) {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     alt24 = 1;
                 } else {
                     if (lookahead2 === ANTLRv4Lexer.EOF
-                        || (lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                        || (lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                         || lookahead2 === ANTLRv4Lexer.ASSIGN || lookahead2 === ANTLRv4Lexer.DOT
                         || lookahead2 === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead2 === ANTLRv4Lexer.NOT
                         || lookahead2 === ANTLRv4Lexer.PLUS_ASSIGN || lookahead2 === ANTLRv4Lexer.RANGE
@@ -1049,14 +1049,14 @@ export class ATNBuilder extends TreeParser {
             } else {
                 if (lookahead === ANTLRv4Lexer.TOKEN_REF) {
                     const lookahead2 = this.input.lookahead(2);
-                    if (lookahead2 === Constants.DOWN) {
+                    if (lookahead2 === Constants.Down) {
                         const lookahead3 = this.input.lookahead(3);
                         if (lookahead3 === ANTLRv4Lexer.ARG_ACTION) {
                             const lookahead4 = this.input.lookahead(4);
                             if (lookahead4 >= ANTLRv4Lexer.ACTION && lookahead4 <= ANTLRv4Lexer.WILDCARD) {
                                 alt24 = 3;
                             } else {
-                                if (lookahead4 >= Constants.DOWN && lookahead4 <= Constants.UP) {
+                                if (lookahead4 >= Constants.Down && lookahead4 <= Constants.Up) {
                                     alt24 = 4;
                                 } else {
                                     const mark = this.input.mark();
@@ -1093,7 +1093,7 @@ export class ATNBuilder extends TreeParser {
                         }
                     } else {
                         if (lookahead2 === ANTLRv4Lexer.EOF
-                            || (lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                            || (lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                             || lookahead2 === ANTLRv4Lexer.ASSIGN || lookahead2 === ANTLRv4Lexer.DOT
                             || lookahead2 === ANTLRv4Lexer.LEXER_CHAR_SET || lookahead2 === ANTLRv4Lexer.NOT
                             || lookahead2 === ANTLRv4Lexer.PLUS_ASSIGN || lookahead2 === ANTLRv4Lexer.RANGE
@@ -1124,9 +1124,9 @@ export class ATNBuilder extends TreeParser {
             switch (alt24) {
                 case 1: {
                     this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     this.matchAny();
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     return this.factory.stringLiteral((start) as TerminalAST)!;
                 }
@@ -1139,19 +1139,19 @@ export class ATNBuilder extends TreeParser {
 
                 case 3: {
                     this.match(this.input, ANTLRv4Lexer.TOKEN_REF);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     this.match(this.input, ANTLRv4Lexer.ARG_ACTION);
                     this.matchAny();
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     return this.factory.tokenRef(start as TerminalAST)!;
                 }
 
                 case 4: {
                     this.match(this.input, ANTLRv4Lexer.TOKEN_REF);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     this.matchAny();
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     return this.factory.tokenRef(start as TerminalAST) ?? undefined;
                 }
@@ -1180,8 +1180,8 @@ export class ATNBuilder extends TreeParser {
     private elementOptions(): void {
         try {
             this.match(this.input, ANTLRv4Lexer.ELEMENT_OPTIONS);
-            if (this.input.lookahead(1) === Constants.DOWN) {
-                this.match(this.input, Constants.DOWN);
+            if (this.input.lookahead(1) === Constants.Down) {
+                this.match(this.input, Constants.Down);
 
                 while (true) {
                     const lookahead = this.input.lookahead(1);
@@ -1192,7 +1192,7 @@ export class ATNBuilder extends TreeParser {
                     }
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -1210,45 +1210,45 @@ export class ATNBuilder extends TreeParser {
                 this.match(this.input, ANTLRv4Lexer.ID);
             } else {
                 if (lookahead === ANTLRv4Lexer.ASSIGN) {
-                    if (this.input.lookahead(2) === Constants.DOWN) {
+                    if (this.input.lookahead(2) === Constants.Down) {
                         if (this.input.lookahead(3) === ANTLRv4Lexer.ID) {
                             switch (this.input.lookahead(4)) {
                                 case ANTLRv4Lexer.ID: {
                                     this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                                    this.match(this.input, Constants.DOWN);
+                                    this.match(this.input, Constants.Down);
                                     this.match(this.input, ANTLRv4Lexer.ID);
                                     this.match(this.input, ANTLRv4Lexer.ID);
-                                    this.match(this.input, Constants.UP);
+                                    this.match(this.input, Constants.Up);
 
                                     break;
                                 }
 
                                 case ANTLRv4Lexer.STRING_LITERAL: {
                                     this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                                    this.match(this.input, Constants.DOWN);
+                                    this.match(this.input, Constants.Down);
                                     this.match(this.input, ANTLRv4Lexer.ID);
                                     this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
-                                    this.match(this.input, Constants.UP);
+                                    this.match(this.input, Constants.Up);
 
                                     break;
                                 }
 
                                 case ANTLRv4Lexer.ACTION: {
                                     this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                                    this.match(this.input, Constants.DOWN);
+                                    this.match(this.input, Constants.Down);
                                     this.match(this.input, ANTLRv4Lexer.ID);
                                     this.match(this.input, ANTLRv4Lexer.ACTION);
-                                    this.match(this.input, Constants.UP);
+                                    this.match(this.input, Constants.Up);
 
                                     break;
                                 }
 
                                 case ANTLRv4Lexer.INT: {
                                     this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                                    this.match(this.input, Constants.DOWN);
+                                    this.match(this.input, Constants.Down);
                                     this.match(this.input, ANTLRv4Lexer.ID);
                                     this.match(this.input, ANTLRv4Lexer.INT);
-                                    this.match(this.input, Constants.UP);
+                                    this.match(this.input, Constants.Up);
 
                                     break;
                                 }

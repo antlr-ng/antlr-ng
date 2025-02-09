@@ -6,9 +6,8 @@
 import { ANTLRMessage } from "./ANTLRMessage.js";
 import type { ErrorManager } from "./ErrorManager.js";
 
-// TODO: This listener takes an error manager, but is added to that as listener.
-export class ToolListener implements ToolListener {
-    public constructor(public errorManager: ErrorManager) { }
+export class ToolListener {
+    public constructor(private errorManager: ErrorManager) { }
 
     public info(msg: string): void {
         if (this.errorManager.formatWantsSingleLineMessage()) {

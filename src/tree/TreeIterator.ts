@@ -16,8 +16,8 @@ import { CommonTree } from "./CommonTree.js";
 export class TreeIterator {
 
     /** Navigation nodes to return during walk and at end. */
-    public static readonly up = new CommonTree(CommonToken.fromType(Constants.UP, "UP"));
-    public static readonly down = new CommonTree(CommonToken.fromType(Constants.DOWN, "DOWN"));
+    public static readonly up = new CommonTree(CommonToken.fromType(Constants.Up, "UP"));
+    public static readonly down = new CommonTree(CommonToken.fromType(Constants.Down, "DOWN"));
     public static readonly eof = new CommonTree(CommonToken.fromType(Token.EOF, "EOF"));
 
     protected root: CommonTree | undefined;

@@ -15,6 +15,7 @@ import type { GrammarParserInterpreter } from "../src/tool/GrammarParserInterpre
 import { LexerGrammar } from "../src/tool/LexerGrammar.js";
 import { encodings, parseBoolean } from "./cli-options.js";
 import type { Tool } from "../src/Tool.js";
+import { IgnoreTokenVocabGrammar } from "./IgnoreTokenVocabGrammar.js";
 
 /** CLI parameters for the interpreter tool. */
 export interface IInterpreterCliParameters {
@@ -50,19 +51,7 @@ export class Interpreter {
         "Rule", "Invocations", "Time (ms)", "Total k", "Max k", "Ambiguities", "DFA cache miss",
     ];
 
-    private static IgnoreTokenVocabGrammar = class IgnoreTokenVocabGrammar extends Grammar {
-        public constructor(fileName: string, grammarText: string, tokenVocabSource: Grammar | undefined,
-            listener: ToolListener) {
-            super(fileName, grammarText, tokenVocabSource, listener);
-        }
-
-        public override importTokensFromTokensFile(): void {
-            // don't try to import tokens files; must give me both grammars if split
-        }
-    };
-
-    public constructor(private tool: Tool) {
-    }
+    public constructor(private tool: Tool) { }
 
     public static getValue(decisionInfo: DecisionInfo, ruleNamesByDecision: string[], decision: number,
         col: number): number | string {
@@ -112,14 +101,17 @@ export class Interpreter {
         const listener = new ToolListener(this.tool.errorManager);
         if (interpreterOptions.grammarFileName) {
             const grammarContent = await readFile(interpreterOptions.grammarFileName, "utf8");
-            g = new Interpreter.IgnoreTokenVocabGrammar(interpreterOptions.grammarFileName, grammarContent, undefined,
-                listener);
+            g = Grammar.forFile(IgnoreTokenVocabGrammar, interpreterOptions.grammarFileName, grammarContent,
+                undefined, listener);
         } else {
             const lexerGrammarContent = await readFile(interpreterOptions.lexerFileName!, "utf8");
-            lg = new LexerGrammar(lexerGrammarContent, listener);
+            lg = new LexerGrammar(lexerGrammarContent);
+            lg.tool.errorManager.addListener(listener);
+            lg.tool.process(lg, false);
             const parserGrammarContent = await readFile(interpreterOptions.grammarFileName, "utf8");
-            g = new Interpreter.IgnoreTokenVocabGrammar(interpreterOptions.grammarFileName, parserGrammarContent, lg,
-                listener);
+            g = Grammar.forFile(IgnoreTokenVocabGrammar, interpreterOptions.grammarFileName,
+                parserGrammarContent, lg, listener);
+            g.tool.process(g, false);
         }
 
         const input = await readFile(interpreterOptions.inputFile!, interpreterOptions.encoding);

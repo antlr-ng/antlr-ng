@@ -6,62 +6,15 @@
 import { ClassFactory } from "../ClassFactory.js";
 import type { ILexerGrammar, IRule, ITool } from "../types.js";
 
-import { ToolListener } from "./ToolListener.js";
 import type { GrammarRootAST } from "./ast/GrammarRootAST.js";
 import { Grammar } from "./Grammar.js";
 
 export class LexerGrammar extends Grammar implements ILexerGrammar {
-    public override readonly grammarType = "lexerGrammar";
-
-    /** The grammar from which this lexer grammar was derived (if implicit) */
+    /** The grammar from which this lexer grammar was derived (if implicit). */
     public implicitLexerOwner: Grammar;
 
-    /** DEFAULT_MODE rules are added first due to grammar syntax order */
+    /** DEFAULT_MODE rules are added first due to grammar syntax order. */
     public modes = new Map<string, IRule[]>();
-
-    public constructor(grammarText: string);
-    public constructor(tool: ITool, ast: GrammarRootAST);
-    public constructor(grammarText: string, listener: ToolListener);
-    public constructor(fileName: string, grammarText: string, listener: ToolListener);
-    public constructor(...args: unknown[]) {
-        switch (args.length) {
-            case 1: {
-                const [grammarText] = args as [string];
-
-                super(grammarText);
-
-                break;
-            }
-
-            case 2: {
-                if (typeof args[0] === "string") {
-                    const [grammarText, listener] = args as [string, ToolListener];
-
-                    super(grammarText, listener);
-
-                    break;
-                } else {
-                    const [tool, ast] = args as [ITool, GrammarRootAST];
-
-                    super(tool, ast);
-
-                    break;
-                }
-            }
-
-            case 3: {
-                const [fileName, grammarText, listener] = args as [string, string, ToolListener];
-
-                super(fileName, grammarText, listener);
-
-                break;
-            }
-
-            default: {
-                throw new Error("Invalid number of arguments");
-            }
-        }
-    }
 
     public override defineRule(r: IRule): boolean {
         if (!super.defineRule(r) || !r.mode) {
@@ -78,7 +31,7 @@ export class LexerGrammar extends Grammar implements ILexerGrammar {
         return true;
     }
 
-    public override undefineRule(r: IRule): boolean {
+    protected override undefineRule(r: IRule): boolean {
         if (!super.undefineRule(r) || !r.mode) {
             return false;
         }

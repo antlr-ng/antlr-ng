@@ -97,7 +97,7 @@ export class BuildDependencyGenerator {
             const lexer = `${this.g.name}${suffix}${extST?.render()}`;
             files.push(this.getOutputFile(lexer));
 
-            const lexerTokens = this.g.name + suffix + Constants.VOCAB_FILE_EXTENSION;
+            const lexerTokens = this.g.name + suffix + Constants.VocabFileExtension;
             files.push(this.getOutputFile(lexerTokens));
 
             // TLexer.h
@@ -189,7 +189,7 @@ export class BuildDependencyGenerator {
         // Handle token vocabulary loads.
         const tokenVocab = this.g.getOptionString("tokenVocab");
         if (tokenVocab !== undefined) {
-            const fileName = tokenVocab + Constants.VOCAB_FILE_EXTENSION;
+            const fileName = tokenVocab + Constants.VocabFileExtension;
             let vocabFile: URL;
             const libDirectory = this.libDirectory ?? ".";
             if (libDirectory === ".") {
@@ -229,14 +229,12 @@ export class BuildDependencyGenerator {
     public groomQualifiedFileName(outputDir: string, fileName: string): string {
         if (outputDir === ".") {
             return fileName;
-        } else {
-            if (outputDir.includes(" ")) { // Has spaces?
-                const escSpaces = outputDir.replaceAll(" ", "\\ ");
+        } else if (outputDir.includes(" ")) { // Has spaces?
+            const escSpaces = outputDir.replaceAll(" ", "\\ ");
 
-                return escSpaces + "/" + fileName;
-            } else {
-                return outputDir + "/" + fileName;
-            }
+            return escSpaces + "/" + fileName;
+        } else {
+            return outputDir + "/" + fileName;
         }
     }
 }

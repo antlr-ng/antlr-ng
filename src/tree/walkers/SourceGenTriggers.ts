@@ -78,12 +78,12 @@ export class SourceGenTriggers extends TreeParser {
 
         try {
             blk = this.match(this.input, ANTLRv4Lexer.BLOCK)!;
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
 
             if (this.input.lookahead(1) === ANTLRv4Lexer.OPTIONS) {
                 this.match(this.input, ANTLRv4Lexer.OPTIONS);
-                if (this.input.lookahead(1) === Constants.DOWN) {
-                    this.match(this.input, Constants.DOWN);
+                if (this.input.lookahead(1) === Constants.Down) {
+                    this.match(this.input, Constants.Down);
 
                     let matchCount = 0;
                     while (true) {
@@ -101,7 +101,7 @@ export class SourceGenTriggers extends TreeParser {
                         matchCount++;
                     }
 
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
                 }
             }
 
@@ -124,7 +124,7 @@ export class SourceGenTriggers extends TreeParser {
                 altCount++;
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
             if (alts.length === 1 && ebnfRoot === null) {
                 return alts;
             }
@@ -191,14 +191,14 @@ export class SourceGenTriggers extends TreeParser {
 
             if (start.children[index].getType() === ANTLRv4Lexer.EPSILON) {
                 this.match(this.input, ANTLRv4Lexer.ALT);
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
 
                 if (this.input.lookahead(1) === ANTLRv4Lexer.ELEMENT_OPTIONS) {
                     this.elementOptions();
                 }
 
                 this.match(this.input, ANTLRv4Lexer.EPSILON);
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
 
                 result.altCodeBlock = this.controller!.epsilon(this.controller!.currentOuterMostAlt, outerMost);
             } else {
@@ -208,7 +208,7 @@ export class SourceGenTriggers extends TreeParser {
                 this.controller!.currentBlock = result.altCodeBlock;
 
                 this.match(this.input, ANTLRv4Lexer.ALT);
-                this.match(this.input, Constants.DOWN);
+                this.match(this.input, Constants.Down);
 
                 if (this.input.lookahead(1) === ANTLRv4Lexer.ELEMENT_OPTIONS) {
                     this.elementOptions();
@@ -237,7 +237,7 @@ export class SourceGenTriggers extends TreeParser {
                     ++elementCount;
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
             }
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -286,14 +286,14 @@ export class SourceGenTriggers extends TreeParser {
 
                 case ANTLRv4Lexer.ACTION: {
                     const lookahead2 = this.input.lookahead(2);
-                    if (lookahead2 === Constants.DOWN) {
+                    if (lookahead2 === Constants.Down) {
                         const action = this.match<ActionAST>(this.input, ANTLRv4Lexer.ACTION)!;
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                         result = this.controller!.action(action);
-                    } else if ((lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                    } else if ((lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                         || SourceGenTriggers.singleAtomLookaheadValues.includes(lookahead2)
                         || (lookahead2 >= ANTLRv4Lexer.BLOCK && lookahead2 <= ANTLRv4Lexer.CLOSURE)
                         || (lookahead2 >= ANTLRv4Lexer.OPTIONAL && lookahead2 <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -319,14 +319,14 @@ export class SourceGenTriggers extends TreeParser {
 
                 case ANTLRv4Lexer.SEMPRED: {
                     const lookahead = this.input.lookahead(2);
-                    if (lookahead === Constants.DOWN) {
+                    if (lookahead === Constants.Down) {
                         const sempred = this.match<ActionAST>(this.input, ANTLRv4Lexer.SEMPRED)!;
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         this.elementOptions();
 
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                         result = this.controller!.sempred(sempred);
-                    } else if ((lookahead >= Constants.UP && lookahead <= ANTLRv4Lexer.ACTION)
+                    } else if ((lookahead >= Constants.Up && lookahead <= ANTLRv4Lexer.ACTION)
                         || SourceGenTriggers.singleAtomLookaheadValues.includes(lookahead)
                         || (lookahead >= ANTLRv4Lexer.BLOCK && lookahead <= ANTLRv4Lexer.CLOSURE)
                         || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -372,7 +372,7 @@ export class SourceGenTriggers extends TreeParser {
         try {
             const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Lexer.ASSIGN) {
-                if (this.input.lookahead(2) === Constants.DOWN) {
+                if (this.input.lookahead(2) === Constants.Down) {
                     if (this.input.lookahead(3) === ANTLRv4Lexer.ID) {
                         const lookahead4 = this.input.lookahead(4);
                         if (lookahead4 === ANTLRv4Lexer.DOT
@@ -383,18 +383,18 @@ export class SourceGenTriggers extends TreeParser {
                             || lookahead4 === ANTLRv4Lexer.TOKEN_REF
                             || (lookahead4 >= ANTLRv4Lexer.SET && lookahead4 <= ANTLRv4Lexer.WILDCARD)) {
                             this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                            this.match(this.input, Constants.DOWN);
+                            this.match(this.input, Constants.Down);
 
                             const id = this.match(this.input, ANTLRv4Lexer.ID)!;
                             result = this.atom(id, false);
-                            this.match(this.input, Constants.UP);
+                            this.match(this.input, Constants.Up);
                         } else if (lookahead4 === ANTLRv4Lexer.BLOCK) {
                             this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                            this.match(this.input, Constants.DOWN);
+                            this.match(this.input, Constants.Down);
 
                             const id = this.match(this.input, ANTLRv4Lexer.ID)!;
                             result = this.block(id, null);
-                            this.match(this.input, Constants.UP);
+                            this.match(this.input, Constants.Up);
                         } else {
                             const mark = this.input.mark();
                             const lastIndex = this.input.index;
@@ -439,7 +439,7 @@ export class SourceGenTriggers extends TreeParser {
                     }
                 }
             } else if (lookahead === ANTLRv4Lexer.PLUS_ASSIGN) {
-                if (this.input.lookahead(2) === Constants.DOWN) {
+                if (this.input.lookahead(2) === Constants.Down) {
                     if (this.input.lookahead(3) === ANTLRv4Lexer.ID) {
                         const lookahead4 = this.input.lookahead(4);
                         if (lookahead4 === ANTLRv4Lexer.DOT
@@ -450,18 +450,18 @@ export class SourceGenTriggers extends TreeParser {
                             || lookahead4 === ANTLRv4Lexer.TOKEN_REF
                             || (lookahead4 >= ANTLRv4Lexer.SET && lookahead4 <= ANTLRv4Lexer.WILDCARD)) {
                             this.match(this.input, ANTLRv4Lexer.PLUS_ASSIGN);
-                            this.match(this.input, Constants.DOWN);
+                            this.match(this.input, Constants.Down);
 
                             const id = this.match(this.input, ANTLRv4Lexer.ID)!;
                             result = this.atom(id, false);
-                            this.match(this.input, Constants.UP);
+                            this.match(this.input, Constants.Up);
                         } else if (lookahead4 === ANTLRv4Lexer.BLOCK) {
                             this.match(this.input, ANTLRv4Lexer.PLUS_ASSIGN);
-                            this.match(this.input, Constants.DOWN);
+                            this.match(this.input, Constants.Down);
 
                             const id = this.match(this.input, ANTLRv4Lexer.ID)!;
                             result = this.block(id, null);
-                            this.match(this.input, Constants.UP);
+                            this.match(this.input, Constants.Up);
 
                         } else {
                             const mark = this.input.mark();
@@ -526,10 +526,10 @@ export class SourceGenTriggers extends TreeParser {
             switch (this.input.lookahead(1)) {
                 case ANTLRv4Lexer.OPTIONAL: {
                     const optional = this.match(this.input, ANTLRv4Lexer.OPTIONAL)!;
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
 
                     result = this.block(null, optional);
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     break;
                 }
@@ -542,16 +542,16 @@ export class SourceGenTriggers extends TreeParser {
                     const lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Lexer.CLOSURE) {
                         op = this.match(this.input, ANTLRv4Lexer.CLOSURE)!;
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         b = this.block(null, null);
 
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                     } else if (lookahead === ANTLRv4Lexer.POSITIVE_CLOSURE) {
                         op = this.match(this.input, ANTLRv4Lexer.POSITIVE_CLOSURE)!;
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         b = this.block(null, null);
 
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                     } else {
                         throw new NoViableAltException(10, 0);
                     }
@@ -596,7 +596,7 @@ export class SourceGenTriggers extends TreeParser {
 
         try {
             const set = this.match(this.input, ANTLRv4Lexer.SET)!;
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
 
             let atomCount = 0;
             while (true) {
@@ -620,7 +620,7 @@ export class SourceGenTriggers extends TreeParser {
                 ++atomCount;
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
             result = this.controller!.set(set, label, invert);
         } catch (re) {
             if (re instanceof RecognitionException) {
@@ -640,10 +640,10 @@ export class SourceGenTriggers extends TreeParser {
             switch (this.input.lookahead(1)) {
                 case ANTLRv4Lexer.NOT: {
                     this.match(this.input, ANTLRv4Lexer.NOT);
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
 
                     result = this.atom(label, true);
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     break;
                 }
@@ -655,21 +655,21 @@ export class SourceGenTriggers extends TreeParser {
                 }
 
                 case ANTLRv4Lexer.DOT: {
-                    if (this.input.lookahead(2) === Constants.DOWN) {
+                    if (this.input.lookahead(2) === Constants.Down) {
                         if (this.input.lookahead(3) === ANTLRv4Lexer.ID) {
                             const lookahead4 = this.input.lookahead(4);
                             if (lookahead4 === ANTLRv4Lexer.STRING_LITERAL || lookahead4 === ANTLRv4Lexer.TOKEN_REF) {
                                 this.match(this.input, ANTLRv4Lexer.DOT);
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 this.match(this.input, ANTLRv4Lexer.ID);
                                 this.terminal(label);
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
                             } else if (lookahead4 === ANTLRv4Lexer.RULE_REF) {
                                 this.match(this.input, ANTLRv4Lexer.DOT);
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 this.match(this.input, ANTLRv4Lexer.ID);
                                 this.ruleref(label);
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
                             } else {
                                 const mark = this.input.mark();
                                 const lastIndex = this.input.index;
@@ -718,14 +718,14 @@ export class SourceGenTriggers extends TreeParser {
 
                 case ANTLRv4Lexer.WILDCARD: {
                     const lookahead = this.input.lookahead(2);
-                    if (lookahead === Constants.DOWN) {
+                    if (lookahead === Constants.Down) {
                         const wildcard = this.match(this.input, ANTLRv4Lexer.WILDCARD)!;
-                        this.match(this.input, Constants.DOWN);
+                        this.match(this.input, Constants.Down);
                         this.matchAny();
-                        this.match(this.input, Constants.UP);
+                        this.match(this.input, Constants.Up);
                         result = this.controller!.wildcard(wildcard, label);
                     } else {
-                        if ((lookahead >= Constants.UP && lookahead <= ANTLRv4Lexer.ACTION)
+                        if ((lookahead >= Constants.Up && lookahead <= ANTLRv4Lexer.ACTION)
                             || SourceGenTriggers.singleAtomLookaheadValues.includes(lookahead)
                             || (lookahead >= ANTLRv4Lexer.BLOCK && lookahead <= ANTLRv4Lexer.CLOSURE)
                             || (lookahead >= ANTLRv4Lexer.OPTIONAL && lookahead <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -791,8 +791,8 @@ export class SourceGenTriggers extends TreeParser {
         try {
             let argAction;
             const ruleRef = this.match(this.input, ANTLRv4Lexer.RULE_REF)!;
-            if (this.input.lookahead(1) === Constants.DOWN) {
-                this.match(this.input, Constants.DOWN);
+            if (this.input.lookahead(1) === Constants.Down) {
+                this.match(this.input, Constants.Down);
 
                 if (this.input.lookahead(1) === ANTLRv4Lexer.ARG_ACTION) {
                     argAction = this.match(this.input, ANTLRv4Lexer.ARG_ACTION)!;
@@ -802,7 +802,7 @@ export class SourceGenTriggers extends TreeParser {
                     this.elementOptions();
                 }
 
-                this.match(this.input, Constants.UP);
+                this.match(this.input, Constants.Up);
             }
 
             result = this.controller!.ruleRef(ruleRef, label, argAction ?? null);
@@ -820,10 +820,10 @@ export class SourceGenTriggers extends TreeParser {
     private range(): void {
         try {
             this.match(this.input, ANTLRv4Lexer.RANGE);
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
             this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
             this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
         } catch (re) {
             if (re instanceof RecognitionException) {
                 this.reportError(re);
@@ -840,14 +840,14 @@ export class SourceGenTriggers extends TreeParser {
             const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Lexer.STRING_LITERAL) {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     const stringLiteral = this.match(this.input, ANTLRv4Lexer.STRING_LITERAL)!;
-                    this.match(this.input, Constants.DOWN);
+                    this.match(this.input, Constants.Down);
                     this.matchAny();
-                    this.match(this.input, Constants.UP);
+                    this.match(this.input, Constants.Up);
 
                     result = this.controller!.stringRef(stringLiteral, label);
-                } else if ((lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                } else if ((lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                     || SourceGenTriggers.singleAtomLookaheadValues.includes(lookahead2)
                     || (lookahead2 >= ANTLRv4Lexer.BLOCK && lookahead2 <= ANTLRv4Lexer.CLOSURE)
                     || (lookahead2 >= ANTLRv4Lexer.OPTIONAL && lookahead2 <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -869,24 +869,24 @@ export class SourceGenTriggers extends TreeParser {
                 }
             } else if (lookahead === ANTLRv4Lexer.TOKEN_REF) {
                 const lookahead2 = this.input.lookahead(2);
-                if (lookahead2 === Constants.DOWN) {
+                if (lookahead2 === Constants.Down) {
                     const lookahead3 = this.input.lookahead(3);
                     if (lookahead3 === ANTLRv4Lexer.ARG_ACTION) {
                         const lookahead4 = this.input.lookahead(4);
                         if (lookahead4 >= ANTLRv4Lexer.ACTION && lookahead4 <= ANTLRv4Lexer.WILDCARD) {
                             const tokenRef = this.match(this.input, ANTLRv4Lexer.TOKEN_REF)!;
-                            this.match(this.input, Constants.DOWN);
+                            this.match(this.input, Constants.Down);
                             const argAction = this.match(this.input, ANTLRv4Lexer.ARG_ACTION)!;
                             this.matchAny();
-                            this.match(this.input, Constants.UP);
+                            this.match(this.input, Constants.Up);
 
                             result = this.controller!.tokenRef(tokenRef, label, argAction);
                         } else {
-                            if (lookahead4 >= Constants.DOWN && lookahead4 <= Constants.UP) {
+                            if (lookahead4 >= Constants.Down && lookahead4 <= Constants.Up) {
                                 const tokenRef = this.match(this.input, ANTLRv4Lexer.TOKEN_REF)!;
-                                this.match(this.input, Constants.DOWN);
+                                this.match(this.input, Constants.Down);
                                 this.matchAny();
-                                this.match(this.input, Constants.UP);
+                                this.match(this.input, Constants.Up);
 
                                 result = this.controller!.tokenRef(tokenRef, label, null);
                             } else {
@@ -909,9 +909,9 @@ export class SourceGenTriggers extends TreeParser {
                         if ((lookahead3 >= ANTLRv4Lexer.ACTION && lookahead3 <= ANTLRv4Lexer.ACTION_STRING_LITERAL)
                             || (lookahead3 >= ANTLRv4Lexer.ARG_OR_CHARSET && lookahead3 <= ANTLRv4Lexer.WILDCARD)) {
                             const tokenRef = this.match(this.input, ANTLRv4Lexer.TOKEN_REF)!;
-                            this.match(this.input, Constants.DOWN);
+                            this.match(this.input, Constants.Down);
                             this.matchAny();
-                            this.match(this.input, Constants.UP);
+                            this.match(this.input, Constants.Up);
 
                             result = this.controller!.tokenRef(tokenRef, label, null);
                         } else {
@@ -930,7 +930,7 @@ export class SourceGenTriggers extends TreeParser {
                         }
                     }
                 } else {
-                    if ((lookahead2 >= Constants.UP && lookahead2 <= ANTLRv4Lexer.ACTION)
+                    if ((lookahead2 >= Constants.Up && lookahead2 <= ANTLRv4Lexer.ACTION)
                         || SourceGenTriggers.singleAtomLookaheadValues.includes(lookahead2)
                         || (lookahead2 >= ANTLRv4Lexer.BLOCK && lookahead2 <= ANTLRv4Lexer.CLOSURE)
                         || (lookahead2 >= ANTLRv4Lexer.OPTIONAL && lookahead2 <= ANTLRv4Lexer.POSITIVE_CLOSURE)
@@ -968,7 +968,7 @@ export class SourceGenTriggers extends TreeParser {
     private elementOptions(): void {
         try {
             this.match(this.input, ANTLRv4Lexer.ELEMENT_OPTIONS);
-            this.match(this.input, Constants.DOWN);
+            this.match(this.input, Constants.Down);
 
             let optionCount = 0;
             while (true) {
@@ -986,7 +986,7 @@ export class SourceGenTriggers extends TreeParser {
                 ++optionCount;
             }
 
-            this.match(this.input, Constants.UP);
+            this.match(this.input, Constants.Up);
         } catch (re) {
             if (re instanceof RecognitionException) {
                 this.reportError(re);
@@ -1003,45 +1003,45 @@ export class SourceGenTriggers extends TreeParser {
                 this.match(this.input, ANTLRv4Lexer.ID);
             } else {
                 if (lookahead === ANTLRv4Lexer.ASSIGN) {
-                    if (this.input.lookahead(2) === Constants.DOWN) {
+                    if (this.input.lookahead(2) === Constants.Down) {
                         if (this.input.lookahead(3) === ANTLRv4Lexer.ID) {
                             switch (this.input.lookahead(4)) {
                                 case ANTLRv4Lexer.ID: {
                                     this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                                    this.match(this.input, Constants.DOWN);
+                                    this.match(this.input, Constants.Down);
                                     this.match(this.input, ANTLRv4Lexer.ID);
                                     this.match(this.input, ANTLRv4Lexer.ID);
-                                    this.match(this.input, Constants.UP);
+                                    this.match(this.input, Constants.Up);
 
                                     break;
                                 }
 
                                 case ANTLRv4Lexer.STRING_LITERAL: {
                                     this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                                    this.match(this.input, Constants.DOWN);
+                                    this.match(this.input, Constants.Down);
                                     this.match(this.input, ANTLRv4Lexer.ID);
                                     this.match(this.input, ANTLRv4Lexer.STRING_LITERAL);
-                                    this.match(this.input, Constants.UP);
+                                    this.match(this.input, Constants.Up);
 
                                     break;
                                 }
 
                                 case ANTLRv4Lexer.ACTION: {
                                     this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                                    this.match(this.input, Constants.DOWN);
+                                    this.match(this.input, Constants.Down);
                                     this.match(this.input, ANTLRv4Lexer.ID);
                                     this.match(this.input, ANTLRv4Lexer.ACTION);
-                                    this.match(this.input, Constants.UP);
+                                    this.match(this.input, Constants.Up);
 
                                     break;
                                 }
 
                                 case ANTLRv4Lexer.INT: {
                                     this.match(this.input, ANTLRv4Lexer.ASSIGN);
-                                    this.match(this.input, Constants.DOWN);
+                                    this.match(this.input, Constants.Down);
                                     this.match(this.input, ANTLRv4Lexer.ID);
                                     this.match(this.input, ANTLRv4Lexer.INT);
-                                    this.match(this.input, Constants.UP);
+                                    this.match(this.input, Constants.Up);
 
                                     break;
                                 }

@@ -13,10 +13,10 @@ import { basename, join } from "node:path";
 
 import { convertMapToString } from "../src/support/helpers.js";
 import { IssueCode } from "../src/tool/Issues.js";
-import { GrammarSemanticsMessage } from "../src/tool/GrammarSemanticsMessage.js";
 import { Grammar } from "../src/tool/index.js";
 import { ErrorQueue } from "./support/ErrorQueue.js";
 import { ToolTestUtils } from "./ToolTestUtils.js";
+import { ANTLRMessage } from "../src/tool/ANTLRMessage.js";
 
 describe("TestCompositeGrammars", () => {
     const sort = <K extends string, V extends number>(data: Map<K, V>): Map<K, V> => {
@@ -34,8 +34,8 @@ describe("TestCompositeGrammars", () => {
         return dup;
     };
 
-    const checkGrammarSemanticsWarning = (errorQueue: ErrorQueue, expectedMessage: GrammarSemanticsMessage): void => {
-        let foundMsg;
+    const checkGrammarSemanticsWarning = (errorQueue: ErrorQueue, expectedMessage: ANTLRMessage): void => {
+        let foundMsg: ANTLRMessage | undefined;
         for (const m of errorQueue.warnings) {
             if (m.issueCode === expectedMessage.issueCode) {
                 foundMsg = m;
@@ -43,8 +43,8 @@ describe("TestCompositeGrammars", () => {
         }
 
         expect(foundMsg).toBeDefined();
-        expect(foundMsg).instanceOf(GrammarSemanticsMessage);
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        expect(foundMsg).instanceOf(ANTLRMessage);
+
         expect(foundMsg!.args.join(", ")).toBe(expectedMessage.args.join(", "));
         if (errorQueue.size() !== 1) {
             console.error(errorQueue);
@@ -331,7 +331,7 @@ describe("TestCompositeGrammars", () => {
 
             writeFileSync(join(tempDir, "M.g4"), master);
 
-            const g = new Grammar(tempDir + "/M.g4", master);
+            const g = Grammar.forFile(Grammar, tempDir + "/M.g4", master);
 
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
@@ -486,14 +486,14 @@ describe("TestCompositeGrammars", () => {
                 "WS : (' '|'\\n') -> skip ;\n";
             writeFileSync(join(tempDir, "M.g4"), master);
 
-            const g = new Grammar(tempDir + "/M.g4", master);
+            const g = Grammar.forFile(Grammar, tempDir + "/M.g4", master);
             const queue = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(queue);
             g.tool.process(g, false);
 
             const expectedArg = "S";
             const expectedMsgID = IssueCode.OptionsInDelegate;
-            const expectedMessage = new GrammarSemanticsMessage(expectedMsgID, g.fileName, -1, -1, expectedArg);
+            const expectedMessage = new ANTLRMessage(expectedMsgID, g.fileName, -1, -1, expectedArg);
             checkGrammarSemanticsWarning(queue, expectedMessage);
 
             expect(queue.errors).toHaveLength(0);
@@ -518,7 +518,7 @@ describe("TestCompositeGrammars", () => {
                 "s : x ;\n" +
                 "WS : (' '|'\\n') -> skip ;\n";
             writeFileSync(join(tempDir, "M.g4"), master);
-            const g = new Grammar(tempDir + "/M.g4", master);
+            const g = Grammar.forFile(Grammar, tempDir + "/M.g4", master);
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
             g.tool.process(g, false);
@@ -550,7 +550,7 @@ describe("TestCompositeGrammars", () => {
                 "import S;\n" +
                 "a : M ;\n";
             writeFileSync(join(tempDir, "M.g4"), master);
-            const g = new Grammar(tempDir + "/M.g4", master);
+            const g = Grammar.forFile(Grammar, tempDir + "/M.g4", master);
             g.name = "M";
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
@@ -613,7 +613,7 @@ describe("TestCompositeGrammars", () => {
                 "tokens{M}\n" +
                 "a : M ;\n";
             writeFileSync(join(tempDir, "M.g4"), master);
-            const g = new Grammar(tempDir + "/M.g4", master);
+            const g = Grammar.forFile(Grammar, tempDir + "/M.g4", master);
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
             g.tool.process(g, false);
@@ -653,7 +653,7 @@ describe("TestCompositeGrammars", () => {
                 "a : M x ;\n"; // x MUST BE VISIBLE TO M
             writeFileSync(join(tempDir, "M.g4"), master);
 
-            const g = new Grammar(tempDir + "/M.g4", master);
+            const g = Grammar.forFile(Grammar, tempDir + "/M.g4", master);
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
             g.tool.process(g, false);
@@ -705,7 +705,7 @@ describe("TestCompositeGrammars", () => {
 
             writeFileSync(join(tempDir, "G3.g4"), grammar3String);
 
-            const g = new Grammar(tempDir + "/G3.g4", grammar3String);
+            const g = Grammar.forFile(Grammar, tempDir + "/G3.g4", grammar3String);
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
             g.tool.process(g, false);

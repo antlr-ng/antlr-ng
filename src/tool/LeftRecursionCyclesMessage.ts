@@ -17,7 +17,7 @@ export class LeftRecursionCyclesMessage extends ANTLRMessage {
         super(IssueCode.LeftRecursionCycles, fileName, line, column, cycles);
     }
 
-    protected static getStartTokenOfFirstRule(cycles: Rule[][]): Token | undefined {
+    private static getStartTokenOfFirstRule(cycles: Rule[][]): Token | undefined {
         for (const collection of cycles) {
             for (const rule of collection) {
                 return rule.ast.token;

@@ -234,7 +234,7 @@ export class ParserFactory implements IOutputModelFactory {
     public getChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[], labelAST: GrammarAST | null): Choice {
         const decision = (blkAST.atnState as DecisionState).decision;
         let c: Choice;
-        if (!this.forceAtn && disjoint(this.grammar.decisionLOOK[decision])) {
+        if (!this.forceAtn && disjoint(this.grammar.decisionLookahead[decision])) {
             c = this.getLL1ChoiceBlock(blkAST, alts);
         } else {
             c = this.getComplexChoiceBlock(blkAST, alts);
@@ -268,7 +268,7 @@ export class ParserFactory implements IOutputModelFactory {
                 decision = (ebnfRoot.atnState as DecisionState).decision;
             }
 
-            if (disjoint(this.grammar.decisionLOOK[decision])) {
+            if (disjoint(this.grammar.decisionLookahead[decision])) {
                 return this.getLL1EBNFBlock(ebnfRoot, alts);
             }
         }

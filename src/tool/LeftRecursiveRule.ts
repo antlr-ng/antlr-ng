@@ -3,8 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable jsdoc/require-returns */
-
 import { ILeftRecursiveRuleAltInfo } from "../analysis/ILeftRecursiveRuleAltInfo.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { Grammar } from "./Grammar.js";
@@ -14,14 +12,13 @@ import type { GrammarAST } from "./ast/GrammarAST.js";
 import { RuleAST } from "./ast/RuleAST.js";
 
 export class LeftRecursiveRule extends Rule {
-    public override readonly ruleType: string = "LeftRecursiveRule";
+    /** Did we delete any labels on direct left-recur refs? Points at ID of ^(= ID el) */
+    public leftRecursiveRuleRefLabels = new Array<[GrammarAST, string | undefined]>();
 
     public recPrimaryAlts: ILeftRecursiveRuleAltInfo[];
     public recOpAlts: OrderedHashMap<number, ILeftRecursiveRuleAltInfo>;
-    public originalAST: RuleAST;
 
-    /** Did we delete any labels on direct left-recur refs? Points at ID of ^(= ID el) */
-    public leftRecursiveRuleRefLabels = new Array<[GrammarAST, string | undefined]>();
+    private originalAST: RuleAST;
 
     public constructor(g: Grammar, name: string, ast: RuleAST) {
         super(g, name, ast, 1); // Always just one.
@@ -63,8 +60,8 @@ export class LeftRecursiveRule extends Rule {
     }
 
     /**
-     * Return an array that maps predicted alt from primary decision
-     *  to original alt of rule. For following rule, return [0, 2, 4]
+     * @returns an array that maps predicted alt from primary decision to original alt of rule. For following rule,
+     * returns [0, 2, 4]
      *
      * ```antlr
      * e : e '*' e
@@ -74,7 +71,7 @@ export class LeftRecursiveRule extends Rule {
      *   ;
      * ```
      *
-     *  That maps predicted alt 1 to original alt 2 and predicted 2 to alt 4.
+     * That maps predicted alt 1 to original alt 2 and predicted 2 to alt 4.
      */
     public getPrimaryAlts(): number[] {
         const alts: number[] = [0];
@@ -86,8 +83,8 @@ export class LeftRecursiveRule extends Rule {
     }
 
     /**
-     * Return an array that maps predicted alt from recursive op decision
-     *  to original alt of rule. For following rule, return [0, 1, 3]
+     * @returns an array that maps predicted alt from recursive op decision to original alt of rule. For following rule,
+     * returns [0, 1, 3]
      *
      * ```antlr
      * e : e '*' e
@@ -96,7 +93,7 @@ export class LeftRecursiveRule extends Rule {
      *   | ID
      *   ;
      * ```
-     *  That maps predicted alt 1 to original alt 1 and predicted 2 to alt 3.
+     * That maps predicted alt 1 to original alt 1 and predicted 2 to alt 3.
      */
     public getRecursiveOpAlts(): number[] {
         const alts: number[] = [0];
@@ -107,8 +104,7 @@ export class LeftRecursiveRule extends Rule {
         return alts;
     }
 
-    /** Get -&gt; labels from those alts we deleted for left-recursive rules. */
-
+    /** @returns labels from those alts we deleted for left-recursive rules. */
     public override getAltLabels(): Map<string, Array<[number, AltAST]>> | null {
         const labels = new Map<string, Array<[number, AltAST]>>();
         const normalAltLabels = super.getAltLabels();
