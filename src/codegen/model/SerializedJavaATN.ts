@@ -10,9 +10,11 @@ import { ATN, ATNSerializer } from "antlr4ng";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { SerializedATN } from "./SerializedATN.js";
 
-/** A serialized ATN for the java target, which requires we use strings and 16-bit unicode values. */
+/** A serialized ATN for the Java target, which requires we use strings and 16-bit unicode values. */
 export class SerializedJavaATN extends SerializedATN {
-    private readonly serializedAsString: string[];
+    /** Only valid if there's a single segment. */
+    public readonly serializedAsString: string[];
+
     private readonly segments: string[][];
 
     public constructor(factory: IOutputModelFactory, atn: ATN) {
@@ -35,14 +37,11 @@ export class SerializedJavaATN extends SerializedATN {
             }
         }
 
-        this.serializedAsString = this.segments[0]; // serializedAsString is valid if only one segment
-    }
-
-    public override getSerialized(): object {
-        return this.serializedAsString;
+        this.serializedAsString = this.segments[0];
     }
 
     public getSegments(): string[][] {
+
         return this.segments;
     }
 

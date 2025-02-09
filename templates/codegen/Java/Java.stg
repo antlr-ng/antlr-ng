@@ -978,7 +978,7 @@ public static final String _serializedATN = Utils.join(
 <else>
 <! only one segment, can be inlined !>
 public static final String _serializedATN =
-	"<model.serialized; wrap={"+<\n><\t>"}>";
+	"<model.serializedAsString; wrap={"+<\n><\t>"}>";
 <endif>
 public static final ATN _ATN =
 	new ATNDeserializer().deserialize(_serializedATN.toCharArray());
