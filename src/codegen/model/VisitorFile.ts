@@ -33,7 +33,7 @@ export class VisitorFile extends OutputFile {
     public constructor(factory: IOutputModelFactory, fileName: string, packageName?: string) {
         super(factory, fileName);
 
-        const g = factory.grammar;
+        const g = factory.g;
         this.namedActions = this.buildNamedActions(g, (ast) => {
             return ast.getScope() === null;
         });

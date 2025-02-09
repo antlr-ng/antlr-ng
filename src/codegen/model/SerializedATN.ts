@@ -13,7 +13,7 @@ import { OutputModelObject } from "./OutputModelObject.js";
  * requires a 16-bit char encoding. See {@link SerializedJavaATN}.
  */
 export class SerializedATN extends OutputModelObject {
-    public serialized: number[];
+    public readonly serialized: number[];
 
     public constructor(factory: IOutputModelFactory, atn?: ATN) {
         super(factory);

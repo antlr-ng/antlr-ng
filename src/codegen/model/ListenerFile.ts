@@ -40,7 +40,7 @@ export class ListenerFile extends OutputFile {
     public constructor(factory: IOutputModelFactory, fileName: string, packageName?: string) {
         super(factory, fileName);
 
-        const g = factory.grammar;
+        const g = factory.g;
         this.parserName = g.getRecognizerName();
         this.grammarName = g.name;
         this.namedActions = this.buildNamedActions(g, (ast) => {

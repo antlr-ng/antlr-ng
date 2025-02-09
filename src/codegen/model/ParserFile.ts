@@ -31,7 +31,7 @@ export class ParserFile extends OutputFile {
 
     public constructor(factory: IOutputModelFactory, fileName: string, toolParameters: IToolParameters) {
         super(factory, fileName);
-        const g = factory.grammar;
+        const g = factory.g;
         this.namedActions = this.buildNamedActions(g);
         this.genPackage = toolParameters.package;
         this.exportMacro = g.getOptionString("exportMacro");

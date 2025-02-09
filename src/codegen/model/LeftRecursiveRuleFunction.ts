@@ -23,7 +23,7 @@ export class LeftRecursiveRuleFunction extends RuleFunction {
             const label = idAST.getText();
             const ruleRefAST = idAST.parent!.children[1] as GrammarAST;
             if (ruleRefAST.getType() === ANTLRv4Parser.RULE_REF) {
-                const targetRule = factory.grammar.getRule(ruleRefAST.getText())!;
+                const targetRule = factory.g.getRule(ruleRefAST.getText())!;
                 const ctxName = gen.target.getRuleFunctionContextStructName(targetRule);
 
                 let d: RuleContextDecl;

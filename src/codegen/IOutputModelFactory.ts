@@ -27,7 +27,7 @@ import type { CodeBlock } from "./model/decl/CodeBlock.js";
 
 export interface IOutputModelFactory {
     readonly controller: OutputModelController;
-    readonly grammar: Grammar;
+    readonly g: Grammar; // Note: must stay "g" as it is used used like this in at least one template.
 
     getGenerator(): CodeGenerator | undefined;
 

@@ -69,7 +69,7 @@ export class OutputModelController {
 
     public constructor(factory: IOutputModelFactory) {
         this.factory = factory;
-        this.errorManager = factory.grammar.tool.errorManager;
+        this.errorManager = factory.g.tool.errorManager;
     }
 
     /**
@@ -81,7 +81,7 @@ export class OutputModelController {
         const file = this.parserFile(gen.getRecognizerFileName(header), toolParameters);
         file.parser = this.parser(file);
 
-        const g = this.factory.grammar;
+        const g = this.factory.g;
         for (const r of g.rules.values()) {
             this.buildRuleFunction(file.parser, r);
         }
@@ -94,7 +94,7 @@ export class OutputModelController {
         const file = this.lexerFile(gen.getRecognizerFileName(header), toolParameters);
         file.lexer = this.lexer(file);
 
-        const g = this.factory.grammar;
+        const g = this.factory.g;
         for (const r of g.rules.values()) {
             this.buildLexerRuleActions(file.lexer, r);
         }
@@ -283,7 +283,7 @@ export class OutputModelController {
         }
 
         const gen = this.factory.getGenerator()!;
-        const g = this.factory.grammar;
+        const g = this.factory.g;
         const ctxType = gen.target.getRuleFunctionContextStructName(r);
         const raf = lexer.actionFuncs.get(r) ?? new RuleActionFunction(this.factory, r, ctxType);
 
@@ -316,7 +316,7 @@ export class OutputModelController {
     }
 
     public getGrammar(): Grammar {
-        return this.factory.grammar;
+        return this.factory.g;
     }
 
     public alternative(alt: Alternative, outerMost: boolean): CodeBlockForAlt {

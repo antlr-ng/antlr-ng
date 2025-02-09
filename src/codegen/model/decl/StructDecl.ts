@@ -70,8 +70,8 @@ export class StructDecl extends Decl {
         this.derivedFromName = r.name;
         this.provideCopyFrom = r.hasAltSpecificContexts();
 
-        this.generateListener = factory.grammar.tool.toolParameters.generateListener ?? true;
-        this.generateVisitor = factory.grammar.tool.toolParameters.generateVisitor ?? false;
+        this.generateListener = factory.g.tool.toolParameters.generateListener ?? true;
+        this.generateVisitor = factory.g.tool.toolParameters.generateVisitor ?? false;
 
         this.addDispatchMethods(r);
     }

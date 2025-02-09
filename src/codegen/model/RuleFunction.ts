@@ -121,7 +121,7 @@ export class RuleFunction extends OutputModelObject {
             this.exceptions.push(new ExceptionClause(factory, catchArg, catchAction));
         }
 
-        this.startState = factory.grammar.atn!.ruleToStartState[r.index]!;
+        this.startState = factory.g.atn!.ruleToStartState[r.index]!;
     }
 
     public addContextGetters(factory: IOutputModelFactory, r: Rule): void {
@@ -238,7 +238,7 @@ export class RuleFunction extends OutputModelObject {
     public getDeclForAltElement(t: GrammarAST, refLabelName: string, needList: boolean, optional: boolean): Decl[] {
         const decls = new Array<Decl>();
         if (t.getType() === ANTLRv4Lexer.RULE_REF) {
-            const ruleRef = this.factory!.grammar.getRule(t.getText())!;
+            const ruleRef = this.factory!.g.getRule(t.getText())!;
             const ctxName = this.factory!.getGenerator()!.target.getRuleFunctionContextStructName(ruleRef);
             if (needList) {
                 if (this.factory!.getGenerator()!.target.supportsOverloadedMethods()) {
@@ -290,7 +290,7 @@ export class RuleFunction extends OutputModelObject {
 
     /** Given list of X and r refs in alt, compute how many of each there are. */
     protected getElementFrequenciesForAlt(ast: AltAST): [FrequencySet<string>, FrequencySet<string>] {
-        const errorManager = this.factory!.grammar.tool.errorManager;
+        const errorManager = this.factory!.g.tool.errorManager;
 
         try {
             const visitor = new ElementFrequenciesVisitor(errorManager,

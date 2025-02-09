@@ -57,14 +57,14 @@ import { TokenDecl } from "./model/decl/TokenDecl.js";
 import { TokenListDecl } from "./model/decl/TokenListDecl.js";
 
 export class ParserFactory implements IOutputModelFactory {
-    public readonly grammar: Grammar;
+    public readonly g: Grammar;
     public controller: OutputModelController;
 
     private readonly gen: CodeGenerator;
 
     public constructor(gen: CodeGenerator, private forceAtn?: boolean) {
         this.gen = gen;
-        this.grammar = gen.g!;
+        this.g = gen.g!;
     }
 
     public parserFile(fileName: string, toolParameters: IToolParameters): ParserFile {
@@ -80,7 +80,7 @@ export class ParserFactory implements IOutputModelFactory {
     }
 
     public getGrammar(): Grammar | undefined {
-        return this.grammar;
+        return this.g;
     }
 
     public lexer(file: LexerFile): Lexer | undefined {
@@ -234,7 +234,7 @@ export class ParserFactory implements IOutputModelFactory {
     public getChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[], labelAST: GrammarAST | null): Choice {
         const decision = (blkAST.atnState as DecisionState).decision;
         let c: Choice;
-        if (!this.forceAtn && disjoint(this.grammar.decisionLookahead[decision])) {
+        if (!this.forceAtn && disjoint(this.g.decisionLookahead[decision])) {
             c = this.getLL1ChoiceBlock(blkAST, alts);
         } else {
             c = this.getComplexChoiceBlock(blkAST, alts);
@@ -268,7 +268,7 @@ export class ParserFactory implements IOutputModelFactory {
                 decision = (ebnfRoot.atnState as DecisionState).decision;
             }
 
-            if (disjoint(this.grammar.decisionLookahead[decision])) {
+            if (disjoint(this.g.decisionLookahead[decision])) {
                 return this.getLL1EBNFBlock(ebnfRoot, alts);
             }
         }
@@ -400,7 +400,7 @@ export class ParserFactory implements IOutputModelFactory {
             d = this.getTokenLabelDecl(implLabel);
             (d as TokenDecl).isImplicit = true;
         } else if (ast.getType() === ANTLRv4Parser.RULE_REF) { // A rule reference?
-            const r = this.grammar.getRule(ast.getText())!;
+            const r = this.g.getRule(ast.getText())!;
             const implLabel = this.gen.target.getImplicitRuleLabel(ast.getText());
             const ctxName = this.gen.target.getRuleFunctionContextStructName(r);
             d = new RuleContextDecl(this, implLabel, ctxName);

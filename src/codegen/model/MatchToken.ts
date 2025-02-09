@@ -19,7 +19,7 @@ export class MatchToken extends RuleElement implements ILabeledOp {
     public constructor(factory: IOutputModelFactory, ast: TerminalAST | GrammarAST) {
         super(factory, ast);
         if (ast instanceof TerminalAST) {
-            const g = factory.grammar;
+            const g = factory.g;
             const gen = factory.getGenerator()!;
             this.ttype = g.getTokenType(ast.getText());
 

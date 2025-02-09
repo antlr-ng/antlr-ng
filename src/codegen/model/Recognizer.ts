@@ -47,7 +47,7 @@ export abstract class Recognizer extends OutputModelObject {
     public constructor(factory: IOutputModelFactory) {
         super(factory);
 
-        const g = factory.grammar;
+        const g = factory.g;
         const gen = factory.getGenerator()!;
 
         let lastSlash = g.fileName.lastIndexOf("/");

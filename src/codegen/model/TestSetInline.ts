@@ -70,7 +70,7 @@ export class TestSetInline extends SrcOp {
                 bitsetList.push(current);
             }
 
-            current.addToken(ttype, target.getTokenTypeAsTargetLabel(factory.grammar, ttype));
+            current.addToken(ttype, target.getTokenTypeAsTargetLabel(factory.g, ttype));
         }
 
         return bitsetList;

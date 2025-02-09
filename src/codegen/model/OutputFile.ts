@@ -26,7 +26,7 @@ export abstract class OutputFile extends OutputModelObject {
 
         this.fileName = fileName;
 
-        const g = factory.grammar;
+        const g = factory.g;
         this.grammarFileName = g.fileName.replace("\\", "/");
         this.TokenLabelType = g.getOptionString("TokenLabelType");
         this.inputSymbolType = this.TokenLabelType;
