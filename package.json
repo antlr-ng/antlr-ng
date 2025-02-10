@@ -59,6 +59,7 @@
         "copy-templates": "tsx build/copy-templates.ts",
         "TestRig": "tsx cli/TestRig.ts",
         "grun": "tsx cli/TestRig.ts",
+        "test": "vitest --no-watch --no-coverage",
         "generate-action-splitter": "npm run generate-parser -- -o ./src/generated ./src/grammars/ActionSplitter.g4",
         "generate-antlr-parser": "npm run generate-parser -- -o ./src/generated ./src/grammars/ANTLRv4Lexer.g4 ./src/grammars/ANTLRv4Parser.g4",
         "generate-test-parsers": "npm run generate-testp1 && npm run generate-testp2 && npm run generate-testp3 && npm run generate-testp4",
