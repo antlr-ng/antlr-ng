@@ -13,7 +13,8 @@
         "url": "https://github.com/mike-lischke/antlr-ng/issues"
     },
     "bin": {
-        "antlr-ng": "dist/cli/runner.js"
+        "antlr-ng": "dist/cli/runner.js",
+        "testrig": "dist/cli/TestRig.js"
     },
     "keywords": [
         "lexer",
@@ -56,8 +57,8 @@
         "build": "npm run generate-action-splitter && npm run generate-antlr-parser && npm run generate-test-parsers && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
         "esbuild": "tsx build/build.ts",
         "copy-templates": "tsx build/copy-templates.ts",
-        "run": "tsx cli/runner.ts --version",
-        "test": "vitest --no-watch --no-coverage",
+        "TestRig": "tsx cli/TestRig.ts",
+        "grun": "tsx cli/TestRig.ts",
         "generate-action-splitter": "npm run generate-parser -- -o ./src/generated ./src/grammars/ActionSplitter.g4",
         "generate-antlr-parser": "npm run generate-parser -- -o ./src/generated ./src/grammars/ANTLRv4Lexer.g4 ./src/grammars/ANTLRv4Parser.g4",
         "generate-test-parsers": "npm run generate-testp1 && npm run generate-testp2 && npm run generate-testp3 && npm run generate-testp4",

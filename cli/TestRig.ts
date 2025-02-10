@@ -8,7 +8,7 @@
    @typescript-eslint/no-unsafe-return
  */
 
-import { Option, program } from "commander";
+import { program } from "commander";
 
 import {
     CharStream, CommonToken, CommonTokenStream, DiagnosticErrorListener, Lexer, Parser, ParserRuleContext,
@@ -16,7 +16,7 @@ import {
 } from "antlr4ng";
 
 import { readFile } from "fs/promises";
-import { encodings, parseBoolean } from "./cli-options.js";
+import { parseBoolean } from "./cli-options.js";
 
 type Constructor<T extends Recognizer<ATNSimulator>> = abstract new (...args: unknown[]) => T;
 
@@ -32,34 +32,38 @@ type IndexableParser = Parser & Record<string, unknown>;
 type RuleMethod = () => ParserRuleContext;
 
 /** CLI parameters for the interpreter tool. */
-interface IInterpreterCliParameters {
-    grammarFileName: string,
-    lexerFileName?: string,
-    lexer?: string,
-    inputFiles: string[],
+interface ITestRigCliParameters {
+    grammar: string,
     startRuleName: string,
-    encoding: BufferEncoding,
+    inputFiles?: string[],
     tokens?: boolean,
     tree?: boolean,
     trace?: boolean,
-    profile?: string,
     diagnostics?: boolean,
-    useSLL?: boolean,
+    sll?: boolean,
 }
 
 program
-    .argument("[Grammar path]", "The relative or absolute path to a generated parser or lexer grammar file")
-    .argument("startRuleName", "Name of the start rule")
-    .option<boolean>("--tokens [boolean]", "Print out the tokens for each input symbol", parseBoolean, false)
-    .option<boolean>("--tree [boolean]", "Print out the parse tree", parseBoolean, false)
-    .option<boolean>("--diagnostics [boolean]", "Print out diagnostic information", parseBoolean, false)
-    .addOption(new Option("--encoding", "The input file encoding")
-        .choices(encodings).default("utf-8"))
+    .argument("<grammar>", "The path to a generated parser or lexer grammar file")
+    .argument("<startRuleName>", "Name of the start rule")
+    .option<boolean>("--tree", "Print out the parse tree", parseBoolean, false)
+    .option<boolean>("--tokens", "Print out the tokens for each input symbol", parseBoolean, false)
     .option<boolean>("--trace", "Print out tracing information (rule enter/exit etc.).", parseBoolean, false)
-    .option("input file 1, input file 2, ...", "Input files")
+    .option<boolean>("--diagnostics", "Print out diagnostic information", parseBoolean, false)
+    .option<boolean>("--sll", "Use SLL prediction mode (instead of LL)", parseBoolean, false)
+    .argument("[inputFiles...]", "Input files")
+    .action((grammar, startRuleName, inputFiles, options) => {
+        console.log("Grammar:", grammar);
+        console.log("Start Rule:", startRuleName);
+        console.log("Input Files:", inputFiles);
+        console.log("Options:", options);
+    })
     .parse();
 
-const testRigOptions = program.opts<IInterpreterCliParameters>();
+const testRigOptions = program.opts<ITestRigCliParameters>();
+testRigOptions.grammar = program.args[0];
+testRigOptions.startRuleName = program.args[1];
+testRigOptions.inputFiles = program.args.slice(2);
 
 /**
  * Run a lexer/parser combo, optionally printing tree string. Optionally taking input file.
@@ -76,19 +80,20 @@ export class TestRig {
     public static readonly LEXER_START_RULE_NAME = "tokens";
 
     public async run(): Promise<void> {
-        const lexerName = testRigOptions.grammarFileName + "Lexer";
-        const lexer = await this.loadClass(Lexer, lexerName);
+        const lexerName = testRigOptions.grammar + "Lexer";
+        const lexer = await this.loadClass(Lexer, lexerName + ".ts");
 
         let parser: IndexableParser | undefined;
         if (testRigOptions.startRuleName !== TestRig.LEXER_START_RULE_NAME) {
-            const parserName = testRigOptions.grammarFileName + "Parser";
-            parser = await this.loadClass(Parser, parserName);
+            const parserName = testRigOptions.grammar + "Parser";
+            parser = await this.loadClass(Parser, parserName + ".ts");
         }
 
-        for (const inputFile of testRigOptions.inputFiles) {
-            const content = await readFile(inputFile, { encoding: testRigOptions.encoding });
+        const files = testRigOptions.inputFiles ?? [];
+        for (const inputFile of files) {
+            const content = await readFile(inputFile, { encoding: "utf-8" });
             const charStream = CharStream.fromString(content);
-            if (testRigOptions.inputFiles.length > 1) {
+            if (files.length > 1) {
                 console.log(inputFile);
             }
             this.process(charStream, lexer, parser);
@@ -128,7 +133,7 @@ export class TestRig {
             parser.buildParseTrees = true;
         }
 
-        if (testRigOptions.useSLL) { // overrides diagnostics
+        if (testRigOptions.sll) { // overrides diagnostics
             parser.interpreter.predictionMode = PredictionMode.SLL;
         }
 
@@ -165,21 +170,21 @@ export class TestRig {
         };
 
         // Find the first class that extends the base class (directly or indirectly)
-        const TargetClass = Object.values(module).find((candidate): candidate is Constructor<T> => {
+        const targetClass = Object.values(module).find((candidate): candidate is Constructor<T> => {
             return typeof candidate === "function" &&
                 candidate.prototype instanceof Object &&
                 candidate !== t &&
                 extendsClass(candidate, t);
         });
 
-        if (!TargetClass) {
+        if (!targetClass) {
             throw new Error("Could not find a recognizer class in " + fileName);
         }
 
         // @ts-expect-error - We know that TargetClass is a non-abstract constructor
-        return new TargetClass();
+        return new targetClass();
     }
 }
 
-//const testRig = new TestRig();
-//await testRig.run();
+const testRig = new TestRig();
+await testRig.run();

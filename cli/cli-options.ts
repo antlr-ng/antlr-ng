@@ -19,7 +19,8 @@ export interface IInterpreterCliParameters {
 
 export const parseBoolean = (value: string | null): boolean => {
     if (value == null) {
-        return false;
+        // Mentioning the option without a value defaults to true.
+        return true;
     }
 
     const lower = value.trim().toLowerCase();

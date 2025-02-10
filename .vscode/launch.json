@@ -37,6 +37,29 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch TestRig",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "tsx",
+                "cli/TestRig.ts",
+                "/Volumes/Extern/Work/projects/antlr-ng/tests/grammars/.antlr/expr",
+                "start",
+                "--tokens",
+                "--trace",
+                "--diagnostics",
+                "--tree",
+                "/Volumes/Extern/Work/projects/antlr-ng/tests/data/expr.txt"
+            ],
+            "sourceMaps": true,
+            "stopOnEntry": false,
+            "smartStep": true,
+            "console": "integratedTerminal",
+            "preLaunchTask": "tsc: watch",
+            "trace": false
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch antlr-ng grammar-v4",
             "runtimeExecutable": "npx",
             "runtimeArgs": [
@@ -47,8 +70,7 @@
                 "-v",
                 "-o",
                 "grammar-v4-test/",
-                "/Volumes/Extern/Work/projects/grammars-v4/javascript/javascript/JavaScriptLexer.g4",
-                "/Volumes/Extern/Work/projects/grammars-v4/javascript/javascript/JavaScriptParser.g4",
+                "/Volumes/Extern/Work/projects/grammars-v4/sql/postgresql/PostgreSQLLexer.g4",
             ],
             "sourceMaps": true,
             "stopOnEntry": false,
