@@ -15,7 +15,6 @@ import { Tool } from "../Tool.js";
 import { CodeGenerator, type SupportedLanguage } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
-import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import { dupTree } from "../support/helpers.js";
 import { IssueCode } from "../tool/Issues.js";
 import { AltAST } from "../tool/ast/AltAST.js";
@@ -59,7 +58,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     public altAssociativity = new Map<number, Associativity>();
 
     public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage) {
-        super(new CommonTreeNodeStream(new GrammarASTAdaptor(ruleAST.token!.inputStream ?? undefined), ruleAST),
+        super(new CommonTreeNodeStream(ruleAST),
             tool.errorManager);
         this.tool = tool;
         this.ruleName = ruleName;

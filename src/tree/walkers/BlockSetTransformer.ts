@@ -5,12 +5,11 @@
 
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 
-import { RecognitionException } from "antlr4ng";
+import { CommonToken, isToken, RecognitionException, type Token } from "antlr4ng";
 
 import { Constants } from "../../Constants.js";
 import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 import { CharSupport } from "../../misc/CharSupport.js";
-import { GrammarASTAdaptor } from "../../parse/GrammarASTAdaptor.js";
 import { isTokenName } from "../../support/helpers.js";
 import { AltAST } from "../../tool/ast/AltAST.js";
 import { BlockAST } from "../../tool/ast/BlockAST.js";
@@ -48,11 +47,86 @@ export class BlockSetTransformer extends TreeRewriter {
     private currentRuleName?: string;
     private g: Grammar;
 
-    private adaptor = new GrammarASTAdaptor();
-
     public constructor(errorManager: ErrorManager, input: CommonTreeNodeStream, grammar: Grammar) {
         super(errorManager, input);
         this.g = grammar;
+    }
+
+    /**
+     * Transforms ^(nil x) to x and nil to null.
+     *
+     * @param root The root node to process.
+     *
+     * @returns The processed root node.
+     */
+    private static rulePostProcessing(root: GrammarAST): GrammarAST | null {
+        let r: GrammarAST | null = root;
+        if (r.isNil()) {
+            if (r.children.length === 0) {
+                r = null;
+            } else if (r.children.length === 1) {
+                r = r.children[0] as GrammarAST;
+
+                // Whoever invokes rule will set parent and child index.
+                r.parent = null;
+                r.childIndex = -1;
+            }
+        }
+
+        return r;
+    }
+
+    /**
+     * If oldRoot is a nil root, just copy or move the children to newRoot. If not a nil root, make oldRoot a child
+     * of newRoot.
+     * ```
+     * old=^(nil a b c), new=r yields ^(r a b c)
+     * old=^(a b c), new=r yields ^(r ^(a b c))
+     * ```
+     * If newRoot is a nil-rooted single child tree, use the single child as the new root node.
+     * ```
+     * old=^(nil a b c), new=^(nil r) yields ^(r a b c)
+     * old=^(a b c), new=^(nil r) yields ^(r ^(a b c))
+     * ```
+     * If oldRoot was null, it's ok, just return newRoot (even if isNil).
+     * ```
+     * old=null, new=r yields r
+     * old=null, new=^(nil r) yields ^(nil r)
+     * ```
+     *
+     * @param newRoot The new root node.
+     * @param oldRoot The old root node.
+     *
+     * @returns newRoot. Throw an error if newRoot is not a simple node or nil root with a single child node. It must
+     *          be a root node. If newRoot is ^(nil x) return x as newRoot.
+     *
+     * Be advised that it's ok for newRoot to point at oldRoot's children, i.e. you don't have to copy the list. We are
+     * constructing these nodes so we should have this control for efficiency.
+     */
+    private static becomeRoot(newRoot: GrammarAST | Token, oldRoot: GrammarAST | null): GrammarAST {
+        if (isToken(newRoot)) {
+            newRoot = new GrammarAST(newRoot);
+        }
+
+        if (oldRoot === null) {
+            return newRoot;
+        }
+
+        // Hhandle ^(nil real-node).
+        if (newRoot.isNil()) {
+            const nc = newRoot.children.length;
+            if (nc === 1) {
+                newRoot = newRoot.children[0] as GrammarAST;
+            } else if (nc > 1) {
+                throw new Error("more than one node as root (TODO: make exception hierarchy)");
+            }
+        }
+
+        // Add oldRoot to newRoot. `addChild` takes care of case where oldRoot is a flat list (i.e. nil-rooted tree).
+        // All children of oldRoot are added to newRoot.
+        newRoot.addChild(oldRoot);
+
+        return newRoot;
     }
 
     public override getTokenNames(): string[] {
@@ -323,15 +397,15 @@ export class BlockSetTransformer extends TreeRewriter {
             // wildcard labels:
             if (this.backtracking === 1) {
                 const root0 = new GrammarAST();
-                const root1 = this.adaptor.becomeRoot(ebnfSuffixStream.nextNode(), new GrammarAST()) as GrammarAST;
-                const root2 = this.adaptor.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK), new GrammarAST());
-                const root3 = this.adaptor.becomeRoot(new AltAST(ANTLRv4Parser.ALT), new GrammarAST()) as GrammarAST;
+                const root1 = BlockSetTransformer.becomeRoot(ebnfSuffixStream.nextNode(), new GrammarAST());
+                const root2 = BlockSetTransformer.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK), new GrammarAST());
+                const root3 = BlockSetTransformer.becomeRoot(new AltAST(ANTLRv4Parser.ALT), new GrammarAST());
                 root3.addChild(blockSetStream.nextTree());
                 root2.addChild(root3);
                 root1.addChild(root2);
                 root0.addChild(root1);
 
-                result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
+                result = BlockSetTransformer.rulePostProcessing(root0)!;
                 start.parent?.replaceChildren(start.childIndex, last.childIndex, result);
 
                 GrammarTransformPipeline.setGrammarPtr(this.g, result);
@@ -556,12 +630,25 @@ export class BlockSetTransformer extends TreeRewriter {
                 // wildcard labels:
                 if (this.backtracking === 1) {
                     const root0 = new GrammarAST();
-                    const root1 = this.adaptor.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK,
-                        block.token), new GrammarAST()) as GrammarAST;
-                    const root2 = this.adaptor.becomeRoot(new AltAST(ANTLRv4Parser.ALT, block.token, "ALT"),
+                    const root1 = BlockSetTransformer.becomeRoot(new BlockAST(ANTLRv4Parser.BLOCK,
+                        block.token), new GrammarAST());
+                    const root2 = BlockSetTransformer.becomeRoot(new AltAST(ANTLRv4Parser.ALT, block.token, "ALT"),
                         new GrammarAST());
-                    const root3 = this.adaptor.becomeRoot(this.adaptor.create(ANTLRv4Parser.SET, block.token!, "SET"),
-                        new GrammarAST());
+
+                    let ast: GrammarAST;
+                    if (!block.token) {
+                        const token = CommonToken.fromType(ANTLRv4Parser.SET, "SET");
+
+                        ast = new GrammarAST(token);
+                    } else {
+                        const temp = CommonToken.fromToken(block.token);
+                        temp.type = ANTLRv4Parser.SET;
+                        temp.text = "SET";
+
+                        ast = new GrammarAST(temp);
+                    }
+
+                    const root3 = BlockSetTransformer.becomeRoot(ast, new GrammarAST());
 
                     if (!(setElementStream.hasNext())) {
                         throw new Error("RewriteEarlyExitException");
@@ -576,7 +663,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     root1.addChild(root2);
 
                     root0.addChild(root1);
-                    result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
+                    result = BlockSetTransformer.rulePostProcessing(root0)!;
                     result.parent?.replaceChildren(start!.childIndex, start!.childIndex, result);
                 }
             } else {
@@ -736,8 +823,20 @@ export class BlockSetTransformer extends TreeRewriter {
                 // wildcard labels:
                 if (this.backtracking === 1) {
                     const root0 = new GrammarAST();
-                    const root1 = this.adaptor.becomeRoot(this.adaptor.create(ANTLRv4Parser.SET, block.token!,
-                        "SET"), new GrammarAST());
+                    let ast: GrammarAST;
+                    if (!block.token) {
+                        const token = CommonToken.fromType(ANTLRv4Parser.SET, "SET");
+
+                        ast = new GrammarAST(token);
+                    } else {
+                        const temp = CommonToken.fromToken(block.token);
+                        temp.type = ANTLRv4Parser.SET;
+                        temp.text = "SET";
+
+                        ast = new GrammarAST(temp);
+                    }
+
+                    const root1 = BlockSetTransformer.becomeRoot(ast, new GrammarAST());
                     if (!(setElementStream.hasNext())) {
                         throw new Error("RewriteEarlyExitException");
                     }
@@ -748,7 +847,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
                     setElementStream.reset();
                     root0.addChild(root1);
-                    result = this.adaptor.rulePostProcessing(root0) as GrammarAST;
+                    result = BlockSetTransformer.rulePostProcessing(root0)!;
                     result.parent?.replaceChildren(start!.childIndex, start!.childIndex, result);
                 }
             }

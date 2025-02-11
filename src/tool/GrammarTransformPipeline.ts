@@ -13,11 +13,10 @@ import { BlockSetTransformer } from "../tree/walkers/BlockSetTransformer.js";
 
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
-import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import { GrammarToken } from "../parse/GrammarToken.js";
 import { GrammarType } from "../support/GrammarType.js";
 import { dupTree, isTokenName } from "../support/helpers.js";
-import type { CommonTree } from "../tree/CommonTree.js";
+import { CommonTree } from "../tree/CommonTree.js";
 import { Grammar } from "./Grammar.js";
 import { IssueCode } from "./Issues.js";
 import { AltAST } from "./ast/AltAST.js";
@@ -94,7 +93,7 @@ export class GrammarTransformPipeline {
     }
 
     public reduceBlocksToSets(root: CommonTree): void {
-        const nodes = new CommonTreeNodeStream(new GrammarASTAdaptor(), root);
+        const nodes = new CommonTreeNodeStream(root);
         const transformer = new BlockSetTransformer(this.tool.errorManager, nodes, this.g);
         transformer.downUp(root);
     }
@@ -119,8 +118,6 @@ export class GrammarTransformPipeline {
         }
 
         const root = rootGrammar.ast;
-        const adaptor = new GrammarASTAdaptor();
-
         let channelsRoot = root.getFirstChildWithType(ANTLRv4Parser.CHANNELS) as GrammarAST | null;
         let tokensRoot = root.getFirstChildWithType(ANTLRv4Parser.TOKENS) as GrammarAST | null;
         const actionRoots = root.getNodesWithType(ANTLRv4Parser.AT);
@@ -182,7 +179,8 @@ export class GrammarTransformPipeline {
                 });
 
                 if (tokensRoot === null) {
-                    tokensRoot = adaptor.create(ANTLRv4Parser.TOKENS, "TOKENS");
+                    const token = CommonToken.fromType(ANTLRv4Parser.TOKENS, "TOKENS");
+                    tokensRoot = new GrammarAST(token);
                     tokensRoot.g = rootGrammar;
                     root.insertChild(1, tokensRoot); // ^(GRAMMAR ID TOKENS...)
                 }
@@ -358,7 +356,6 @@ export class GrammarTransformPipeline {
      */
     public extractImplicitLexer(combinedGrammar: Grammar): GrammarRootAST | undefined {
         const combinedContext = combinedGrammar.ast;
-        const adaptor = new GrammarASTAdaptor();
         const elements = combinedContext.children;
 
         // Make a grammar root and id.
@@ -369,7 +366,9 @@ export class GrammarTransformPipeline {
 
         lexerAST.grammarType = GrammarType.Lexer;
         lexerAST.token!.inputStream = combinedContext.token!.inputStream;
-        lexerAST.addChild(adaptor.create(ANTLRv4Parser.ID, lexerName));
+
+        let token = CommonToken.fromType(ANTLRv4Parser.ID, lexerName);
+        lexerAST.addChild(new GrammarAST(token));
 
         // Copy options.
         const optionsRoot = combinedContext.getFirstChildWithType(ANTLRv4Parser.OPTIONS) as GrammarAST | null;
@@ -410,7 +409,8 @@ export class GrammarTransformPipeline {
         }
 
         // Move lexer rules.
-        const lexerRulesRoot = adaptor.create(ANTLRv4Parser.RULES, "RULES");
+        token = CommonToken.fromType(ANTLRv4Parser.RULES, "RULES");
+        const lexerRulesRoot = new GrammarAST(token);
         lexerAST.addChild(lexerRulesRoot);
         const rulesWeMoved = new Array<GrammarAST>();
         let rules: GrammarASTWithOptions[];

@@ -11,7 +11,6 @@ import { MismatchedSetException } from "../exceptions/MismatchedSetException.js"
 import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { TreeParser } from "../TreeParser.js";
 
-import { ClassFactory } from "../../ClassFactory.js";
 import { Constants } from "../../Constants.js";
 import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 import type { ActionAST } from "../../tool/ast/ActionAST.js";
@@ -61,8 +60,7 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     public visit(t: GrammarAST, ruleIndex: number): void {
-        const input = t.token!.inputStream!;
-        const nodes = new CommonTreeNodeStream(ClassFactory.createGrammarASTAdaptor(input), t);
+        const nodes = new CommonTreeNodeStream(t);
         this.input = nodes;
         switch (ruleIndex) {
             case ANTLRv4Parser.RULE_grammarSpec: {

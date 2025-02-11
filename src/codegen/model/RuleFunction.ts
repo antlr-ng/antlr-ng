@@ -14,7 +14,6 @@ import type { CommonTree } from "../../tree/CommonTree.js";
 
 import { FrequencySet } from "../../misc/FrequencySet.js";
 import { ModelElement } from "../../misc/ModelElement.js";
-import { GrammarASTAdaptor } from "../../parse/GrammarASTAdaptor.js";
 import { IssueCode } from "../../tool/Issues.js";
 import { Rule } from "../../tool/Rule.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
@@ -293,8 +292,7 @@ export class RuleFunction extends OutputModelObject {
         const errorManager = this.factory!.g.tool.errorManager;
 
         try {
-            const visitor = new ElementFrequenciesVisitor(errorManager,
-                new CommonTreeNodeStream(new GrammarASTAdaptor(), ast));
+            const visitor = new ElementFrequenciesVisitor(errorManager, new CommonTreeNodeStream(ast));
             visitor.outerAlternative();
             if (visitor.frequencies.length !== 1) {
                 errorManager.toolError(IssueCode.InternalError);

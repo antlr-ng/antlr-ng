@@ -17,15 +17,14 @@ import { ClassFactory } from "../ClassFactory.js";
 import { Constants } from "../Constants.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import type { Constructor } from "../misc/Utils.js";
-import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import { UseDefAnalyzer } from "../semantics/UseDefAnalyzer.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { AltAST } from "../tool/ast/AltAST.js";
 import { BlockAST } from "../tool/ast/BlockAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
-import { PredAST } from "../tool/ast/PredAST.js";
 import { IQuantifierAST } from "../tool/ast/IQuantifierAST.js";
+import { PredAST } from "../tool/ast/PredAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
 import { IssueCode } from "../tool/Issues.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
@@ -456,11 +455,10 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
     protected doCreateATN(rules: Rule[]): void {
         this.createRuleStartAndStopATNStates();
 
-        const adaptor = new GrammarASTAdaptor();
         for (const r of rules) {
             // Find rule's block.
             const blk = r.ast.getFirstChildWithType(ANTLRv4Parser.BLOCK) as GrammarAST;
-            const nodes = new CommonTreeNodeStream(adaptor, blk);
+            const nodes = new CommonTreeNodeStream(blk);
             const b = new ATNBuilder(this.g.tool.errorManager, nodes, this);
 
             this.setCurrentRuleName(r.name);

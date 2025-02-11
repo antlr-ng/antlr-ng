@@ -7,7 +7,7 @@
 
 // cspell:ignore ruleref
 
-import { CharStream, CommonTokenStream } from "antlr4ng";
+import { CharStream, CommonToken, CommonTokenStream } from "antlr4ng";
 
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
@@ -16,16 +16,15 @@ import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { DictType } from "../misc/types.js";
-import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import { ScopeParser } from "../parse/ScopeParser.js";
 import { ToolANTLRParser } from "../parse/ToolANTLRParser.js";
 import { BasicSemanticChecks } from "../semantics/BasicSemanticChecks.js";
 import { RuleCollector } from "../semantics/RuleCollector.js";
 import { ParseTreeToASTConverter } from "../support/ParseTreeToASTConverter.js";
 import { isTokenName } from "../support/helpers.js";
-import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
 import { GrammarTransformPipeline } from "../tool/GrammarTransformPipeline.js";
+import { IssueCode } from "../tool/Issues.js";
 import { LabelElementPair } from "../tool/LabelElementPair.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { Rule } from "../tool/Rule.js";
@@ -92,8 +91,8 @@ export class LeftRecursiveRuleTransformer {
 
             if (leftRecursiveRuleNames.includes(rule.getText())) {
                 // Found ref to recursive rule not already rewritten with arg.
-                rule.setOption(Constants.PrecedenceOptionName,
-                    new GrammarASTAdaptor().create(ANTLRv4Parser.INT, "0"));
+                const token = CommonToken.fromType(ANTLRv4Parser.INT, "0");
+                rule.setOption(Constants.PrecedenceOptionName, new GrammarAST(token));
             }
         }
     }

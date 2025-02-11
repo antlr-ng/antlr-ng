@@ -13,12 +13,11 @@ import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 import { SourceGenTriggers } from "../tree/walkers/SourceGenTriggers.js";
 
 import { Utils } from "../misc/Utils.js";
-import { GrammarASTAdaptor } from "../parse/GrammarASTAdaptor.js";
 import type { IToolParameters } from "../tool-parameters.js";
 import { Alternative } from "../tool/Alternative.js";
 import type { ErrorManager } from "../tool/ErrorManager.js";
-import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
+import { IssueCode } from "../tool/Issues.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { Rule } from "../tool/Rule.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
@@ -264,10 +263,8 @@ export class OutputModelController {
         const gen = this.factory.getGenerator()!;
 
         // Trigger factory functions for rule alts, elements.
-        const adaptor = new GrammarASTAdaptor(r.ast.token?.inputStream ?? undefined);
-
         const blk = r.ast.getFirstChildWithType(ANTLRv4Parser.BLOCK) as GrammarAST;
-        const nodes = new CommonTreeNodeStream(adaptor, blk);
+        const nodes = new CommonTreeNodeStream(blk);
         this.walker = new SourceGenTriggers(this.errorManager, nodes, this);
 
         // Walk AST of rule alts/elements.

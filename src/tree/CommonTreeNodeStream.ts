@@ -6,15 +6,11 @@
 import { Token, type TokenStream } from "antlr4ng";
 
 import type { CommonTree } from "./CommonTree.js";
-import { CommonTreeAdaptor } from "./CommonTreeAdaptor.js";
 import { TreeIterator } from "./TreeIterator.js";
 
 export class CommonTreeNodeStream {
     /** If this tree (root) was created from a {@link TokenStream}, track it. */
     public tokens: TokenStream;
-
-    /** What {@link TreeAdaptor} was used to build these trees */
-    public adaptor: CommonTreeAdaptor;
 
     /** Pull nodes from which tree? */
     private root: CommonTree;
@@ -45,20 +41,8 @@ export class CommonTreeNodeStream {
     /** Tracks how deep mark() calls are nested. */
     private markDepth = 0;
 
-    public constructor(tree: CommonTree);
-    public constructor(adaptor: CommonTreeAdaptor, tree: CommonTree);
-    public constructor(...args: unknown[]) {
-        if (args.length === 1) {
-            const [tree] = args as [CommonTree];
-
-            this.adaptor = new CommonTreeAdaptor();
-            this.root = tree;
-        } else {
-            const [adaptor, tree] = args as [CommonTreeAdaptor, CommonTree];
-
-            this.root = tree;
-            this.adaptor = adaptor;
-        }
+    public constructor(tree: CommonTree) {
+        this.root = tree;
         this.iterator = new TreeIterator(this.root);
     }
 

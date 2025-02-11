@@ -5,7 +5,6 @@
 
 import type { ParserATNFactory } from "./automata/ParserATNFactory.js";
 import type { CodeBlockForOuterMostAlt } from "./codegen/model/CodeBlockForOuterMostAlt.js";
-import type { GrammarASTAdaptor } from "./parse/GrammarASTAdaptor.js";
 import type { Tool } from "./Tool.js";
 import type { Alternative } from "./tool/Alternative.js";
 import type { GrammarAST } from "./tool/ast/GrammarAST.js";
@@ -26,8 +25,6 @@ export interface IGrammarRootAST extends GrammarRootAST { }
 export interface ILexerGrammar extends LexerGrammar { }
 
 export interface ITool extends Tool { }
-
-export interface IGrammarASTAdaptor extends GrammarASTAdaptor { }
 
 export interface IRule extends Rule { }
 
