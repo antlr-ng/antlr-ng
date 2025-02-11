@@ -277,7 +277,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
     public static forFile<T extends Grammar>(c: Constructor<T>, fileName: string, grammarText: string,
         tokenVocabSource?: Grammar, listener?: ToolListener): T {
-        const grammar = new c(grammarText, listener);
+        const grammar = new c(grammarText, tokenVocabSource);
 
         grammar.fileName = fileName;
         grammar.tool = ClassFactory.createTool();
@@ -317,10 +317,6 @@ export class Grammar implements IGrammar, IAttributeResolver {
             },
         });
         grammar.initTokenSymbolTables();
-
-        if (tokenVocabSource) {
-            grammar.importVocab(tokenVocabSource);
-        }
 
         if (tokenVocabSource) {
             grammar.importVocab(tokenVocabSource);

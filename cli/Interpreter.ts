@@ -4,24 +4,21 @@
  */
 
 import { Option, program } from "commander";
-import { createWriteStream } from "node:fs";
 import { readFile } from "fs/promises";
+import { createWriteStream } from "node:fs";
 
 import { CharStream, CommonToken, CommonTokenStream, DecisionInfo, ParseInfo } from "antlr4ng";
 
-import { ToolListener } from "../src/tool/ToolListener.js";
-import { Grammar } from "../src/tool/Grammar.js";
+import { Tool } from "../src/Tool.js";
 import type { GrammarParserInterpreter } from "../src/tool/GrammarParserInterpreter.js";
-import { LexerGrammar } from "../src/tool/LexerGrammar.js";
+import { Grammar, LexerGrammar } from "../src/tool/index.js";
+import { ToolListener } from "../src/tool/ToolListener.js";
 import { encodings, parseBoolean } from "./cli-options.js";
-import type { Tool } from "../src/Tool.js";
 import { IgnoreTokenVocabGrammar } from "./IgnoreTokenVocabGrammar.js";
 
 /** CLI parameters for the interpreter tool. */
 export interface IInterpreterCliParameters {
-    grammarFileName: string,
-    lexerFileName?: string,
-    lexer?: string,
+    grammars: string[],
     inputFile?: string,
     startRuleName: string,
     encoding: BufferEncoding,
@@ -32,26 +29,27 @@ export interface IInterpreterCliParameters {
 }
 
 program
-    .argument("[X.g4|XParser.g4 XLexer.g4]", "Parser and lexer file")
-    .argument("startRuleName", "Name of the start rule")
-    .option("[input-filename]", "Input file")
-    .option<boolean>("--tokens [boolean]", "Print out the tokens for each input symbol", parseBoolean, false)
+    .argument("startRuleName", "Name of the parser start rule")
     .option<boolean>("--tree", "Print out the parse tree", parseBoolean, false)
-    .addOption(new Option("--encoding", "The input file encoding")
-        .choices(encodings).default("utf-8"))
+    .option<boolean>("--tokens", "Print out the tokens for each input symbol", parseBoolean, false)
     .option<boolean>("--trace", "Print out tracing information (rule enter/exit etc.).", parseBoolean, false)
+    .addOption(new Option("--encoding [string]", "The input file encoding (default: utf-8)")
+        .choices(encodings).default("utf-8"))
     .option("--profile filename.csv", "Profile the parser and generate profiling information.", "filename.csv")
+    .argument("<input-filename>", "Input file")
+    .argument("[grammar...]", "Lexer/Parser/Combined grammar files")
     .parse();
 
 const interpreterOptions = program.opts<IInterpreterCliParameters>();
+interpreterOptions.startRuleName = program.args[0];
+interpreterOptions.inputFile = program.args[1];
+interpreterOptions.grammars = program.args.slice(2);
 
 /** Interpret a lexer/parser, optionally printing tree string and dumping profile info */
 export class Interpreter {
     public static readonly profilerColumnNames = [
         "Rule", "Invocations", "Time (ms)", "Total k", "Max k", "Ambiguities", "DFA cache miss",
     ];
-
-    public constructor(private tool: Tool) { }
 
     public static getValue(decisionInfo: DecisionInfo, ruleNamesByDecision: string[], decision: number,
         col: number): number | string {
@@ -91,30 +89,36 @@ export class Interpreter {
         return "n/a";
     }
 
-    public async interp(): Promise<ParseInfo | undefined> {
-        if (!interpreterOptions.grammarFileName && !interpreterOptions.lexerFileName) {
+    public async run(): Promise<ParseInfo | undefined> {
+        if (interpreterOptions.grammars.length === 0 || !interpreterOptions.inputFile) {
             return undefined;
         }
 
         let g: Grammar;
         let lg = null;
-        const listener = new ToolListener(this.tool.errorManager);
-        if (interpreterOptions.grammarFileName) {
-            const grammarContent = await readFile(interpreterOptions.grammarFileName, "utf8");
-            g = Grammar.forFile(IgnoreTokenVocabGrammar, interpreterOptions.grammarFileName, grammarContent,
+
+        const tool = new Tool();
+        const listener = new ToolListener(tool.errorManager);
+
+        if (interpreterOptions.grammars.length === 1) {
+            // Must be a combined grammar.
+            const grammarContent = await readFile(interpreterOptions.grammars[0], "utf8");
+            g = Grammar.forFile(IgnoreTokenVocabGrammar, interpreterOptions.grammars[0], grammarContent,
                 undefined, listener);
+            g.tool.process(g, false);
         } else {
-            const lexerGrammarContent = await readFile(interpreterOptions.lexerFileName!, "utf8");
+            const lexerGrammarContent = await readFile(interpreterOptions.grammars[1], "utf8");
             lg = new LexerGrammar(lexerGrammarContent);
             lg.tool.errorManager.addListener(listener);
             lg.tool.process(lg, false);
-            const parserGrammarContent = await readFile(interpreterOptions.grammarFileName, "utf8");
-            g = Grammar.forFile(IgnoreTokenVocabGrammar, interpreterOptions.grammarFileName,
+
+            const parserGrammarContent = await readFile(interpreterOptions.grammars[0], "utf8");
+            g = Grammar.forFile(IgnoreTokenVocabGrammar, interpreterOptions.grammars[0],
                 parserGrammarContent, lg, listener);
             g.tool.process(g, false);
         }
 
-        const input = await readFile(interpreterOptions.inputFile!, interpreterOptions.encoding);
+        const input = await readFile(interpreterOptions.inputFile, interpreterOptions.encoding);
         const charStream = CharStream.fromString(input);
         const lexEngine = lg ? lg.createLexerInterpreter(charStream) : g.createLexerInterpreter(charStream);
         const tokens = new CommonTokenStream(lexEngine);
@@ -162,17 +166,18 @@ export class Interpreter {
     private dumpProfilerCSV(parser: GrammarParserInterpreter, parseInfo: ParseInfo): void {
         const ruleNamesByDecision = new Array<string>(parser.atn.decisionToState.length);
         const ruleNames = parser.ruleNames;
-        for (let i = 0; i < ruleNamesByDecision.length; i++) {
+        for (let i = 0; i < ruleNamesByDecision.length; ++i) {
             ruleNamesByDecision[i] = ruleNames[parser.atn.getDecisionState(i)!.ruleIndex];
         }
 
         const decisionInfo = parseInfo.getDecisionInfo();
         const table: string[][] = [];
 
-        for (let decision = 0; decision < decisionInfo.length; decision++) {
+        for (let decision = 0; decision < decisionInfo.length; ++decision) {
+            table.push([]);
             for (let col = 0; col < Interpreter.profilerColumnNames.length; col++) {
                 const colVal = Interpreter.getValue(decisionInfo[decision], ruleNamesByDecision, decision, col);
-                table[decision][col] = colVal.toString();
+                table[decision].push(colVal.toString());
             }
         }
 
@@ -200,5 +205,5 @@ export class Interpreter {
     }
 }
 
-// todo: const interpreter = new Interpreter();
-// todo: await interpreter.interp();
+const interpreter = new Interpreter();
+await interpreter.run();

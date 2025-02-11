@@ -60,6 +60,27 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Launch Interpreter",
+            "runtimeExecutable": "npx",
+            "runtimeArgs": [
+                "tsx",
+                "cli/Interpreter.ts",
+                "start",
+                "--tokens",
+                "--trace",
+                "/Volumes/Extern/Work/projects/antlr-ng/tests/data/expr.txt",
+                "/Volumes/Extern/Work/projects/antlr-ng/tests/grammars/expr.g4",
+            ],
+            "sourceMaps": true,
+            "stopOnEntry": false,
+            "smartStep": true,
+            "console": "integratedTerminal",
+            "preLaunchTask": "tsc: watch",
+            "trace": false
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch antlr-ng grammar-v4",
             "runtimeExecutable": "npx",
             "runtimeArgs": [
