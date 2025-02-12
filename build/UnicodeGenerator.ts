@@ -435,7 +435,9 @@ export class UnicodeGenerator {
     private async loadRangesFromFile(file: URL): Promise<Map<string, string[]>> {
         const fileData = await readFile(file, "utf8");
         const lines = fileData.split("\n").filter((line) => {
-            return line.length > 0 && !line.startsWith("#");
+            const trimmed = line.trim();
+
+            return trimmed.length > 0 && !trimmed.startsWith("#");
         });
 
         const parts = new Map<string, string[]>();
