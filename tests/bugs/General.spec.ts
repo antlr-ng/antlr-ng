@@ -9,9 +9,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { DOTGenerator } from "../../src/tool/DOTGenerator.js";
-import { LexerGrammar } from "../../src/tool/index.js";
+import { Grammar, LexerGrammar } from "../../src/tool/index.js";
+import { ATNDeserializer, ATNSerializer, InterpreterDataReader } from "antlr4ng";
 
-describe("DOTGenerator", () => {
+describe("General", () => {
     it("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
         const sourcePath = fileURLToPath(new URL("data/abbLexer.g4", import.meta.url));
         const lexerGrammarText = await readFile(sourcePath, "utf8");

@@ -122,6 +122,13 @@ describe("TestUnicodeData", () => {
         checkValue("InMiscellaneous_Mathematical_Symbols_B", 0x29BE);
     });
 
+    it("testEnumeratedPropertyEquals", () => {
+        checkValue("Grapheme_Cluster_Break=E_Base", 0x1F47E, false);
+        checkValue("Grapheme_Cluster_Break=E_Base", 0x1038, false);
+        checkValue("East_Asian_Width=Ambiguous", 0x00A1);
+        checkValue("East_Asian_Width=Ambiguous", 0x00A2, false);
+    });
+
     it("extendedPictographic", () => {
         checkValue("Extended_Pictographic", 0x1F588);
         checkValue("Extended_Pictographic", 0x30, false);

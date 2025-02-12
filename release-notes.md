@@ -12,7 +12,7 @@
 - Made TestRig (grun) and Interpreter tools working.
 - Changed all embedded target templates: don't use the underscore char in template names.
 - Upgraded 3rd party libs, which required to adjust the supported parameter syntax for the tool (only one letter short parameter, so `-lib` became `--lib`)
-- Error types (now named issue types, because they include info + warning in additino to errors) converted to a simpler structure. There's now a real enum for each type and a map with the details for them. Renamed the enum/constants to camelCase for better readability. Also moved other related structures (severity) to the new implementation.
+- Error types (now named issue types, because they include info + warning in addition to errors) converted to a simpler structure. There's now a real enum for each type and a map with the details for them. Renamed the enum/constants to camelCase for better readability. Also moved other related structures (severity) to the new implementation.
 - Converted many all-uppercase identifiers and methods to PascalCase/camelCase.
 - Fixed all reported bugs.
 
