@@ -112,7 +112,8 @@ export abstract class EscapeSequenceParsing {
 
             const propertyName = s.substring(openBraceOffset + 1, closeBraceOffset);
             const lookupResult = getPropertyCodePoints(propertyName);
-            if (lookupResult.status !== "ok" || lookupResult.codePoints === undefined) {
+            if (lookupResult.status !== "ok" || lookupResult.codePoints === undefined
+                || lookupResult.codePoints.length === 0) {
                 return EscapeSequenceParsing.invalid(startOff, closeBraceOffset);
             }
 
