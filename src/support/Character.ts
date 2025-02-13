@@ -223,7 +223,7 @@ export class Character {
          * @param c The character/codepoint to check.
          *
          * @returns the value representing the Unicode block containing the given character, or -1 if the
-         * character is not a member of a defined block.
+         *          character is not a member of a defined block.
          */
         public static of(c: string | number): number {
             const codePoint = typeof c === "string" ? c.codePointAt(0)! : c;

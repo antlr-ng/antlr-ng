@@ -36,10 +36,9 @@ export class CharSupport {
     /**
      * @param c The code point to convert to an ANTLR char literal.
      *
-     * @returns a string representing the escaped char for code c.  E.g., If c
-     *  has value 0x100, you will get "\\u0100".  ASCII gets the usual
-     *  char (non-hex) representation.  Non-ASCII characters are spit out
-     *  as \\uXXXX or \\u{XXXXXX} escapes.
+     * @returns a string representing the escaped char for code c. E.g., if c has value 0x100, you will get "\\u0100".
+     * ASCII gets the usual char (non-hex) representation.  Non-ASCII characters are spit out as \\uXXXX or
+     * \\u{XXXXXX} escapes.
      */
     public static getANTLRCharLiteralForChar(c: number): string {
         let result: string;
@@ -52,10 +51,10 @@ export class CharSupport {
             } else {
                 if (Character.UnicodeBlock.of(c) === Character.UnicodeBlock.BASIC_LATIN &&
                     !Character.isISOControl(c)) {
-                    if (c === 0x5C) { // escape \ itself
+                    if (c === 0x5C) { // Escape \ itself.
                         result = "\\\\";
                     } else {
-                        if (c === 0x27) { // escape single quote
+                        if (c === 0x27) { // Escape single quote.
                             result = "\\'";
                         } else {
                             result = String.fromCodePoint(c);
@@ -77,8 +76,8 @@ export class CharSupport {
     }
 
     /**
-     * Given a literal like (the 3 char sequence with single quotes) 'a',
-     * return the int value of 'a'. Convert escape sequences here also.
+     * Given a literal like (the 3 char sequence with single quotes) 'a', returns the int value of 'a'. Converts
+     * escape sequences here also.
      *
      * @param literal The char literal to convert.
      *
@@ -116,8 +115,11 @@ export class CharSupport {
         };
 
         let buffer = "";
-        let i = 1; // skip first quote
-        const n = literal.length - 1; // skip last quote
+
+        let i = 1; // Skip first quote.
+
+        // Skip last quote.
+        const n = literal.length - 1;
 
         let isInvalid = false;
 
@@ -202,7 +204,7 @@ export class CharSupport {
     }
 
     /**
-     * Given char x or \\t or \\u1234 return the char value. Unnecessary escapes like '\{' yield -1.
+     * Given char x or \\t or \\u1234 returns the char value. Unnecessary escapes like '\{' yield -1.
      *
      * @param cstr The char to convert.
      *
@@ -211,7 +213,7 @@ export class CharSupport {
     public static getCharValueFromCharInGrammarLiteral(cstr: string): number {
         switch (cstr.length) {
             case 1: { // 'x'
-                // no escape char
+                // No escape char.
                 return cstr.codePointAt(0)!;
             }
 
@@ -220,13 +222,13 @@ export class CharSupport {
                     return -1;
                 }
 
-                // '\x'  (antlr lexer will catch invalid char)
+                // '\x' (ANTLR lexer will catch invalid char.)
                 const escapedChar = cstr[1];
                 if (escapedChar === "'") {
                     return escapedChar.codePointAt(0)!;
                 }
 
-                // escape quote only in string literals.
+                // Escape quote only in string literals.
                 return this.ANTLRLiteralEscapedCharValue.get(escapedChar) ?? -1;
             }
 
@@ -256,7 +258,6 @@ export class CharSupport {
 
                 return -1;
             }
-
         }
     }
 

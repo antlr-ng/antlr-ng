@@ -57,13 +57,13 @@ export abstract class EscapeSequenceParsing {
         // Move past escaped code point.
         offset += Character.charCount(escaped);
         if (escaped === 0x75) { // 'u'
-            // \\u{1} is the shortest we support
+            // \\u{1} is the shortest we support.
             if (offset + 3 > s.length) {
                 return EscapeSequenceParsing.invalid(startOff, s.length - 1);
             }
 
             let hexStartOffset: number;
-            let hexEndOffset: number; // appears to be exclusive
+            let hexEndOffset: number; // Appears to be exclusive.
             if (s.codePointAt(offset) === 0x7B) { // '{'
                 hexStartOffset = offset + 1;
                 hexEndOffset = s.indexOf("}", hexStartOffset);
@@ -133,7 +133,7 @@ export abstract class EscapeSequenceParsing {
         } else {
             let codePoint = CharSupport.ANTLRLiteralEscapedCharValue.get(s[offset - 1]);
             if (codePoint === undefined) {
-                if (escaped !== 0x5D && escaped !== 0x2D) { // escape ']' and '-' only in char sets.
+                if (escaped !== 0x5D && escaped !== 0x2D) { // Escape ']' and '-' only in char sets.
                     return EscapeSequenceParsing.invalid(startOff, startOff + 1);
                 } else {
                     codePoint = escaped;

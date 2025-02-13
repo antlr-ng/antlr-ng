@@ -9,8 +9,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { DOTGenerator } from "../../src/tool/DOTGenerator.js";
-import { Grammar, LexerGrammar } from "../../src/tool/index.js";
-import { ATNDeserializer, ATNSerializer, InterpreterDataReader } from "antlr4ng";
+import { LexerGrammar } from "../../src/tool/index.js";
 
 describe("General", () => {
     it("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
