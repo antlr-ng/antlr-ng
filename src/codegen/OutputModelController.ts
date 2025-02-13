@@ -293,7 +293,7 @@ export class OutputModelController {
                     lexer.sempredFuncs.set(r, rsf);
                 }
                 rsf.actions.set(g.sempreds.get(p)!, new Action(this.factory, p));
-            } else if (a.getType() === ANTLRv4Parser.BEGIN_ACTION) {
+            } else if (a.getType() === ANTLRv4Parser.ACTION) {
                 raf.actions.set(g.lexerActions.get(a)!, new Action(this.factory, a));
             }
         }

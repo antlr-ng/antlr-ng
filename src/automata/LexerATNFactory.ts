@@ -124,7 +124,7 @@ export class LexerATNFactory extends ParserATNFactory {
                 }
 
                 // Define action AST for this rule as if we had found in grammar.
-                node = new ActionAST(CommonToken.fromType(ANTLRv4Parser.BEGIN_ACTION, action));
+                node = new ActionAST(CommonToken.fromType(ANTLRv4Parser.ACTION, action));
                 this.currentRule!.defineActionInAlt(this.currentOuterAlt, node);
             } else {
                 [node] = args as [ActionAST];
