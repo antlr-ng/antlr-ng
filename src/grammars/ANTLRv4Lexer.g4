@@ -54,8 +54,6 @@ options {
     tokenVocab = predefined;
 }
 
-import LexBasic;
-
 @header {
 import { LexerAdaptor } from "../misc/LexerAdaptor.js";
 }
@@ -74,23 +72,25 @@ channels {
 
 // -------------------------
 // Comments
+
 DOC_COMMENT
-    : DocComment -> channel (COMMENT)
+    : '/**' .*? ('*/' | EOF) -> channel (COMMENT)
     ;
 
 BLOCK_COMMENT
-    : BlockComment -> channel (COMMENT)
+    : '/*' .*? ('*/' | EOF) -> channel (COMMENT)
     ;
 
 LINE_COMMENT
-    : LineComment -> channel (COMMENT)
+    : '//' ~ [\r\n]* -> channel (COMMENT)
     ;
 
 // -------------------------
 // Integer
 
 INT
-    : DecimalNumeral
+    : '0'
+    | [1-9] [0-9]*
     ;
 
 // -------------------------
@@ -101,11 +101,11 @@ INT
 // may contain unicode escape sequences of the form \uxxxx, where x
 // is a valid hexadecimal number (per Unicode standard).
 STRING_LITERAL
-    : SQuoteLiteral
+    : '\'' (ESC_SEQUENCE | ~ ['\r\n\\])* '\''
     ;
 
 UNTERMINATED_STRING_LITERAL
-    : USQuoteLiteral
+    : '\'' (ESC_SEQUENCE | ~ ['\r\n\\])*
     ;
 
 // -------------------------
@@ -115,13 +115,13 @@ UNTERMINATED_STRING_LITERAL
 // to a rule invocation, or input parameters to a rule specification
 // are contained within square brackets.
 BEGIN_ARGUMENT
-    : LBrack { this.handleBeginArgument(); }
+    : '[' { this.handleBeginArgument(); }
     ;
 
 // -------------------------
 // Target Language Actions
 BEGIN_ACTION
-    : LBrace -> pushMode (TargetLanguageAction)
+    : '{' -> pushMode (TargetLanguageAction)
     ;
 
 // -------------------------
@@ -132,23 +132,15 @@ BEGIN_ACTION
 // Otherwise, the symbols are tokenized as RULE_REF and allowed as
 // an identifier in a labeledElement.
 OPTIONS
-    : 'options' WSNLCHARS* '{'
+    : 'options' WS* '{'
     ;
 
 TOKENS
-    : 'tokens' WSNLCHARS* '{'
+    : 'tokens' WS* '{'
     ;
 
 CHANNELS
-    : 'channels' WSNLCHARS* '{'
-    ;
-
-fragment WSNLCHARS
-    : ' '
-    | '\t'
-    | '\f'
-    | '\n'
-    | '\r'
+    : 'channels' WS* '{'
     ;
 
 IMPORT
@@ -211,109 +203,105 @@ MODE
 // Punctuation
 
 COLON
-    : Colon
+    : ':'
     ;
 
 COLONCOLON
-    : DColon
+    : '::'
     ;
 
 COMMA
-    : Comma
+    : ','
     ;
 
 SEMI
-    : Semi
+    : ';'
     ;
 
 LPAREN
-    : LParen
+    : '('
     ;
 
 RPAREN
-    : RParen
-    ;
-
-LBRACE
-    : LBrace
+    : ')'
     ;
 
 RBRACE
-    : RBrace
+    : '}'
     ;
 
 RARROW
-    : RArrow
+    : '->'
     ;
 
 LT
-    : Lt
+    : '<'
     ;
 
 GT
-    : Gt
+    : '>'
     ;
 
 ASSIGN
-    : Equal
+    : '='
     ;
 
 QUESTION
-    : Question
+    : '?'
     ;
 
 STAR
-    : Star
+    : '*'
     ;
 
 PLUS_ASSIGN
-    : PlusAssign
+    : '+='
     ;
 
 PLUS
-    : Plus
+    : '+'
     ;
 
 OR
-    : Pipe
+    : '|'
     ;
 
 DOLLAR
-    : Dollar
+    : '$'
     ;
 
 RANGE
-    : Range
+    : '..'
     ;
 
 DOT
-    : Dot
+    : '.'
     ;
 
 AT
-    : At
+    : '@'
     ;
 
 POUND
-    : Pound
+    : '#'
     ;
 
 NOT
-    : Tilde
+    : '~'
     ;
 
 // -------------------------
 // Identifiers - allows unicode rule/token names
 
 ID
-    : Id
+    : NameStartChar NameChar*
     ;
 
 // -------------------------
 // Whitespace
 
 WS
-    : Ws+ -> channel (OFF_CHANNEL)
+    : [ \t\r\n\f]+ -> channel (OFF_CHANNEL)
     ;
 
 // ======================================================
@@ -324,11 +312,11 @@ mode Argument;
 
 // E.g., [int x, List<String> a[]]
 NESTED_ARGUMENT
-    : LBrack -> type (ARGUMENT_CONTENT), pushMode (Argument)
+    : '[' -> type (ARGUMENT_CONTENT), pushMode (Argument)
     ;
 
 ARGUMENT_ESCAPE
-    : EscAny -> type (ARGUMENT_CONTENT)
+    : '\\' . -> type (ARGUMENT_CONTENT)
     ;
 
 ARGUMENT_STRING_LITERAL
@@ -336,11 +324,11 @@ ARGUMENT_STRING_LITERAL
     ;
 
 ARGUMENT_CHAR_LITERAL
-    : SQuoteLiteral -> type (ARGUMENT_CONTENT)
+    : STRING_LITERAL -> type (ARGUMENT_CONTENT)
     ;
 
 END_ARGUMENT
-    : RBrack { this.handleEndArgument(); }
+    : ']' { this.handleEndArgument(); }
     ;
 
 // added this to return non-EOF token type here. EOF does something weird
@@ -351,11 +339,6 @@ UNTERMINATED_ARGUMENT
 ARGUMENT_CONTENT
     : .
     ;
-
-// TODO: This grammar and the one used in the Intellij Antlr4 plugin differ
-// for "actions". This needs to be resolved at some point.
-// The Intellij Antlr4 grammar is here:
-// https://github.com/antlr/intellij-plugin-v4/blob/1f36fde17f7fa63cb18d7eeb9cb213815ac658fb/src/main/antlr/org/antlr/intellij/plugin/parser/ANTLRv4Lexer.g4#L587
 
 // -------------------------
 // Target Language Actions
@@ -369,11 +352,11 @@ ARGUMENT_CONTENT
 mode TargetLanguageAction;
 
 NESTED_ACTION
-    : LBrace -> type (ACTION_CONTENT), pushMode (TargetLanguageAction)
+    : '{' -> type (ACTION_CONTENT), pushMode (TargetLanguageAction)
     ;
 
 ACTION_ESCAPE
-    : EscAny -> type (ACTION_CONTENT)
+    : '\\' . -> type (ACTION_CONTENT)
     ;
 
 ACTION_STRING_LITERAL
@@ -381,23 +364,23 @@ ACTION_STRING_LITERAL
     ;
 
 ACTION_CHAR_LITERAL
-    : SQuoteLiteral -> type (ACTION_CONTENT)
+    : STRING_LITERAL -> type (ACTION_CONTENT)
     ;
 
 ACTION_DOC_COMMENT
-    : DocComment -> type (ACTION_CONTENT)
+    : DOC_COMMENT -> type (ACTION_CONTENT)
     ;
 
 ACTION_BLOCK_COMMENT
-    : BlockComment -> type (ACTION_CONTENT)
+    : BLOCK_COMMENT -> type (ACTION_CONTENT)
     ;
 
 ACTION_LINE_COMMENT
-    : LineComment -> type (ACTION_CONTENT)
+    : LINE_COMMENT -> type (ACTION_CONTENT)
     ;
 
 END_ACTION
-    : RBrace { this.handleEndAction(); }
+    : '}' { this.handleEndAction(); }
     ;
 
 UNTERMINATED_ACTION
@@ -412,11 +395,11 @@ ACTION_CONTENT
 mode LexerCharSet;
 
 LEXER_CHAR_SET_BODY
-    : (~ [\]\\] | EscAny)+ -> more
+    : (~ [\]\\] | '\\' .)+ -> more
     ;
 
 LEXER_CHAR_SET
-    : RBrack -> popMode
+    : ']' -> popMode
     ;
 
 UNTERMINATED_CHAR_SET
@@ -425,6 +408,48 @@ UNTERMINATED_CHAR_SET
 
 // ------------------------------------------------------------------------------
 // Grammar specific Keywords, Punctuation, etc.
-fragment Id
-    : NameStartChar NameChar*
+
+fragment ESC_SEQUENCE
+    : '\\' ([btnfr"'\\] | UnicodeESC | . | EOF)
+    ;
+
+fragment HexDigit
+    : [0-9a-fA-F]
+    ;
+
+fragment UnicodeESC
+    : 'u' (HexDigit (HexDigit (HexDigit HexDigit?)?)?)?
+    ;
+
+fragment DQuoteLiteral
+    : '"' (ESC_SEQUENCE | ~ ["\r\n\\])* '"'
+    ;
+
+// -----------------------------------
+// Character ranges
+
+fragment NameChar
+    : NameStartChar
+    | '0' .. '9'
+    | '_'
+    | '\u00B7'
+    | '\u0300' .. '\u036F'
+    | '\u203F' .. '\u2040'
+    ;
+
+fragment NameStartChar
+    : 'A' .. 'Z'
+    | 'a' .. 'z'
+    | '\u00C0' .. '\u00D6'
+    | '\u00D8' .. '\u00F6'
+    | '\u00F8' .. '\u02FF'
+    | '\u0370' .. '\u037D'
+    | '\u037F' .. '\u1FFF'
+    | '\u200C' .. '\u200D'
+    | '\u2070' .. '\u218F'
+    | '\u2C00' .. '\u2FEF'
+    | '\u3001' .. '\uD7FF'
+    | '\uF900' .. '\uFDCF'
+    | '\uFDF0' .. '\uFFFD'
+    // ignores | ['\u10000-'\uEFFFF]
     ;
