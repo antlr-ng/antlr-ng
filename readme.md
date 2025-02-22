@@ -29,89 +29,15 @@ This project started as a TypeScript port of the old ANTLR4 tool 4.13.2 (origina
 
 ## Status
 
-Even though the tool is already pretty solid and generates exactly the same output like the old ANTLR4 jar, it is still not considered production ready. All (relevant) original unit tests have been ported and run successfully. Additionally, the tool was tested with all grammars in the [grammars-v4](https://github.com/mike-lischke/grammars-v4) repository.
+The tool is production-ready and generates almost exactly the same output like the old ANTLR4 jar (with some minor differences, because of the use of Unicode 16, instead of 11 in ANTLR4). All (relevant) original unit tests have been ported and run successfully. Additionally, the tool was tested with all grammars in the [grammars-v4](https://github.com/antlr/grammars-v4) repository.
 
-See the [milestone 3](https://github.com/mike-lischke/ANTLRng/issues/10) for the current status and the plan.
+See the [milestone 3](https://github.com/mike-lischke/antlr-ng/issues/10) for the current status and the plan.
 
 The tool currently runs only in a Node.js environment, but it is planned to make it run in browsers later.
 
 ## Getting Started
 
-There are different ways how to use the antlr-ng tool. All scenarios need Node.js being installed on your box. If you haven't done that yet get it from https://www.nodejs.org. Any version 20.x or later can be used and any platform which runs Node.js also can run antlr-ng.
-
-Use cases:
-
-1. As a replacement for ANTLR4's Java jar. This scenario requires no knowledge of TypeScript or JavaScript. Just replace your call to java by a call to antlr-ng (with some minimal parameter changes).
-2. As a tool in the build setup of your TypeScript/JavaScript project.
-3. Directly in your code. Instantiate the tool class and do everything in memory instead of the file system.
-
-### Case 1: Use antlr-ng as ANTLR4 jar replacement
-
-Install the antlr-ng tool as a global command on your box by running:
-
-```bash
-npm i -g antlr-ng
-```
-
-This puts it in the global NPM cache and creates a link to it in a folder which is in your system PATH. Hence you can directly execute it:
-
-```bash
-> antlr-ng -h
-Usage: program [options] <grammar...>
-
-Arguments:
-  grammar                                A list of grammar files.
-
-Options:
-  -o, --output-directory <path>          specify output directory where all output is generated
-  --lib <path>                           specify location of grammars, tokens files
-  --atn [boolean]                        Generate rule augmented transition network diagrams. (default: false)
-  -e, --encoding <string>                Specify grammar file encoding; e.g., ucs-2. (default: "utf-8")
-  --message-format [string]              Specify output style for messages in antlr, gnu, vs2005. (choices: "antlr", "gnu", "vs2005", default: "antlr")
-  --long-messages [boolean].             Show exception details when available for errors and warnings. (default: false)
-  -l, --generate-listener [boolean]      Generate parse tree listener. (default: true)
-  -v, --generate-visitor [boolean]       Generate parse tree visitor. (default: false)
-  -p, --package <name>                   Specify a package/namespace for the generated code.
-  -d, --generate-dependencies [boolean]  Generate file dependencies. (default: false)
-  -D, --define <key=value...>            Set/override a grammar-level option.
-  -w, --warnings-are-errors [boolean]    Treat warnings as errors. (default: false)
-  -f, --force-atn [boolean]              Use the ATN simulator for all predictions. (default: false)
-  --log [boolean]                        Dump lots of logging info to antlrng-timestamp.log. (default: false)
-  --exact-output-dir [boolean]           All output goes into -o dir regardless of paths/package (default: false)
-  -V, --version                          output the version number
-  -h, --help                             display help for command
-```
-
-The parameter list should look very familiar, except that it defines a short hand version and a long version of each parameter. This is why you have to update your parameter list when replacing ANTLR4 by antlr-ng. A typical invocation looks like this:
-
-```bash
-antlr-ng -Dlanguage=CSharp --exact-output-dir -o ./tests/generated ./tests/grammars/Java.g4
-```
-
-### Case 2: Using antlr-ng as package in your project
-
-In this scenario you install the tool as another dev dependecy. In your project folder run:
-
-```bash
-npm i --save-dev antlr-ng
-```
-
-You can then create an NPM script in your package.json to handle your grammar(s):
-
-```json
-    "scripts": {
-        "generate-parser": "antlr-ng -Dlanguage=TypeScript --exact-output-dir -o ./src/generated ./src/grammars/MyGrammar.g4",
-    ...
-    },
-```
-
-Using the generated parser in your project is subject to the target language of it. For TypeScript and JavaScript you need antlr4ng as target runtime. Read its readme file for [an example](https://github.com/mike-lischke/antlr4ng?tab=readme-ov-file#usage) how to use the generated parser. 
-
-Just note: antlr4ng-cli has **not** been updated to use antlr-ng yet. This will be done as soon as we have a production ready release of the tool. In fact antlr4ng-cli will be replaced by antlr-ng in the future.
-
-### Case 3: Using antlr-ng in your code
-
-This scenario allows you to run the generation process in memory. All unit tests in the package use this approach. Details of that will be laid out in a separate document later.
+There are different ways how to use the antlr-ng tool. All scenarios need Node.js being installed on your box. The [antlr-ng website](https://www.antlr-ng.org) explains everything you need to run the antlr-ng tool.
 
 # What is the ANTLR Next Generation Project?
 

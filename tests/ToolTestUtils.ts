@@ -20,6 +20,7 @@ import {
 } from "antlr4ng";
 import { ST } from "stringtemplate4ts";
 
+import { Constants } from "../src/Constants.js";
 import { LexerATNFactory } from "../src/automata/LexerATNFactory.js";
 import { ParserATNFactory } from "../src/automata/ParserATNFactory.js";
 import type { Constructor } from "../src/misc/Utils.js";
@@ -28,7 +29,6 @@ import { ToolListener } from "../src/tool/ToolListener.js";
 import { Tool, type Grammar, type LexerGrammar } from "../src/tool/index.js";
 import type { InterpreterTreeTextProvider } from "./InterpreterTreeTextProvider.js";
 import { ErrorQueue } from "./support/ErrorQueue.js";
-import { Constants } from "../src/Constants.js";
 
 export type MethodKeys<T extends Parser> = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -57,11 +57,6 @@ export interface IRunOptions {
 export interface ICapturedOutput {
     output: string;
     error: string;
-}
-
-interface IGeneratedFile {
-    name: string;
-    isParser: boolean;
 }
 
 export class ToolTestUtils {
@@ -376,11 +371,7 @@ export class ToolTestUtils {
         writeFileSync(join(workDir, runOptions.grammarFileName), runOptions.grammarStr);
 
         const queue = this.antlrOnFile(workDir, "TypeScript", runOptions.grammarFileName, false);
-
-        //const generatedFiles = this.getGeneratedFiles(runOptions);
-
         this.writeTestFile(workDir, runOptions);
-
         writeFileSync(join(workDir, "input"), runOptions.input);
 
         const testName = join(workDir, "Test.js");
@@ -391,53 +382,6 @@ export class ToolTestUtils {
         main(runOptions.input);
 
         return queue;
-    }
-
-    private static getGeneratedFiles(runOptions: IRunOptions): IGeneratedFile[] {
-        const files: IGeneratedFile[] = [];
-        const extensionWithDot = ".java";
-
-        const isCombinedGrammarOrGo = runOptions.lexerName != null && runOptions.parserName != null;
-        if (runOptions.lexerName != null) {
-            files.push({
-                name: runOptions.grammarName + (isCombinedGrammarOrGo ? "Lexer" : "") + extensionWithDot,
-                isParser: false
-            });
-        }
-
-        if (runOptions.parserName != null) {
-            files.push({
-                name: runOptions.grammarName + (isCombinedGrammarOrGo ? "Parser" : "") + extensionWithDot,
-                isParser: true
-            });
-
-            if (runOptions.useListener) {
-                files.push({
-                    name: runOptions.grammarName + "Listener" + extensionWithDot,
-                    isParser: true
-                });
-
-                const baseListenerSuffix = "BaseListener";
-                files.push({
-                    name: runOptions.grammarName + baseListenerSuffix + extensionWithDot,
-                    isParser: true
-                });
-            }
-
-            if (runOptions.useVisitor) {
-                files.push({
-                    name: runOptions.grammarName + "Visitor" + extensionWithDot,
-                    isParser: true
-                });
-
-                files.push({
-                    name: runOptions.grammarName + "BaseVisitor" + extensionWithDot,
-                    isParser: true
-                });
-            }
-        }
-
-        return files;
     }
 
     /** Generates the TypeScript test file to run the generated parser + lexer files. */

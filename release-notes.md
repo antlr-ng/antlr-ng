@@ -5,6 +5,13 @@
 
 # antlr-ng Release Notes
 
+## 1.0.0
+
+This is the first production-ready release of antlr-ng. All reported problems until now have been solved and tool shows a solid preformance, producing result just like the ANTLR4 4.13.2 release, from which it was derived.
+
+- Added more Unicode data files to allow using additional Unicode characters in lexer charsets (EastAsianWidth, GraphemeBreakProperty, SentenceBreakProperty).
+- Removed LexBasic.g4 grammar, which was thought as a sharable grammar, but was never used but by ANTLRv4Lexer.g4. This changed certain error messages, which now print the token text instead of a token name (e.g. ';' instead of SEMI).
+
 ## 0.7.0
 
 - All remaining ANTLR3 types have been removed or migrated.

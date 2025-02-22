@@ -113,7 +113,7 @@ export const parseToolParameters = (args: string[]): IToolParameters => {
         .option<boolean>("--exact-output-dir [boolean]", "All output goes into -o dir regardless of paths/package",
             parseBoolean, false)
         .argument("<grammar...>", "A list of grammar files.")
-        .version(`ANTLRng ${antlrVersion}`);
+        .version(`antlr-ng ${antlrVersion}`);
 
     prepared.parse(args, { from: "user" });
 
