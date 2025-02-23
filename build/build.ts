@@ -28,7 +28,7 @@ const build = async () => {
             }),
         ]);
 
-        console.log("Build completed successfully");
+        console.log("Build completed successfully, running type checks now ...\n");
     } catch (error) {
         console.error("Build failed:", error);
         process.exit(1);

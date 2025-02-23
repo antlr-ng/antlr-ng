@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/antlr-ng?style=for-the-badge&color=yellow)](https://www.npmjs.com/package/antlr-ng)
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/mike-lischke/mike-lischke/master/images/antlr-ng.svg" title="ANTLR Next Generation" alt="antlr-ng the parser generator" height="200"/><br/>
+<img src="images/title-image.png" title="ANTLR Next Generation" alt="antlr-ng the parser generator" width="1000"/><br/>
 <label style="font-size: 120%">Part of the Next Generation ANTLR Project</label>
 </p>
 

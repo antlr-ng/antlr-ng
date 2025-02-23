@@ -2,7 +2,7 @@
     "version": "0.2",
     "words": [
         "antlr",
-        "ANTLRng",
+        "antlr-ng",
         "Appendable",
         "Charsets",
         "Cloneable",
