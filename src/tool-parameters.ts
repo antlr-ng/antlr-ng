@@ -73,9 +73,9 @@ export const antlrVersion = await getPackageVersion();
  * @returns The parsed tool parameters.
  */
 export const parseToolParameters = (args: string[]): IToolParameters => {
-    const parseBoolean = (value: string | null): boolean => {
+    const parseBoolean = (value: string | undefined, previous: boolean): boolean => {
         if (value == null) {
-            return false;
+            return previous;
         }
 
         const lower = value.trim().toLowerCase();
@@ -111,7 +111,7 @@ export const parseToolParameters = (args: string[]): IToolParameters => {
         .option<boolean>("-f, --force-atn [boolean]", "Use the ATN simulator for all predictions.", parseBoolean, false)
         .option<boolean>("--log [boolean]", "Dump lots of logging info to antlrng-timestamp.log.", parseBoolean, false)
         .option<boolean>("--exact-output-dir [boolean]", "All output goes into -o dir regardless of paths/package",
-            parseBoolean, false)
+            parseBoolean, true)
         .argument("<grammar...>", "A list of grammar files.")
         .version(`antlr-ng ${antlrVersion}`);
 

@@ -5,6 +5,14 @@
 
 # antlr-ng Release Notes
 
+## 1.0.2 - 1.0.3
+
+Upgraded dependencies that included the old antlr4ng-cli package.
+
+## 1.0.1
+
+The test rig and the interpreter tools work now after installation of antlr-ng. Additionally the alias `grun` was added for the test rig.
+
 ## 1.0.0
 
 This is the first production-ready release of antlr-ng. All reported problems until now have been solved and tool shows a solid preformance, producing result just like the ANTLR4 4.13.2 release, from which it was derived.

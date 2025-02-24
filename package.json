@@ -1,6 +1,6 @@
 {
     "name": "antlr-ng",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "description": "Next generation ANTLR Tool",
     "type": "module",
     "author": "Mike Lischke",
@@ -28,9 +28,9 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "antlr4ng": "3.0.14",
+        "antlr4ng": "3.0.15",
         "commander": "13.1.0",
-        "stringtemplate4ts": "1.0.7",
+        "stringtemplate4ts": "1.0.9",
         "unicode-properties": "1.4.1"
     },
     "devDependencies": {
@@ -42,7 +42,7 @@
         "@typescript-eslint/eslint-plugin": "8.24.1",
         "@typescript-eslint/parser": "8.24.1",
         "@unicode/unicode-16.0.0": "1.6.5",
-        "antlr-ng": "1.0.0",
+        "antlr-ng": "1.0.3",
         "esbuild": "0.25.0",
         "eslint": "9.21.0",
         "eslint-plugin-import": "2.31.0",

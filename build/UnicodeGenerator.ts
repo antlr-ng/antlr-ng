@@ -245,7 +245,7 @@ export class UnicodeGenerator {
             this.writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=${key.toLowerCase()}", set);\n\n`);
         }
 
-        // Some propertie values are listed in the PropertyValues.txt file, but not in the GraphemeBreakProperty.txt
+        // Some property values are listed in the PropertyValues.txt file, but not in the GraphemeBreakProperty.txt
         // file. These are added manually here, with empty sets.
         this.writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=e_base", new IntervalSet());\n`);
         this.writer.write(`propertyCodePointRanges.set("grapheme_cluster_break=e_base_gaz", new IntervalSet());\n`);

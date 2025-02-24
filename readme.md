@@ -13,9 +13,9 @@
 
 **Another Tool for Language Recognition**
 
-A tool/package that takes a defined language (provided in a grammar file) and generates  parser and lexer classes in one of the supported target languages. These classes can be used in your project to parse input specified by the grammar file. Supported target languages are:
+A tool/package that takes a defined language (provided in a grammar file) and generates  parser and lexer classes in one of the supported target languages. These classes can be used in your project to parse input that should match the language written in that grammar file. Supported target languages are:
 
-- TypeScript/JavaScript
+- TypeScript
 - Java
 - C++ (language identifier: Cpp)
 - C# (language identifier: CSharp)
@@ -23,6 +23,7 @@ A tool/package that takes a defined language (provided in a grammar file) and ge
 - Python3
 - Dart
 - Swift
+- JavaScript
 - PHP
 
 This project started as a TypeScript port of the old ANTLR4 tool 4.13.2 (originally written in Java) and includes the entire feature set of the the Java version and is constantly enhanced.
@@ -31,13 +32,17 @@ This project started as a TypeScript port of the old ANTLR4 tool 4.13.2 (origina
 
 The tool is production-ready and generates almost exactly the same output like the old ANTLR4 jar (with some minor differences, because of the use of Unicode 16, instead of 11 in ANTLR4). All (relevant) original unit tests have been ported and run successfully. Additionally, the tool was tested with all grammars in the [grammars-v4](https://github.com/antlr/grammars-v4) repository.
 
-See the [milestone 3](https://github.com/mike-lischke/antlr-ng/issues/10) for the current status and the plan.
+See also the [Version 2 feature planning](https://github.com/mike-lischke/antlr-ng/issues/11) for what's coming up.
 
 The tool currently runs only in a Node.js environment, but it is planned to make it run in browsers later.
 
 ## Getting Started
 
-There are different ways how to use the antlr-ng tool. All scenarios need Node.js being installed on your box. The [antlr-ng website](https://www.antlr-ng.org) explains everything you need to run the antlr-ng tool.
+There are different ways how to use the antlr-ng tool. All scenarios need Node.js being installed on your box. The [antlr-ng website](https://www.antlr-ng.org) explains everything you need to run the antlr-ng tool (see Documentation -> Getting Started).
+
+## Release Notes
+
+See [release-notes.md](./release-notes.md).
 
 # What is the ANTLR Next Generation Project?
 
