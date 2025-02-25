@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { DOTGenerator } from "../../src/tool/DOTGenerator.js";
-import { LexerGrammar } from "../../src/tool/index.js";
+import { Grammar, LexerGrammar } from "../../src/tool/index.js";
 
 describe("General", () => {
     it("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
@@ -42,4 +42,23 @@ describe("General", () => {
             `arrowhead = normal];`)).toBeGreaterThan(-1);
     });
 
+    it("Grammar with element options", () => {
+        // Element options are allowed after an action and after a predicate.
+        const grammarText = `grammar T;
+            s @after {global.antlrTestWriteLn!($ctx.toStringTree(null, this));} : e ;
+            e : a=e op=('*'|'/') b=e  {}{true}?
+            | a=e op=('+'|'-') b=e  {}<p=3>{true}?<fail='Message'>
+            | INT {}{}
+            | '(' x=e ')' {}{}
+            ;
+            INT : '0'..'9'+ ;
+            WS : (' '|'\\n') -> skip;`;
+
+        const grammar = new Grammar(grammarText);
+        grammar.tool.process(grammar, false);
+
+        const rule = grammar.getRule("e")!;
+        const startState = grammar.atn!.ruleToStartState[rule.index]!;
+        expect(startState).toBeDefined(); // We only need to see if the grammar parses without errors.
+    });
 });
