@@ -5,6 +5,10 @@
 
 # antlr-ng Release Notes
 
+## 1.0.4
+
+Fixed some ANTLR grammar errors. The official ANTLRv4 grammar does not fully reflect the grammar used in ANTLRv4 (which is an ANTLRv3 grammar).
+
 ## 1.0.2 - 1.0.3
 
 Upgraded dependencies that included the old antlr4ng-cli package.
