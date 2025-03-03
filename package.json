@@ -1,6 +1,6 @@
 {
     "name": "antlr-ng",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "Next generation ANTLR Tool",
     "type": "module",
     "author": "Mike Lischke",
@@ -28,7 +28,7 @@
     ],
     "license": "MIT",
     "dependencies": {
-        "antlr4ng": "3.0.15",
+        "antlr4ng": "3.0.16",
         "commander": "13.1.0",
         "stringtemplate4ts": "1.0.9",
         "unicode-properties": "1.4.1"

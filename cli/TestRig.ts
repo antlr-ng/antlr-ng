@@ -18,6 +18,8 @@ import {
 } from "antlr4ng";
 
 import { readFile } from "fs/promises";
+import { resolve } from "path";
+
 import { parseBoolean } from "./cli-options.js";
 
 type Constructor<T extends Recognizer<ATNSimulator>> = abstract new (...args: unknown[]) => T;
@@ -46,7 +48,7 @@ interface ITestRigCliParameters {
 }
 
 program
-    .argument("<grammar>", "The path to a generated parser or lexer grammar file")
+    .argument("<grammar>", "The path of the grammar with no extension")
     .argument("<startRuleName>", "Name of the start rule")
     .option<boolean>("--tree", "Print out the parse tree", parseBoolean, false)
     .option<boolean>("--tokens", "Print out the tokens for each input symbol", parseBoolean, false)
@@ -55,10 +57,11 @@ program
     .option<boolean>("--sll", "Use SLL prediction mode (instead of LL)", parseBoolean, false)
     .argument("[inputFiles...]", "Input files")
     .action((grammar, startRuleName, inputFiles, options) => {
-        console.log("Grammar:", grammar);
+        console.log("\nGrammar:", grammar);
         console.log("Start Rule:", startRuleName);
         console.log("Input Files:", inputFiles);
-        console.log("Options:", options);
+        console.log("Options: ", options);
+        console.log();
     })
     .parse();
 
@@ -82,18 +85,19 @@ export class TestRig {
     public static readonly LEXER_START_RULE_NAME = "tokens";
 
     public async run(): Promise<void> {
-        const lexerName = testRigOptions.grammar + "Lexer";
+        // Try to load the lexer and parser classes.
+        const lexerName = resolve(testRigOptions.grammar + "Lexer");
         const lexer = await this.loadClass(Lexer, lexerName + ".ts");
 
         let parser: IndexableParser | undefined;
         if (testRigOptions.startRuleName !== TestRig.LEXER_START_RULE_NAME) {
-            const parserName = testRigOptions.grammar + "Parser";
+            const parserName = resolve(testRigOptions.grammar + "Parser");
             parser = await this.loadClass(Parser, parserName + ".ts");
         }
 
         const files = testRigOptions.inputFiles ?? [];
         for (const inputFile of files) {
-            const content = await readFile(inputFile, { encoding: "utf-8" });
+            const content = await readFile(resolve(inputFile), { encoding: "utf-8" });
             const charStream = CharStream.fromString(content);
             if (files.length > 1) {
                 console.log(inputFile);
@@ -156,35 +160,40 @@ export class TestRig {
 
     private async loadClass<T extends Recognizer<ATNSimulator>>(t: Constructor<T>,
         fileName: string): Promise<T & Record<string, unknown>> {
-        const module = await import(fileName) as ModuleType<T>;
+        try {
+            const module = await import(fileName) as ModuleType<T>;
 
-        // Helper function to check if a class extends another class (directly or indirectly).
-        const extendsClass = (child: Function, parent: Function): boolean => {
-            let proto = child.prototype as unknown;
-            while (proto) {
-                if (proto === parent.prototype) {
-                    return true;
+            // Helper function to check if a class extends another class (directly or indirectly).
+            const extendsClass = (child: Function, parent: Function): boolean => {
+                let proto = child.prototype as unknown;
+                while (proto) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                    if (proto.constructor.name === parent.prototype.constructor.name) {
+                        return true;
+                    }
+                    proto = Object.getPrototypeOf(proto);
                 }
-                proto = Object.getPrototypeOf(proto);
+
+                return false;
+            };
+
+            // Find the first class that extends the base class (directly or indirectly)
+            const targetClass = Object.values(module).find((candidate): candidate is Constructor<T> => {
+                return typeof candidate === "function" &&
+                    candidate.prototype instanceof Object &&
+                    candidate !== t &&
+                    extendsClass(candidate, t);
+            });
+
+            if (!targetClass) {
+                throw new Error("Could not find a recognizer class in " + fileName);
             }
 
-            return false;
-        };
-
-        // Find the first class that extends the base class (directly or indirectly)
-        const targetClass = Object.values(module).find((candidate): candidate is Constructor<T> => {
-            return typeof candidate === "function" &&
-                candidate.prototype instanceof Object &&
-                candidate !== t &&
-                extendsClass(candidate, t);
-        });
-
-        if (!targetClass) {
-            throw new Error("Could not find a recognizer class in " + fileName);
+            // @ts-expect-error - We know that TargetClass is a non-abstract constructor
+            return new targetClass();
+        } catch (e) {
+            throw new Error(`Could not load class ${t.name} from ${fileName}: ${e}`);
         }
-
-        // @ts-expect-error - We know that TargetClass is a non-abstract constructor
-        return new targetClass();
     }
 }
 

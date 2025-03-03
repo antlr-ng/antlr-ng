@@ -41,21 +41,22 @@
             "runtimeExecutable": "npx",
             "runtimeArgs": [
                 "tsx",
-                "cli/TestRig.ts",
-                "/Volumes/Extern/Work/projects/antlr-ng/tests/grammars/.antlr/expr",
+                "/Volumes/Extern/Work/projects/antlr-ng/cli/TestRig.ts",
+                "expr",
                 "start",
                 "--tokens",
                 "--trace",
                 "--diagnostics",
                 "--tree",
-                "/Volumes/Extern/Work/projects/antlr-ng/tests/data/expr.txt"
+                "input.txt"
             ],
             "sourceMaps": true,
             "stopOnEntry": false,
             "smartStep": true,
             "console": "integratedTerminal",
             "preLaunchTask": "tsc: watch",
-            "trace": false
+            "trace": false,
+            "cwd": "/users/mike/Downloads/antlr/expr"
         },
         {
             "type": "node",
