@@ -5,6 +5,11 @@
 
 # antlr-ng Release Notes
 
+## 1.0.5
+
+- Upgraded antlr4ng dependency to fix a bug, for which also a test was added.
+- Fixed TestRig execution.
+
 ## 1.0.4
 
 Fixed some ANTLR grammar errors. The official ANTLRv4 grammar does not fully reflect the grammar used in ANTLRv4 (which is an ANTLRv3 grammar).
