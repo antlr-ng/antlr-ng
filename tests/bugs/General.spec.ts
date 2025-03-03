@@ -64,7 +64,7 @@ describe("General", () => {
         expect(startState).toBeDefined(); // We only need to see if the grammar parses without errors.
     });
 
-    it.only("Non-greedy optionals", () => {
+    it("Non-greedy optionals", () => {
         const grammarText = `
         grammar T;
             start : statement+ ;

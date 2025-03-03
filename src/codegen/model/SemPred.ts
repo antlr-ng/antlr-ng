@@ -37,7 +37,7 @@ export class SemPred extends Action {
         const gen = factory.getGenerator()!;
 
         // Remove the outer braces and the trailing question mark.
-        this.predicate = ast.getText().substring(1, ast.getText().length - 2);
+        this.predicate = ast.getText().substring(1, ast.getText().length - 2).trim();
         if (this.predicate.startsWith("{") && this.predicate.endsWith("}")) {
             this.predicate = this.predicate.substring(1, this.predicate.length - 2);
         }
