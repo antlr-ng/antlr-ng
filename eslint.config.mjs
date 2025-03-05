@@ -17,7 +17,7 @@ export default tslint.config(
     jsdoc.configs["flat/recommended"],
     {
         // This must be in its own object to avoid a bug in the ESLint parser.
-        ignores: ["src/generated/*"],
+        ignores: ["**/generated/*"],
     },
     {
         plugins: {

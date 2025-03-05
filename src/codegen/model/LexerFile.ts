@@ -25,9 +25,9 @@ export class LexerFile extends OutputFile {
     public constructor(factory: IOutputModelFactory, fileName: string, toolParameters: IToolParameters) {
         super(factory, fileName);
 
-        this.namedActions = this.buildNamedActions(factory.g!);
+        this.namedActions = this.buildNamedActions(factory.g);
         this.genPackage = toolParameters.package;
-        this.exportMacro = factory.g!.getOptionString("exportMacro");
+        this.exportMacro = factory.g.getOptionString("exportMacro");
         this.genListener = toolParameters.generateListener ?? true;
         this.genVisitor = toolParameters.generateVisitor ?? false;
     }

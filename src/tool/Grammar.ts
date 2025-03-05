@@ -100,7 +100,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
     public static readonly AUTO_GENERATED_TOKEN_NAME_PREFIX = "T__";
 
-    public name: string;
+    public name = "<not set>";
 
     /**
      * The ATN that represents the grammar with edges labelled with tokens or epsilon. It is more suitable to analysis

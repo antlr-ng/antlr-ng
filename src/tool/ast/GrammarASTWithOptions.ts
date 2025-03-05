@@ -5,6 +5,8 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
+import { isToken, type Token } from "antlr4ng";
+
 import { CharSupport } from "../../misc/CharSupport.js";
 import { GrammarAST } from "./GrammarAST.js";
 
@@ -12,6 +14,19 @@ export abstract class GrammarASTWithOptions extends GrammarAST {
     public override readonly astType: string = "GrammarASTWithOptions";
 
     private options = new Map<string, GrammarAST | null>();
+
+    public constructor(nodeOrToken: GrammarASTWithOptions | Token);
+    public constructor(type: number, t?: Token, text?: string);
+    public constructor(...args: unknown[]) {
+        if (isToken(args[0])) {
+            super(args[0]);
+        } else if (args[0] instanceof GrammarASTWithOptions) {
+            super(args[0]);
+            this.options = args[0].options;
+        } else {
+            super(args[0] as number, args[1] as Token, args[2] as string);
+        }
+    }
 
     public setOption(key: string, node: GrammarAST | null): void {
         this.options.set(key, node);

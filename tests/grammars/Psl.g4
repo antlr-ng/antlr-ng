@@ -121,9 +121,7 @@ numeric_endpoint
 floating_constant
     : comma_number PERIOD fraction = DIGIT_SEQUENCE? {
 			this.isValidFloatingConstant($comma_number.stop, $PERIOD, $fraction)
-		}? <fail = {
-			"COMMA:A floating-point constant cannot have internal white space"
-		}>
+		}? <fail = 'COMMA:A floating-point constant cannot have internal white space'>
     | PERIOD fraction = DIGIT_SEQUENCE {
     			this.isValidFloatingConstant(null, $PERIOD, $fraction)
 		}? <fail = {
@@ -134,9 +132,7 @@ floating_constant
 comma_number
     : digits += DIGIT_SEQUENCE (commas += COMMA digits += DIGIT_SEQUENCE)+ {
 			this.isValidCommaNumber($digits, $commas)
-		}? <fail = {
-			"A comma-number cannot have internal white space"
-		}>
+		}? <fail = 'A comma-number cannot have internal white space'>
     ;
 
 term_expression
