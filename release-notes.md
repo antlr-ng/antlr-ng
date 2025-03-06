@@ -5,6 +5,11 @@
 
 # antlr-ng Release Notes
 
+## 1.0.6
+
+- Fixed semantic predicate handling in left recursive rules (which showed a flaw in the antlr-ng lexer).
+- Fixed cloning GrammarAST nodes with options.
+
 ## 1.0.5
 
 - Upgraded antlr4ng dependency to fix a bug, for which also a test was added.
