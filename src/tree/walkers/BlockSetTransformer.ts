@@ -25,25 +25,9 @@ import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { RewriteRuleNodeStream } from "../RewriteRuleNodeStream.js";
 import { RewriteRuleSubtreeStream } from "../RewriteRuleSubtreeStream.js";
 import { TreeRewriter } from "../TreeRewriter.js";
+import { ANTLRv4Lexer } from "../../generated/ANTLRv4Lexer.js";
 
 export class BlockSetTransformer extends TreeRewriter {
-    // Needed for context in the inContext method.
-    private static readonly tokenNames = [
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "ACTION", "ACTION_CHAR_LITERAL", "ACTION_ESC", "ACTION_STRING_LITERAL",
-        "ARG_ACTION", "ARG_OR_CHARSET", "ASSIGN", "AT", "CATCH", "CHANNELS", "COLON", "COLONCOLON", "COMMA", "UNUSED",
-        "DOC_COMMENT", "DOLLAR", "DOT", "ERRCHAR", "ESC_SEQ", "FINALLY", "FRAGMENT", "GRAMMAR", "GT", "HEX_DIGIT", "ID",
-        "IMPORT", "INT", "LEXER", "LEXER_CHAR_SET", "LOCALS", "LPAREN", "LT", "MODE", "NESTED_ACTION", "NLCHARS",
-        "NOT", "NameChar", "NameStartChar", "OPTIONS", "OR", "PARSER", "PLUS", "PLUS_ASSIGN", "POUND", "QUESTION",
-        "RANGE", "RARROW", "RBRACE", "RETURNS", "RPAREN", "RULE_REF", "SEMI", "SEMPRED", "SRC", "STAR",
-        "STRING_LITERAL", "THROWS", "TOKENS_SPEC", "TOKEN_REF", "UNICODE_ESC", "UNICODE_EXTENDED_ESC", "UnicodeBOM",
-        "WS", "WSCHARS", "WSNLCHARS", "ALT", "BLOCK", "CLOSURE", "COMBINED", "ELEMENT_OPTIONS", "EPSILON",
-        "LEXER_ACTION_CALL", "LEXER_ALT_ACTION", "OPTIONAL", "POSITIVE_CLOSURE", "RULE", "RULEMODIFIERS", "RULES",
-        "SET", "WILDCARD", "BLOCK_COMMENT", "LINE_COMMENT", "UNTERMINATED_STRING_LITERAL", "BEGIN_ARGUMENT",
-        "BEGIN_ACTION", "TOKENS", "LBRACE", "END_ARGUMENT", "UNTERMINATED_ARGUMENT", "ARGUMENT_CONTENT", "END_ACTION",
-        "UNTERMINATED_ACTION", "ACTION_CONTENT", "UNTERMINATED_CHAR_SET", "PRIVATE", "PROTECTED", "PUBLIC",
-        "PREDICATE_OPTIONS", "Argument", "TargetLanguageAction", "LexerCharSet",
-    ];
-
     private currentRuleName?: string;
     private g: Grammar;
 
@@ -127,10 +111,6 @@ export class BlockSetTransformer extends TreeRewriter {
         newRoot.addChild(oldRoot);
 
         return newRoot;
-    }
-
-    public override getTokenNames(): string[] {
-        return BlockSetTransformer.tokenNames;
     }
 
     public override topdown = (): GrammarAST | undefined => {
@@ -316,7 +296,7 @@ export class BlockSetTransformer extends TreeRewriter {
 
     private setAlt(): GrammarAST | undefined {
         try {
-            if (!(this.inContext("RULE BLOCK"))) {
+            if (!(this.inContext([ANTLRv4Lexer.RULE, ANTLRv4Lexer.BLOCK]))) {
                 if (this.backtracking > 0) {
                     this.failed = true;
 
@@ -469,7 +449,7 @@ export class BlockSetTransformer extends TreeRewriter {
         try {
             let first;
 
-            if (this.inContext("RULE")) {
+            if (this.inContext([ANTLRv4Lexer.RULE])) {
                 let first2;
                 const block = this.match(this.input, ANTLRv4Parser.BLOCK)!;
                 if (this.failed) {

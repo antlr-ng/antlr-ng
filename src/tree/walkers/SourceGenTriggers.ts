@@ -28,22 +28,6 @@ interface IAltResults {
 }
 
 export class SourceGenTriggers extends TreeParser {
-    public static readonly tokenNames = [
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "ACTION", "ACTION_CHAR_LITERAL",
-        "ACTION_ESC", "ACTION_STRING_LITERAL", "ARG_ACTION", "ARG_OR_CHARSET",
-        "ASSIGN", "AT", "CATCH", "CHANNELS", "COLON", "COLONCOLON", "COMMA", "COMMENT",
-        "DOC_COMMENT", "DOLLAR", "DOT", "ERRCHAR", "ESC_SEQ", "FINALLY", "FRAGMENT",
-        "GRAMMAR", "GT", "HEX_DIGIT", "ID", "IMPORT", "INT", "LEXER", "LEXER_CHAR_SET",
-        "LOCALS", "LPAREN", "LT", "MODE", "NESTED_ACTION", "NLCHARS", "NOT", "NameChar",
-        "NameStartChar", "OPTIONS", "OR", "PARSER", "PLUS", "PLUS_ASSIGN", "POUND",
-        "QUESTION", "RANGE", "RARROW", "RBRACE", "RETURNS", "RPAREN", "RULE_REF",
-        "SEMI", "SEMPRED", "SRC", "STAR", "STRING_LITERAL", "THROWS", "TOKENS_SPEC",
-        "TOKEN_REF", "UNICODE_ESC", "UNICODE_EXTENDED_ESC", "UnicodeBOM", "WS",
-        "WSCHARS", "WSNLCHARS", "ALT", "BLOCK", "CLOSURE", "COMBINED", "ELEMENT_OPTIONS",
-        "EPSILON", "LEXER_ACTION_CALL", "LEXER_ALT_ACTION", "OPTIONAL", "POSITIVE_CLOSURE",
-        "RULE", "RULEMODIFIERS", "RULES", "SET", "WILDCARD"
-    ];
-
     // A list of token types used for lookahead checks.
     private static readonly singleAtomLookaheadValues = [
         ANTLRv4Lexer.ASSIGN,
@@ -147,14 +131,10 @@ export class SourceGenTriggers extends TreeParser {
         return result;
     }
 
-    protected override getTokenNames(): string[] {
-        return SourceGenTriggers.tokenNames;
-    }
-
     private alternative(): IAltResults {
         const result: IAltResults = { ops: [] };
 
-        const outerMost = this.inContext("RULE BLOCK");
+        const outerMost = this.inContext([ANTLRv4Lexer.RULE, ANTLRv4Lexer.BLOCK]);
 
         try {
             const a = this.alt(outerMost);
@@ -906,7 +886,7 @@ export class SourceGenTriggers extends TreeParser {
                             }
                         }
                     } else {
-                        if ((lookahead3 >= ANTLRv4Lexer.ACTION && lookahead3 <= ANTLRv4Lexer.ACTION_STRING_LITERAL)
+                        if ((lookahead3 === ANTLRv4Lexer.ACTION)
                             || (lookahead3 >= ANTLRv4Lexer.ARG_OR_CHARSET && lookahead3 <= ANTLRv4Lexer.WILDCARD)) {
                             const tokenRef = this.match(this.input, ANTLRv4Lexer.TOKEN_REF)!;
                             this.match(this.input, Constants.Down);

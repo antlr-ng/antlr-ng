@@ -370,13 +370,16 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
 
         let result = "";
         let i = tokenStartIndex;
+        let skipNext = false;
         while (i <= tokenStopIndex) {
-            if (ignore.contains(i)) {
+            if (skipNext || ignore.contains(i)) {
+                skipNext = false;
                 i++;
                 continue;
             }
 
             const tok = this.tokenStream.get(i);
+            let text = tok.text;
 
             // Compute/hold any element options
             let elementOptions = "";
@@ -390,6 +393,14 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
                 }
 
                 if (node instanceof GrammarASTWithOptions) {
+                    const newText = node.getText();
+                    if (newText.endsWith("?")) {
+                        // Have to move the trailing ? to the action code (as it is actually a sempred).
+                        // In ANTLR3 the entire sempred was read in one go. In ANTLR4 the ? is read as a separate token.
+                        text = newText;
+                        skipNext = true;
+                    }
+
                     const o = node;
                     for (const [key, value] of o.getOptions().entries()) {
                         if (elementOptions.length > 0) {
@@ -403,8 +414,9 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
                 }
             }
 
-            result += tok.text; // add actual text of the current token to the rewritten alternative
-            i++; // move to the next token
+            // Add actual text of the current token to the rewritten alternative.
+            result += text;
+            i++;
 
             // Are there args on a rule?
             if (tok.type === ANTLRv4Parser.RULE_REF) {

@@ -12,6 +12,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { ToolTestUtils } from "./ToolTestUtils.js";
+import { Grammar } from "../src/tool/index.js";
+import { CodeGenerator } from "../src/codegen/CodeGenerator.js";
 
 /**
  * Test parser execution.
@@ -228,5 +230,22 @@ describe.sequential("TestParserExec", () => {
         } finally {
             rmSync(tempDir, { recursive: true });
         }
+    });
+
+    it("Fail Element Option", () => {
+        const grammarText = `grammar T;
+            s : a ;
+            a : a ID {false}?<fail='custom message'>
+            | ID
+            ;
+            ID : 'a'..'z'+ ;
+            WS : (' '|'\\n') -> skip ;`;
+        const g = new Grammar(grammarText);
+        g.tool.process(g, false);
+
+        const gen = new CodeGenerator(g);
+        const outputFileST = gen.generateParser(g.tool.toolParameters);
+        const outputFile = outputFileST.render();
+        expect(outputFile).toContain("FailedPredicateException(this, \"false\", \"custom message\");");
     });
 });

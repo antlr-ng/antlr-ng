@@ -30,7 +30,7 @@ describe("TestToolSyntaxErrors", () => {
 
         "A;",
         "error(" + IssueCode.SyntaxError + "): A.g4:1:0: syntax error: mismatched input 'A' expecting " +
-        "{'grammar', 'lexer', 'parser'}\n",
+        "{'lexer', 'parser', 'grammar'}\n",
 
         "grammar ;",
         "error(" + IssueCode.SyntaxError + "): A.g4:1:8: syntax error: missing {RULE_REF, TOKEN_REF} at ';'\n",
@@ -48,25 +48,24 @@ describe("TestToolSyntaxErrors", () => {
         "grammar A;;\n" +
         "a : ID ;\n",
         "error(" + IssueCode.SyntaxError + "): A;.g4:1:10: syntax error: extraneous input ';' expecting " +
-        "{<EOF>, '@', CHANNELS, 'fragment', 'import', 'mode', OPTIONS, RULE_REF, TOKEN_REF, TOKENS, 'private', " +
-        "'protected', 'public'}\n",
+        "{<EOF>, RULE_REF, TOKEN_REF, OPTIONS, TOKENS, CHANNELS, 'import', 'fragment', 'protected', 'public', " +
+        "'private', 'mode', '@'}\n",
 
         "grammar A;\n" +
         "a @init : ID ;\n",
-        "error(" + IssueCode.SyntaxError + "): A.g4:2:8: syntax error: mismatched input ':' expecting " +
-        "'{'\n",
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:8: syntax error: missing ACTION at ':'\n",
 
         "grammar A;\n" +
         "a  ( A | B ) D ;\n" +
         "b : B ;",
-        "error(" + IssueCode.SyntaxError + "): A.g4:2:3: syntax error: mismatched input '(' expecting {'@', " +
-        "':', 'locals', OPTIONS, 'returns', 'throws', '['}\n" +
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:3: syntax error: mismatched input '(' expecting {'[', OPTIONS, " +
+        "'returns', 'locals', 'throws', ':', '@'}\n" +
         "error(" + IssueCode.SyntaxError + "): A.g4:2:7: syntax error: mismatched input '|' expecting " +
-        "{':', OPTIONS}\n" +
-        "error(" + IssueCode.SyntaxError + "): A.g4:2:11: syntax error: mismatched input ')' expecting {':', " +
-        "OPTIONS}\n" +
-        "error(" + IssueCode.SyntaxError + "): A.g4:2:15: syntax error: mismatched input ';' expecting {':', " +
-        "OPTIONS}\n",
+        "{OPTIONS, ':'}\n" +
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:11: syntax error: mismatched input ')' expecting {OPTIONS, " +
+        "':'}\n" +
+        "error(" + IssueCode.SyntaxError + "): A.g4:2:15: syntax error: mismatched input ';' expecting {OPTIONS, " +
+        "':'}\n",
     ];
 
     it("AllErrorCodesDistinct", () => {
@@ -158,7 +157,7 @@ describe("TestToolSyntaxErrors", () => {
 
             "error(" + IssueCode.SyntaxError + "): A.g4:2:4: syntax error: extraneous input 'options {' " +
             "expecting {RULE_REF, TOKEN_REF}\nerror(" + IssueCode.SyntaxError + "): A.g4:2:14: syntax error: " +
-            "mismatched input '=' expecting '{'\n"
+            "mismatched input '=' expecting ACTION\n"
         ];
         ToolTestUtils.testErrors(pair, true);
     });
@@ -170,7 +169,7 @@ describe("TestToolSyntaxErrors", () => {
             "b : B ;",
 
             "error(" + IssueCode.SyntaxError + "): A.g4:2:2: syntax error: extraneous input '}' expecting " +
-            "{'@', ':', 'locals', OPTIONS, 'returns', 'throws', '['}\n"
+            "{'[', OPTIONS, 'returns', 'locals', 'throws', ':', '@'}\n"
         ];
         ToolTestUtils.testErrors(pair, true);
     });
@@ -499,22 +498,22 @@ describe("TestToolSyntaxErrors", () => {
             "error(" + IssueCode.SyntaxError + "): A.g4:2:27: syntax error: token recognition error at: '\"'\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:28: syntax error: token recognition error at: '\\'\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:25: syntax error: mismatched input '|' expecting " +
-            "{'@', ':', 'locals', OPTIONS, 'returns', 'throws', '['}\n" +
+            "{'[', OPTIONS, 'returns', 'locals', 'throws', ':', '@'}\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:30: syntax error: token recognition error at: '\"'\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:34: syntax error: token recognition error at: '\"'\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:35: syntax error: token recognition error at: '\\'\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:32: syntax error: mismatched input '|' expecting " +
-            "{'@', ':', 'locals', OPTIONS, 'returns', 'throws', '['}\n" +
+            "{'[', OPTIONS, 'returns', 'locals', 'throws', ':', '@'}\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:37: syntax error: token recognition error at: '\"'\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:41: syntax error: token recognition error at: '\"'\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:42: syntax error: token recognition error at: '\\'" +
             "\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:39: syntax error: mismatched input '|' expecting " +
-            "{'@', ':', 'locals', OPTIONS, 'returns', 'throws', '['}\n" +
+            "{'[', OPTIONS, 'returns', 'locals', 'throws', ':', '@'}\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:44: syntax error: token recognition error at: " +
             "'\"'\n" +
             "error(" + IssueCode.SyntaxError + "): A.g4:2:45: syntax error: mismatched input ')' expecting " +
-            "{'@', ':', 'locals', OPTIONS, 'returns', 'throws', '['}\n";
+            "{'[', OPTIONS, 'returns', 'locals', 'throws', ':', '@'}\n";
 
         const pair = [
             grammar,
@@ -950,7 +949,7 @@ describe("TestToolSyntaxErrors", () => {
             grammar,
             "error(" + IssueCode.SyntaxError + "): T.g4:3:4: syntax error: no viable alternative at input 'h'\n" +
             "error(" + IssueCode.SyntaxError + "): T.g4:3:5: syntax error: mismatched input '=' expecting " +
-            "{'@', ':', 'locals', OPTIONS, 'returns', 'throws', '['}\n"
+            "{'[', OPTIONS, 'returns', 'locals', 'throws', ':', '@'}\n"
         ], false);
     });
 });

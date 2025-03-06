@@ -1074,7 +1074,7 @@ export class ATNBuilder extends TreeParser {
                                 }
                             }
                         } else if (
-                            (lookahead3 >= ANTLRv4Lexer.ACTION && lookahead3 <= ANTLRv4Lexer.ACTION_STRING_LITERAL)
+                            (lookahead3 >= ANTLRv4Lexer.ACTION)
                             || (lookahead3 >= ANTLRv4Lexer.ARG_OR_CHARSET && lookahead3 <= ANTLRv4Lexer.WILDCARD)) {
                             alt24 = 4;
                         } else {

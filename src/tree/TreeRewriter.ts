@@ -52,10 +52,6 @@ export class TreeRewriter extends TreeParser {
         return undefined;
     };
 
-    protected override getTokenNames(): string[] {
-        return [];
-    }
-
     private applyOnce = (t: CommonTree, whichRule: () => CommonTree | undefined): CommonTree => {
         try {
             const input = new CommonTreeNodeStream(t);

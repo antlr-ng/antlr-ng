@@ -22,26 +22,10 @@ import type { PredAST } from "../../tool/ast/PredAST.js";
 import type { RuleAST } from "../../tool/ast/RuleAST.js";
 import type { TerminalAST } from "../../tool/ast/TerminalAST.js";
 import type { ErrorManager } from "../../tool/ErrorManager.js";
+import { ANTLRv4Lexer } from "../../generated/ANTLRv4Lexer.js";
 
 /** The tree grammar visitor to walk the AST created from a parsed grammar. */
 export class GrammarTreeVisitor extends TreeParser {
-    private static readonly tokenNames = [
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "ACTION", "ACTION_CHAR_LITERAL",
-        "ACTION_ESC", "ACTION_STRING_LITERAL", "ARG_ACTION", "ARG_OR_CHARSET",
-        "ASSIGN", "AT", "CATCH", "CHANNELS", "COLON", "COLONCOLON", "COMMA", "COMMENT",
-        "DOC_COMMENT", "DOLLAR", "DOT", "ERRCHAR", "ESC_SEQ", "FINALLY", "FRAGMENT",
-        "GRAMMAR", "GT", "HEX_DIGIT", "ID", "IMPORT", "INT", "LEXER", "LEXER_CHAR_SET",
-        "LOCALS", "LPAREN", "LT", "MODE", "NESTED_ACTION", "NLCHARS", "NOT", "NameChar",
-        "NameStartChar", "OPTIONS", "OR", "PARSER", "PLUS", "PLUS_ASSIGN", "POUND",
-        "QUESTION", "RANGE", "RARROW", "RBRACE", "RETURNS", "RPAREN", "RULE_REF",
-        "SEMI", "SEMPRED", "SRC", "STAR", "STRING_LITERAL", "THROWS", "TOKENS",
-        "TOKEN_REF", "UNICODE_ESC", "UNICODE_EXTENDED_ESC", "UnicodeBOM", "WS",
-        "WSCHARS", "WSNLCHARS", "ALT", "BLOCK", "CLOSURE", "COMBINED", "ELEMENT_OPTIONS",
-        "EPSILON", "LEXER_ACTION_CALL", "LEXER_ALT_ACTION", "OPTIONAL", "POSITIVE_CLOSURE",
-        "RULE", "RULEMODIFIERS", "RULES", "SET", "WILDCARD", "PRIVATE", "PROTECTED",
-        "PUBLIC",
-    ];
-
     protected currentRuleName?: string;
     protected currentOuterAltNumber = 1; // 1..n
 
@@ -49,10 +33,6 @@ export class GrammarTreeVisitor extends TreeParser {
 
     public constructor(errorManager: ErrorManager, input?: CommonTreeNodeStream,) {
         super(errorManager, input);
-    }
-
-    public override getTokenNames(): string[] {
-        return GrammarTreeVisitor.tokenNames;
     }
 
     public visitGrammar(t: GrammarRootAST): void {
@@ -322,8 +302,8 @@ export class GrammarTreeVisitor extends TreeParser {
     }
 
     private option(): void {
-        const rule = this.inContext("RULE ...");
-        const block = this.inContext("BLOCK ...");
+        const rule = this.inContext([ANTLRv4Lexer.RULE, Constants.Up]);
+        const block = this.inContext([ANTLRv4Lexer.BLOCK, Constants.Up]);
 
         try {
             this.match(this.input, ANTLRv4Parser.ASSIGN);

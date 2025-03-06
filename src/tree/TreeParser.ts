@@ -43,10 +43,9 @@ export class TreeParser {
         this.input = input ?? new CommonTreeNodeStream(new CommonTree());
     }
 
-    private static getAncestor(tokenNames: string[], t: CommonTree | null, goal: string): CommonTree | null {
+    private static getAncestor(t: CommonTree | null, goal: number): CommonTree | null {
         while (t !== null) {
-            const name = tokenNames[t.getType()];
-            if (name === goal) {
+            if (t.getType() === goal) {
                 return t;
             }
 
@@ -103,17 +102,13 @@ export class TreeParser {
      * he context is not necessarily the root. The context matcher stops matching and returns true when it runs out
      * of context. There is no way to force the first node to be the root.
      */
-    public inContext(context: string): boolean {
-        context = context.trim();
-        const nodes = context.split(/\s+/);
+    public inContext(nodes: number[]): boolean {
         let ni = nodes.length - 1;
-
         const t = this.input.lookaheadType(1)!;
-        const tokenNames = this.getTokenNames();
 
         let run: CommonTree | null = t.parent;
         while (ni >= 0 && run !== null) {
-            if (nodes[ni] === "...") {
+            if (nodes[ni] === Constants.Up) {
                 // Walk upwards until we see nodes[ni - 1] then continue walking.
                 if (ni === 0) {
                     return true;
@@ -121,7 +116,7 @@ export class TreeParser {
 
                 // ... at start is no-op.
                 const goal = nodes[ni - 1];
-                const ancestor = TreeParser.getAncestor(tokenNames, run, goal);
+                const ancestor = TreeParser.getAncestor(run, goal);
                 if (ancestor === null) {
                     return false;
                 }
@@ -130,8 +125,7 @@ export class TreeParser {
                 ni--;
             }
 
-            const name = tokenNames[run.getType()];
-            if (name !== nodes[ni]) {
+            if (run.getType() !== nodes[ni]) {
                 return false;
             }
 
@@ -195,13 +189,5 @@ export class TreeParser {
 
         this.errorRecovery = true;
         this.errorManager.toolError(IssueCode.InternalError, e);
-    }
-
-    /**
-     * Used to print out token names like ID during debugging and error reporting.  The generated parsers implement
-     * a method that overrides this to point to their String[] tokenNames.
-     */
-    protected getTokenNames(): string[] {
-        return [];
     }
 }
