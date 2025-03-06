@@ -9,6 +9,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { ToolTestUtils } from "./ToolTestUtils.js";
+import { Grammar } from "../src/tool/index.js";
+import { CodeGenerator } from "../src/codegen/CodeGenerator.js";
 
 // Need to run the sequentially, as they use console output for verification.
 describe.sequential("TestLexerActions", () => {
@@ -410,5 +412,32 @@ fragment WS: [ \\r\\t\\n]+ ;
         } finally {
             rmSync(tempDir, { recursive: true });
         }
+    });
+
+    it.only("Nested actions", () => {
+        const grammarText = `grammar T;
+            @definitions {
+            }
+
+            @members {
+            static isIdentifierChar (c: string) {
+                return c.match(/^[0-9a-zA-Z_]+$/);
+            }
+            }
+
+            s : a ;
+            a : a ID {false}?<fail='custom message'>
+            | ID
+            ;
+            ID : 'a'..'z'+ ;
+            WS : (' '|'\\n') -> skip ;`;
+        const g = new Grammar(grammarText);
+        g.tool.process(g, false);
+
+        const gen = new CodeGenerator(g);
+        const outputFileST = gen.generateParser(g.tool.toolParameters);
+        const outputFile = outputFileST.render();
+        expect(outputFile).toContain("FailedPredicateException(this, \"false\", \"custom message\");");
+        expect(outputFile).toContain("return c.match(/^[0-9a-zA-Z_]+$/);");
     });
 });

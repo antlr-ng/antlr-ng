@@ -134,9 +134,7 @@ fragment NESTED_ACTION
             '\\'
             | '"'
             | '\''
-            | '/'
             | '{'
-            | '}'
         ) // Some other single character that is not handled above
     )*? '}'
     ;
