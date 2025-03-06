@@ -414,7 +414,7 @@ fragment WS: [ \\r\\t\\n]+ ;
         }
     });
 
-    it.only("Nested actions", () => {
+    it("Nested actions", () => {
         const grammarText = `grammar T;
             @definitions {
             }
