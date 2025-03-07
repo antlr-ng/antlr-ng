@@ -5,3 +5,5 @@
 
 export * from "./Tool.js";
 export * from "./tool/Issues.js";
+export * from "./tool/ToolListener.js";
+export * from "./tool/ANTLRMessage.js";
