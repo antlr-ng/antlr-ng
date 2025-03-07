@@ -5,6 +5,10 @@
 
 # antlr-ng Release Notes
 
+## 1.0.8
+
+Now certain error reporting/handling types are exported, to help consumers of the tool class to handle issues reported from the tool.
+
 ## 1.0.7
 
 - Fixed a wrong match in NESTED_ACTION in the antlr-ng lexer.

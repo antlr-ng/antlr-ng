@@ -1,6 +1,6 @@
 {
     "name": "antlr-ng",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "description": "Next generation ANTLR Tool",
     "type": "module",
     "author": "Mike Lischke",
