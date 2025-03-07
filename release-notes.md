@@ -5,6 +5,10 @@
 
 # antlr-ng Release Notes
 
+## 1.0.7
+
+- Fixed a wrong match in NESTED_ACTION in the antlr-ng lexer.
+
 ## 1.0.6
 
 - Fixed semantic predicate handling in left recursive rules (which showed a flaw in the antlr-ng lexer).
