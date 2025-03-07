@@ -68,6 +68,8 @@ export class Tool implements ITool {
         const antlr = new Tool(args);
         try {
             antlr.processGrammarsOnCommandLine();
+        } catch {
+            antlr.exit(1);
         } finally {
             if (antlr.toolParameters.log) {
                 try {

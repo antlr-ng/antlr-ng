@@ -4,3 +4,4 @@
  */
 
 export * from "./Tool.js";
+export * from "./tool/Issues.js";
