@@ -6,6 +6,10 @@
 
 # antlr-ng Release Notes
 
+## 1.0.9
+
+Removed the need for a top-level await, which gets in the way when transpiling the code to CJS (e.g. in VS Code extensions).
+
 ## 1.0.8
 
 Now certain error reporting/handling types are exported, to help consumers of the tool class to handle issues reported from the tool.
