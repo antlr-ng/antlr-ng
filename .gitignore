@@ -6,3 +6,4 @@ runtime-testsuite/generated
 src/generated
 .vscode/numbered-bookmarks.json
 tests/generated
+src/version.ts

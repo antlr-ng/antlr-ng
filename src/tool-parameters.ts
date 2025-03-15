@@ -3,11 +3,9 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { dirname, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-
 import { Command, Option } from "commander";
-import { readFileSync } from "node:fs";
+
+import { antlrVersion } from "./version.js";
 
 export interface IToolParameters {
     /** The grammar files. */
@@ -30,40 +28,6 @@ export interface IToolParameters {
     log?: boolean,
     exactOutputDir?: boolean,
 }
-
-/**
- * Searches the package.json file in the same folder as this script or any parent folder (up to
- * a node_modules folder).
- *
- * @returns The version of the package.
- */
-const getPackageVersion = (): string => {
-    const findPackageJson = (path: string): string => {
-        const packageFile = resolve(path, "package.json");
-
-        try {
-            readFileSync(pathToFileURL(packageFile));
-
-            return packageFile;
-        } catch {
-            const parent = dirname(path);
-
-            if (parent.endsWith("node_modules")) {
-                throw new Error("No package.json found.");
-            }
-
-            return findPackageJson(parent);
-        }
-    };
-
-    const dirName = fileURLToPath(dirname(import.meta.url));
-    const packageFile = findPackageJson(dirName);
-    const packageJson = JSON.parse(readFileSync(pathToFileURL(packageFile), "utf-8")) as { version: string; };
-
-    return packageJson.version;
-};
-
-export const antlrVersion = getPackageVersion();
 
 /**
  * Used to parse tool parameters given as string list. Usually, this is used for tests.

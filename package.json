@@ -55,13 +55,14 @@
     },
     "scripts": {
         "prepublishOnly": "npm run build && npm run copy-templates && npm run test",
-        "build": "npm run generate-action-splitter && npm run generate-antlr-parser && npm run generate-test-parsers && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
+        "build": "npm run generate-version-file && npm run generate-action-splitter && npm run generate-antlr-parser && npm run generate-test-parsers && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
         "esbuild": "tsx build/build.ts",
         "copy-templates": "tsx build/copy-templates.ts",
         "TestRig": "tsx cli/TestRig.ts",
         "grun": "tsx cli/TestRig.ts",
         "interpreter": "tsx cli/Interpreter.ts",
-        "test": "vitest --no-watch --no-coverage",
+        "temp": "tsx cli/runner.ts --version",
+        "test": "npm run generate-version-file && vitest --no-watch --no-coverage",
         "generate-action-splitter": "npm run generate-parser -- -o ./src/generated ./src/grammars/ActionSplitter.g4",
         "generate-antlr-parser": "npm run generate-parser -- -o ./src/generated ./src/grammars/ANTLRv4Lexer.g4 ./src/grammars/ANTLRv4Parser.g4",
         "generate-test-parsers": "npm run generate-testp1 && npm run generate-testp2 && npm run generate-testp3 && npm run generate-testp4",
@@ -70,7 +71,8 @@
         "generate-testp3": "npm run generate-parser -- -o ./tests/generated ./tests/grammars/PositionAdjustingLexer.g4",
         "generate-testp4": "npm run generate-parser -- -o ./tests/generated ./tests/grammars/Psl.g4",
         "generate-parser": "antlr-ng -Dlanguage=TypeScript --exact-output-dir",
-        "generate-unicode-data": "tsx ./build/generate-unicode-data.ts"
+        "generate-unicode-data": "tsx ./build/generate-unicode-data.ts",
+        "generate-version-file": "tsx ./build/generate-version-file.ts"
     },
     "exports": {
         "types": "./dist/src/index.d.ts",

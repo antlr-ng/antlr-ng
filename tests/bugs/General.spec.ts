@@ -132,7 +132,7 @@ describe("General", () => {
         const outputFileST = gen.generateParser(g.tool.toolParameters);
         const outputFile = outputFileST.render();
         expect(outputFile).toContain("FailedPredicateException(this, \"false\", \"custom message\");");
-        expect(outputFile).toContain("def here(self, type):\n\t                        \"\"\"Returns `True`");
+        expect(outputFile).toContain("\"\"\"Returns `True` iff on the current index of the parser's");
     });
 
 });

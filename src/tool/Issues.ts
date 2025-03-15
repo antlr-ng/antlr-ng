@@ -5,7 +5,7 @@
 
 /* eslint-disable max-len */
 
-import { antlrVersion } from "../tool-parameters.js";
+import { antlrVersion } from "../version.js";
 
 export const enum IssueSeverity {
     Info,

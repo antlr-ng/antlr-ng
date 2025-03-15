@@ -41,7 +41,7 @@ import type { IGrammar, ITool } from "./types.js";
 import { Constants } from "./Constants.js";
 
 export class Tool implements ITool {
-    public logMgr = new LogManager();
+    public readonly logMgr = new LogManager();
 
     public readonly errorManager;
 

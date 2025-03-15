@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 
 import { IssueCode, issueTypes } from "../src/tool/Issues.js";
 import { ToolTestUtils } from "./ToolTestUtils.js";
-import { antlrVersion } from "../src/tool-parameters.js";
+import { antlrVersion } from "../src/version.js";
 
 /**
  * This class depended on lexer actions for customized error messages. In the official ANTLR4 grammar these action
