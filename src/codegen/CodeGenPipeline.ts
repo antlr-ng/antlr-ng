@@ -51,26 +51,26 @@ export class CodeGenPipeline {
 
             if (this.generateListener) {
                 if (this.gen.target.needsHeader()) {
-                    const listener = this.gen.generateListener(true);
+                    const listener = this.gen.generateListener(toolParameters, true);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeListener(listener, true);
                     }
                 }
 
-                const listener = this.gen.generateListener(false);
+                const listener = this.gen.generateListener(toolParameters, false);
                 if (this.g.tool.errorManager.errors === errorCount) {
                     this.gen.writeListener(listener, false);
                 }
 
                 if (this.gen.target.needsHeader()) {
-                    const baseListener = this.gen.generateBaseListener(true);
+                    const baseListener = this.gen.generateBaseListener(toolParameters, true);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeBaseListener(baseListener, true);
                     }
                 }
 
                 if (this.gen.target.wantsBaseListener()) {
-                    const baseListener = this.gen.generateBaseListener(false);
+                    const baseListener = this.gen.generateBaseListener(toolParameters, false);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeBaseListener(baseListener, false);
                     }
@@ -79,26 +79,26 @@ export class CodeGenPipeline {
 
             if (this.generateVisitor) {
                 if (this.gen.target.needsHeader()) {
-                    const visitor = this.gen.generateVisitor(true);
+                    const visitor = this.gen.generateVisitor(toolParameters, true);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeVisitor(visitor, true);
                     }
                 }
 
-                const visitor = this.gen.generateVisitor(false);
+                const visitor = this.gen.generateVisitor(toolParameters, false);
                 if (this.g.tool.errorManager.errors === errorCount) {
                     this.gen.writeVisitor(visitor, false);
                 }
 
                 if (this.gen.target.needsHeader()) {
-                    const baseVisitor = this.gen.generateBaseVisitor(true);
+                    const baseVisitor = this.gen.generateBaseVisitor(toolParameters, true);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeBaseVisitor(baseVisitor, true);
                     }
                 }
 
                 if (this.gen.target.wantsBaseVisitor()) {
-                    const baseVisitor = this.gen.generateBaseVisitor(false);
+                    const baseVisitor = this.gen.generateBaseVisitor(toolParameters, false);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.gen.writeBaseVisitor(baseVisitor, false);
                     }

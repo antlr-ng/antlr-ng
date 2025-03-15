@@ -91,33 +91,33 @@ export class CodeGenerator {
         return this.walk(this.createController().buildParserOutputModel(header, toolParameters), header);
     }
 
-    public generateListener(header?: boolean): IST {
+    public generateListener(toolParameters: IToolParameters, header?: boolean): IST {
         this.ensureAtnExists();
         header ??= false;
 
-        return this.walk(this.createController().buildListenerOutputModel(header), header);
+        return this.walk(this.createController().buildListenerOutputModel(header, toolParameters), header);
 
     }
 
-    public generateBaseListener(header?: boolean): IST {
+    public generateBaseListener(toolParameters: IToolParameters, header?: boolean): IST {
         this.ensureAtnExists();
         header ??= false;
 
-        return this.walk(this.createController().buildBaseListenerOutputModel(header), header);
+        return this.walk(this.createController().buildBaseListenerOutputModel(header, toolParameters), header);
     }
 
-    public generateVisitor(header?: boolean): IST {
+    public generateVisitor(toolParameters: IToolParameters, header?: boolean): IST {
         this.ensureAtnExists();
         header ??= false;
 
-        return this.walk(this.createController().buildVisitorOutputModel(header), header);
+        return this.walk(this.createController().buildVisitorOutputModel(header, toolParameters), header);
     }
 
-    public generateBaseVisitor(header?: boolean): IST {
+    public generateBaseVisitor(toolParameters: IToolParameters, header?: boolean): IST {
         this.ensureAtnExists();
         header ??= false;
 
-        return this.walk(this.createController().buildBaseVisitorOutputModel(header), header);
+        return this.walk(this.createController().buildBaseVisitorOutputModel(header, toolParameters), header);
     }
 
     public writeRecognizer(outputFileST: IST, header: boolean): void {
