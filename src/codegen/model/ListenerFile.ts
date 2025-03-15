@@ -5,6 +5,7 @@
 
 import { ModelElement } from "../../misc/ModelElement.js";
 import { OrderedHashMap } from "../../misc/OrderedHashMap.js";
+import type { IToolParameters } from "../../tool-parameters.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { OutputFile } from "./OutputFile.js";
@@ -37,7 +38,7 @@ export class ListenerFile extends OutputFile {
     @ModelElement
     public namedActions: Map<string, Action>;
 
-    public constructor(factory: IOutputModelFactory, fileName: string, packageName?: string) {
+    public constructor(factory: IOutputModelFactory, fileName: string, toolParameters: IToolParameters) {
         super(factory, fileName);
 
         const g = factory.g;
@@ -65,7 +66,7 @@ export class ListenerFile extends OutputFile {
             this.header = new Action(factory, ast);
         }
 
-        this.genPackage = packageName;
+        this.genPackage = toolParameters.package;
         this.accessLevel = g.getOptionString("accessLevel");
         this.exportMacro = g.getOptionString("exportMacro");
     }

@@ -101,28 +101,28 @@ export class OutputModelController {
         return file;
     }
 
-    public buildListenerOutputModel(header: boolean): OutputModelObject {
+    public buildListenerOutputModel(header: boolean, toolParameters: IToolParameters): OutputModelObject {
         const gen = this.factory.getGenerator()!;
 
-        return new ListenerFile(this.factory, gen.getListenerFileName(header));
+        return new ListenerFile(this.factory, gen.getListenerFileName(header), toolParameters);
     }
 
-    public buildBaseListenerOutputModel(header: boolean): OutputModelObject {
+    public buildBaseListenerOutputModel(header: boolean, toolParameters: IToolParameters): OutputModelObject {
         const gen = this.factory.getGenerator()!;
 
-        return new BaseListenerFile(this.factory, gen.getBaseListenerFileName(header));
+        return new BaseListenerFile(this.factory, gen.getBaseListenerFileName(header), toolParameters);
     }
 
-    public buildVisitorOutputModel(header: boolean): OutputModelObject {
+    public buildVisitorOutputModel(header: boolean, toolParameters: IToolParameters): OutputModelObject {
         const gen = this.factory.getGenerator()!;
 
-        return new VisitorFile(this.factory, gen.getVisitorFileName(header));
+        return new VisitorFile(this.factory, gen.getVisitorFileName(header), toolParameters);
     }
 
-    public buildBaseVisitorOutputModel(header: boolean): OutputModelObject {
+    public buildBaseVisitorOutputModel(header: boolean, toolParameters: IToolParameters): OutputModelObject {
         const gen = this.factory.getGenerator()!;
 
-        return new BaseVisitorFile(this.factory, gen.getBaseVisitorFileName(header));
+        return new BaseVisitorFile(this.factory, gen.getBaseVisitorFileName(header), toolParameters);
     }
 
     public parserFile(fileName: string, toolParameters: IToolParameters): ParserFile {
