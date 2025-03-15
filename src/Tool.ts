@@ -205,7 +205,7 @@ export class Tool implements ITool {
 
         const prevErrors = this.errorManager.errors;
 
-        // MAKE SURE GRAMMAR IS SEMANTICALLY CORRECT (FILL IN GRAMMAR OBJECT)
+        // Make sure grammar is semantically correct (fill in grammar object).
         const sem = new SemanticPipeline(g);
         sem.process();
 

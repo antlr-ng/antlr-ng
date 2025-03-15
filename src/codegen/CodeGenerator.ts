@@ -76,6 +76,7 @@ export class CodeGenerator {
     }
 
     public generateLexer(toolParameters: IToolParameters, header?: boolean): IST {
+        this.ensureAtnExists();
         header ??= false;
 
         return this.walk(this.createController(toolParameters.forceAtn)
@@ -84,12 +85,14 @@ export class CodeGenerator {
     }
 
     public generateParser(toolParameters: IToolParameters, header?: boolean): IST {
+        this.ensureAtnExists();
         header ??= false;
 
         return this.walk(this.createController().buildParserOutputModel(header, toolParameters), header);
     }
 
     public generateListener(header?: boolean): IST {
+        this.ensureAtnExists();
         header ??= false;
 
         return this.walk(this.createController().buildListenerOutputModel(header), header);
@@ -97,18 +100,21 @@ export class CodeGenerator {
     }
 
     public generateBaseListener(header?: boolean): IST {
+        this.ensureAtnExists();
         header ??= false;
 
         return this.walk(this.createController().buildBaseListenerOutputModel(header), header);
     }
 
     public generateVisitor(header?: boolean): IST {
+        this.ensureAtnExists();
         header ??= false;
 
         return this.walk(this.createController().buildVisitorOutputModel(header), header);
     }
 
     public generateBaseVisitor(header?: boolean): IST {
+        this.ensureAtnExists();
         header ??= false;
 
         return this.walk(this.createController().buildBaseVisitorOutputModel(header), header);
@@ -271,4 +277,13 @@ export class CodeGenerator {
         return walker.walk(outputModel, header);
     }
 
+    private ensureAtnExists(): void {
+        if (this.g === undefined) {
+            throw new Error("Grammar is undefined.");
+        }
+
+        if (this.g.atn === undefined) {
+            throw new Error("ATN is undefined.");
+        }
+    }
 }

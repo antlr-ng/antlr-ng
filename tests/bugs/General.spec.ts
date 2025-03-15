@@ -10,6 +10,7 @@ import { describe, expect, it } from "vitest";
 
 import { ATNSerializer } from "antlr4ng";
 
+import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
 import { DOTGenerator } from "../../src/tool/DOTGenerator.js";
 import { Grammar, LexerGrammar } from "../../src/tool/index.js";
 
@@ -95,4 +96,43 @@ describe("General", () => {
         const serializedATN = serializer.serialize();
         expect(serializedATN).toEqual(expectedSerializedATN);
     });
+
+    it("Bug #62 Triple quoted strings in actions", () => {
+        const grammarText = `grammar T;
+                @definitions {
+                }
+
+                @parser::members {
+                    def here(self, type):
+                        """Returns \`True\` iff on the current index of the parser's
+                        token stream a token of the given \`type\` exists on the
+                        \`HIDDEN\` channel.
+
+                    Args:
+                        type (int): the type of the token on the \`HIDDEN\` channel
+                        to check.
+
+                    Returns:
+                        \`True\` iff on the current index of the parser's
+                        token stream a token of the given \`type\` exists on the
+                        \`HIDDEN\` channel.
+                    """
+                }
+
+                s : a ;
+                a : a ID {false}?<fail='custom message'>
+                | ID
+                ;
+                ID : 'a'..'z'+ ;
+                WS : (' '|'\\n') -> skip ;`;
+        const g = new Grammar(grammarText);
+        g.tool.process(g, false);
+
+        const gen = new CodeGenerator(g);
+        const outputFileST = gen.generateParser(g.tool.toolParameters);
+        const outputFile = outputFileST.render();
+        expect(outputFile).toContain("FailedPredicateException(this, \"false\", \"custom message\");");
+        expect(outputFile).toContain("def here(self, type):\n\t                        \"\"\"Returns `True`");
+    });
+
 });

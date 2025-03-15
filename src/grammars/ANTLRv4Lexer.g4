@@ -58,6 +58,13 @@ options {
 import { LexerAdaptor } from "../misc/LexerAdaptor.js";
 }
 
+// Standard set of fragments
+tokens {
+    TOKEN_REF,
+    RULE_REF,
+    LEXER_CHAR_SET
+}
+
 channels {
     OFF_CHANNEL,
     COMMENT
@@ -124,16 +131,19 @@ ACTION
 fragment NESTED_ACTION
     : // Action and other blocks start with opening {
     '{' (
-        NESTED_ACTION    // embedded {} block
-        | STRING_LITERAL // single quoted string
-        | DQuoteLiteral  // double quoted string
-        | '/*' .*? '*/'  // block comment
-        | '//' ~[\r\n]*  // line comment
-        | '\\' .         // Escape sequence
+        NESTED_ACTION          // embedded {} block
+        | STRING_LITERAL       // single quoted string
+        | DoubleQuoteLiteral   // double quoted string
+        | TripleQuoteLiteral   // string literal with triple quotes
+        | BacktickQuoteLiteral // backtick quoted string
+        | '/*' .*? '*/'        // block comment
+        | '//' ~[\r\n]*        // line comment
+        | '\\' .               // Escape sequence
         | ~(
             '\\'
             | '"'
             | '\''
+            | '`'
             | '{'
         ) // Some other single character that is not handled above
     )*? '}'
@@ -335,7 +345,7 @@ ARGUMENT_ESCAPE
     ;
 
 ARGUMENT_STRING_LITERAL
-    : DQuoteLiteral -> type (ARGUMENT_CONTENT)
+    : DoubleQuoteLiteral -> type (ARGUMENT_CONTENT)
     ;
 
 ARGUMENT_CHAR_LITERAL
@@ -385,8 +395,16 @@ fragment UnicodeESC
     : 'u' (HexDigit (HexDigit (HexDigit HexDigit?)?)?)?
     ;
 
-fragment DQuoteLiteral
-    : '"' (ESC_SEQUENCE | ~ ["\r\n\\])* '"'
+fragment DoubleQuoteLiteral
+    : '"' (ESC_SEQUENCE | ~["\r\n\\])*? '"'
+    ;
+
+fragment TripleQuoteLiteral
+    : '"""' (ESC_SEQUENCE | .)*? '"""'
+    ;
+
+fragment BacktickQuoteLiteral
+    : '`' (ESC_SEQUENCE | ~["\r\n\\])*? '`'
     ;
 
 // -----------------------------------
