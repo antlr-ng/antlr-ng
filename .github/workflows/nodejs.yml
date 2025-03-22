@@ -2,9 +2,9 @@ name: Build & Test
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'features/**' ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, 'features/**' ]
 
 jobs:
   build:
@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x, 23.x]
 
     steps:
       - uses: actions/checkout@v4
