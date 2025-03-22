@@ -9,6 +9,10 @@ import * as nodeFs from "fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
+import * as nodeFs from "fs";
+import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
+
 import { program } from "commander";
 
 import {
@@ -21,6 +25,8 @@ import type { IndexedObject } from "src/support/helpers.js";
 import { copyFolderToMemFs, dirname } from "../src/support/fs-helpers.js";
 import { useFileSystem } from "../src/tool-parameters.js";
 import { parseBoolean } from "./cli-options.js";
+import { useFileSystem } from "../src/tool-parameters.js";
+import { copyFolderToMemFs, dirname } from "../src/support/fs-helpers.js";
 
 type Constructor<T extends Recognizer<ATNSimulator>> = abstract new (...args: unknown[]) => T;
 

@@ -42,6 +42,7 @@ import type { IGrammar, ITool } from "./types.js";
 
 /** The main class in antlr-ng, which is used to do full grammar processing and output generation. */
 export class Tool implements ITool {
+    public readonly logMgr = new LogManager();
     public readonly errorManager = new ErrorManager();
 
     public toolConfiguration: IToolConfiguration;
@@ -589,5 +590,9 @@ export class Tool implements ITool {
         ClassFactory.createTool = () => {
             return new Tool();
         };
+
+        // Make sure the template engine uses the same virtual file system as we do.
+        // This early registration is useful if you don't need a private file system for the templates.
+        useFileSystem(fileSystem);
     }
 }

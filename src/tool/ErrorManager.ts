@@ -11,6 +11,7 @@ import type { IToolMessageOptions } from "../config/config.js";
 import { Issue } from "./Issue.js";
 import { IssueCode, IssueSeverity } from "./Issues.js";
 import { ToolListener } from "./ToolListener.js";
+import { basename } from "../support/fs-helpers.js";
 
 /**
  * A class to take care of individual {@link Issue}s. It can notify registered listeners about incoming
@@ -25,6 +26,9 @@ export class ErrorManager {
 
     private listeners = new Array<ToolListener>();
     private formatOptions: IToolMessageOptions;
+
+    private longMessages = false;
+    private warningsAreErrors = false;
 
     /**
      * Track separately so if someone adds a listener, it's the only one instead of it and the default stderr listener.
@@ -51,6 +55,15 @@ export class ErrorManager {
         this.errors = 0;
         this.warnings = 0;
         this.formatOptions = formatOptions;
+    }
+
+    public configure(msgFormat?: string, longMessages?: boolean, warningsAreErrors?: boolean) {
+        this.errors = 0;
+        this.warnings = 0;
+        this.longMessages = longMessages ?? false;
+        this.warningsAreErrors = warningsAreErrors ?? false;
+
+        this.loadFormat(msgFormat ?? "antlr");
     }
 
     public formatWantsSingleLineMessage(): boolean {
