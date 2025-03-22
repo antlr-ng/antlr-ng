@@ -19,6 +19,7 @@ import { SemanticPipeline } from "../src/semantics/SemanticPipeline.js";
 import { Grammar } from "../src/tool/Grammar.js";
 import type { LexerGrammar } from "../src/tool/LexerGrammar.js";
 import { ErrorQueue } from "./support/ErrorQueue.js";
+import type { IToolParameters } from "../src/tool-parameters.js";
 
 describe("TestActionTranslation", () => {
     const attributeTemplate =

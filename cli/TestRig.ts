@@ -9,6 +9,10 @@ import * as nodeFs from "fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
+import * as nodeFs from "fs";
+import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
+
 import { program } from "commander";
 
 import {
