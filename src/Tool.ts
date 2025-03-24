@@ -42,7 +42,6 @@ import type { IGrammar, ITool } from "./types.js";
 
 /** The main class in antlr-ng, which is used to do full grammar processing and output generation. */
 export class Tool implements ITool {
-    public readonly logMgr = new LogManager();
     public readonly errorManager = new ErrorManager();
 
     public toolConfiguration: IToolConfiguration;
