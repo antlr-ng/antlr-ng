@@ -727,7 +727,7 @@ public override  get():  T {
 	 * {@code true} to read all source files from disk into memory before
 	 * starting the parse. The default value is {@code true} to help prevent
 	 * drive speed from affecting the performance results. This value may be set
-	 * to {@code false} to support parsing large input sets which would not
+	 * to `false` to support parsing large input sets which would not
 	 * otherwise fit into memory.
 	 */
 	private static readonly  PRELOAD_SOURCES = true;
@@ -758,7 +758,7 @@ public override  get():  T {
 
     /**
      * {@code true} to use the Java grammar with expressions in the v4
-     * left-recursive syntax (JavaLR.g4). {@code false} to use the standard
+     * left-recursive syntax (JavaLR.g4). `false` to use the standard
      * grammar (Java.g4). In either case, the grammar is renamed in the
      * temporary directory to Java.g4 before compiling.
      */
@@ -808,7 +808,7 @@ public override  get():  T {
      */
     private static readonly  RUN_PARSER = true;
     /**
-     * {@code true} to use {@link BailErrorStrategy}, {@code false} to use
+     * {@code true} to use {@link BailErrorStrategy}, `false` to use
      * {@link DefaultErrorStrategy}.
      */
     private static readonly  BAIL_ON_ERROR = false;
@@ -825,7 +825,7 @@ public override  get():  T {
      * Use
      * {@link ParseTreeWalker#DEFAULT}{@code .}{@link ParseTreeWalker#walk walk}
      * with the {@code JavaParserBaseListener} to show parse tree walking
-     * overhead. If {@link #BUILD_PARSE_TREES} is {@code false}, the listener
+     * overhead. If {@link #BUILD_PARSE_TREES} is `false`, the listener
      * will instead be called during the parsing process via
      * {@link Parser#addParseListener}.
      */
@@ -889,16 +889,16 @@ public override  get():  T {
 	/**
 	 * If {@code true}, the timing statistics will include the parser only. This
 	 * flag allows for targeted measurements, and helps eliminate variance when
-	 * {@link #PRELOAD_SOURCES} is {@code false}.
+	 * {@link #PRELOAD_SOURCES} is `false`.
 	 * <p/>
-	 * This flag has no impact when {@link #RUN_PARSER} is {@code false}.
+	 * This flag has no impact when {@link #RUN_PARSER} is `false`.
 	 */
 	private static readonly  TIME_PARSE_ONLY = false;
 
 	/**
 	 * When {@code true}, messages will be printed to {@link System#err} when
 	 * the first stage (SLL) parsing resulted in a syntax error. This option is
-	 * ignored when {@link #TWO_STAGE_PARSING} is {@code false}.
+	 * ignored when {@link #TWO_STAGE_PARSING} is `false`.
 	 */
 	private static readonly  REPORT_SECOND_STAGE_RETRY = true;
 	private static readonly  REPORT_SYNTAX_ERRORS = true;
@@ -934,7 +934,7 @@ public override  get():  T {
 	private static readonly  REUSE_PARSER_DFA = true;
     /**
      * If {@code true}, the shared lexer and parser are reset after each pass.
-     * If {@code false}, all passes after the first will be fully "warmed up",
+     * If `false`, all passes after the first will be fully "warmed up",
      * which makes them faster and can compare them to the first warm-up pass,
      * but it will not distinguish bytecode load/JIT time from warm-up time
      * during the first pass.

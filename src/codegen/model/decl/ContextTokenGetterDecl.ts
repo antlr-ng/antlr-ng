@@ -6,7 +6,7 @@
 import { ContextGetterDecl } from "./ContextGetterDecl.js";
 import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 
-/** {@code public Token X() { }} */
+/** `public Token X() { }` */
 export class ContextTokenGetterDecl extends ContextGetterDecl {
     public optional: boolean;
 

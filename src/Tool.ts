@@ -40,15 +40,15 @@ import type { RuleAST } from "./tool/ast/RuleAST.js";
 import type { IGrammar, ITool } from "./types.js";
 import { Constants } from "./Constants.js";
 
+/** The main class in antlr-ng, which is used to do full grammar processing and output generation. */
 export class Tool implements ITool {
-    public readonly logMgr = new LogManager();
-
-    public readonly errorManager;
+    public readonly errorManager = new ErrorManager();
 
     public readonly toolParameters: IToolParameters = { args: [], encoding: "utf-8" };
 
     protected grammarFiles = new Array<string>();
 
+    private readonly logMgr = new LogManager();
     private readonly importedGrammars = new Map<string, Grammar>();
 
     public constructor(args?: string[]) {

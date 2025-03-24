@@ -138,13 +138,12 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
     public tool: ITool;
 
-    /** Map token like {@code ID} (but not literals like {@code 'while'}) to its token type. */
+    /** Map token like `ID` (but not literals like `'while'`) to its token type. */
     public readonly tokenNameToTypeMap = new Map<string, number>();
 
     /**
-     * Map token literals like {@code 'while'} to its token type. It may be that
-     * {@code WHILE="while"=35}, in which case both {@link #tokenNameToTypeMap}
-     * and this field will have entries both mapped to 35.
+     * Map token literals like `'while'` to its token type. It may be that `WHILE="while"=35`, in which case
+     * both {@link #tokenNameToTypeMap} and this field will have entries both mapped to 35.
      */
     public readonly stringLiteralToTypeMap = new Map<string, number>();
 
@@ -160,7 +159,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
     /**
      * Map a constant channel value to its name. Indexed with raw channel value. The predefined channels
      * {@link Token.DEFAULT_CHANNEL} and {@link Token.HIDDEN_CHANNEL} are not stored in this list, so the values
-     * at the corresponding indexes is {@code null}.
+     * at the corresponding indexes is `null`.
      */
     public readonly channelValueToNameList = new Array<string>();
 
@@ -482,7 +481,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
      * the {@link ruleNumber} field, and adds the {@link Rule} instance to {@link rules} and {@link indexToRule}.
      *
      * @param r The rule to define in the grammar.
-     * @returns `true` if the rule was added to the {@link Grammar} instance; otherwise, {@code false} if a rule with
+     * @returns `true` if the rule was added to the {@link Grammar} instance; otherwise, `false` if a rule with
      * this name already existed in the grammar instance.
      */
     public defineRule(r: Rule): boolean {
@@ -734,7 +733,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
      *
      * This method only returns channel values for user-defined channels. All other channels, including the
      * predefined channels {@link Token.DEFAULT_CHANNEL} and {@link Token:HIDDEN_CHANNEL} along with
-     * any channel defined in code (e.g. in a {@code @members{}} block), are ignored.
+     * any channel defined in code (e.g. in a `@members{}` block), are ignored.
      *
      * @param channel The channel name.
      *
@@ -1090,7 +1089,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
     /**
      * Given a grammar type, what should be the default action scope?
-     * If I say @members in a COMBINED grammar, for example, the default scope should be "parser".
+     * If I say `@members` in a COMBINED grammar, for example, the default scope should be "parser".
      */
     public getDefaultActionScope(): string | null {
         switch (this.type) {

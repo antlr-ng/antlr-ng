@@ -8,6 +8,7 @@
 import { CharStream, CommonTokenStream } from "antlr4ng";
 import { describe, expect, it } from "vitest";
 
+import type { IToolParameters } from "../src/tool-parameters.js";
 import { Grammar, GrammarParserInterpreter, LexerGrammar } from "../src/tool/index.js";
 import { InterpreterTreeTextProvider } from "./InterpreterTreeTextProvider.js";
 import { ToolTestUtils } from "./ToolTestUtils.js";
@@ -52,7 +53,7 @@ describe("TestLookaheadTrees", () => {
 
     it("testAlts", () => {
         const lg = new LexerGrammar(lexerText);
-        lg.tool.process(lg, false);
+        lg.tool.process(lg, {} as IToolParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -61,7 +62,7 @@ describe("TestLookaheadTrees", () => {
             "  | ID LPAREN RPAREN\n" +
             "  ;\n",
             lg);
-        g.tool.process(g, false);
+        g.tool.process(g, {} as IToolParameters, false);
 
         const startRuleName = "s";
         const decision = 0;
@@ -71,7 +72,7 @@ describe("TestLookaheadTrees", () => {
 
     it("testAlts2", () => {
         const lg = new LexerGrammar(lexerText);
-        lg.tool.process(lg, false);
+        lg.tool.process(lg, {} as IToolParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -80,7 +81,7 @@ describe("TestLookaheadTrees", () => {
             "  | e BANG" +
             "  ;\n",
             lg);
-        g.tool.process(g, false);
+        g.tool.process(g, {} as IToolParameters, false);
 
         const startRuleName = "s";
         const decision = 1; // (...)* in e.
@@ -92,7 +93,7 @@ describe("TestLookaheadTrees", () => {
 
     it("testIncludeEOF", () => {
         const lg = new LexerGrammar(lexerText);
-        lg.tool.process(lg, false);
+        lg.tool.process(lg, {} as IToolParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -101,7 +102,7 @@ describe("TestLookaheadTrees", () => {
             "  | ID DOT ID EOF\n" +
             "  ;\n",
             lg);
-        g.tool.process(g, false);
+        g.tool.process(g, {} as IToolParameters, false);
 
         const decision = 0;
         testLookaheadTrees(lg, g, "a.b", "s", decision,
@@ -110,7 +111,7 @@ describe("TestLookaheadTrees", () => {
 
     it("testCallLeftRecursiveRule", () => {
         const lg = new LexerGrammar(lexerText);
-        lg.tool.process(lg, false);
+        lg.tool.process(lg, {} as IToolParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -125,7 +126,7 @@ describe("TestLookaheadTrees", () => {
             "  | INT\n" +
             "  ;\n",
             lg);
-        g.tool.process(g, false);
+        g.tool.process(g, {} as IToolParameters, false);
 
         let decision = 0;
         testLookaheadTrees(lg, g, "x;!", "s", decision,

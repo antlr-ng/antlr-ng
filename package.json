@@ -49,6 +49,8 @@
         "eslint-plugin-jsdoc": "50.6.3",
         "eslint-plugin-prefer-arrow": "1.2.3",
         "tsx": "4.19.3",
+        "typedoc": "0.28.1",
+        "typedoc-plugin-markdown": "4.5.2",
         "typescript": "5.7.3",
         "typescript-eslint": "8.24.1",
         "vitest": "3.0.6"
@@ -72,7 +74,8 @@
         "generate-testp4": "npm run generate-parser -- -o ./tests/generated ./tests/grammars/Psl.g4",
         "generate-parser": "antlr-ng -Dlanguage=TypeScript --exact-output-dir",
         "generate-unicode-data": "tsx ./build/generate-unicode-data.ts",
-        "generate-version-file": "tsx ./build/generate-version-file.ts"
+        "generate-version-file": "tsx ./build/generate-version-file.ts",
+        "generate-docs": "typedoc src/index.ts"
     },
     "exports": {
         "types": "./dist/src/index.d.ts",

@@ -7,6 +7,7 @@ import { ST } from "stringtemplate4ts";
 
 import { IssueCode, issueTypes, type IssueDetails } from "./Issues.js";
 
+/** The class that covers any of the tool messages (like errors) */
 export class ANTLRMessage {
     public readonly fileName: string;
     public readonly line: number = -1;
@@ -41,6 +42,11 @@ export class ANTLRMessage {
         }
     }
 
+    /**
+     * @param verbose Whether to include additional information in the message.
+     *
+     * @returns a template for the message, which can be used to render the final message.
+     */
     public getMessageTemplate(verbose: boolean): ST {
         const messageST = new ST(this.issue.message);
         messageST.impl!.name = IssueCode[this.issueCode];

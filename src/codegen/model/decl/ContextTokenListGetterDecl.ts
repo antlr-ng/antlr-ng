@@ -6,8 +6,8 @@
 import { ContextGetterDecl } from "./ContextGetterDecl.js";
 
 /**
- * {@code public List<Token> X() { }
- *  public Token X(int i) { }}
+ * `public List<Token> X() { }`
+ * `public Token X(int i) { }`
  */
 export class ContextTokenListGetterDecl extends ContextGetterDecl {
     public override getSignatureDecl(): ContextGetterDecl {

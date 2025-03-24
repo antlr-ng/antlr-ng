@@ -50,7 +50,7 @@ export class AttributeDict {
     /**
      * @param other The other {@link AttributeDict} to compare with.
      *
-     * @returns the set of keys that collide from {@code this} and {@code other}.
+     * @returns the set of keys that collide from `this` and `other`.
      */
     public intersection(other: AttributeDict | null): Set<string> {
         const result = new Set<string>();

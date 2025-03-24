@@ -7,7 +7,7 @@
 
 import type { IAlternative } from "../types.js";
 import type { IAttribute } from "./IAttribute.js";
-import { IAttributeResolver } from "./IAttributeResolver.js";
+import type { IAttributeResolver } from "./IAttributeResolver.js";
 import { LabelElementPair } from "./LabelElementPair.js";
 import { LabelType } from "./LabelType.js";
 import { Rule } from "./Rule.js";
@@ -36,12 +36,11 @@ export class Alternative implements IAttributeResolver, IAlternative {
     public readonly labelDefs = new Map<string, LabelElementPair[]>();
 
     /**
-     * Track all executable actions other than named actions like @init
-     *  and catch/finally (not in an alt). Also tracks predicates, rewrite actions.
-     *  We need to examine these actions before code generation so
-     *  that we can detect refs to $rule.attr etc...
+     * Track all executable actions other than named actions like `@init` and catch/finally (not in an alt).
+     * Also tracks predicates, rewrite actions. We need to examine these actions before code generation so
+     * that we can detect refs to $rule.attr etc...
      *
-     *  This tracks per alt
+     * This tracks per alt.
      */
     public actions = new Array<ActionAST>();
 

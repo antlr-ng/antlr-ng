@@ -43,7 +43,7 @@ export class Rule implements IAttributeResolver, IComparable, IRule {
     public readonly caseInsensitive: boolean;
 
     /**
-     * Map a name to an action for this rule like @init {...}. The code generator will use this to fill holes in the
+     * Map a name to an action for this rule like `@init {...}`. The code generator will use this to fill holes in the
      * rule template. I track the AST node for the action in case I need the line number for errors.
      */
     public namedActions = new Map<string, ActionAST>();
@@ -54,7 +54,7 @@ export class Rule implements IAttributeResolver, IComparable, IRule {
     public exceptions = new Array<GrammarAST>();
 
     /**
-     * Track all executable actions other than named actions like @init and catch/finally (not in an alt). Also tracks
+     * Track all executable actions other than named actions like `@init` and catch/finally (not in an alt). Also tracks
      * predicates, rewrite actions. We need to examine these actions before code generation so that we can detect
      * refs to $rule.attr etc...
      *

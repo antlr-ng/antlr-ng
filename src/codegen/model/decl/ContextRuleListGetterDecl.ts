@@ -7,8 +7,8 @@ import { ContextGetterDecl } from "./ContextGetterDecl.js";
 import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 
 /**
- * {@code public List<XContext> X() { }
- *  public XContext X(int i) { }}
+ * `public List<XContext> X() { }`
+ * `public XContext X(int i) { }`
  */
 export class ContextRuleListGetterDecl extends ContextGetterDecl {
     public ctxName: string;

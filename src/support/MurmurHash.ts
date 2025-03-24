@@ -21,7 +21,7 @@ export class MurmurHash {
     private constructor() { /**/ }
 
     /**
-     * Initialize the hash using the specified {@code seed}.
+     * Initialize the hash using the specified `seed`.
      *
      * @param seed the seed
      *
@@ -32,7 +32,7 @@ export class MurmurHash {
     }
 
     /**
-     * Update the intermediate hash value for the next input {@code value}.
+     * Update the intermediate hash value for the next input `value`.
      *
      * @param hash The intermediate hash value.
      * @param value the value to add to the current hash.

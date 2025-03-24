@@ -35,6 +35,10 @@ report(location, message, type) ::= "<location> : <type> <message.id> : <message
 wantsSingleLineMessage() ::= "true"
 `]]);
 
+/**
+ * A class to take care of individual {@link ANTLRMessage}s. It can notify registered listeners about incomming
+ * messages and ensures proper formatting of the messages.
+ */
 export class ErrorManager {
     private static readonly loadedFormats = new Map<string, STGroupString>();
 

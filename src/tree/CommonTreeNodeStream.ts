@@ -18,7 +18,7 @@ export class CommonTreeNodeStream {
     /** The {@link TreeIterator} we using. */
     private iterator: TreeIterator;
 
-    /** Tree {@code (nil A B C)} trees like flat {@code A B C} streams */
+    /** Tree `(nil A B C)` trees like flat `A B C` streams */
     private hasNilRoot = false;
 
     /** Tracks tree depth.  Level=0 means we're at root node level. */

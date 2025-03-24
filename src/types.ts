@@ -14,22 +14,35 @@ import type { GrammarParserInterpreter } from "./tool/GrammarParserInterpreter.j
 import type { LexerGrammar } from "./tool/LexerGrammar.js";
 import type { Rule } from "./tool/Rule.js";
 
+// The interfaces declared here are used to avoid circular dependencies between the classes in the tool package.
+// They are not meant to be used in the actual code.
+
+/** @internal */
 export interface IAlternative extends Alternative { }
 
+/** @internal */
 export interface IGrammar extends Grammar { }
 
+/** @internal */
 export interface IGrammarAST extends GrammarAST { }
 
+/** @internal */
 export interface IGrammarRootAST extends GrammarRootAST { }
 
+/** @internal */
 export interface ILexerGrammar extends LexerGrammar { }
 
+/** @internal */
 export interface ITool extends Tool { }
 
+/** @internal */
 export interface IRule extends Rule { }
 
+/** @internal */
 export interface IParserATNFactory extends ParserATNFactory { }
 
+/** @internal */
 export interface IGrammarParserInterpreter extends GrammarParserInterpreter { }
 
+/** @internal */
 export interface ICodeBlockForOuterMostAlt extends CodeBlockForOuterMostAlt { }

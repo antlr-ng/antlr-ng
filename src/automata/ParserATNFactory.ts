@@ -182,7 +182,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
      * ```
      *
      * where `(r)` is the start of rule `r` and the trailing `o` is not linked to from rule ref state directly (uses
-     * {@see RuleTransition.followState}).
+     * {@link RuleTransition.followState}).
      */
     public ruleRef(node: GrammarAST): IStatePair | null {
         const h = this._ruleRef(node);
@@ -241,7 +241,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
     /**
      * Build what amounts to an epsilon transition with an action.
      *  The action goes into ATN though it is ignored during prediction
-     *  if {@see ActionTransition.actionIndex actionIndex} `< 0`.
+     *  if {@link ActionTransition.actionIndex actionIndex} `< 0`.
      */
     public action(astOrString: ActionAST | string): IStatePair {
         if (astOrString instanceof ActionAST) {

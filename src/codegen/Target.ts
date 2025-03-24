@@ -556,7 +556,7 @@ export abstract class Target {
     }
 
     /**
-     * Escape the Unicode code point appropriately for this language and append the escaped value to {@code sb}.
+     * Escape the Unicode code point appropriately for this language and append the escaped value to `sb`.
      * It exists for flexibility and backward compatibility with external targets, The static method
      * {@link UnicodeEscapes.appendEscapedCodePoint(StringBuilder, int, String)} can be used as well
      * if default escaping method (Java) is used or language is officially supported
