@@ -7,6 +7,7 @@ import { ATNSerializer, CharStream, CommonTokenStream } from "antlr4ng";
 
 import { ANTLRv4Parser } from "./generated/ANTLRv4Parser.js";
 
+import { useFileSystem } from "stringtemplate4ts";
 import { ClassFactory } from "./ClassFactory.js";
 import { Constants } from "./Constants.js";
 import { UndefChecker } from "./UndefChecker.js";

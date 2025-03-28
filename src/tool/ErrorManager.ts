@@ -57,13 +57,13 @@ export class ErrorManager {
         this.formatOptions = formatOptions;
     }
 
-    public configure(msgFormat?: string, longMessages?: boolean, warningsAreErrors?: boolean) {
+    public configure(longMessages?: boolean, warningsAreErrors?: boolean) {
         this.errors = 0;
         this.warnings = 0;
         this.longMessages = longMessages ?? false;
         this.warningsAreErrors = warningsAreErrors ?? false;
 
-        this.loadFormat(msgFormat ?? "antlr");
+        this.loadFormat();
     }
 
     public formatWantsSingleLineMessage(): boolean {
