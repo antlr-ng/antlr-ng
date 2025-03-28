@@ -4,7 +4,6 @@
  */
 
 import { ATNSerializer, CharStream, CommonTokenStream } from "antlr4ng";
-import { basename, dirname, join } from "node:path";
 
 import { ANTLRv4Parser } from "./generated/ANTLRv4Parser.js";
 
@@ -26,6 +25,7 @@ import { SemanticPipeline } from "./semantics/SemanticPipeline.js";
 import { GrammarType } from "./support/GrammarType.js";
 import { LogManager } from "./support/LogManager.js";
 import { ParseTreeToASTConverter } from "./support/ParseTreeToASTConverter.js";
+import { basename, dirname } from "./support/fs-helpers.js";
 import { convertArrayToString } from "./support/helpers.js";
 import { fileSystem } from "./tool-parameters.js";
 import { BuildDependencyGenerator } from "./tool/BuildDependencyGenerator.js";
@@ -494,7 +494,7 @@ export class Tool implements ITool {
      */
     public getOutputFile(g: Grammar, fileName: string): string {
         const outputDir = this.getOutputDirectory(g.fileName);
-        const outputFile = join(outputDir, fileName);
+        const outputFile = outputDir + "/" + fileName;
 
         if (!fileSystem.existsSync(outputDir)) {
             fileSystem.mkdirSync(outputDir, { recursive: true });
@@ -508,13 +508,13 @@ export class Tool implements ITool {
         if (!fileSystem.existsSync(candidate)) {
             // Check the parent dir of input directory..
             const parentDir = dirname(g.fileName);
-            candidate = join(parentDir, fileName);
+            candidate = parentDir + "/" + fileName;
 
             // Try in lib dir.
             if (!fileSystem.existsSync(candidate)) {
                 const libDirectory = this.toolConfiguration.lib;
                 if (libDirectory) {
-                    candidate = join(libDirectory, fileName);
+                    candidate = libDirectory + "/" + fileName;
                     if (!fileSystem.existsSync(candidate)) {
                         return undefined;
                     }
