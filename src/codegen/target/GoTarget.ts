@@ -7,9 +7,9 @@
 
 // cspell: ignore gofmt ioutil wjkohnen
 
-import type { ST } from "stringtemplate4ts";
 import { GrammarType } from "../../support/GrammarType.js";
 import { Grammar } from "../../tool/Grammar.js";
+import type { ITargetGenerator } from "../ITargetGenerator.js";
 import { Target } from "../Target.js";
 
 export class GoTarget extends Target {
@@ -61,7 +61,7 @@ export class GoTarget extends Target {
         return result;
     })();
 
-    public override getRecognizerFileName(header: boolean): string {
+    public override getRecognizerFileName(targetGenerator: ITargetGenerator, header: boolean): string {
         const gen = this.getCodeGenerator();
         const g = gen.g!;
         let name: string;
@@ -92,7 +92,7 @@ export class GoTarget extends Target {
     /**
      * A given grammar T, return the listener name such as TListener.java, if we're using the Java target.
      */
-    public override getListenerFileName(header: boolean): string {
+    public override getListenerFileName(targetGenerator: ITargetGenerator, header: boolean): string {
         const gen = this.getCodeGenerator();
         const g = gen.g!;
 
@@ -102,7 +102,7 @@ export class GoTarget extends Target {
     /**
      * A given grammar T, return the visitor name such as TVisitor.java, if we're using the Java target.
      */
-    public override getVisitorFileName(header: boolean): string {
+    public override getVisitorFileName(targetGenerator: ITargetGenerator, header: boolean): string {
         const gen = this.getCodeGenerator();
         const g = gen.g!;
 
@@ -113,7 +113,7 @@ export class GoTarget extends Target {
      * A given grammar T, return a blank listener implementation such as TBaseListener.java, if we're using
      * the Java target.
      */
-    public override getBaseListenerFileName(header: boolean): string {
+    public override getBaseListenerFileName(targetGenerator: ITargetGenerator, header: boolean): string {
         const gen = this.getCodeGenerator();
         const g = gen.g!;
 
@@ -124,7 +124,7 @@ export class GoTarget extends Target {
      * A given grammar T, return a blank listener implementation such as TBaseListener.java, if we're using
      * the Java target.
      */
-    public override getBaseVisitorFileName(header: boolean): string {
+    public override getBaseVisitorFileName(targetGenerator: ITargetGenerator, header: boolean): string {
         const gen = this.getCodeGenerator();
         const g = gen.g!;
 
@@ -135,8 +135,8 @@ export class GoTarget extends Target {
         return GoTarget.reservedWords;
     }
 
-    public override genFile(g: Grammar | undefined, outputFileST: ST, fileName: string): void {
-        super.genFile(g, outputFileST, fileName);
+    public override genFile(g: Grammar | undefined, generatedText: string, fileName: string): void {
+        super.genFile(g, generatedText, fileName);
 
         // Criterion taken from gofmt.
         if (g && GoTarget.doGoFormat && !fileName.startsWith(".")

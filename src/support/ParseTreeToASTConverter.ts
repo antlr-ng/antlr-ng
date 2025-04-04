@@ -22,7 +22,6 @@ import {
 } from "../generated/ANTLRv4Parser.js";
 
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
-import type { Constructor } from "../misc/Utils.js";
 import { Grammar } from "../tool/Grammar.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { AltAST } from "../tool/ast/AltAST.js";
@@ -40,6 +39,7 @@ import { SetAST } from "../tool/ast/SetAST.js";
 import { StarBlockAST } from "../tool/ast/StarBlockAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
 import { GrammarType } from "./GrammarType.js";
+import type { Constructor } from "./helpers.js";
 
 /**
  * Converts a grammar spec parse tree into a grammar AST.

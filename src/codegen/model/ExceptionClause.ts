@@ -24,4 +24,8 @@ export class ExceptionClause extends SrcOp {
         this.catchArg = new Action(factory, catchArg);
         this.catchAction = new Action(factory, catchAction);
     }
+
+    public override get parameterFields(): string[] {
+        return ["catchArg", "catchAction"];
+    }
 }

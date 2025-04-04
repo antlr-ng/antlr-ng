@@ -6,8 +6,8 @@
  */
 
 import * as nodeFs from "fs";
-import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { program } from "commander";
 
@@ -17,9 +17,10 @@ import {
 } from "antlr4ng";
 
 import { memfs } from "memfs";
-import { parseBoolean } from "./cli-options.js";
-import { useFileSystem } from "../src/tool-parameters.js";
+import type { IndexedObject } from "src/support/helpers.js";
 import { copyFolderToMemFs, dirname } from "../src/support/fs-helpers.js";
+import { useFileSystem } from "../src/tool-parameters.js";
+import { parseBoolean } from "./cli-options.js";
 
 type Constructor<T extends Recognizer<ATNSimulator>> = abstract new (...args: unknown[]) => T;
 
@@ -29,7 +30,7 @@ interface ModuleType<T extends Recognizer<ATNSimulator>> {
 }
 
 /** Allows to test for instance members (like rule methods). */
-type IndexableParser = Parser & Record<string, unknown>;
+type IndexableParser = IndexedObject<Parser>;
 
 /** The common form of a rule method in a parser. */
 type RuleMethod = () => ParserRuleContext;
@@ -68,14 +69,6 @@ useFileSystem(fs);
 
 /**
  * Run a lexer/parser combo, optionally printing tree string. Optionally taking input file.
- *
- *  $ java org.antlr.v4.runtime.misc.TestRig GrammarName startRuleName
- *        [-tree]
- *        [-tokens] [-gui] [-ps file.ps]
- *        [-trace]
- *        [-diagnostics]
- *        [-SLL]
- *        [input-filename(s)]
  */
 export class TestRig {
     public static readonly LEXER_START_RULE_NAME = "tokens";

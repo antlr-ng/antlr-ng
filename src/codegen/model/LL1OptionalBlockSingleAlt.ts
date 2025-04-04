@@ -36,4 +36,8 @@ export class LL1OptionalBlockSingleAlt extends LL1Choice {
         this.expr = this.addCodeForLookaheadTempVar(look);
         this.followExpr = factory.getLL1Test(followLook, blkAST)!;
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "expr", "followExpr"];
+    }
 }

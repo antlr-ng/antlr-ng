@@ -30,4 +30,8 @@ export class PlusBlock extends Loop {
         this.error = this.getThrowNoViableAlt(factory, plusRoot);
         this.decision = loop.decision;
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "error"];
+    }
 }

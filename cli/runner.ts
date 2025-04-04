@@ -12,7 +12,7 @@ import { fileURLToPath } from "url";
 import { Tool } from "../src/Tool.js";
 import { copyFolderFromMemFs, copyFolderToMemFs, dirname } from "../src/support/fs-helpers.js";
 import { parseToolParameters, useFileSystem } from "../src/tool-parameters.js";
-import type { IToolConfiguration } from "../src/config/config.js";
+import { defineConfig, type IToolConfiguration } from "../src/config/config.js";
 
 // Start with a fresh virtual file system.
 const volume = new Volume();
@@ -21,27 +21,29 @@ useFileSystem(fs);
 
 /** Load arguments and perpare the tool configuration. */
 const parameters = parseToolParameters(process.argv.slice(2));
-let configuration: IToolConfiguration | undefined;
+let configuration: IToolConfiguration;
 
 if (parameters.config) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { default: config } = await import(parameters.config);
     configuration = config as IToolConfiguration;
 } else {
-    configuration = {
+    configuration = defineConfig({
         grammarFiles: parameters.grammarFiles,
         outputDirectory: parameters.outputDirectory,
         lib: parameters.lib,
-        atn: parameters.atn,
+        generationOptions: {
+            atn: parameters.atn,
+            generateListener: parameters.generateListener,
+            generateVisitor: parameters.generateVisitor,
+            package: parameters.package,
+            generateDependencies: parameters.generateDependencies,
+        },
         longMessages: parameters.longMessages,
-        generateListener: parameters.generateListener,
-        generateVisitor: parameters.generateVisitor,
-        package: parameters.package,
-        generateDependencies: parameters.generateDependencies,
         warningsAreErrors: parameters.warningsAreErrors,
         forceAtn: parameters.forceAtn,
         log: parameters.log,
-    };
+    });
 }
 
 // Provide the templates in the virtual file system.

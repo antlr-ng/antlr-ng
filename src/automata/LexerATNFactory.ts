@@ -49,11 +49,10 @@ export class LexerATNFactory extends ParserATNFactory {
 
     private readonly ruleCommands = new Array<string>();
 
-    public constructor(g: LexerGrammar, codeGenerator?: CodeGenerator) {
+    public constructor(g: LexerGrammar, codeGenerator: CodeGenerator) {
         super(g);
 
         // Use code generation to get correct language templates for lexer commands.
-        codeGenerator ??= new CodeGenerator(g);
         this.codegenTemplates = codeGenerator.templates;
     }
 

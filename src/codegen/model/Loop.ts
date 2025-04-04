@@ -28,4 +28,8 @@ export class Loop extends Choice {
     public addIterationOp(op: SrcOp): void {
         this.iteration.push(op);
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "iteration"];
+    }
 }

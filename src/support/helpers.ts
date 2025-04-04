@@ -13,6 +13,9 @@ import { Character } from "./Character.js";
 /** A generic constructor type. */
 export type Constructor<T = unknown> = new (...args: unknown[]) => T;
 
+/** Allows to access members of the given object using an index signature. */
+export type IndexedObject<T extends object> = T & Record<string, unknown>;
+
 /** A line/column pair. */
 export interface IPosition { line: number, column: number; }
 

@@ -19,4 +19,8 @@ export class Parser extends Recognizer {
         super(factory);
         this.file = file; // who contains us?
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "funcs"];
+    }
 }

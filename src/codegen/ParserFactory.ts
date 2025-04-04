@@ -7,7 +7,7 @@ import { DecisionState, IntervalSet, PlusLoopbackState, StarLoopEntryState } fro
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
-import type { IToolConfiguration } from "../config/config.js";
+import type { IGenerationOptions } from "../config/config.js";
 import { disjoint } from "../support/helpers.js";
 import { Alternative } from "../tool/Alternative.js";
 import type { Grammar } from "../tool/Grammar.js";
@@ -67,8 +67,8 @@ export class ParserFactory implements IOutputModelFactory {
         this.g = gen.g!;
     }
 
-    public parserFile(fileName: string, configuration: IToolConfiguration): ParserFile {
-        return new ParserFile(this, fileName, configuration);
+    public parserFile(fileName: string, options: IGenerationOptions): ParserFile {
+        return new ParserFile(this, fileName, options);
     }
 
     public parser(file: ParserFile): Parser {

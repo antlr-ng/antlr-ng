@@ -38,4 +38,8 @@ export class Lexer extends Recognizer {
             this.escapedModeNames.push(target.escapeIfNeeded(mode));
         }
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "actionFuncs"];
+    }
 }

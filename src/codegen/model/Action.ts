@@ -58,4 +58,7 @@ export class Action extends RuleElement {
         return this;
     }
 
+    public override get parameterFields(): string[] {
+        return ["chunks"];
+    }
 }
