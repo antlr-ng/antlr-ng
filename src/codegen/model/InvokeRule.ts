@@ -69,4 +69,8 @@ export class InvokeRule extends RuleElement implements ILabeledOp {
             rf.addContextDecl(ast.getAltLabel()!, d);
         }
     }
+
+    public override get parameterFields(): string[] {
+        return ["argExprsChunks"];
+    }
 }

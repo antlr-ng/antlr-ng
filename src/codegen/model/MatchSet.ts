@@ -32,4 +32,8 @@ export class MatchSet extends MatchToken {
         factory.getCurrentRuleFunction()?.addLocalDecl(d);
         this.capture = new CaptureNextTokenType(factory, this.expr.varName);
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "expr", "capture"];
+    }
 }

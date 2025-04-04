@@ -114,13 +114,18 @@ export class Interpreter {
         const parameters: IToolConfiguration = {
             grammarFiles: interpreterOptions.grammars,
             outputDirectory: ".",
-            generateListener: false,
-            generateVisitor: false,
-            atn: false,
+            generationOptions: {
+                generateListener: false,
+                generateVisitor: false,
+                atn: false,
+            },
+            language: "TypeScript",
             longMessages: false,
             warningsAreErrors: false,
             forceAtn: false,
             log: false,
+            lib: ".",
+            generators: [],
         };
 
         if (interpreterOptions.grammars.length === 1) {

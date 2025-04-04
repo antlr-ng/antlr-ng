@@ -353,4 +353,9 @@ export class RuleFunction extends OutputModelObject {
 
         return a;
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "code", "locals", "args", "ruleCtx", "altLabelCtxs", "namedActions",
+            "finallyAction", "exceptions", "postamble"];
+    }
 }

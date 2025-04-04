@@ -5,8 +5,6 @@
 
 import { Character } from "../support/Character.js";
 
-export type Constructor<T> = new (...args: unknown[]) => T;
-
 export class Utils {
     public static stripFileExtension(name: string): string {
         const lastDot = name.lastIndexOf(".");

@@ -45,4 +45,8 @@ export abstract class LL1Loop extends Choice {
 
         return expr;
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "loopExpr", "iteration"];
+    }
 }

@@ -1,0 +1,667 @@
+/*
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
+ */
+
+import { GeneratorHelper } from "src/codegen/GeneratorHelper.js";
+import type { IGenerationVariables, ITargetGenerator } from "src/codegen/ITargetGenerator.js";
+import type { Action } from "src/codegen/model/Action.js";
+import { AddToLabelList } from "src/codegen/model/AddToLabelList.js";
+import { AltBlock } from "src/codegen/model/AltBlock.js";
+import { CaptureNextToken } from "src/codegen/model/CaptureNextToken.js";
+import { CaptureNextTokenType } from "src/codegen/model/CaptureNextTokenType.js";
+import { ActionTemplate } from "src/codegen/model/chunk/ActionTemplate.js";
+import { ActionText } from "src/codegen/model/chunk/ActionText.js";
+import { ArgRef } from "src/codegen/model/chunk/ArgRef.js";
+import { LabelRef } from "src/codegen/model/chunk/LabelRef.js";
+import { ListLabelRef } from "src/codegen/model/chunk/ListLabelRef.js";
+import { LocalRef } from "src/codegen/model/chunk/LocalRef.js";
+import { NonLocalAttrRef } from "src/codegen/model/chunk/NonLocalAttrRef.js";
+import { QRetValueRef } from "src/codegen/model/chunk/QRetValueRef.js";
+import { RetValueRef } from "src/codegen/model/chunk/RetValueRef.js";
+import { RulePropertyRefCtx } from "src/codegen/model/chunk/RulePropertyRefCtx.js";
+import { RulePropertyRefParser } from "src/codegen/model/chunk/RulePropertyRefParser.js";
+import { RulePropertyRefStart } from "src/codegen/model/chunk/RulePropertyRefStart.js";
+import { RulePropertyRefStop } from "src/codegen/model/chunk/RulePropertyRefStop.js";
+import { RulePropertyRefText } from "src/codegen/model/chunk/RulePropertyRefText.js";
+import { SetAttr } from "src/codegen/model/chunk/SetAttr.js";
+import { SetNonLocalAttr } from "src/codegen/model/chunk/SetNonLocalAttr.js";
+import { ThisRulePropertyRefCtx } from "src/codegen/model/chunk/ThisRulePropertyRefCtx.js";
+import { ThisRulePropertyRefParser } from "src/codegen/model/chunk/ThisRulePropertyRefParser.js";
+import { ThisRulePropertyRefStart } from "src/codegen/model/chunk/ThisRulePropertyRefStart.js";
+import { ThisRulePropertyRefStop } from "src/codegen/model/chunk/ThisRulePropertyRefStop.js";
+import { ThisRulePropertyRefText } from "src/codegen/model/chunk/ThisRulePropertyRefText.js";
+import { TokenPropertyRefIndex } from "src/codegen/model/chunk/TokenPropertyRefIndex.js";
+import { TokenPropertyRefInt } from "src/codegen/model/chunk/TokenPropertyRefInt.js";
+import { TokenPropertyRefLine } from "src/codegen/model/chunk/TokenPropertyRefLine.js";
+import type { TokenPropertyRefPos } from "src/codegen/model/chunk/TokenPropertyRefPos.js";
+import { TokenPropertyRefText } from "src/codegen/model/chunk/TokenPropertyRefText.js";
+import { TokenPropertyRefType } from "src/codegen/model/chunk/TokenPropertyRefType.js";
+import { TokenRef } from "src/codegen/model/chunk/TokenRef.js";
+import type { CodeBlockForAlt } from "src/codegen/model/CodeBlockForAlt.js";
+import type { CodeBlockForOuterMostAlt } from "src/codegen/model/CodeBlockForOuterMostAlt.js";
+import { AltLabelStructDecl } from "src/codegen/model/decl/AltLabelStructDecl.js";
+import { AttributeDecl } from "src/codegen/model/decl/AttributeDecl.js";
+import { ContextRuleGetterDecl } from "src/codegen/model/decl/ContextRuleGetterDecl.js";
+import { ContextRuleListGetterDecl } from "src/codegen/model/decl/ContextRuleListGetterDecl.js";
+import { ContextRuleListIndexedGetterDecl } from "src/codegen/model/decl/ContextRuleListIndexedGetterDecl.js";
+import { ContextTokenGetterDecl } from "src/codegen/model/decl/ContextTokenGetterDecl.js";
+import { ContextTokenListGetterDecl } from "src/codegen/model/decl/ContextTokenListGetterDecl.js";
+import { ContextTokenListIndexedGetterDecl } from "src/codegen/model/decl/ContextTokenListIndexedGetterDecl.js";
+import { RuleContextDecl } from "src/codegen/model/decl/RuleContextDecl.js";
+import { RuleContextListDecl } from "src/codegen/model/decl/RuleContextListDecl.js";
+import { StructDecl } from "src/codegen/model/decl/StructDecl.js";
+import { TokenDecl } from "src/codegen/model/decl/TokenDecl.js";
+import { TokenListDecl } from "src/codegen/model/decl/TokenListDecl.js";
+import { TokenTypeDecl } from "src/codegen/model/decl/TokenTypeDecl.js";
+import { ExceptionClause } from "src/codegen/model/ExceptionClause.js";
+import { InvokeRule } from "src/codegen/model/InvokeRule.js";
+import type { LeftRecursiveRuleFunction } from "src/codegen/model/LeftRecursiveRuleFunction.js";
+import type { Lexer } from "src/codegen/model/Lexer.js";
+import { LexerFile } from "src/codegen/model/LexerFile.js";
+import { ListenerDispatchMethod } from "src/codegen/model/ListenerDispatchMethod.js";
+import type { ListenerFile } from "src/codegen/model/ListenerFile.js";
+import type { LL1AltBlock } from "src/codegen/model/LL1AltBlock.js";
+import { LL1OptionalBlock } from "src/codegen/model/LL1OptionalBlock.js";
+import { LL1OptionalBlockSingleAlt } from "src/codegen/model/LL1OptionalBlockSingleAlt.js";
+import { LL1PlusBlockSingleAlt } from "src/codegen/model/LL1PlusBlockSingleAlt.js";
+import { LL1StarBlockSingleAlt } from "src/codegen/model/LL1StarBlockSingleAlt.js";
+import { MatchNotSet } from "src/codegen/model/MatchNotSet.js";
+import { MatchSet } from "src/codegen/model/MatchSet.js";
+import { MatchToken } from "src/codegen/model/MatchToken.js";
+import { OptionalBlock } from "src/codegen/model/OptionalBlock.js";
+import type { Parser } from "src/codegen/model/Parser.js";
+import type { ParserFile } from "src/codegen/model/ParserFile.js";
+import { PlusBlock } from "src/codegen/model/PlusBlock.js";
+import type { RuleActionFunction } from "src/codegen/model/RuleActionFunction.js";
+import type { RuleFunction } from "src/codegen/model/RuleFunction.js";
+import type { RuleSempredFunction } from "src/codegen/model/RuleSempredFunction.js";
+import { SemPred } from "src/codegen/model/SemPred.js";
+import type { SerializedATN } from "src/codegen/model/SerializedATN.js";
+import { StarBlock } from "src/codegen/model/StarBlock.js";
+import { TestSetInline } from "src/codegen/model/TestSetInline.js";
+import { ThrowNoViableAlt } from "src/codegen/model/ThrowNoViableAlt.js";
+import { VisitorDispatchMethod } from "src/codegen/model/VisitorDispatchMethod.js";
+import type { VisitorFile } from "src/codegen/model/VisitorFile.js";
+import { Wildcard } from "src/codegen/model/Wildcard.js";
+
+export class TargetGeneratorTemplate implements ITargetGenerator {
+    private static readonly defaultValues: Record<string, string> = {
+        "bool": "false",
+        "int": "0",
+        "float": "0.0",
+        "string": "\"\"",
+    };
+
+    public readonly id = "generator.default.<language>";
+
+    public readonly language = "<human readable>";
+    public readonly languageSpecifiers = ["<long-identifier>", "<short-identiifer>"];
+
+    public readonly codeFileExtension = ".<extension>";
+
+    public readonly reservedWords = new Set([
+    ]);
+
+    public renderParserFile(parserFile: ParserFile, variables: IGenerationVariables, parser: string,
+        namedActions: Map<string, string>,
+        contextSuperClass: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderListenerFile(file: ListenerFile, variables: IGenerationVariables,
+        namedActions: Map<string, string>): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderVisitorFile(file: VisitorFile, variables: IGenerationVariables, namedActions: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderParser(parser: Parser, variables: IGenerationVariables, funcs: string, atn: string,
+        sempredFuncs: string, superClass: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRuleActionFunction(r: RuleActionFunction, variables: IGenerationVariables, actions: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRuleSempredFunction(r: RuleSempredFunction, variables: IGenerationVariables, actions: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRuleFunction(currentRule: RuleFunction, variables: IGenerationVariables, args: string,
+        code: string, locals: string, ruleCtx: string,
+        altLabelCtxs: string, namedActions: string, finallyAction: string, postamble: string,
+        exceptions: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLeftRecursiveRuleFunction(currentRule: LeftRecursiveRuleFunction, variables: IGenerationVariables,
+        args: string, code: string,
+        locals: string, ruleCtx: string, altLabelCtxs: string, namedActions: string, finallyAction: string,
+        postamble: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderCodeBlockForOuterMostAlt(currentOuterMostAltCodeBlock: CodeBlockForOuterMostAlt,
+        variables: IGenerationVariables, locals: string,
+        preamble: string, ops: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderCodeBlockForAlt(currentAltCodeBlock: CodeBlockForAlt, variables: IGenerationVariables,
+        locals: string, preamble: string,
+        ops: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLL1AltBlock(choice: LL1AltBlock, variables: IGenerationVariables, preamble: string,
+        alts: string, error: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLL1OptionalBlock(choice: LL1OptionalBlock, variables: IGenerationVariables, alts: string,
+        error: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLL1OptionalBlockSingleAlt(choice: LL1OptionalBlockSingleAlt, variables: IGenerationVariables,
+        expr: string, alts: string,
+        preamble: string, error: string, followExpr: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLL1StarBlockSingleAlt(choice: LL1StarBlockSingleAlt, variables: IGenerationVariables,
+        loopExpr: string, alts: string, preamble: string,
+        iteration: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLL1PlusBlockSingleAlt(choice: LL1PlusBlockSingleAlt, variables: IGenerationVariables,
+        loopExpr: string, alts: string, preamble: string,
+        iteration: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderAltBlock(choice: AltBlock, variables: IGenerationVariables, preamble: string, alts: string,
+        error: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderOptionalBlock(choice: OptionalBlock, variables: IGenerationVariables, alts: string,
+        error: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderStarBlock(choice: StarBlock, variables: IGenerationVariables, alts: string, sync: string,
+        iteration: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderPlusBlock(choice: PlusBlock, variables: IGenerationVariables, alts: string, error: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderThrowNoViableAlt(t: ThrowNoViableAlt, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTestSetInline(s: TestSetInline, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderInvokeRule(r: InvokeRule, variables: IGenerationVariables, argExprsChunks: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderMatchToken(m: MatchToken, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderMatchSet(m: MatchSet, variables: IGenerationVariables, expr: string, capture: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderMatchNotSet(m: MatchNotSet, variables: IGenerationVariables, expr: string, capture: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderWildcard(w: Wildcard, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderAction(a: Action, variables: IGenerationVariables, foo: string, chunks: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderArgAction(a: Action, variables: IGenerationVariables, chunks: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderSemPred(p: SemPred, variables: IGenerationVariables, chunks: string, failChunks: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderExceptionClause(e: ExceptionClause, variables: IGenerationVariables, catchArg: string,
+        catchAction: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLexerSkipCommand(): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLexerMoreCommand(): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLexerPopModeCommand(): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderActionText(t: ActionText, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderActionTemplate(t: ActionTemplate, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderArgRef(a: ArgRef, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLocalRef(a: LocalRef, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRetValueRef(a: RetValueRef, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderQRetValueRef(a: QRetValueRef, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenRef(t: TokenRef, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLabelRef(t: LabelRef, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderListLabelRef(t: ListLabelRef, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderSetAttr(s: SetAttr, variables: IGenerationVariables, rhsChunks: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenLabelType(): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderInputSymbolType(): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenPropertyRefText(t: TokenPropertyRefText, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenPropertyRefType(t: TokenPropertyRefType, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenPropertyRefLine(t: TokenPropertyRefLine, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenPropertyRefPos(t: TokenPropertyRefPos, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenPropertyRefChannel(t: TokenPropertyRefPos, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenPropertyRefIndex(t: TokenPropertyRefIndex, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenPropertyRefInt(t: TokenPropertyRefInt, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRulePropertyRefStart(r: RulePropertyRefStart, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRulePropertyRefStop(r: RulePropertyRefStop, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRulePropertyRefText(r: RulePropertyRefText, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRulePropertyRefCtx(r: RulePropertyRefCtx, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRulePropertyRefParser(r: RulePropertyRefParser, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderThisRulePropertyRefStart(r: ThisRulePropertyRefStart, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderThisRulePropertyRefStop(r: ThisRulePropertyRefStop, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderThisRulePropertyRefText(r: ThisRulePropertyRefText, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderThisRulePropertyRefCtx(r: ThisRulePropertyRefCtx, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderThisRulePropertyRefParser(r: ThisRulePropertyRefParser, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderNonLocalAttrRef(s: NonLocalAttrRef, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderSetNonLocalAttr(s: SetNonLocalAttr, variables: IGenerationVariables, rhsChunks: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderAddToLabelList(a: AddToLabelList, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenDecl(t: TokenDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenTypeDecl(t: TokenTypeDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderTokenListDecl(t: TokenListDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRuleContextDecl(r: RuleContextDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRuleContextListDecl(rdecl: RuleContextListDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderContextTokenGetterDecl(t: ContextTokenGetterDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderContextTokenListGetterDecl(t: ContextTokenListGetterDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderContextTokenListIndexedGetterDecl(t: ContextTokenListIndexedGetterDecl,
+        variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderContextRuleGetterDecl(r: ContextRuleGetterDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderContextRuleListGetterDecl(r: ContextRuleListGetterDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderContextRuleListIndexedGetterDecl(r: ContextRuleListIndexedGetterDecl,
+        variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLexerRuleContext(): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderRuleContextNameSuffix(): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderCaptureNextToken(d: CaptureNextToken, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderCaptureNextTokenType(d: CaptureNextTokenType, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderStructDecl(struct: StructDecl, variables: IGenerationVariables, ctorAttrs: string, attrs: string,
+        getters: string,
+        dispatchMethods: string, interfaces: string, extensionMembers: string, signatures: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderAltLabelStructDecl(struct: AltLabelStructDecl, variables: IGenerationVariables, attrs: string,
+        getters: string,
+        dispatchMethods: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderListenerDispatchMethod(method: ListenerDispatchMethod, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderVisitorDispatchMethod(method: VisitorDispatchMethod, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderAttributeDecl(d: AttributeDecl, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLexerFile(lexerFile: LexerFile, variables: IGenerationVariables, lexer: string,
+        namedActions: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderLexer(lexer: Lexer, variables: IGenerationVariables, atn: string, actionFuncs: string,
+        sempredFuncs: string, superClass: string): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+
+    public renderSerializedATN(model: SerializedATN, variables: IGenerationVariables): string {
+        const result: Array<string | undefined> = [];
+
+        return GeneratorHelper.formatLines(result, 0);
+    }
+}
