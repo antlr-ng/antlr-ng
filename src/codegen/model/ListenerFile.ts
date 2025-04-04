@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import type { IToolConfiguration } from "../../config/config.js";
 import { ModelElement } from "../../misc/ModelElement.js";
 import { OrderedHashMap } from "../../misc/OrderedHashMap.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
