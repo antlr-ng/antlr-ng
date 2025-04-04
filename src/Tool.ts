@@ -195,50 +195,52 @@ export class Tool implements ITool {
 
         // Make sure grammar is semantically correct (fill in grammar object).
         const sem = new SemanticPipeline(g);
-        sem.process();
+        for (const targetGenerator of this.toolConfiguration.generators) {
+            sem.process(targetGenerator);
 
-        if (this.errorManager.errors > prevErrors) {
-            return;
-        }
-
-        const codeGenerator = new CodeGenerator(g);
-
-        // Build atn from AST.
-        let factory: IATNFactory;
-        if (g.isLexer()) {
-            factory = new LexerATNFactory(g as LexerGrammar, codeGenerator);
-        } else {
-            factory = new ParserATNFactory(g);
-        }
-
-        g.atn = factory.createATN();
-        if (this.toolConfiguration.atn) {
-            this.exportATNDotFiles(g);
-        }
-
-        if (genCode && g.tool.getNumErrors() === 0 && this.toolConfiguration.generateInterpreterData) {
-            const interpFile = Tool.generateInterpreterData(g);
-            try {
-                const fileName = this.getOutputFile(g, g.name + ".interp");
-                fileSystem.writeFileSync(fileName, interpFile);
-            } catch (ioe) {
-                this.errorManager.toolError(IssueCode.CannotWriteFile, ioe);
+            if (this.errorManager.errors > prevErrors) {
+                return;
             }
-        }
 
-        // Perform grammar analysis on ATN: build decision DFAs.
-        const anal = new AnalysisPipeline(g);
-        anal.process();
+            const codeGenerator = new CodeGenerator(g, targetGenerator);
 
-        if (g.tool.getNumErrors() > prevErrors) {
-            return;
-        }
+            // Build atn from AST.
+            let factory: IATNFactory;
+            if (g.isLexer()) {
+                factory = new LexerATNFactory(g as LexerGrammar, codeGenerator);
+            } else {
+                factory = new ParserATNFactory(g);
+            }
 
-        // Generate code.
-        if (genCode) {
-            const gen = new CodeGenPipeline(g, codeGenerator, this.toolConfiguration.generateListener,
-                this.toolConfiguration.generateVisitor);
-            gen.process(this.toolConfiguration);
+            g.atn = factory.createATN();
+            if (this.toolConfiguration.generationOptions.atn) {
+                this.exportATNDotFiles(g);
+            }
+
+            if (genCode && g.tool.getNumErrors() === 0
+                && this.toolConfiguration.generationOptions.generateInterpreterData) {
+                const interpFile = Tool.generateInterpreterData(g);
+                try {
+                    const fileName = this.getOutputFile(g, g.name + ".interp");
+                    fileSystem.writeFileSync(fileName, interpFile);
+                } catch (ioe) {
+                    this.errorManager.toolError(IssueCode.CannotWriteFile, ioe);
+                }
+            }
+
+            // Perform grammar analysis on ATN: build decision DFAs.
+            const anal = new AnalysisPipeline(g);
+            anal.process();
+
+            if (g.tool.getNumErrors() > prevErrors) {
+                return;
+            }
+
+            // Generate code.
+            if (genCode) {
+                const gen = new CodeGenPipeline(g, codeGenerator, this.toolConfiguration.generationOptions);
+                gen.process();
+            }
         }
     }
 
@@ -567,12 +569,16 @@ export class Tool implements ITool {
         for (const t of sortedGrammars) {
             const g = this.createGrammar(t);
             g.fileName = t.fileName;
-            if (this.toolConfiguration.generateDependencies) {
-                const dep = new BuildDependencyGenerator(this, g);
-                console.log(dep.getDependencies().render());
-            } else {
-                if (this.errorManager.errors === 0) {
-                    this.process(g, this.toolConfiguration, true);
+
+            for (const targetGenerator of this.toolConfiguration.generators) {
+                if (this.toolConfiguration.generationOptions.generateDependencies) {
+                    const dep = new BuildDependencyGenerator(this, g, this.toolConfiguration.generationOptions,
+                        targetGenerator, this.toolConfiguration.lib);
+                    console.log(dep.getDependencies().render());
+                } else {
+                    if (this.errorManager.errors === 0) {
+                        this.process(g, this.toolConfiguration, true);
+                    }
                 }
             }
         }

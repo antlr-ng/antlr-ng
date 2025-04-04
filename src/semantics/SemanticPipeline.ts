@@ -9,11 +9,12 @@ import { Token } from "antlr4ng";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
+import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
 import { Constants } from "../Constants.js";
 import { LeftRecursiveRuleTransformer } from "../analysis/LeftRecursiveRuleTransformer.js";
 import { isTokenName } from "../support/helpers.js";
-import { IssueCode } from "../tool/Issues.js";
 import { Grammar } from "../tool/Grammar.js";
+import { IssueCode } from "../tool/Issues.js";
 import { LexerGrammar } from "../tool/LexerGrammar.js";
 import { Rule } from "../tool/Rule.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
@@ -44,7 +45,7 @@ export class SemanticPipeline {
     public constructor(private g: Grammar) {
     }
 
-    public process(): void {
+    public process(targetGenerator: ITargetGenerator): void {
         // Collect rule objects.
         const ruleCollector = new RuleCollector(this.g);
         ruleCollector.process(this.g.ast);
@@ -60,7 +61,7 @@ export class SemanticPipeline {
         // Transform left-recursive rules.
         prevErrors = this.g.tool.errorManager.errors;
         const transformer = new LeftRecursiveRuleTransformer(this.g.ast,
-            Array.from(ruleCollector.nameToRuleMap.values()), this.g);
+            Array.from(ruleCollector.nameToRuleMap.values()), this.g, targetGenerator);
         transformer.translateLeftRecursiveRules();
 
         // Don't continue if we got errors during left-recursion elimination.

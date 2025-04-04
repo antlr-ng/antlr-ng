@@ -3,8 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { Token } from "antlr4ng";
-import { AutoIndentWriter, ST, StringWriter, type IST, type STGroup } from "stringtemplate4ts";
+import { HashSet, OrderedHashSet, Token } from "antlr4ng";
+import { ST, type STGroup } from "stringtemplate4ts";
 
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
@@ -12,12 +12,14 @@ import { Grammar } from "../tool/Grammar.js";
 import { IssueCode } from "../tool/Issues.js";
 import { OutputModelObject } from "./model/OutputModelObject.js";
 import { OutputModelController } from "./OutputModelController.js";
-import { OutputModelWalker } from "./OutputModelWalker.js";
 import { ParserFactory } from "./ParserFactory.js";
 import { Target } from "./Target.js";
 
 // Possible targets:
+import type { IndexedObject } from "src/support/helpers.js";
+import type { IGenerationOptions } from "../config/config.js";
 import { fileSystem } from "../tool-parameters.js";
+import type { IGenerationVariables, ITargetGenerator, ITargetGeneratorCallables } from "./ITargetGenerator.js";
 import { CppTarget } from "./target/CppTarget.js";
 import { CSharpTarget } from "./target/CSharpTarget.js";
 import { DartTarget } from "./target/DartTarget.js";
@@ -28,7 +30,6 @@ import { PHPTarget } from "./target/PHPTarget.js";
 import { Python3Target } from "./target/Python3Target.js";
 import { SwiftTarget } from "./target/SwiftTarget.js";
 import { TypeScriptTarget } from "./target/TypeScriptTarget.js";
-import type { IToolConfiguration } from "../config/config.js";
 
 export const targetLanguages = [
     "Cpp", "CSharp", "Dart", "Go", "JavaScript", "Java", "PHP", "Python3", "Swift", "TypeScript"
@@ -60,9 +61,9 @@ export class CodeGenerator {
     public readonly language: SupportedLanguage;
 
     private readonly tool?: Tool;
-    private readonly lineWidth = 72;
 
-    public constructor(grammarOrLanguage: Grammar | SupportedLanguage) {
+    public constructor(grammarOrLanguage: Grammar | SupportedLanguage,
+        private readonly targetGenerator: ITargetGenerator) {
         this.g = grammarOrLanguage instanceof Grammar ? grammarOrLanguage : undefined;
         this.tool = this.g?.tool;
 
@@ -74,94 +75,100 @@ export class CodeGenerator {
         return this.target.templates;
     }
 
-    public generateLexer(toolConfiguration: IToolConfiguration, header?: boolean): IST {
+    public get forJava(): boolean {
+        return this.targetGenerator.language === "Java";
+    }
+
+    public generateLexer(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
-        header ??= false;
+        declaration ??= false;
 
-        return this.walk(this.createController(toolConfiguration.atn)
-            .buildLexerOutputModel(header, toolConfiguration), header);
+        return this.walk(this.createController(options.atn)
+            .buildLexerOutputModel(declaration, options), { declaration: declaration });
 
     }
 
-    public generateParser(toolConfiguration: IToolConfiguration, header?: boolean): IST {
+    public generateParser(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
-        header ??= false;
+        declaration ??= false;
 
-        return this.walk(this.createController().buildParserOutputModel(header, toolConfiguration), header);
+        return this.walk(this.createController().buildParserOutputModel(declaration, options),
+            { declaration: declaration });
     }
 
-    public generateListener(toolConfiguration: IToolConfiguration, header?: boolean): IST {
+    public generateListener(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
-        header ??= false;
+        declaration ??= false;
 
-        return this.walk(this.createController().buildListenerOutputModel(header, toolConfiguration), header);
+        return this.walk(this.createController().buildListenerOutputModel(declaration, options),
+            { declaration: declaration });
 
     }
 
-    public generateBaseListener(toolConfiguration: IToolConfiguration, header?: boolean): IST {
+    public generateBaseListener(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
-        header ??= false;
+        declaration ??= false;
 
-        return this.walk(this.createController().buildBaseListenerOutputModel(header, toolConfiguration), header);
+        return this.walk(this.createController().buildBaseListenerOutputModel(declaration, options.package),
+            { declaration: declaration });
     }
 
-    public generateVisitor(toolConfiguration: IToolConfiguration, header?: boolean): IST {
+    public generateVisitor(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
-        header ??= false;
+        declaration ??= false;
 
-        return this.walk(this.createController().buildVisitorOutputModel(header, toolConfiguration), header);
+        return this.walk(this.createController().buildVisitorOutputModel(declaration, options),
+            { declaration: declaration });
     }
 
-    public generateBaseVisitor(toolConfiguration: IToolConfiguration, header?: boolean): IST {
+    public generateBaseVisitor(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
-        header ??= false;
+        declaration ??= false;
 
-        return this.walk(this.createController().buildBaseVisitorOutputModel(header, toolConfiguration), header);
+        return this.walk(this.createController().buildBaseVisitorOutputModel(declaration, options),
+            { declaration: declaration });
     }
 
-    public writeRecognizer(outputFileST: IST, header: boolean): void {
-        this.target.genFile(this.g, outputFileST, this.getRecognizerFileName(header));
+    public writeRecognizer(generatedText: string, header: boolean): void {
+        this.target.genFile(this.g, generatedText, this.getRecognizerFileName(header));
     }
 
-    public writeListener(outputFileST: IST, header: boolean): void {
-        this.target.genFile(this.g, outputFileST, this.getListenerFileName(header));
+    public writeListener(generatedText: string, header: boolean): void {
+        this.target.genFile(this.g, generatedText, this.getListenerFileName(header));
     }
 
-    public writeBaseListener(outputFileST: IST, header: boolean): void {
-        this.target.genFile(this.g, outputFileST, this.getBaseListenerFileName(header));
+    public writeBaseListener(generatedText: string, header: boolean): void {
+        this.target.genFile(this.g, generatedText, this.getBaseListenerFileName(header));
     }
 
-    public writeVisitor(outputFileST: IST, header: boolean): void {
-        this.target.genFile(this.g, outputFileST, this.getVisitorFileName(header));
+    public writeVisitor(generatedText: string, header: boolean): void {
+        this.target.genFile(this.g, generatedText, this.getVisitorFileName(header));
     }
 
-    public writeBaseVisitor(outputFileST: IST, header: boolean): void {
-        this.target.genFile(this.g, outputFileST, this.getBaseVisitorFileName(header));
+    public writeBaseVisitor(generatedText: string, header: boolean): void {
+        this.target.genFile(this.g, generatedText, this.getBaseVisitorFileName(header));
     }
 
+    /**
+     * Writes out the vocab interchange file, used by antlr-ng.
+     * Does not change per target.
+     */
     public writeVocabFile(): void {
-        // write out the vocab interchange file; used by antlr,
-        // does not change per target
         const tokenVocabSerialization = this.getTokenVocabOutput();
         const fileName = this.getVocabFileName();
-        if (fileName !== undefined) {
-            this.target.genFile(this.g, tokenVocabSerialization, fileName);
+        if (fileName) {
+            this.target.genFile(this.g, tokenVocabSerialization.render(), fileName);
         }
     }
 
-    public write(code: IST, fileName: string): void {
+    public write(code: string, fileName: string): void {
         if (this.tool === undefined) {
             return;
         }
 
         try {
             fileName = this.tool.getOutputFile(this.g!, fileName);
-            const w = new StringWriter();
-            const wr = new AutoIndentWriter(w);
-            wr.setLineWidth(this.lineWidth);
-            code.write(wr);
-
-            fileSystem.writeFileSync(fileName, w.toString(), { encoding: "utf8" });
+            fileSystem.writeFileSync(fileName, code, { encoding: "utf8" });
         } catch (cause) {
             if (cause instanceof Error) {
                 this.g!.tool.errorManager.toolError(IssueCode.CannotWriteFile, cause, fileName);
@@ -174,31 +181,31 @@ export class CodeGenerator {
     public getRecognizerFileName(header?: boolean): string {
         header ??= false;
 
-        return this.target.getRecognizerFileName(header);
+        return this.target.getRecognizerFileName(this.targetGenerator, header);
     }
 
     public getListenerFileName(header?: boolean): string {
         header ??= false;
 
-        return this.target.getListenerFileName(header);
+        return this.target.getListenerFileName(this.targetGenerator, header);
     }
 
     public getVisitorFileName(header?: boolean): string {
         header ??= false;
 
-        return this.target.getVisitorFileName(header);
+        return this.target.getVisitorFileName(this.targetGenerator, header);
     }
 
     public getBaseListenerFileName(header?: boolean): string {
         header ??= false;
 
-        return this.target.getBaseListenerFileName(header);
+        return this.target.getBaseListenerFileName(this.targetGenerator, header);
     }
 
     public getBaseVisitorFileName(header?: boolean): string {
         header ??= false;
 
-        return this.target.getBaseVisitorFileName(header);
+        return this.target.getBaseVisitorFileName(this.targetGenerator, header);
     }
 
     /**
@@ -266,16 +273,6 @@ export class CodeGenerator {
         return controller;
     }
 
-    private walk(outputModel: OutputModelObject, header: boolean): IST {
-        if (this.tool === undefined) {
-            throw new Error("Tool is undefined.");
-        }
-
-        const walker = new OutputModelWalker(this.tool, this.templates);
-
-        return walker.walk(outputModel, header);
-    }
-
     private ensureAtnExists(): void {
         if (this.g === undefined) {
             throw new Error("Grammar is undefined.");
@@ -284,5 +281,59 @@ export class CodeGenerator {
         if (this.g.atn === undefined) {
             throw new Error("ATN is undefined.");
         }
+    }
+
+    private walk(model: OutputModelObject, variables: IGenerationVariables): string {
+        const omo = model as IndexedObject<OutputModelObject>;
+        const generateMethod = "render" + omo.constructor.name;
+        const parameterFields = omo.parameterFields;
+
+        // Walk over all parameter fields of the model object and render sub elements.
+        const parameters: Array<string | Record<string, string> | string[] | undefined> = [];
+        for (const fieldName of parameterFields) {
+            const o = omo[fieldName];
+            if (o === undefined) {
+                parameters.push(undefined);
+            } else if (o instanceof OutputModelObject) { // Single model object?
+                const renderedOMO = this.walk(o, { ...variables });
+                parameters.push(renderedOMO);
+            } else if (o instanceof Set || o instanceof HashSet || o instanceof OrderedHashSet || Array.isArray(o)) {
+                // All set and array elements are model objects.
+                const list: string[] = [];
+                for (const nestedOmo of o) {
+                    if (!nestedOmo) {
+                        continue;
+                    }
+
+                    const renderedElement = this.walk(nestedOmo as OutputModelObject, variables);
+                    list.push(renderedElement);
+                }
+
+                parameters.push(list);
+            } else if (o instanceof Map) {
+                const nestedOmoMap = o as Map<string, OutputModelObject>;
+                const renderedRecord: Record<string, string> = {};
+                for (const [key, value] of nestedOmoMap) {
+                    const renderedElement = this.walk(value, variables);
+                    renderedRecord[key] = renderedElement;
+                }
+                parameters.push(renderedRecord);
+            }
+        }
+
+        return this.callGeneratorMethod(generateMethod as keyof ITargetGeneratorCallables, omo, variables,
+            ...parameters);
+    }
+
+    private callGeneratorMethod<K extends keyof ITargetGeneratorCallables>(methodName: K,
+        ...args: unknown[]): string {
+
+        const method = this.targetGenerator[methodName] as ((...args: unknown[]) => string) | undefined;
+
+        if (method === undefined) {
+            throw new Error(`Method ${methodName} is not defined on this target generator.`);
+        }
+
+        return method.apply(this.targetGenerator, args) as string;
     }
 }

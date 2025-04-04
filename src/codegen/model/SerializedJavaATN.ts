@@ -7,6 +7,8 @@
 
 import { ATN, ATNSerializer } from "antlr4ng";
 
+import { Character } from "src/support/Character.js";
+import { GeneratorHelper } from "../GeneratorHelper.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { SerializedATN } from "./SerializedATN.js";
 
@@ -33,7 +35,7 @@ export class SerializedJavaATN extends SerializedATN {
             const segment = new Array<string>(segmentSize);
             this.segments[segmentIndex++] = segment;
             for (let j = 0; j < segmentSize; j++) {
-                segment[j] = target.encodeInt16AsCharEscape(data[i + j]);
+                segment[j] = this.encodeInt16AsCharEscape(data[i + j]);
             }
         }
 
@@ -94,4 +96,34 @@ export class SerializedJavaATN extends SerializedATN {
         // Return the filled portion of the array.
         return data16.slice(0, index);
     }
+
+    /** Assume 16-bit char. */
+    private encodeInt16AsCharEscape(v: number): string {
+        if (v < Character.MIN_VALUE || v > Character.MAX_VALUE) {
+            throw new Error(`Cannot encode the specified value: ${v}`);
+        }
+
+        const escaped = GeneratorHelper.defaultCharValueEscape.get(v);
+        if (escaped) {
+            return escaped;
+        }
+
+        switch (Character.getType(v)) {
+            case Character.CONTROL:
+            case Character.LINE_SEPARATOR:
+            case Character.PARAGRAPH_SEPARATOR: {
+                return `\\u${v.toString(16).padStart(4, "0")}`;;
+            }
+
+            default: {
+                if (v <= 127) {
+                    return String.fromCodePoint(v); // ASCII chars can be as-is, no encoding.
+                }
+
+                // Else we use hex encoding to ensure pure ascii chars generated.
+                return `\\u${v.toString(16).padStart(4, "0")}`;;
+            }
+        }
+    }
+
 }

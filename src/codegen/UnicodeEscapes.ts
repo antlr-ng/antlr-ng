@@ -5,7 +5,11 @@
 
 import { Character } from "../support/Character.js";
 
-/** Utility class to escape Unicode code points using various languages' syntax. */
+/**
+ * @deprecated Use the generator's escapeCodePoint method instead.
+ *
+ * Utility class to escape Unicode code points using various languages' syntax.
+ */
 export class UnicodeEscapes {
     public static escapeCodePoint(codePoint: number, language: string): string {
         let introducer = "\\u";

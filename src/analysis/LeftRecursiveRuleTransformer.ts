@@ -9,6 +9,7 @@
 
 import { CharStream, CommonToken, CommonTokenStream } from "antlr4ng";
 
+import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import type { SupportedLanguage } from "../codegen/CodeGenerator.js";
@@ -40,20 +41,15 @@ import { LeftRecursiveRuleAnalyzer } from "./LeftRecursiveRuleAnalyzer.js";
 
 /**
  * Remove left-recursive rule refs, add precedence args to recursive rule refs.
- *  Rewrite rule so we can create ATN.
+ * Rewrite rule so we can create ATN.
  *
- *  MODIFIES grammar AST in place.
+ * Modifies grammar AST in place.
  */
 export class LeftRecursiveRuleTransformer {
-    public ast: GrammarRootAST;
-    public rules: Rule[];
-    public g: Grammar;
-    public tool: Tool;
+    private tool: Tool;
 
-    public constructor(ast: GrammarRootAST, rules: Rule[], g: Grammar) {
-        this.ast = ast;
-        this.rules = rules;
-        this.g = g;
+    public constructor(private ast: GrammarRootAST, private rules: Rule[], private g: Grammar,
+        private targetGenerator: ITargetGenerator) {
         this.tool = g.tool;
     }
 
@@ -102,7 +98,8 @@ export class LeftRecursiveRuleTransformer {
         language: SupportedLanguage): boolean {
         const prevRuleAST = r.ast;
         const ruleName = prevRuleAST.children[0].getText();
-        const leftRecursiveRuleWalker = new LeftRecursiveRuleAnalyzer(prevRuleAST, this.tool, ruleName, language);
+        const leftRecursiveRuleWalker = new LeftRecursiveRuleAnalyzer(prevRuleAST, this.tool, ruleName, language,
+            this.targetGenerator);
 
         let isLeftRec: boolean;
         try {
@@ -120,8 +117,8 @@ export class LeftRecursiveRuleTransformer {
         const newRuleText = leftRecursiveRuleWalker.getArtificialOpPrecRule();
 
         // Now parse within the context of the grammar that originally created the AST we are transforming.
-        // This could be an imported grammar so we cannot just reference `this.g` because the role might come from
-        // the imported grammar and not the root grammar (this.g)
+        // This could be an imported grammar so we cannot just reference `this.g` because the rule might come from
+        // the imported grammar and not the root grammar (this.g).
         const t = this.parseArtificialRule(prevRuleAST.g, newRuleText);
         if (t === undefined) {
             return false;

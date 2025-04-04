@@ -56,4 +56,8 @@ export class SemPred extends Action {
                 true);
         }
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "failChunks"];
+    }
 }

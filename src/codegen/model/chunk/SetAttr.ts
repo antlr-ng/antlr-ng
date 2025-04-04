@@ -16,4 +16,8 @@ export class SetAttr extends SymbolRefChunk {
         super(ctx, name, escapedName);
         this.rhsChunks = rhsChunks;
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "rhsChunks"];
+    }
 }

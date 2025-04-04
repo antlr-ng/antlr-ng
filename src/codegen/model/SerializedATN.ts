@@ -14,6 +14,7 @@ import { OutputModelObject } from "./OutputModelObject.js";
  */
 export class SerializedATN extends OutputModelObject {
     public readonly serialized: number[];
+    public readonly grammarName: string;
 
     public constructor(factory: IOutputModelFactory, atn?: ATN) {
         super(factory);
@@ -21,5 +22,7 @@ export class SerializedATN extends OutputModelObject {
         if (atn) {
             this.serialized = ATNSerializer.getSerialized(atn);
         }
+
+        this.grammarName = factory.g.name;
     }
 }

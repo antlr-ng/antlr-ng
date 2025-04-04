@@ -7,7 +7,6 @@ import { ModelElement } from "../../misc/ModelElement.js";
 import { Rule } from "../../tool/Rule.js";
 import { CodeGenerator } from "../CodeGenerator.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
-import { JavaTarget } from "../target/JavaTarget.js";
 import { ActionChunk } from "./chunk/ActionChunk.js";
 import { ActionText } from "./chunk/ActionText.js";
 import { OutputModelObject } from "./OutputModelObject.js";
@@ -36,7 +35,7 @@ export abstract class Recognizer extends OutputModelObject {
     public rules: Rule[];
 
     @ModelElement
-    public superClass: ActionChunk;
+    public superClass?: ActionChunk;
 
     @ModelElement
     public atn: SerializedATN;
@@ -69,7 +68,7 @@ export abstract class Recognizer extends OutputModelObject {
 
         this.ruleNames = new Set(g.rules.keys());
         this.rules = Array.from(g.rules.values());
-        if (gen.target instanceof JavaTarget) {
+        if (gen.forJava) {
             this.atn = new SerializedJavaATN(factory, g.atn!);
         } else {
             this.atn = new SerializedATN(factory, g.atn);
@@ -116,5 +115,9 @@ export abstract class Recognizer extends OutputModelObject {
         } else {
             return gen.target.getTargetStringLiteralFromString(tokenName, true);
         }
+    }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "superClass", "atn", "sempredFuncs"];
     }
 }

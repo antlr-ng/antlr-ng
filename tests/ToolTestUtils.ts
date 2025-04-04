@@ -29,7 +29,7 @@ import { copyFolderFromMemFs, generateRandomFilename } from "../src/support/fs-h
 import { fileSystem } from "../src/tool-parameters.js";
 import { ToolListener } from "../src/tool/ToolListener.js";
 import { Tool, type Grammar, type LexerGrammar } from "../src/tool/index.js";
-import type { InterpreterTreeTextProvider } from "./InterpreterTreeTextProvider.js";
+import type { InterpreterTreeTextProvider } from "./support/InterpreterTreeTextProvider.js";
 import { ErrorQueue } from "./support/ErrorQueue.js";
 
 export type MethodKeys<T extends Parser> = {

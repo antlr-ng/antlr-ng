@@ -55,4 +55,8 @@ export class CodeBlock extends SrcOp {
     public addOps(ops: SrcOp[]): void {
         this.ops.push(...ops);
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "locals", "preamble", "ops"];
+    }
 }

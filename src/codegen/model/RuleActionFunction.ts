@@ -26,4 +26,8 @@ export class RuleActionFunction extends OutputModelObject {
         this.ruleIndex = r.index;
         this.ctxType = ctxType;
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "actions"];
+    }
 }

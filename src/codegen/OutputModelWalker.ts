@@ -10,6 +10,7 @@ import { isModelElement } from "../misc/ModelElement.js";
 import { Tool } from "../Tool.js";
 import { IssueCode } from "../tool/Issues.js";
 import { OutputModelObject } from "./model/OutputModelObject.js";
+import type { IndexedObject } from "src/support/helpers.js";
 
 /**
  * Convert an output model tree to template hierarchy by walking the output model. Each output model object has
@@ -36,7 +37,9 @@ export class OutputModelWalker {
         this.templates = templates;
     }
 
-    public walk(omo: OutputModelObject, header: boolean): IST {
+    public walk(model: OutputModelObject, header: boolean): IST {
+        const omo = model as IndexedObject<OutputModelObject>;
+
         // Create template for this output object.
         let templateName = omo.constructor.name;
         if (header) {
