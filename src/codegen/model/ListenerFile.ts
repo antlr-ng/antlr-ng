@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import type { IToolConfiguration } from "../../config/config.js";
 import { ModelElement } from "../../misc/ModelElement.js";
 import { OrderedHashMap } from "../../misc/OrderedHashMap.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
@@ -17,7 +16,6 @@ import { OutputFile } from "./OutputFile.js";
 export class ListenerFile extends OutputFile {
     // These fields are used in some code generation templates:
 
-    public genPackage?: string;
     public accessLevel?: string;
     public exportMacro?: string;
     public grammarName: string;
@@ -33,12 +31,12 @@ export class ListenerFile extends OutputFile {
     public listenerLabelRuleNames = new OrderedHashMap<string, string>();
 
     @ModelElement
-    public header: Action;
+    public header?: Action;
 
     @ModelElement
     public namedActions: Map<string, Action>;
 
-    public constructor(factory: IOutputModelFactory, fileName: string, configuration: IToolConfiguration) {
+    public constructor(factory: IOutputModelFactory, fileName: string, public genPackage?: string) {
         super(factory, fileName);
 
         const g = factory.g;
@@ -66,8 +64,11 @@ export class ListenerFile extends OutputFile {
             this.header = new Action(factory, ast);
         }
 
-        this.genPackage = configuration.package;
         this.accessLevel = g.getOptionString("accessLevel");
         this.exportMacro = g.getOptionString("exportMacro");
+    }
+
+    public override get parameterFields(): string[] {
+        return ["header", "namedActions"];
     }
 }

@@ -13,10 +13,10 @@ import {
     StarLoopbackState, Token, WildcardTransition
 } from "antlr4ng";
 
+import type { Constructor } from "src/support/helpers.js";
 import { ClassFactory } from "../ClassFactory.js";
 import { Constants } from "../Constants.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
-import type { Constructor } from "../misc/Utils.js";
 import { UseDefAnalyzer } from "../semantics/UseDefAnalyzer.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { AltAST } from "../tool/ast/AltAST.js";

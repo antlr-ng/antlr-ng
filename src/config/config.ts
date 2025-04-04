@@ -3,23 +3,33 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/** Defines the configuration structure for a target generator. */
-export interface ITargetGenerator {
-    /** The name of the generator. */
-    name: string;
+import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
 
-    /** The target language for the generator. */
-    language: string;
+/** Options which control the output of code and support files. */
+export interface IGenerationOptions {
+    /** Generate augmented transition network diagrams. (default: false) */
+    atn?: boolean,
 
-    /** Allows to alter a grammar text before it is processed by antlr-ng. */
-    inputFilter?: (grammar: string) => string;
+    /** Generate a parse tree listener (default: false). */
+    generateListener?: boolean,
 
-    /**
-     * Allows to alter the output of antlr-ng before it is processed by the generator
-     * (e.g. to remove unwanted parts). This is called once per generated file, right before it is written to
-     * the file system.
-     */
-    outputFilter?: (code: string) => string;
+    /** Generate a parse tree visitor (default: false). */
+    generateVisitor?: boolean,
+
+    /** Generate an interpreter data file (*.interp, default: false). */
+    generateInterpreterData?: boolean;
+
+    /** Set this to true to generate a declaration file (header file etc.). */
+    generateDeclarationFile?: boolean,
+
+    generateBaseListener?: boolean,
+    generateBaseVisitor?: boolean,
+
+    /** Specify a package/namespace for the generated code. */
+    package?: string,
+
+    /** Generate a diagram of grammar dependencies. (default: false). */
+    generateDependencies?: boolean,
 }
 
 /** A configuration for the antlr-ng tool. */
@@ -35,7 +45,7 @@ export interface IToolConfiguration {
      *
      * The target programming language for the generated files.
      */
-    language?: string;
+    language: string;
 
     /** The output directory for the generated files. Relative paths are resolved to the current working directory. */
     outputDirectory: string,
@@ -45,40 +55,24 @@ export interface IToolConfiguration {
      *
      * Specify location of grammars, tokens files. Relative paths are resolved to the current working directory.
      */
-    lib?: string,
-
-    /** Generate rule augmented transition network diagrams. (default: false) */
-    atn?: boolean,
+    lib: string,
 
     /** Show exception details when available for errors and warnings. (default: false) */
-    longMessages?: boolean;
-
-    /** Generate a parse tree listener (default: false). */
-    generateListener?: boolean,
-
-    /** Generate a parse tree visitor (default: false). */
-    generateVisitor?: boolean,
-
-    /** Generate an interpreter data file (*.interp, default: false). */
-    generateInterpreterData?: boolean;
-
-    /** Specify a package/namespace for the generated code. */
-    package?: string,
-
-    /** Generate a diagram of grammar dependencies. (default: false). */
-    generateDependencies?: boolean,
+    longMessages: boolean;
 
     /** Treat warnings as errors. (default: false) */
-    warningsAreErrors?: boolean,
+    warningsAreErrors: boolean,
 
     /** Use the ATN simulator for all predictions. (default: false) */
-    forceAtn?: boolean,
+    forceAtn: boolean,
 
     /** Dump lots of logging info to antlrng-{timestamp}.log. (default: false) */
-    log?: boolean,
+    log: boolean,
 
-    /** Not used yet. This field defines the configuration of output generators. */
-    generators?: ITargetGenerator[],
+    /** This field defines the configuration of output generators. */
+    generators: ITargetGenerator[],
+
+    generationOptions: IGenerationOptions;
 }
 
 /**
@@ -88,22 +82,28 @@ export interface IToolConfiguration {
  *
  * @returns The final configuration.
  */
-export const defineConfig = (config: IToolConfiguration): Required<IToolConfiguration> => {
+export const defineConfig = (config: Partial<IToolConfiguration>): IToolConfiguration => {
+    const options = config.generationOptions ?? {};
+    options.atn ??= false;
+    options.generateListener ??= false;
+    options.generateVisitor ??= false;
+    options.generateInterpreterData ??= false;
+    options.package ??= "";
+    options.generateDependencies ??= false;
+    options.generateDeclarationFile ??= false;
+    options.generateBaseListener ??= false;
+    options.generateBaseVisitor ??= false;
+
     return {
-        grammarFiles: config.grammarFiles,
+        grammarFiles: config.grammarFiles ?? [],
         language: config.language ?? "TypeScript",
-        outputDirectory: config.outputDirectory,
-        lib: config.lib ?? "",
-        atn: config.atn ?? false,
+        outputDirectory: config.outputDirectory ?? ".",
+        lib: config.lib ?? ".",
         longMessages: config.longMessages ?? false,
-        generateListener: config.generateListener ?? false,
-        generateVisitor: config.generateVisitor ?? false,
-        generateInterpreterData: config.generateInterpreterData ?? false,
-        package: config.package ?? "",
-        generateDependencies: config.generateDependencies ?? false,
         warningsAreErrors: config.warningsAreErrors ?? false,
         forceAtn: config.forceAtn ?? false,
         log: config.log ?? false,
         generators: config.generators ?? [],
+        generationOptions: options,
     };
 };

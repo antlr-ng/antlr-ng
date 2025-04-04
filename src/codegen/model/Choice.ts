@@ -84,4 +84,8 @@ export abstract class Choice extends RuleElement {
     public getThrowNoViableAlt(factory: IOutputModelFactory, blkAST: GrammarAST): ThrowNoViableAlt {
         return new ThrowNoViableAlt(factory, blkAST);
     }
+
+    public override get parameterFields(): string[] {
+        return ["alts", "preamble"];
+    }
 }

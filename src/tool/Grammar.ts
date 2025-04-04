@@ -22,12 +22,13 @@ import { targetLanguages, type SupportedLanguage } from "../codegen/CodeGenerato
 import { Constants } from "../Constants.js";
 
 import { CharSupport } from "../misc/CharSupport.js";
-import { Utils, type Constructor } from "../misc/Utils.js";
 
 import { TokenVocabParser } from "../parse/TokenVocabParser.js";
 import { GrammarType } from "../support/GrammarType.js";
 import type { IGrammar, ITool } from "../types.js";
 
+import { Utils } from "src/misc/Utils.js";
+import type { Constructor } from "src/support/helpers.js";
 import { basename } from "../support/fs-helpers.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import type { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";

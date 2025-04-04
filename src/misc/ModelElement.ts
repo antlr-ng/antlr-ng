@@ -31,5 +31,7 @@ export const isModelElement = (instance: unknown, fieldName: string | symbol): b
         [modelElementSymbol]?: Set<string | symbol>;
     };
 
+    //const symbol = constructor[modelElementSymbol];
+
     return constructor[modelElementSymbol]?.has(fieldName) ?? false;
 };

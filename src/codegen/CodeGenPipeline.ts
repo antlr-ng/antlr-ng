@@ -3,113 +3,110 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import type { IST } from "stringtemplate4ts";
-
-import type { IToolConfiguration } from "../config/config.js";
+import type { IGenerationOptions } from "../config/config.js";
 import { Grammar } from "../tool/Grammar.js";
 import { CodeGenerator } from "./CodeGenerator.js";
 
 export class CodeGenPipeline {
-    protected readonly g: Grammar;
-    protected readonly gen: CodeGenerator;
+    private readonly g: Grammar;
+    private readonly codeGenerator: CodeGenerator;
 
-    public constructor(g: Grammar, gen: CodeGenerator, private generateListener?: boolean,
-        private generateVisitor?: boolean) {
+    public constructor(g: Grammar, gen: CodeGenerator, private options: IGenerationOptions) {
         this.g = g;
-        this.gen = gen;
+        this.codeGenerator = gen;
     }
 
-    public process(configuration: IToolConfiguration): void {
+    public process(): void {
         // All templates are generated in memory to report the most complete error information possible, but actually
         // writing output files stops after the first error is reported.
         const errorCount = this.g.tool.errorManager.errors;
 
         if (this.g.isLexer()) {
-            if (this.gen.target.needsHeader()) {
-                const lexer = this.gen.generateLexer(configuration, true); // Header file if needed.
+            if (this.options.generateDeclarationFile) {
+                const lexer = this.codeGenerator.generateLexer(this.options, true); // Header file if needed.
                 if (this.g.tool.errorManager.errors === errorCount) {
-                    this.writeRecognizer(lexer, this.gen, true);
+                    this.writeRecognizer(lexer, this.codeGenerator, true);
                 }
             }
 
-            const lexer = this.gen.generateLexer(configuration, false);
+            const lexer = this.codeGenerator.generateLexer(this.options, false);
             if (this.g.tool.errorManager.errors === errorCount) {
-                this.writeRecognizer(lexer, this.gen, false);
+                this.writeRecognizer(lexer, this.codeGenerator, false);
             }
         } else {
-            if (this.gen.target.needsHeader()) {
-                const parser = this.gen.generateParser(configuration, true);
+            if (this.options.generateDeclarationFile) {
+                const parser = this.codeGenerator.generateParser(this.options, true);
                 if (this.g.tool.errorManager.errors === errorCount) {
-                    this.writeRecognizer(parser, this.gen, true);
+                    this.writeRecognizer(parser, this.codeGenerator, true);
                 }
             }
 
-            const parser = this.gen.generateParser(configuration, false);
+            const parser = this.codeGenerator.generateParser(this.options, false);
             if (this.g.tool.errorManager.errors === errorCount) {
-                this.writeRecognizer(parser, this.gen, false);
+                this.writeRecognizer(parser, this.codeGenerator, false);
             }
 
-            if (this.generateListener) {
-                if (this.gen.target.needsHeader()) {
-                    const listener = this.gen.generateListener(configuration, true);
+            if (this.options.generateListener) {
+                if (this.options.generateDeclarationFile) {
+                    const listener = this.codeGenerator.generateListener(this.options, true);
                     if (this.g.tool.errorManager.errors === errorCount) {
-                        this.gen.writeListener(listener, true);
+                        this.codeGenerator.writeListener(listener, true);
                     }
                 }
 
-                const listener = this.gen.generateListener(configuration, false);
+                const listener = this.codeGenerator.generateListener(this.options, false);
                 if (this.g.tool.errorManager.errors === errorCount) {
-                    this.gen.writeListener(listener, false);
+                    this.codeGenerator.writeListener(listener, false);
                 }
 
-                if (this.gen.target.needsHeader()) {
-                    const baseListener = this.gen.generateBaseListener(configuration, true);
+                if (this.options.generateDeclarationFile) {
+                    const baseListener = this.codeGenerator.generateBaseListener(this.options, true);
                     if (this.g.tool.errorManager.errors === errorCount) {
-                        this.gen.writeBaseListener(baseListener, true);
+                        this.codeGenerator.writeBaseListener(baseListener, true);
                     }
                 }
 
-                if (this.gen.target.wantsBaseListener()) {
-                    const baseListener = this.gen.generateBaseListener(configuration, false);
+                if (this.options.generateBaseListener) {
+                    const baseListener = this.codeGenerator.generateBaseListener(this.options, false);
                     if (this.g.tool.errorManager.errors === errorCount) {
-                        this.gen.writeBaseListener(baseListener, false);
+                        this.codeGenerator.writeBaseListener(baseListener, false);
                     }
                 }
             }
 
-            if (this.generateVisitor) {
-                if (this.gen.target.needsHeader()) {
-                    const visitor = this.gen.generateVisitor(configuration, true);
+            if (this.options.generateVisitor) {
+                if (this.options.generateDeclarationFile) {
+                    const visitor = this.codeGenerator.generateVisitor(this.options, true);
                     if (this.g.tool.errorManager.errors === errorCount) {
-                        this.gen.writeVisitor(visitor, true);
+                        this.codeGenerator.writeVisitor(visitor, true);
                     }
                 }
 
-                const visitor = this.gen.generateVisitor(configuration, false);
+                const visitor = this.codeGenerator.generateVisitor(this.options, false);
                 if (this.g.tool.errorManager.errors === errorCount) {
-                    this.gen.writeVisitor(visitor, false);
+                    this.codeGenerator.writeVisitor(visitor, false);
                 }
 
-                if (this.gen.target.needsHeader()) {
-                    const baseVisitor = this.gen.generateBaseVisitor(configuration, true);
+                if (this.options.generateDeclarationFile) {
+                    const baseVisitor = this.codeGenerator.generateBaseVisitor(this.options, true);
                     if (this.g.tool.errorManager.errors === errorCount) {
-                        this.gen.writeBaseVisitor(baseVisitor, true);
+                        this.codeGenerator.writeBaseVisitor(baseVisitor, true);
                     }
                 }
 
-                if (this.gen.target.wantsBaseVisitor()) {
-                    const baseVisitor = this.gen.generateBaseVisitor(configuration, false);
+                if (this.options.generateBaseVisitor) {
+                    const baseVisitor = this.codeGenerator.generateBaseVisitor(this.options, false);
                     if (this.g.tool.errorManager.errors === errorCount) {
-                        this.gen.writeBaseVisitor(baseVisitor, false);
+                        this.codeGenerator.writeBaseVisitor(baseVisitor, false);
                     }
                 }
             }
         }
 
-        this.gen.writeVocabFile();
+        this.codeGenerator.writeVocabFile();
     }
 
-    protected writeRecognizer(template: IST, gen: CodeGenerator, header: boolean): void {
-        gen.writeRecognizer(template, header);
+    protected writeRecognizer(generatedText: string, gen: CodeGenerator, header: boolean): void {
+        gen.writeRecognizer(generatedText, header);
     }
 }

@@ -22,4 +22,8 @@ export abstract class LL1Choice extends Choice {
         alts: CodeBlockForAlt[]) {
         super(factory, blkAST, alts);
     }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "error"];
+    }
 }

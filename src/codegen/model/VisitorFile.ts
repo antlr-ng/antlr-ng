@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import type { IToolConfiguration } from "../../config/config.js";
+import type { IGenerationOptions } from "../../config/config.js";
 import { ModelElement } from "../../misc/ModelElement.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
@@ -31,7 +31,7 @@ export class VisitorFile extends OutputFile {
     @ModelElement
     public namedActions: Map<string, Action>;
 
-    public constructor(factory: IOutputModelFactory, fileName: string, configuration: IToolConfiguration) {
+    public constructor(factory: IOutputModelFactory, fileName: string, options: IGenerationOptions) {
         super(factory, fileName);
 
         const g = factory.g;
@@ -59,8 +59,12 @@ export class VisitorFile extends OutputFile {
             this.header = new Action(factory, ast);
         }
 
-        this.genPackage = configuration.package;
+        this.genPackage = options.package;
         this.accessLevel = g.getOptionString("accessLevel");
         this.exportMacro = g.getOptionString("exportMacro");
+    }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "header", "namedActions"];
     }
 }

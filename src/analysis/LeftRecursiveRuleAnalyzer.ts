@@ -8,6 +8,7 @@
 import { CommonToken, IntervalSet, Token, type TokenStream } from "antlr4ng";
 import { STGroupFile, type STGroup } from "stringtemplate4ts";
 
+import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { CodeGenerator, type SupportedLanguage } from "../codegen/CodeGenerator.js";
@@ -54,7 +55,8 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
 
     public altAssociativity = new Map<number, Associativity>();
 
-    public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage) {
+    public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage,
+        targetGenerator: ITargetGenerator) {
         super(new CommonTreeNodeStream(ruleAST),
             tool.errorManager);
         this.tool = tool;
@@ -63,7 +65,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         this.tokenStream = ruleAST.g.tokenStream;
 
         // use codegen to get correct language templates; that's it though
-        this.codegenTemplates = new CodeGenerator(language).templates;
+        this.codegenTemplates = new CodeGenerator(language, targetGenerator).templates;
     }
 
     /**

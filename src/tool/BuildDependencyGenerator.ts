@@ -3,8 +3,10 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { STGroupFile, type STGroup, type IST } from "stringtemplate4ts";
+import { STGroupFile, type IST, type STGroup } from "stringtemplate4ts";
 
+import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
+import type { IGenerationOptions } from "src/config/config.js";
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { CodeGenerator } from "../codegen/CodeGenerator.js";
@@ -54,11 +56,11 @@ export class BuildDependencyGenerator {
     protected generator: CodeGenerator;
     protected templates?: STGroup;
 
-    public constructor(tool: Tool, g: Grammar, private libDirectory?: string, private generateListeners?: boolean,
-        private generateVisitors?: boolean) {
+    public constructor(tool: Tool, g: Grammar, private options: IGenerationOptions, targetGenerator: ITargetGenerator,
+        private libDir?: string) {
         this.tool = tool;
         this.g = g;
-        this.generator = new CodeGenerator(g);
+        this.generator = new CodeGenerator(g, targetGenerator);
     }
 
     /**
@@ -104,7 +106,7 @@ export class BuildDependencyGenerator {
             }
         }
 
-        if (this.generateListeners ?? true) {
+        if (this.options.generateListener ?? true) {
             // Add generated listener, e.g., TListener.java.
             if (this.generator.target.needsHeader()) {
                 files.push(this.getOutputFile(this.generator.getListenerFileName(true)));
@@ -118,7 +120,7 @@ export class BuildDependencyGenerator {
             files.push(this.getOutputFile(this.generator.getBaseListenerFileName(false)));
         }
 
-        if (this.generateVisitors) {
+        if (this.options.generateVisitor) {
             // Add generated visitor, e.g. TVisitor.java.
             if (this.generator.target.needsHeader()) {
                 files.push(this.getOutputFile(this.generator.getVisitorFileName(true)));
@@ -165,7 +167,7 @@ export class BuildDependencyGenerator {
 
         // Handle imported grammars.
         const imports = this.g.getAllImportedGrammars();
-        const libDirectory = this.libDirectory ?? ".";
+        const libDirectory = this.libDir ?? ".";
         for (const g of imports) {
             const fileName = this.groomQualifiedFileName(libDirectory, g.fileName);
             files.push(new URL(fileName));
@@ -188,7 +190,7 @@ export class BuildDependencyGenerator {
         if (tokenVocab !== undefined) {
             const fileName = tokenVocab + Constants.VocabFileExtension;
             let vocabFile: URL;
-            const libDirectory = this.libDirectory ?? ".";
+            const libDirectory = this.libDir ?? ".";
             if (libDirectory === ".") {
                 vocabFile = new URL(fileName);
             } else {

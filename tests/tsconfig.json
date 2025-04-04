@@ -20,6 +20,7 @@
         "**/*.ts",
         "../src/**/*.ts",
         "../jest.config.ts",
+        "../src/default-target-generators/TargetGenerator.ts.template",
     ],
     "exclude": [
         "node_modules",

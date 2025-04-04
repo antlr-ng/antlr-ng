@@ -9,7 +9,7 @@
 
 import { RuntimeMetaData, Token } from "antlr4ng";
 import {
-    NumberRenderer, STGroup, STGroupFile, StringRenderer, type IST, type STErrorListener, type STMessage
+    NumberRenderer, STGroup, STGroupFile, StringRenderer, type STErrorListener, type STMessage
 } from "stringtemplate4ts";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
@@ -22,6 +22,7 @@ import { Rule } from "../tool/Rule.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { antlrVersion } from "../version.js";
 import { CodeGenerator } from "./CodeGenerator.js";
+import type { ITargetGenerator } from "./ITargetGenerator.js";
 import { UnicodeEscapes } from "./UnicodeEscapes.js";
 import { RuleFunction } from "./model/RuleFunction.js";
 
@@ -42,7 +43,7 @@ export abstract class Target {
 
     private static readonly languageTemplates = new Map<string, STGroup>();
 
-    public constructor(protected gen: CodeGenerator) {
+    public constructor(private gen: CodeGenerator) {
     }
 
     protected static addEscapedChar(map: Map<Character, string>, key: number, representation?: number): void {
@@ -266,39 +267,6 @@ export abstract class Target {
         return result;
     }
 
-    /** Assume 16-bit char. */
-    public encodeInt16AsCharEscape(v: number): string {
-        if (v < Character.MIN_VALUE || v > Character.MAX_VALUE) {
-            throw new Error(`Cannot encode the specified value: ${v}`);
-        }
-
-        if (this.isATNSerializedAsInts()) {
-            return String(v);
-        }
-
-        const escaped = this.getTargetCharValueEscape()?.get(v);
-        if (escaped) {
-            return escaped;
-        }
-
-        switch (Character.getType(v)) {
-            case Character.CONTROL:
-            case Character.LINE_SEPARATOR:
-            case Character.PARAGRAPH_SEPARATOR: {
-                return this.escapeChar(v);
-            }
-
-            default: {
-                if (v <= 127) {
-                    return String.fromCodePoint(v); // ASCII chars can be as-is, no encoding.
-                }
-
-                // Else we use hex encoding to ensure pure ascii chars generated.
-                return this.escapeChar(v);
-            }
-        }
-    }
-
     public getLoopLabel(ast: GrammarAST): string {
         return "loop" + ast.token!.tokenIndex;
     }
@@ -391,57 +359,43 @@ export abstract class Target {
     /**
      * Generate TParser.java and TLexer.java from T.g4 if combined, else just use T.java as output regardless of type.
      */
-    public getRecognizerFileName(header: boolean): string {
-        const extST = this.templates.getInstanceOf("codeFileExtension")!;
+    public getRecognizerFileName(targetGenerator: ITargetGenerator, header: boolean): string {
+        const extension = (header && targetGenerator.declarationFileExtension)
+            ? targetGenerator.declarationFileExtension
+            : targetGenerator.codeFileExtension;
         const recognizerName = this.gen.g!.getRecognizerName();
 
-        return recognizerName + extST.render();
+        return recognizerName + extension;
     }
 
     /**
      * A given grammar T, return the listener name such as TListener.java, if we're using the Java target.
      */
-    public getListenerFileName(header: boolean): string {
-
-        /* assert gen.g.name != null; */
-        const extST = this.templates.getInstanceOf("codeFileExtension")!;
-        const listenerName = this.gen.g!.name + "Listener";
-
-        return listenerName + extST.render();
+    public getListenerFileName(targetGenerator: ITargetGenerator, header: boolean): string {
+        return this.filenameForType(targetGenerator, header, "Listener");
     }
 
     /**
      * A given grammar T, return the visitor name such as TVisitor.java, if we're using the Java target.
      */
-    public getVisitorFileName(header: boolean): string {
-
-        /* assert gen.g.name != null; */
-        const extST = this.templates.getInstanceOf("codeFileExtension")!;
-        const listenerName = this.gen.g!.name + "Visitor";
-
-        return listenerName + extST.render();
+    public getVisitorFileName(targetGenerator: ITargetGenerator, header: boolean): string {
+        return this.filenameForType(targetGenerator, header, "Visitor");
     }
 
     /**
      * A given grammar T, return a blank listener implementation such as TBaseListener.java, if we're using the
      * Java target.
      */
-    public getBaseListenerFileName(header: boolean): string {
-        const extST = this.templates.getInstanceOf("codeFileExtension")!;
-        const listenerName = this.gen.g!.name + "BaseListener";
-
-        return listenerName + extST.render();
+    public getBaseListenerFileName(targetGenerator: ITargetGenerator, header: boolean): string {
+        return this.filenameForType(targetGenerator, header, "BaseListener");
     }
 
     /**
-     * A given grammar T, return a blank listener implementation such as TBaseListener.java, if we're using the
+     * A given grammar T, return a blank vistor implementation such as TBaseListener.java, if we're using the
      * Java target.
      */
-    public getBaseVisitorFileName(header: boolean): string {
-        const extST = this.templates.getInstanceOf("codeFileExtension")!;
-        const listenerName = this.gen.g!.name + "BaseVisitor";
-
-        return listenerName + extST.render();
+    public getBaseVisitorFileName(targetGenerator: ITargetGenerator, header: boolean): string {
+        return this.filenameForType(targetGenerator, header, "BaseVisitor");
     }
 
     /**
@@ -543,8 +497,8 @@ export abstract class Target {
         return false;
     }
 
-    public genFile(g: Grammar | undefined, outputFileST: IST, fileName: string): void {
-        this.getCodeGenerator().write(outputFileST, fileName);
+    public genFile(g: Grammar | undefined, generatedText: string, fileName: string): void {
+        this.getCodeGenerator().write(generatedText, fileName);
     }
 
     protected abstract get reservedWords(): Set<string>;
@@ -626,4 +580,15 @@ export abstract class Target {
             return undefined;
         }
     }
+
+    private filenameForType(targetGenerator: ITargetGenerator, header: boolean, type: string): string {
+        const extension = (header && targetGenerator.declarationFileExtension)
+            ? targetGenerator.declarationFileExtension
+            : targetGenerator.codeFileExtension;
+
+        const listenerName = this.gen.g!.name + type;
+
+        return listenerName + extension;
+    }
+
 }

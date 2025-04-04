@@ -70,8 +70,9 @@ export class StructDecl extends Decl {
         this.derivedFromName = r.name;
         this.provideCopyFrom = r.hasAltSpecificContexts();
 
-        this.generateListener = factory.g.tool.toolConfiguration.generateListener ?? true;
-        this.generateVisitor = factory.g.tool.toolConfiguration.generateVisitor ?? false;
+        const options = factory.g.tool.toolConfiguration.generationOptions;
+        this.generateListener = options.generateListener ?? true;
+        this.generateVisitor = options.generateVisitor ?? false;
 
         this.addDispatchMethods(r);
     }
@@ -138,5 +139,11 @@ export class StructDecl extends Decl {
 
     public isEmpty(): boolean {
         return this.attrs.size === 0;
+    }
+
+    public override get parameterFields(): string[] {
+        return [...super.parameterFields, "dispatchMethods", "attrs", "getters", "ctorAttrs",
+            "interfaces", "extensionMembers", "signatures", "tokenDecls", "tokenTypeDecls",
+            "tokenListDecls", "ruleContextDecls", "ruleContextListDecls", "attributeDecls"];
     }
 }
