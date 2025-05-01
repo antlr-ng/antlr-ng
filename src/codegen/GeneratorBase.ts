@@ -5,17 +5,43 @@
 
 import { CharSupport } from "src/misc/CharSupport.js";
 import { Character } from "src/support/Character.js";
-import { Grammar } from "src/tool/Grammar.js";
 import type { CodeGenerator } from "./CodeGenerator.js";
+import type { CodePoint, Lines } from "./ITargetGenerator.js";
 
-/** Represets a single code point in Unicode. */
-export type CodePoint = number;
+/** Flags used when rendering a collection. */
+export interface IRenderCollectionOptions {
+    /**
+     * The maximum number of characters per line. If not given, everything is rendered in a single line.
+     * Don't use this with line breaks in the separator or the result will be unpredictable.
+     */
+    wrap?: number;
+
+    /** The indentation level for the output. */
+    indent?: number;
+
+    /** The string rendered between elements. If not set then ", " is used. */
+    separator?: string;
+
+    /** The quote character(s) to use for wrapping each element. */
+    quote?: string;
+
+    /** The string to use for the final shape of the elements. */
+    template?: string;
+}
 
 /**
  * Base class for all target generators. It provides some common functionality.
  * The actual code generation is done in the subclasses.
  */
-export class GeneratorHelper {
+export abstract class GeneratorBase {
+    /**
+     * For pure strings of Unicode char, how can we display it in the target language as a literal. Useful for dumping
+     * predicates and such that may refer to chars that need to be escaped when represented as strings.
+     *
+     * @returns The default map with the most common escape sequences. Subclasses can override this method to provide
+     *          additional or different escape sequences.
+     */
+    // XXX: make private once the Java serialized ATN is converted.
     public static readonly defaultCharValueEscape = new Map<CodePoint, string>([
         ["\t".codePointAt(0)!, "\\t"],
         ["\b".codePointAt(0)!, "\\b"],
@@ -28,49 +54,13 @@ export class GeneratorHelper {
     ]);
 
     /**
-     * For pure strings of Unicode char, how can we display it in the target language as a literal. Useful for dumping
-     * predicates and such that may refer to chars that need to be escaped when represented as strings.
+     * Returns the default escape map for the target language. This is used to escape characters in strings.
+     * Subclasses can override this method to provide additional or different escape sequences.
      *
-     * @returns The default map with the most common escape sequences. Subclasses can override this method to provide
-     *          additional or different escape sequences.
+     * @returns The default escape map for the target language.
      */
-    public static getTargetCharValueEscape(): Map<CodePoint, string> | undefined {
-        return GeneratorHelper.defaultCharValueEscape;
-    }
-
-    public static escapeIfNeeded(identifier: string): string {
-        return ""; //this.reservedWords.has(identifier) ? this.escapeWord(identifier) : identifier;
-    }
-
-    /**
-     * Get a meaningful name for a token type useful during code generation. Literals without associated names
-     * are converted to the string equivalent of their integer values. Used to generate x==ID and x==34 type
-     * comparisons etc...  Essentially we are looking for the most obvious way to refer to a token type in the
-     * generated code.
-     *
-     * @param g The grammar object.
-     * @param ttype The token type to convert.
-     *
-     * @returns The token type as a string.
-     */
-    public static getTokenTypeAsTargetLabel(g: Grammar, ttype: number): string {
-        const name = this.escapeIfNeeded(g.getTokenName(ttype)!);
-
-        // If name is not valid, return the token type instead.
-        if (Grammar.INVALID_TOKEN_NAME === name) {
-            return String(ttype);
-        }
-
-        return name;
-    }
-
-    public static getTokenTypesAsTargetLabels(g: Grammar, tokenTypes: number[]): string[] {
-        const labels = new Array<string>(tokenTypes.length);
-        for (let i = 0; i < tokenTypes.length; i++) {
-            labels[i] = this.getTokenTypeAsTargetLabel(g, tokenTypes[i]);
-        }
-
-        return labels;
+    public get charValueEscapeMap(): Map<CodePoint, string> {
+        return GeneratorBase.defaultCharValueEscape;
     }
 
     /**
@@ -97,7 +87,7 @@ export class GeneratorHelper {
      *
      * @returns The converted string.
      */
-    public static getTargetStringLiteralFromString(s: string, quoted?: boolean): string {
+    public getTargetStringLiteralFromString(s: string, quoted?: boolean): string {
         quoted ??= true;
 
         let result = "";
@@ -107,7 +97,7 @@ export class GeneratorHelper {
 
         for (let i = 0; i < s.length;) {
             const c = s.codePointAt(i)!;
-            const escaped = (c <= Character.MAX_VALUE) ? this.getTargetCharValueEscape()?.get(Number(c)) : undefined;
+            const escaped = (c <= Character.MAX_VALUE) ? this.charValueEscapeMap.get(Number(c)) : undefined;
             if (c !== 0x27 && escaped) { // Don't escape single quotes in strings for Java.
                 result += escaped;
             } else if (this.shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(c)) {
@@ -143,7 +133,7 @@ export class GeneratorHelper {
      *
      * @returns The converted string.
      */
-    public static getTargetStringLiteralFromANTLRStringLiteral(generator: CodeGenerator, literal: string,
+    public getTargetStringLiteralFromANTLRStringLiteral(generator: CodeGenerator, literal: string,
         addQuotes: boolean, escapeSpecial?: boolean): string {
         escapeSpecial ??= false;
 
@@ -229,25 +219,47 @@ export class GeneratorHelper {
     }
 
     /**
-     * Generates a list of entries in a format that is suitable for TypeScript.
+     * Generates a comma separated list of the elements in the given list. The elements are converted to strings
+     * using the `String` constructor. The list is formatted with a maximum of `wrap` elements per line.
      * The list is split into multiple lines if it exceeds the specified wrap length.
      *
      * @param list The list of entries to be formatted. We are using string coercion here, so make sure any
      *             non-primitive type is rendered to a string, before calling this method.
-     * @param wrap The maximum number of elements per line.
+     * @param options The options for formatting the list.
      *
-     * @returns A string representation of the formatted list.
+     * @returns A list of strings, each representing a line of the formatted list.
      */
-    public static renderList(list: unknown[], wrap: number): string {
+    public renderList<T>(list: Iterable<T>, options: IRenderCollectionOptions): Lines {
         const result = [];
-        for (let i = 0; i < list.length; i++) {
-            if (i % wrap === 0 && i > 0) {
-                result.push("\n");
+        const quote = options.quote ?? "";
+        const separator = options.separator ?? ", ";
+
+        let line = "";
+        for (const item of list) {
+            let value;
+
+            if (options.template) {
+                value = this.renderTemplate(options.template, `${quote}${item}${quote}`);
+            } else {
+                value = `${quote}${item}${quote}`;
             }
-            result.push(String(list[i]));
+
+            line += value + separator;
+
+            // Do we exceed the line length?
+            if (options.wrap && line.length > options.wrap) {
+                result.push(line);
+                line = "";
+            }
         }
 
-        return result.join(", ");
+        if (line.length > 0) {
+            // Remove the last separator.
+            line = line.substring(0, line.length - separator.length);
+            result.push(line);
+        }
+
+        return this.formatLines(result, options.indent);
     }
 
     /**
@@ -257,31 +269,117 @@ export class GeneratorHelper {
      * @param lines The lines to format.
      * @param indentation The number of spaces to use for indentation.
      *
-     * @returns The formatted lines as a single string.
+     * @returns The formatted lines.
      */
-    public static formatLines(lines: Array<string | undefined>, indentation: number) {
+    public formatLines(lines: Array<string | undefined>, indentation?: number): Lines {
         // First filter all undefined lines.
         const filteredLines = lines.filter(line => {
             return line !== undefined;
         });
 
         // Then format the lines with the specified indentation.
+        const indentationStr = " ".repeat(indentation ?? 0);
         const formattedLines = filteredLines.map(line => {
-            return " ".repeat(indentation) + line;
+            if (line.length === 0) {
+                return line;
+            }
+
+            return `${indentationStr}${line}`;
         });
 
-        return formattedLines.join("\n");
+        return formattedLines;
     }
 
-    public static toTitleCase(str: string): string {
+    /**
+     * Converts the first character of the given string to uppercase.
+     *
+     * @param str The string to convert.
+     *
+     * @returns The converted string with the first character in uppercase.
+     */
+    public toTitleCase(str: string): string {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
-    protected static escapeWord(word: string): string {
+    /**
+     * Renders a template string with the provided parameters. The template can contain placeholders in the
+     * format `${0}`, `${1}`, etc., which will be replaced with the corresponding values from the `params` array.
+     *
+     * @param template The template string to render.
+     * @param params The parameters to use for rendering the template.
+     *
+     * @returns The rendered string.
+     */
+    public renderTemplate(template: string, ...params: unknown[]): string {
+        return template.replace(/\${(\d+)}/g, (match, ...args): string => {
+            const paramIndex = parseInt(args[0] as string, 10);
+
+            return params[paramIndex] !== undefined ? params[paramIndex] as string : match;
+        });
+    }
+
+    /**
+     * Renders key/value pairs from a map into a string array using the provided template.
+     *
+     * @param map The map containing key/value pairs to render.
+     * @param indent The number of spaces to use for indentation.
+     * @param template The template string to use for rendering each key/value pair.
+     *                 The template should contain two placeholders: `${0}` for the key and `${1}` for the value.
+     *
+     * @returns An array of strings, each representing a rendered key/value pair.
+     */
+    public renderMap(map: Map<string, unknown>, indent: number, template: string): string[] {
+        if (map.size === 0) {
+            return [];
+        }
+
+        const result = [];
+        const indentStr = " ".repeat(indent);
+
+        for (const [key, value] of map) {
+            result.push(this.renderTemplate(`${indentStr}${template}`, key, value));
+        }
+
+        return result;
+    }
+
+    /**
+     * Renders a list of objects into a string array using the provided template.
+     *
+     * @param list The list of objects to render.
+     * @param indent The number of spaces to use for indentation.
+     * @param template The template string to use for rendering each object.
+     *                 The template should contain as many placeholders as there are key..
+     * @param keys The names of properties of each object to be used in the template.
+     *             The indexed values are coerced to strings.
+     *
+     * @returns An array of strings, each representing a rendered object.
+     */
+    public renderTemplatedObjectList(list: Iterable<object>, indent: number, template: string,
+        ...keys: string[]): string[] {
+        const result: string[] = [];
+        const indentStr = " ".repeat(indent);
+
+        for (const obj of list) {
+            const printArgs: unknown[] = [];
+            for (const key of keys) {
+                if (key in obj) {
+                    const value = (obj as Record<string, unknown>)[key];
+                    printArgs.push(value);
+                }
+            }
+
+            result.push(this.renderTemplate(`${indentStr}${template}`, ...printArgs));
+        }
+
+        return result;
+    }
+
+    protected escapeWord(word: string): string {
         return word + "_";
     }
 
-    protected static escapeCodePoint(codePoint: number): string {
+    protected escapeCodePoint(codePoint: number): string {
         if (Character.isSupplementaryCodePoint(codePoint)) {
             return "\\u" + Number(Character.highSurrogate(codePoint)).toString(16).toUpperCase().padStart(4, "0") +
                 "\\u" + Number(Character.lowSurrogate(codePoint)).toString(16).toUpperCase().padStart(4, "0");
@@ -290,13 +388,13 @@ export class GeneratorHelper {
         }
     }
 
-    protected static shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(codePoint: number): boolean {
+    protected shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(codePoint: number): boolean {
         return codePoint < 0x20   // Control characters up to but not including space.
             || codePoint === 0x5C // backslash
             || codePoint >= 0x7F; // DEL and beyond (keeps source code 7-bit US-ASCII).
     }
 
-    protected static escapeChar(v: number): string {
+    protected escapeChar(v: number): string {
         return `\\u${v.toString(16).padStart(4, "0")}`;
     }
 
@@ -311,7 +409,7 @@ export class GeneratorHelper {
      *
      * @returns The escaped code point as a string.
      */
-    private static createUnicodeEscapedCodePoint(codePoint: number, escape?: boolean): string {
+    private createUnicodeEscapedCodePoint(codePoint: number, escape?: boolean): string {
         let result = this.escapeCodePoint(codePoint);
 
         if (escape) {

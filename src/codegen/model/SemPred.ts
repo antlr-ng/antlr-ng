@@ -29,7 +29,7 @@ export class SemPred extends Action {
      * `{pred}?<fail={"Java literal"}>`
      */
     @ModelElement
-    public failChunks: ActionChunk[];
+    public failChunks?: ActionChunk[];
 
     public constructor(factory: IOutputModelFactory, ast: ActionAST) {
         super(factory, ast);

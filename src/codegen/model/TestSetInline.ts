@@ -10,9 +10,10 @@ import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { SrcOp } from "./SrcOp.js";
 import { ITokenInfo } from "./ITokenInfo.js";
 
-class Bitset {
+export class Bitset {
     public readonly shift: bigint;
-    private readonly tokens: ITokenInfo[] = [];
+    public readonly tokens: ITokenInfo[] = [];
+
     private bits = 0n;
 
     public constructor(shift: number) {

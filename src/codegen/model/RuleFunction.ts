@@ -36,6 +36,7 @@ import { ContextTokenListGetterDecl } from "./decl/ContextTokenListGetterDecl.js
 import { ContextTokenListIndexedGetterDecl } from "./decl/ContextTokenListIndexedGetterDecl.js";
 import { Decl } from "./decl/Decl.js";
 import { StructDecl } from "./decl/StructDecl.js";
+import type { TokenTypeDecl } from "./decl/TokenTypeDecl.js";
 
 export class RuleFunction extends OutputModelObject {
     public readonly name: string;
@@ -54,7 +55,7 @@ export class RuleFunction extends OutputModelObject {
     public code: SrcOp[];
 
     @ModelElement
-    public readonly locals = new OrderedHashSet<Decl>(); // TODO: move into ctx?
+    public readonly locals = new OrderedHashSet<TokenTypeDecl>(); // TODO: move into ctx?
 
     @ModelElement
     public args?: AttributeDecl[];
@@ -227,7 +228,7 @@ export class RuleFunction extends OutputModelObject {
                 !nonOptional.has(refLabelName));
 
             d.forEach((decl) => {
-                return decls.add(decl);
+                decls.add(decl);
             });
         }
 
@@ -238,7 +239,8 @@ export class RuleFunction extends OutputModelObject {
         const decls = new Array<Decl>();
         if (t.getType() === ANTLRv4Lexer.RULE_REF) {
             const ruleRef = this.factory!.g.getRule(t.getText())!;
-            const ctxName = this.factory!.getGenerator()!.target.getRuleFunctionContextStructName(ruleRef);
+            const generator = this.factory!.getGenerator()!.targetGenerator;
+            const ctxName = generator.getRuleFunctionContextStructName(ruleRef);
             if (needList) {
                 if (this.factory!.getGenerator()!.target.supportsOverloadedMethods()) {
                     decls.push(new ContextRuleListGetterDecl(this.factory!, refLabelName, ctxName));
@@ -264,7 +266,7 @@ export class RuleFunction extends OutputModelObject {
     }
 
     /** Add local var decl */
-    public addLocalDecl(d: Decl): void {
+    public addLocalDecl(d: TokenTypeDecl): void {
         this.locals.add(d);
         d.isLocal = true;
     }

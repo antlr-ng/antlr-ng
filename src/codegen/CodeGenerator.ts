@@ -63,7 +63,7 @@ export class CodeGenerator {
     private readonly tool?: Tool;
 
     public constructor(grammarOrLanguage: Grammar | SupportedLanguage,
-        private readonly targetGenerator: ITargetGenerator) {
+        public readonly targetGenerator: ITargetGenerator) {
         this.g = grammarOrLanguage instanceof Grammar ? grammarOrLanguage : undefined;
         this.tool = this.g?.tool;
 
@@ -83,50 +83,54 @@ export class CodeGenerator {
         this.ensureAtnExists();
         declaration ??= false;
 
-        return this.walk(this.createController(options.atn)
-            .buildLexerOutputModel(declaration, options), { declaration: declaration });
+        const model = this.createController(options.atn).buildLexerOutputModel(declaration, options);
 
+        return this.targetGenerator.renderLexerFile(model, declaration);
     }
 
     public generateParser(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;
 
-        return this.walk(this.createController().buildParserOutputModel(declaration, options),
-            { declaration: declaration });
+        const model = this.createController().buildParserOutputModel(declaration, options);
+
+        return this.targetGenerator.renderParserFile(model, declaration);
     }
 
     public generateListener(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;
 
-        return this.walk(this.createController().buildListenerOutputModel(declaration, options),
-            { declaration: declaration });
+        const model = this.createController().buildListenerOutputModel(declaration, options);
 
+        return this.targetGenerator.renderListenerFile(model, declaration);
     }
 
     public generateBaseListener(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;
 
-        return this.walk(this.createController().buildBaseListenerOutputModel(declaration, options.package),
-            { declaration: declaration });
+        const model = this.createController().buildBaseListenerOutputModel(declaration, options.package);
+
+        return this.targetGenerator.renderBaseListenerFile(model, declaration);
     }
 
     public generateVisitor(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;
 
-        return this.walk(this.createController().buildVisitorOutputModel(declaration, options),
-            { declaration: declaration });
+        const model = this.createController().buildVisitorOutputModel(declaration, options);
+
+        return this.targetGenerator.renderVisitorFile(model, declaration);
     }
 
     public generateBaseVisitor(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;
 
-        return this.walk(this.createController().buildBaseVisitorOutputModel(declaration, options),
-            { declaration: declaration });
+        const model = this.createController().buildBaseVisitorOutputModel(declaration, options);
+
+        return this.targetGenerator.renderBaseVisitorFile(model, declaration);
     }
 
     public writeRecognizer(generatedText: string, header: boolean): void {
@@ -263,8 +267,6 @@ export class CodeGenerator {
         return vocabFileST;
     }
 
-    // CREATE TEMPLATES BY WALKING MODEL
-
     private createController(forceAtn?: boolean): OutputModelController {
         const factory = new ParserFactory(this, forceAtn);
         const controller = new OutputModelController(factory);
@@ -289,7 +291,7 @@ export class CodeGenerator {
         const parameterFields = omo.parameterFields;
 
         // Walk over all parameter fields of the model object and render sub elements.
-        const parameters: Array<string | Record<string, string> | string[] | undefined> = [];
+        const parameters: Array<string | Map<string, string> | string[] | undefined> = [];
         for (const fieldName of parameterFields) {
             const o = omo[fieldName];
             if (o === undefined) {
@@ -312,10 +314,10 @@ export class CodeGenerator {
                 parameters.push(list);
             } else if (o instanceof Map) {
                 const nestedOmoMap = o as Map<string, OutputModelObject>;
-                const renderedRecord: Record<string, string> = {};
+                const renderedRecord = new Map<string, string>();
                 for (const [key, value] of nestedOmoMap) {
                     const renderedElement = this.walk(value, variables);
-                    renderedRecord[key] = renderedElement;
+                    renderedRecord.set(key, renderedElement);
                 }
                 parameters.push(renderedRecord);
             }
