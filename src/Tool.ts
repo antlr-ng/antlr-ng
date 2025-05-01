@@ -50,66 +50,6 @@ export class Tool implements ITool {
     private readonly logMgr = new LogManager();
     private readonly importedGrammars = new Map<string, Grammar>();
 
-    private static generateInterpreterData(g: Grammar): string {
-        let content = "";
-
-        content += "token literal names:\n";
-        let names = g.getTokenLiteralNames();
-        content += names.reduce((previousValue, currentValue) => {
-            return previousValue + (currentValue ?? "null") + "\n";
-        }, "") + "\n";
-
-        content += "token symbolic names:\n";
-        names = g.getTokenSymbolicNames();
-        content += names.reduce((previousValue, currentValue) => {
-            return previousValue + (currentValue ?? "null") + "\n";
-        }, "") + "\n";
-
-        content += "rule names:\n";
-        names = g.getRuleNames();
-        content += names.reduce((previousValue, currentValue) => {
-            return previousValue + (currentValue ?? "null") + "\n";
-        }, "") + "\n";
-
-        if (g.isLexer()) {
-            content += "channel names:\n";
-            content += "DEFAULT_TOKEN_CHANNEL\n";
-            content += "HIDDEN\n";
-            content += g.channelValueToNameList.join("\n") + "\n";
-            content += "mode names:\n";
-            content += [...(g as LexerGrammar).modes.keys()].join("\n") + "\n";
-        }
-        content += "\n";
-
-        const serializedATN = ATNSerializer.getSerialized(g.atn!);
-        content += "atn:\n";
-        content += convertArrayToString(serializedATN);
-
-        return content.toString();
-    }
-
-    /**
-     * Manually get option node from tree.
-     *
-     * @param root The root of the grammar tree.
-     * @param option The name of the option to find.
-     *
-     * @returns The option node or null if not found.
-     */
-    private static findOptionValueAST(root: GrammarRootAST, option: string): GrammarAST | null {
-        const options = root.getFirstChildWithType(ANTLRv4Parser.OPTIONS) as GrammarAST | null;
-        if (options !== null && options.children.length > 0) {
-            for (const o of options.children) {
-                const c = o as GrammarAST;
-                if (c.getType() === ANTLRv4Parser.ASSIGN && c.children[0].getText() === option) {
-                    return c.children[1] as GrammarAST;
-                }
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Initiates a full generation process with the given parameters.
      *
@@ -561,6 +501,66 @@ export class Tool implements ITool {
         const name = rulOrName instanceof Rule ? rulOrName.g.name + "." + rulOrName.name : rulOrName;
         const fileName = this.getOutputFile(g, name + ".dot");
         fileSystem.writeFileSync(fileName, dot);
+    }
+
+    private static generateInterpreterData(g: Grammar): string {
+        let content = "";
+
+        content += "token literal names:\n";
+        let names = g.getTokenLiteralNames();
+        content += names.reduce((previousValue, currentValue) => {
+            return previousValue + (currentValue ?? "null") + "\n";
+        }, "") + "\n";
+
+        content += "token symbolic names:\n";
+        names = g.getTokenSymbolicNames();
+        content += names.reduce((previousValue, currentValue) => {
+            return previousValue + (currentValue ?? "null") + "\n";
+        }, "") + "\n";
+
+        content += "rule names:\n";
+        names = g.getRuleNames();
+        content += names.reduce((previousValue, currentValue) => {
+            return previousValue + (currentValue ?? "null") + "\n";
+        }, "") + "\n";
+
+        if (g.isLexer()) {
+            content += "channel names:\n";
+            content += "DEFAULT_TOKEN_CHANNEL\n";
+            content += "HIDDEN\n";
+            content += g.channelValueToNameList.join("\n") + "\n";
+            content += "mode names:\n";
+            content += [...(g as LexerGrammar).modes.keys()].join("\n") + "\n";
+        }
+        content += "\n";
+
+        const serializedATN = ATNSerializer.getSerialized(g.atn!);
+        content += "atn:\n";
+        content += convertArrayToString(serializedATN);
+
+        return content.toString();
+    }
+
+    /**
+     * Manually get option node from tree.
+     *
+     * @param root The root of the grammar tree.
+     * @param option The name of the option to find.
+     *
+     * @returns The option node or null if not found.
+     */
+    private static findOptionValueAST(root: GrammarRootAST, option: string): GrammarAST | null {
+        const options = root.getFirstChildWithType(ANTLRv4Parser.OPTIONS) as GrammarAST | null;
+        if (options !== null && options.children.length > 0) {
+            for (const o of options.children) {
+                const c = o as GrammarAST;
+                if (c.getType() === ANTLRv4Parser.ASSIGN && c.children[0].getText() === option) {
+                    return c.children[1] as GrammarAST;
+                }
+            }
+        }
+
+        return null;
     }
 
     private processGrammarsOnCommandLine(): void {

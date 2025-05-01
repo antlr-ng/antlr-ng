@@ -404,20 +404,6 @@ export class Grammar implements IGrammar, IAttributeResolver {
         return lexerRuleToStringLiteral;
     }
 
-    protected static defAlias(r: GrammarAST, pattern: string, wiz: TreeWizard,
-        lexerRuleToStringLiteral: Array<[GrammarAST, GrammarAST]>): boolean {
-        const nodes = new Map<string, GrammarAST>();
-        if (wiz.parse(r, pattern, nodes)) {
-            const litNode = nodes.get("lit")!;
-            const nameNode = nodes.get("name")!;
-            lexerRuleToStringLiteral.push([nameNode, litNode]);
-
-            return true;
-        }
-
-        return false;
-    }
-
     public loadImportedGrammars(visited: Set<string>): void {
         const i = this.ast.getFirstChildWithType(ANTLRv4Parser.IMPORT) as GrammarAST | null;
         if (i === null) {
@@ -1143,7 +1129,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
             this.tool.errorManager.toolError(IssueCode.CannotCreateTargetGenerator, language);
         }
 
-        return language ?? "Java";
+        return language ?? "TypeScript";
     }
 
     public getOptionString(key: string): string | undefined {
@@ -1223,6 +1209,20 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
         return new ParserInterpreter(this.fileName, this.getVocabulary(), this.getRuleNames(), deserializedATN,
             tokenStream);
+    }
+
+    protected static defAlias(r: GrammarAST, pattern: string, wiz: TreeWizard,
+        lexerRuleToStringLiteral: Array<[GrammarAST, GrammarAST]>): boolean {
+        const nodes = new Map<string, GrammarAST>();
+        if (wiz.parse(r, pattern, nodes)) {
+            const litNode = nodes.get("lit")!;
+            const nameNode = nodes.get("name")!;
+            lexerRuleToStringLiteral.push([nameNode, litNode]);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
