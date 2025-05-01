@@ -34,9 +34,6 @@ enum Associativity {
  *  our pattern.
  */
 export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
-    private static readonly templateGroupFile = "/templates/LeftRecursiveRules.stg";
-    private static readonly recRuleTemplates = new STGroupFile(LeftRecursiveRuleAnalyzer.templateGroupFile);
-
     public tool: Tool;
     public binaryAlts = new Map<number, ILeftRecursiveRuleAltInfo>();
     public ternaryAlts = new Map<number, ILeftRecursiveRuleAltInfo>();
@@ -54,6 +51,9 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     public readonly language: string;
 
     public altAssociativity = new Map<number, Associativity>();
+
+    private static readonly templateGroupFile = "/templates/LeftRecursiveRules.stg";
+    private static readonly recRuleTemplates = new STGroupFile(LeftRecursiveRuleAnalyzer.templateGroupFile);
 
     public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage,
         targetGenerator: ITargetGenerator) {
