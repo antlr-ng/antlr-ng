@@ -247,7 +247,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         if (astOrString instanceof ActionAST) {
             const left = this.newState(BasicState);
             const right = this.newState(BasicState);
-            const a = new ActionTransition(right, this.currentRule!.index, -1, false);
+            const a = new ActionTransition(right, this.currentRule!.index);
             left.addTransition(a);
             astOrString.atnState = left;
 

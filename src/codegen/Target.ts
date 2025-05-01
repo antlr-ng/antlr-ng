@@ -287,7 +287,7 @@ export abstract class Target {
      * From outside, though, we see only ParserRuleContext unless there are externally visible stuff like args, locals,
      * explicit labels, etc...
      */
-    public getRuleFunctionContextStructName(ruleOrFunction: Rule | RuleFunction): string {
+    public getRuleFunctionContextStructName(targetGenerator: ITargetGenerator, ruleOrFunction: Rule | RuleFunction): string {
         const rule = ruleOrFunction instanceof Rule ? ruleOrFunction : ruleOrFunction.rule;
         if (rule.g.isLexer()) {
             return this.templates.getInstanceOf("LexerRuleContext")!.render();

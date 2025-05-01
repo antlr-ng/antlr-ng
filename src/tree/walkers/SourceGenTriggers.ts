@@ -28,6 +28,8 @@ interface IAltResults {
 }
 
 export class SourceGenTriggers extends TreeParser {
+    public hasLookaheadBlock: boolean;
+
     // A list of token types used for lookahead checks.
     private static readonly singleAtomLookaheadValues = [
         ANTLRv4Lexer.ASSIGN,
@@ -45,8 +47,6 @@ export class SourceGenTriggers extends TreeParser {
         ANTLRv4Lexer.ACTION,
         ...this.singleAtomLookaheadValues,
     ];
-
-    public hasLookaheadBlock: boolean;
 
     private controller?: OutputModelController;
 

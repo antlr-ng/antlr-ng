@@ -8,7 +8,7 @@
 import { ATN, ATNSerializer } from "antlr4ng";
 
 import { Character } from "src/support/Character.js";
-import { GeneratorHelper } from "../GeneratorHelper.js";
+import { GeneratorBase } from "../GeneratorBase.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { SerializedATN } from "./SerializedATN.js";
 
@@ -103,7 +103,7 @@ export class SerializedJavaATN extends SerializedATN {
             throw new Error(`Cannot encode the specified value: ${v}`);
         }
 
-        const escaped = GeneratorHelper.defaultCharValueEscape.get(v);
+        const escaped = GeneratorBase.defaultCharValueEscape.get(v);
         if (escaped) {
             return escaped;
         }

@@ -395,6 +395,7 @@ export class ParserFactory implements IOutputModelFactory {
     public defineImplicitLabel(ast: GrammarAST, op: ILabeledOp): void {
         let d: Decl;
 
+        const generator = this.gen.targetGenerator;
         if (ast.getType() === ANTLRv4Parser.SET || ast.getType() === ANTLRv4Parser.WILDCARD) {
             const implLabel = this.gen.target.getImplicitSetLabel(String(ast.token!.tokenIndex));
             d = this.getTokenLabelDecl(implLabel);
@@ -402,7 +403,7 @@ export class ParserFactory implements IOutputModelFactory {
         } else if (ast.getType() === ANTLRv4Parser.RULE_REF) { // A rule reference?
             const r = this.g.getRule(ast.getText())!;
             const implLabel = this.gen.target.getImplicitRuleLabel(ast.getText());
-            const ctxName = this.gen.target.getRuleFunctionContextStructName(r);
+            const ctxName = generator.getRuleFunctionContextStructName(r);
             d = new RuleContextDecl(this, implLabel, ctxName);
             (d as RuleContextDecl).isImplicit = true;
         } else {

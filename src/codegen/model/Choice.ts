@@ -28,7 +28,7 @@ import { TokenTypeDecl } from "./decl/TokenTypeDecl.js";
  */
 export abstract class Choice extends RuleElement {
     public decision = -1;
-    public label: Decl;
+    public label?: Decl;
 
     @ModelElement
     public alts: CodeBlockForAlt[] = [];
@@ -36,9 +36,7 @@ export abstract class Choice extends RuleElement {
     @ModelElement
     public preamble: SrcOp[] = [];
 
-    public constructor(factory: IOutputModelFactory,
-        blkOrEbnfRootAST: GrammarAST,
-        alts: CodeBlockForAlt[]) {
+    public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST);
 
         this.alts = alts;
