@@ -37,7 +37,6 @@ import { LeftRecursiveRuleFunction } from "./model/LeftRecursiveRuleFunction.js"
 import { Lexer } from "./model/Lexer.js";
 import { LexerFile } from "./model/LexerFile.js";
 import { ListenerFile } from "./model/ListenerFile.js";
-import { OutputModelObject } from "./model/OutputModelObject.js";
 import { Parser } from "./model/Parser.js";
 import { ParserFile } from "./model/ParserFile.js";
 import { RuleActionFunction } from "./model/RuleActionFunction.js";
@@ -75,7 +74,7 @@ export class OutputModelController {
      * Build a file with a parser containing rule functions. Use the controller as factory in SourceGenTriggers so
      * it triggers codegen extensions too, not just the factory functions in this factory.
      */
-    public buildParserOutputModel(header: boolean, options: IGenerationOptions): OutputModelObject {
+    public buildParserOutputModel(header: boolean, options: IGenerationOptions): ParserFile {
         const gen = this.factory.getGenerator()!;
         const file = this.parserFile(gen.getRecognizerFileName(header), options);
         file.parser = this.parser(file);
@@ -88,7 +87,7 @@ export class OutputModelController {
         return file;
     }
 
-    public buildLexerOutputModel(header: boolean, options: IGenerationOptions): OutputModelObject {
+    public buildLexerOutputModel(header: boolean, options: IGenerationOptions): LexerFile {
         const gen = this.factory.getGenerator()!;
         const file = this.lexerFile(gen.getRecognizerFileName(header), options);
         file.lexer = this.lexer(file);
@@ -101,25 +100,25 @@ export class OutputModelController {
         return file;
     }
 
-    public buildListenerOutputModel(header: boolean, options: IGenerationOptions): OutputModelObject {
+    public buildListenerOutputModel(header: boolean, options: IGenerationOptions): ListenerFile {
         const gen = this.factory.getGenerator()!;
 
         return new ListenerFile(this.factory, gen.getListenerFileName(header), options.package);
     }
 
-    public buildBaseListenerOutputModel(header: boolean, genPackage?: string): OutputModelObject {
+    public buildBaseListenerOutputModel(header: boolean, genPackage?: string): BaseListenerFile {
         const gen = this.factory.getGenerator()!;
 
         return new BaseListenerFile(this.factory, gen.getBaseListenerFileName(header), genPackage);
     }
 
-    public buildVisitorOutputModel(header: boolean, options: IGenerationOptions): OutputModelObject {
+    public buildVisitorOutputModel(header: boolean, options: IGenerationOptions): VisitorFile {
         const gen = this.factory.getGenerator()!;
 
         return new VisitorFile(this.factory, gen.getVisitorFileName(header), options);
     }
 
-    public buildBaseVisitorOutputModel(header: boolean, options: IGenerationOptions): OutputModelObject {
+    public buildBaseVisitorOutputModel(header: boolean, options: IGenerationOptions): BaseVisitorFile {
         const gen = this.factory.getGenerator()!;
 
         return new BaseVisitorFile(this.factory, gen.getBaseVisitorFileName(header), options);
@@ -142,7 +141,7 @@ export class OutputModelController {
     }
 
     /**
-     * Create RuleFunction per rule and update sempreds,actions of parser output object with stuff found in r.
+     * Create RuleFunction per rule and update sempreds, actions of parser output object with stuff found in r.
      */
     public buildRuleFunction(parser: Parser, r: Rule): void {
         const ruleFunction = this.rule(r);
@@ -270,7 +269,7 @@ export class OutputModelController {
         // Walk AST of rule alts/elements.
         ruleFunction.code = this.walker.block(null, null)!;
         ruleFunction.hasLookaheadBlock = this.walker.hasLookaheadBlock;
-        ruleFunction.ctxType = gen.target.getRuleFunctionContextStructName(ruleFunction);
+        ruleFunction.ctxType = gen.targetGenerator.getRuleFunctionContextStructName(r);
         ruleFunction.postamble = this.rulePostamble(ruleFunction, r);
     }
 
@@ -281,7 +280,7 @@ export class OutputModelController {
 
         const gen = this.factory.getGenerator()!;
         const g = this.factory.g;
-        const ctxType = gen.target.getRuleFunctionContextStructName(r);
+        const ctxType = gen.targetGenerator.lexerRuleContext;
         const raf = lexer.actionFuncs.get(r) ?? new RuleActionFunction(this.factory, r, ctxType);
 
         for (const a of r.actions) {

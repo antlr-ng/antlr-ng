@@ -10,7 +10,7 @@ import { IGrammarASTVisitor } from "./IGrammarASTVisitor.js";
 import { IQuantifierAST } from "./IQuantifierAST.js";
 
 export class OptionalBlockAST extends GrammarAST implements IQuantifierAST {
-    private readonly greedy: boolean;
+    public readonly greedy: boolean;
 
     public constructor(node: OptionalBlockAST);
     public constructor(type: number, t: Token, greedy: boolean);
