@@ -53,9 +53,9 @@ export default tslint.config(
                     "code": 120
                 }
             ],
-            "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
             "curly": ["error", "all"],
             "arrow-body-style": ["error", "always"],
+            "@stylistic/brace-style": ["error", "1tbs", { "allowSingleLine": true }],
             "@stylistic/padding-line-between-statements": [
                 "error",
                 {
@@ -163,6 +163,14 @@ export default tslint.config(
                         "regex": "^['\"].*['\"]$",
                         "match": false
                     }
+                },
+                {
+                    "selector": "import",
+                    "format": [
+                        "PascalCase",
+                        "camelCase",
+                        "UPPER_CASE"
+                    ]
                 }
             ],
 
@@ -182,43 +190,25 @@ export default tslint.config(
                     // adjacent-overload-signatures.
 
                     "default": [
-                        // Index signature
-
-                        "signature",
                         // Fields
-
                         "public-static-field",
-                        "protected-static-field",
-                        "private-static-field",
-                        "public-instance-field",
-                        "protected-instance-field",
-                        "private-instance-field",
-                        "public-abstract-field",
-                        "protected-abstract-field",
                         "public-field",
+                        "protected-static-field",
                         "protected-field",
+                        "private-static-field",
                         "private-field",
-                        "static-field",
-                        "instance-field",
-                        "abstract-field",
-                        "decorated-field",
                         "field",
+
                         // Constructors
-
-                        "public-constructor",
-                        "protected-constructor",
-                        "private-constructor",
                         "constructor",
-                        // Methods
 
+                        // Methods
                         "public-static-method",
-                        "protected-static-method",
-                        "private-static-method",
                         "public-method",
+                        "protected-static-method",
                         "protected-method",
+                        "private-static-method",
                         "private-method",
-                        "public-abstract-method",
-                        "protected-abstract-method"
                     ]
                 }
             ],

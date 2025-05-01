@@ -24,7 +24,7 @@ export class InvokeRule extends RuleElement implements ILabeledOp {
     public readonly ctxName: string;
 
     @ModelElement
-    public argExprsChunks: ActionChunk[];
+    public argExprsChunks?: ActionChunk[];
 
     public constructor(factory: ParserFactory, ast: GrammarAST, labelAST: GrammarAST | null) {
         super(factory, ast);
@@ -33,12 +33,13 @@ export class InvokeRule extends RuleElement implements ILabeledOp {
         }
 
         const gen = factory.getGenerator();
-        const target = gen.target;
+        const generator = gen.targetGenerator;
+
         const identifier = ast.getText();
         const r = factory.getGrammar()!.getRule(identifier)!;
         this.name = r.name;
         this.escapedName = gen.target.escapeIfNeeded(this.name);
-        this.ctxName = target.getRuleFunctionContextStructName(r);
+        this.ctxName = generator.getRuleFunctionContextStructName(r);;
 
         const rf = factory.getCurrentRuleFunction()!;
         if (labelAST !== null) {

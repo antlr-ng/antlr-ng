@@ -155,6 +155,25 @@
             ],
             "console": "integratedTerminal",
             "smartStep": true
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Buil-in Test File",
+            "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+            "args": [
+                "run",
+                "tests/specs/generators/built-in.spec.ts",
+                "--test-timeout",
+                "0"
+            ],
+            "autoAttachChildProcesses": true,
+            "skipFiles": [
+                "<node_internals>/**",
+                "**/node_modules/**"
+            ],
+            "console": "integratedTerminal",
+            "smartStep": true
         }
     ]
 }

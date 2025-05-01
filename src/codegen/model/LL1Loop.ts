@@ -11,7 +11,6 @@ import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
 import { Choice } from "./Choice.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
-import { OutputModelObject } from "./OutputModelObject.js";
 import { SrcOp } from "./SrcOp.js";
 
 export abstract class LL1Loop extends Choice {
@@ -21,7 +20,7 @@ export abstract class LL1Loop extends Choice {
     public loopBackStateNumber: number;
 
     @ModelElement
-    public loopExpr: OutputModelObject | null;
+    public loopExpr: SrcOp | null;
 
     @ModelElement
     public iteration: SrcOp[] = [];

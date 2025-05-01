@@ -40,9 +40,6 @@ export class StructDecl extends Decl {
     public readonly ruleContextListDecls = new OrderedHashSet<Decl>();
     public readonly attributeDecls = new HashSet<Decl>();
 
-    protected readonly generateListener: boolean;
-    protected readonly generateVisitor: boolean;
-
     @ModelElement
     public dispatchMethods: DispatchMethod[] = [];
 
@@ -65,8 +62,16 @@ export class StructDecl extends Decl {
     @ModelElement
     public signatures = new OrderedHashSet<Decl>();
 
-    public constructor(factory: IOutputModelFactory, r: Rule, name?: string,) {
-        super(factory, name ?? factory.getGenerator()!.target.getRuleFunctionContextStructName(r));
+    protected readonly generateListener: boolean;
+    protected readonly generateVisitor: boolean;
+
+    public constructor(factory: IOutputModelFactory, r: Rule, name?: string) {
+        if (!name) {
+            const generator = factory.getGenerator()!.targetGenerator;
+            name = generator.getRuleFunctionContextStructName(r);
+        }
+
+        super(factory, name);
         this.derivedFromName = r.name;
         this.provideCopyFrom = r.hasAltSpecificContexts();
 

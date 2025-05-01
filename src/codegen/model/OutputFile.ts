@@ -15,12 +15,6 @@ export abstract class OutputFile extends OutputModelObject {
     public readonly TokenLabelType?: string;
     public readonly inputSymbolType?: string;
 
-    /**
-     * This is the version the runtimes test against for their compatibility. We use the version of the old ANTLR4
-     * tool here, until we start implementing the new target infrastructure.
-     */
-    public readonly ANTLRVersion = "4.13.2";
-
     public constructor(factory: IOutputModelFactory, fileName: string) {
         super(factory);
 
