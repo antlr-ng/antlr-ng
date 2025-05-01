@@ -13,7 +13,7 @@ import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
  */
 export class CodeBlockForOuterMostAlt extends CodeBlockForAlt {
 
-    /** The label for the alternative; or null if the alternative is not labeled. */
+    /** The label for the alternative; or undefined if the alternative is not labeled. */
     public altLabel?: string;
 
     /** The alternative. */

@@ -6,12 +6,12 @@
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
 import type { RecognitionException } from "antlr4ng";
-import { ErrorBuffer, IST, STGroup, STGroupString } from "stringtemplate4ts";
+import { ErrorBuffer, IST, STGroupString } from "stringtemplate4ts";
 
+import { basename } from "../support/fs-helpers.js";
 import { ANTLRMessage } from "./ANTLRMessage.js";
 import { IssueCode, IssueSeverity, severityMap } from "./Issues.js";
 import { ToolListener } from "./ToolListener.js";
-import { basename } from "../support/fs-helpers.js";
 
 // The supported ANTLR message formats. Using ST here is overkill and will later be replaced with a simpler solution.
 const messageTemplate = `
@@ -26,7 +26,7 @@ wantsSingleLineMessage() ::= "false"
  * messages and ensures proper formatting of the messages.
  */
 export class ErrorManager {
-    private static readonly loadedFormats = new Map<string, STGroupString>();
+    //private static readonly loadedFormats = new Map<string, STGroupString>();
 
     public errors = 0;
     public warnings = 0;
@@ -35,7 +35,7 @@ export class ErrorManager {
     public errorTypes = new Set<IssueCode>();
 
     /** The group of templates that represent the current message format. */
-    private format: STGroup;
+    private format = new STGroupString(messageTemplate);
 
     private formatName: string;
 
@@ -64,19 +64,6 @@ export class ErrorManager {
             const msg = location + ": " + error;
             console.error("internal error: " + msg);
         }
-    }
-
-    /** @returns The first non ErrorManager code location for generating messages. */
-    private static getLastNonErrorManagerCodeLocation(e: Error): string {
-        const stack = e.stack!.split("\n");
-        let entry = "";
-        for (entry of stack) {
-            if (!entry.includes("ErrorManager")) {
-                break;
-            }
-        }
-
-        return entry;
     }
 
     public configure(longMessages?: boolean, warningsAreErrors?: boolean) {
@@ -271,6 +258,19 @@ export class ErrorManager {
         }
 
         this.errorTypes.add(msg.issueCode);
+    }
+
+    /** @returns The first non ErrorManager code location for generating messages. */
+    private static getLastNonErrorManagerCodeLocation(e: Error): string {
+        const stack = e.stack!.split("\n");
+        let entry = "";
+        for (entry of stack) {
+            if (!entry.includes("ErrorManager")) {
+                break;
+            }
+        }
+
+        return entry;
     }
 
     /**

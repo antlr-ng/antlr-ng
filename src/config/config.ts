@@ -40,13 +40,6 @@ export interface IToolConfiguration {
      */
     grammarFiles: string[];
 
-    /**
-     * @deprecated Use the language field in a generator instead.
-     *
-     * The target programming language for the generated files.
-     */
-    language: string;
-
     /** The output directory for the generated files. Relative paths are resolved to the current working directory. */
     outputDirectory: string,
 
@@ -96,7 +89,6 @@ export const defineConfig = (config: Partial<IToolConfiguration>): IToolConfigur
 
     return {
         grammarFiles: config.grammarFiles ?? [],
-        language: config.language ?? "TypeScript",
         outputDirectory: config.outputDirectory ?? ".",
         lib: config.lib ?? ".",
         longMessages: config.longMessages ?? false,
