@@ -46,11 +46,6 @@ export abstract class Target {
     public constructor(private gen: CodeGenerator) {
     }
 
-    protected static addEscapedChar(map: Map<Character, string>, key: number, representation?: number): void {
-        representation = representation ?? key;
-        map.set(key, "\\" + representation);
-    }
-
     /**
      * For pure strings of Unicode char, how can we display it in the target language as a literal. Useful for dumping
      * predicates and such that may refer to chars that need to be escaped when represented as strings. Also,
@@ -287,7 +282,8 @@ export abstract class Target {
      * From outside, though, we see only ParserRuleContext unless there are externally visible stuff like args, locals,
      * explicit labels, etc...
      */
-    public getRuleFunctionContextStructName(targetGenerator: ITargetGenerator, ruleOrFunction: Rule | RuleFunction): string {
+    public getRuleFunctionContextStructName(targetGenerator: ITargetGenerator,
+        ruleOrFunction: Rule | RuleFunction): string {
         const rule = ruleOrFunction instanceof Rule ? ruleOrFunction : ruleOrFunction.rule;
         if (rule.g.isLexer()) {
             return this.templates.getInstanceOf("LexerRuleContext")!.render();
@@ -499,6 +495,11 @@ export abstract class Target {
 
     public genFile(g: Grammar | undefined, generatedText: string, fileName: string): void {
         this.getCodeGenerator().write(generatedText, fileName);
+    }
+
+    protected static addEscapedChar(map: Map<Character, string>, key: number, representation?: number): void {
+        representation = representation ?? key;
+        map.set(key, "\\" + representation);
     }
 
     protected abstract get reservedWords(): Set<string>;

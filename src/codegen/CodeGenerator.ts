@@ -37,8 +37,12 @@ export const targetLanguages = [
 
 export type SupportedLanguage = typeof targetLanguages[number];
 
-/**  General controller for code gen.  Can instantiate sub generator(s). */
+/**  General controller for code gen. Can instantiate sub generator(s). */
 export class CodeGenerator {
+    public target: Target;
+    public readonly g?: Grammar;
+    public readonly language: SupportedLanguage;
+
     private static readonly vocabFilePattern =
         "<tokens.keys:{t | <t>=<tokens.(t)>\n}>" +
         "<literals.keys:{t | <t>=<literals.(t)>\n}>";
@@ -55,10 +59,6 @@ export class CodeGenerator {
         ["Swift", SwiftTarget],
         ["TypeScript", TypeScriptTarget],
     ]);
-
-    public target: Target;
-    public readonly g?: Grammar;
-    public readonly language: SupportedLanguage;
 
     private readonly tool?: Tool;
 

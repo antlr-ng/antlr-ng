@@ -75,8 +75,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             [OutputModelObjects.AttributeDecl, (outputFile, recognizerName, srcOp) => {
                 return this.renderAttributeDecl(srcOp as OutputModelObjects.AttributeDecl);
             }],
-            [OutputModelObjects.CaptureNextTokenType, (outputFile, recognizerName, srcOp) => {
-                return this.renderCaptureNextTokenType(srcOp as OutputModelObjects.CaptureNextTokenType);
+            [OutputModelObjects.CaptureNextToken, (outputFile, recognizerName, srcOp) => {
+                return this.renderCaptureNextToken(srcOp as OutputModelObjects.CaptureNextToken);
             }],
             [OutputModelObjects.CaptureNextTokenType, (outputFile, recognizerName, srcOp) => {
                 return this.renderCaptureNextTokenType(srcOp as OutputModelObjects.CaptureNextTokenType);
@@ -398,7 +398,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         ];
 
         const block: Lines = [];
-        /*result.push(...this.renderMap(parser.tokens, 4, "public static readonly ${0} = ${1};"));
+        result.push(...this.renderMap(parser.tokens, 4, "public static readonly ${0} = ${1};"));
         result.push(...this.renderTemplatedObjectList(parser.rules, 4, "public static readonly RULE_${0} = ${1};",
             "name", "index"));
 
@@ -415,7 +415,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         block.push("");
         block.push("public static readonly ruleNames = [");
         block.push(...this.renderList(parser.ruleNames, { wrap: 63, indent: 4, quote: '"' }));
-        block.push("];");*/
+        block.push("];");
 
         block.push("");
         block.push(`public get grammarFileName(): string { return "${parser.grammarFileName}"; }`);
@@ -465,7 +465,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
                     funcs.push(...this.renderRuleSempredFunction(f));
                     cases.push("");
                     cases.push(`case ${f.ruleIndex}: {`);
-                    cases.push(`    return this.${f.name} _sempred(localContext as ${f.ctxType}, predIndex);`);
+                    cases.push(`    return this.${f.name}_sempred(localContext as ${f.ctxType}, predIndex);`);
                     cases.push(`}`);
                 });
 
@@ -480,6 +480,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             }
         }
 
+        block.push("");
         block.push(...this.renderSerializedATN(parser.atn, parser.name));
 
         block.push("");
@@ -583,7 +584,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     }
 
     private renderActionHandlers(lexer: OutputModelObjects.Lexer): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("actionHandlers");
 
         if (lexer.actionFuncs.size > 0) {
             result.push(`public override action(localContext: antlr.ParserRuleContext | null, ruleIndex: number, ` +
@@ -630,11 +631,11 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             result.push(`}`);
         }
 
-        return result;
+        return this.endRendering("actionHandlers", result);
     }
 
     private renderRuleActionFunction(r: OutputModelObjects.RuleActionFunction): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("ruleActionFunction");
 
         result.push(`private ${r.name}_action(localContext: ${r.ctxType} | null, actionIndex: number): void {`);
         result.push(`    switch (actionIndex) {`);
@@ -647,7 +648,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(`    }`);
         result.push(`}`);
 
-        return result;
+        return this.endRendering("ruleActionFunction", result);
     }
 
     /**
@@ -655,15 +656,18 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
      * impossible to maintain.
      */
     private renderRuleSempredFunction(r: OutputModelObjects.RuleSempredFunction): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("ruleSempredFunction");
 
         result.push(`private ${r.name}_sempred(localContext: ${r.ctxType} | null, predIndex: number): boolean {`);
         result.push(`    switch (predIndex) {`);
 
         for (const [index, action] of r.actions) {
-            result.push(`        case ${index}:`);
-            result.push(...this.formatLines(this.renderAction(action), 8));
-            result.push(`            break;`);
+            result.push(`        case ${index}: {`);
+
+            const actionText = this.renderAction(action).join("");
+            result.push(`            return ${actionText};`);
+            result.push(`        }`);
+            result.push("");
         }
         result.push(`        default:`);
         result.push(`    }`);
@@ -671,7 +675,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(`    return true;`);
         result.push(`}`);
 
-        return result;
+        return this.endRendering("ruleSempredFunction", result);
     }
 
     private renderRuleFunction(parserFile: OutputModelObjects.ParserFile, currentRule: OutputModelObjects.RuleFunction): Lines {
@@ -740,7 +744,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
     private renderSourceOps(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         srcOps?: Array<OutputModelObjects.SrcOp | null>): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("SourceOps");
 
         srcOps?.forEach((srcOp) => {
             if (srcOp) {
@@ -753,12 +757,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             }
         });
 
-        return result;
+        return this.endRendering("SourceOps", result);
     }
 
     private renderLeftRecursiveRuleFunction(parserFile: OutputModelObjects.ParserFile,
         currentRule: OutputModelObjects.LeftRecursiveRuleFunction): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("leftRecursiveRuleFunction");
 
         const modifiers = currentRule.modifiers.length > 0 ? currentRule.modifiers.join(" ") : "public";
         const args = currentRule.args?.map((a) => {
@@ -819,12 +823,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(...this.formatLines(block, 4));
         result.push(`}`);
 
-        return result;
+        return this.endRendering("leftRecursiveRuleFunction", result);
     }
 
     private renderCodeBlockForOuterMostAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         currentOuterMostAltCodeBlock: OutputModelObjects.CodeBlockForOuterMostAlt): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("CodeBlockForOuterMostAlt");
 
         if (currentOuterMostAltCodeBlock.altLabel) {
             result.push(`localContext = new ${this.toTitleCase(currentOuterMostAltCodeBlock.altLabel)}Context(localContext);`);
@@ -833,7 +837,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(`this.enterOuterAlt(localContext, ${currentOuterMostAltCodeBlock.alt.altNum});`);
         result.push(...this.renderCodeBlockForAlt(outputFile, recognizerName, currentOuterMostAltCodeBlock));
 
-        return result;
+        return this.endRendering("CodeBlockForOuterMostAlt", result);
     }
 
     private renderCodeBlockForAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
@@ -854,7 +858,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
     private renderDecls(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         decls: Iterable<OutputModelObjects.Decl>): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("Decls");
 
         for (const decl of decls) {
             const method = this.srcOpMap.get(decl.constructor as OutputModelObjectConstructor);
@@ -865,12 +869,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             }
         }
 
-        return result;
+        return this.endRendering("Decls", result);
     }
 
     private renderLL1AltBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         choice: OutputModelObjects.LL1AltBlock): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("LL1AltBlock");
 
         result.push(`this.state = ${choice.stateNumber};`);
         result.push(`this.errorHandler.sync(this);`);
@@ -883,50 +887,75 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
         result.push(`switch (this.tokenStream.LA(1)) {`);
 
+        const block: Lines = [];
         for (let i = 0; i < choice.alts.length; ++i) {
             const tokens = choice.altLook[i];
-            result.push(...this.formatLines(this.renderCases(recognizerName, tokens), 4));
+            block.push(...this.renderCases(recognizerName, tokens));
+            block[block.length - 1] += " {";
 
-            const alt = choice.alts[i];
-            result.push(...this.renderCodeBlockForAlt(outputFile, recognizerName, alt));
-            result.push(`    break;`);
+            const alt = choice.alts[i] as OutputModelObjects.CodeBlockForAlt | undefined;
+            if (alt) {
+                if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                    block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
+                        4));
+                } else {
+                    block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+                }
+            }
+
+            block.push(`    break;`);
+            block.push(`}`);
         }
 
+        result.push(...this.formatLines(block, 4));
         result.push(`    default:`);
         result.push(...this.formatLines(this.renderThrowNoViableAlt(choice.error), 8));
 
         result.push(`}`);
+        result.push("");
 
-        return result;
+        return this.endRendering("LL1AltBlock", result);
     }
 
     private renderLL1OptionalBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         choice: OutputModelObjects.LL1OptionalBlock): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("LL1OptionalBlock");
 
         result.push(`this.state = ${choice.stateNumber};`);
         result.push(`this.errorHandler.sync(this);`);
         result.push(`switch (this.tokenStream.LA(1)) {`);
 
-        for (let i = 0; i < choice.alts.length; ++i) {
+        const block: Lines = [];
+        for (let i = 0; i < choice.altLook.length; ++i) {
             const tokens = choice.altLook[i];
-            result.push(...this.formatLines(this.renderCases(recognizerName, tokens), 4));
+            block.push(...this.formatLines(this.renderCases(recognizerName, tokens), 4));
+            block[block.length - 1] += " {";
 
-            const alt = choice.alts[i];
-            result.push(...this.renderCodeBlockForAlt(outputFile, recognizerName, alt));
-            result.push(`    break;`);
+            const alt = choice.alts[i] as OutputModelObjects.CodeBlockForAlt | undefined;
+            if (alt) {
+                if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                    block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
+                        4));
+                } else {
+                    block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+                }
+            }
+
+            block.push(`    break;`);
+            block.push(`}`);
         }
 
+        result.push(...this.formatLines(block, 4));
         result.push(`    default:`);
         result.push(`        break;`);
         result.push(`}`);
 
-        return result;
+        return this.endRendering("LL1OptionalBlock", result);
     }
 
     private renderLL1OptionalBlockSingleAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         choice: OutputModelObjects.LL1OptionalBlockSingleAlt): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("LL1OptionalBlockSingleAlt");
 
         result.push(`this.state = ${choice.stateNumber};`);
         result.push(`this.errorHandler.sync(this);`);
@@ -934,16 +963,22 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
         result.push(`if (${this.renderSourceOps(outputFile, recognizerName, [choice.expr]).join("")}) {`);
         choice.alts.forEach((alt, index) => {
-            result.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                result.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
+                    4));
+            } else {
+                result.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+            }
         });
         result.push(`}`);
+        result.push("");
 
-        return result;
+        return this.endRendering("LL1OptionalBlockSingleAlt", result);
     }
 
     private renderLL1StarBlockSingleAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         choice: OutputModelObjects.LL1StarBlockSingleAlt): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("LL1StarBlockSingleAlt");
 
         result.push(`this.state = ${choice.stateNumber};`);
         result.push(`this.errorHandler.sync(this);`);
@@ -954,7 +989,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(`while (${this.renderSourceOps(outputFile, recognizerName, srcOps).join()}) {`);
 
         choice.alts.forEach((alt, index) => {
-            result.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                result.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
+                    4));
+            } else {
+                result.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+            }
         });
 
         result.push(`    this.state = ${choice.loopBackStateNumber};`);
@@ -962,12 +1002,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(...this.formatLines(this.renderSourceOps(outputFile, recognizerName, choice.iteration), 4));
         result.push(`}`);
 
-        return result;
+        return this.endRendering("LL1StarBlockSingleAlt", result);
     }
 
     private renderLL1PlusBlockSingleAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         choice: OutputModelObjects.LL1PlusBlockSingleAlt): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("LL1PlusBlockSingleAlt");
 
         result.push(`this.state = ${choice.blockStartStateNumber};`);
         result.push(`this.errorHandler.sync(this);`);
@@ -985,7 +1025,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         const srcOps = choice.loopExpr ? [choice.loopExpr] : undefined;
         result.push(`} while (${this.renderSourceOps(outputFile, recognizerName, srcOps).join()});`);
 
-        return result;
+        return this.endRendering("LL1PlusBlockSingleAlt", result);
     }
 
     /**
@@ -1015,7 +1055,13 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         const block: Lines = [];
         choice.alts.forEach((alt, index) => {
             block.push(`case ${index + 1}: {`);
-            block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
+                    4));
+            } else {
+                block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+            }
             block.push(`    break;`);
             block.push(`}`);
         });
@@ -1029,7 +1075,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
     private renderOptionalBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         choice: OutputModelObjects.OptionalBlock): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("OptionalBlock");
 
         result.push(`this.state = ${choice.stateNumber};`);
         result.push(`this.errorHandler.sync(this);`);
@@ -1039,7 +1085,13 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         const blockAST = choice.ast as OptionalBlockAST;
         choice.alts.forEach((alt, index) => {
             block.push(`case ${index + 1}${!blockAST.greedy ? " + 1" : ""}: {`);
-            block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
+                    4));
+            } else {
+                block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+            }
             block.push(`    break;`);
             block.push(`}`);
         });
@@ -1047,12 +1099,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(...this.formatLines(block, 4));
         result.push(`}`);
 
-        return result;
+        return this.endRendering("OptionalBlock", result);
     }
 
     private renderStarBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         choice: OutputModelObjects.StarBlock): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("StarBlock");
 
         const blockAST = choice.ast as OptionalBlockAST;
         result.push(`this.state = ${choice.stateNumber};`);
@@ -1065,7 +1117,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         block.push(...this.formatLines(this.renderSourceOps(outputFile, recognizerName, choice.iteration), 4));
 
         choice.alts.forEach((alt) => {
-            block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
+                    4));
+            } else {
+                block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+            }
         });
 
         block.push(`}`);
@@ -1076,12 +1133,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(...this.formatLines(block, 4));
         result.push(`}`);
 
-        return result;
+        return this.endRendering("StarBlock", result);
     }
 
     private renderPlusBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         choice: OutputModelObjects.PlusBlock): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("PlusBlock");
 
         const blockAST = choice.ast as OptionalBlockAST;
         result.push(`this.state = ${choice.blockStartStateNumber};`); //  Alt block decision.
@@ -1095,7 +1152,13 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         for (let i = 0; i < choice.alts.length; ++i) {
             const alt = choice.alts[i];
             block.push(`case ${i}${!blockAST.greedy ? " + 1" : ""}: {`);
-            block.push(...this.renderCodeBlockForAlt(outputFile, recognizerName, alt));
+
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
+                    4));
+            } else {
+                block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
+            }
             block.push(`    break;`);
             block.push(`}`);
         }
@@ -1111,7 +1174,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(...this.formatLines(block, 4));
         result.push(`} while (alternative !== ${choice.exitAlt} && alternative !== antlr.ATN.INVALID_ALT_NUMBER);`);
 
-        return result;
+        return this.endRendering("PlusBlock", result);
     }
 
     private renderThrowNoViableAlt(t: OutputModelObjects.ThrowNoViableAlt): Lines {
@@ -1122,7 +1185,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         const result: Lines = [];
 
         s.bitsets.forEach((bits, index) => {
-            const or = index > 0 ? "    || " : "";
+            const or = index > 0 ? " || " : "";
 
             const rest = bits.tokens.length > 2 ? bits.tokens.slice(2) : [];
             if (rest.length > 0) {
@@ -1158,13 +1221,13 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     }
 
     private renderCases(recognizerName: string, tokens: OutputModelObjects.ITokenInfo[]): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("Cases");
 
         for (const t of tokens) {
             result.push(`case ${recognizerName}.${t.name}:`);
         }
 
-        return result;
+        return this.endRendering("Cases", result);
     }
 
     private renderInvokeRule(r: OutputModelObjects.InvokeRule): Lines {
@@ -1177,7 +1240,6 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             for (const l of r.labels) {
                 labels += `${this.renderLabelRef(l)} = `;
             }
-            result.push(`${labels}this.tokenStream.LT(1);`);
         }
 
         let args = "";
@@ -1197,7 +1259,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     }
 
     private renderMatchToken(parserName: string, m: OutputModelObjects.MatchToken): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("MatchToken");
 
         result.push(`this.state = ${m.stateNumber};`);
 
@@ -1209,7 +1271,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         }
         result.push(`${line}this.match(${parserName}.${m.name});`);
 
-        return result;
+        return this.endRendering("MatchToken", result);
     }
 
     private renderMatchSet(m: OutputModelObjects.MatchSet): Lines {
@@ -1226,14 +1288,18 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(`this.state = ${m.stateNumber};`);
 
         if (m.labels.length > 0) {
-            let lables = "";
+            let labels = "";
             for (const l of m.labels) {
-                lables += `${this.renderLabelRef(l)} = `;
+                labels += `${this.renderLabelRef(l)} = `;
             }
-            result.push(`${lables}this.tokenStream.LT(1);`);
+            result.push(`${labels}this.tokenStream.LA(1);`);
         }
 
-        result.push(this.renderCaptureNextToken(m.capture)[0]);
+        if (m.capture instanceof OutputModelObjects.CaptureNextTokenType) {
+            result.push(this.renderCaptureNextTokenType(m.capture)[0]);
+        } else {
+            result.push(this.renderCaptureNextToken(m.capture)[0]);
+        }
 
         if (invert) {
             result.push(`if (${m.expr.varName} <= 0 || ${this.renderTestSetInline(m.expr)}) {`);
@@ -1258,7 +1324,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     }
 
     private renderWildcard(w: OutputModelObjects.Wildcard): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("Wildcard");
 
         result.push(`this.state = ${w.stateNumber};`);
 
@@ -1270,7 +1336,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         }
         result.push(`${lables}this.matchWildcard();`);
 
-        return result;
+        return this.endRendering("Wildcard", result);
     }
 
     private renderAction(a?: OutputModelObjects.Action): Lines {
@@ -1282,29 +1348,29 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     }
 
     private renderSemPred(p: OutputModelObjects.SemPred): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("SemPred");
 
         result.push(`this.state = ${p.stateNumber};`);
 
-        const chunks = this.renderActionChunks(p.chunks).join(" "); // Should actually be only one chunk.
+        const chunks = this.renderActionChunks(p.chunks).join(""); // Should actually be only one chunk.
         result.push(`if (!(${chunks})) {`);
 
-        const failChunks = this.renderActionChunks(p.failChunks).join(" ");
+        const failChunks = this.renderActionChunks(p.failChunks).join("");
         result.push(`    throw this.createFailedPredicateException` +
             `(${p.predicate}${failChunks.length > 0 ? failChunks : (p.msg ? p.msg : "")});`);
         result.push(`}`);
 
-        return result;
+        return this.endRendering("SemPred", result);
     }
 
     private renderExceptionClause(e: OutputModelObjects.ExceptionClause): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("ExceptionClause");
 
         result.push(`} catch (<catchArg>) {`);
         result.push(`    ${this.renderAction(e.catchAction)}`);
         result.push(`}`);
 
-        return result;
+        return this.endRendering("ExceptionClause", result);
     }
 
     private renderActionTemplate(t: OutputModelObjects.ActionTemplate): Lines { return [t.st.render()]; }
@@ -1378,7 +1444,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         const ctx = this.renderContext(s);
         const rhsChunks = s.rhsChunks.map((c) => {
             return this.renderActionChunks([c]);
-        }).join(" ");
+        }).join("");
 
         return [`(${ctx}!._${s.escapedName} = ${rhsChunks})`];
     }
@@ -1386,7 +1452,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderSetNonLocalAttr(s: OutputModelObjects.SetNonLocalAttr): Lines {
         const rhsChunks = s.rhsChunks.map((c) => {
             return this.renderActionChunks([c]);
-        }).join(" ");
+        }).join("");
 
         return [`(this.getInvokingContext(${s.ruleIndex}) as ${this.toTitleCase(s.ruleName)}Context).` +
             `${s.escapedName} = ${rhsChunks};`];
@@ -1499,7 +1565,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
     private renderContextTokenListIndexedGetterDecl(recognizerName: string,
         t: OutputModelObjects.ContextTokenListIndexedGetterDecl): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("ContextTokenListIndexedGetterDecl");
 
         result.push(`public ${t.name} (i: number): antlr.TerminalNode | null;`);
         result.push(`public ${t.name} (i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {`);
@@ -1510,7 +1576,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(`    }`);
         result.push(`}`);
 
-        return result;
+        return this.endRendering("ContextTokenListIndexedGetterDecl", result);
     }
 
     private renderContextRuleGetterDecl(r: OutputModelObjects.ContextRuleGetterDecl): Lines {
@@ -1527,7 +1593,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     }
 
     private renderContextRuleListIndexedGetterDecl(r: OutputModelObjects.ContextRuleListIndexedGetterDecl): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("ContextRuleListIndexedGetterDecl");
 
         result.push(`public ${r.escapedName}(i: number): ${r.ctxName} | null;`);
         result.push(`public ${r.escapedName}(i?: number): ${r.ctxName}[] | ${r.ctxName} | null {`);
@@ -1538,7 +1604,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(`    return this.getRuleContext(i, ${r.ctxName});`);
         result.push(`}`);
 
-        return result;
+        return this.endRendering("ContextRuleListIndexedGetterDecl", result);
     }
 
     private renderCaptureNextToken(d: OutputModelObjects.CaptureNextToken): Lines {
@@ -1551,12 +1617,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
     private renderStructDecl(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         struct: OutputModelObjects.StructDecl): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("StructDecl");
 
         const contextSuperClass = (outputFile as OutputModelObjects.ParserFile).contextSuperClass;
         let superClass = "antlr.ParserRuleContext";
         if (contextSuperClass) {
-            superClass = this.renderActionChunks([contextSuperClass]).join(", ");
+            superClass = this.renderActionChunks([contextSuperClass]).join("");
         }
 
         let interfaces = "";
@@ -1620,12 +1686,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(...this.formatLines(block, 4));
         result.push(`}`);
 
-        return result;
+        return this.endRendering("StructDecl", result);
     }
 
     private renderAltLabelStructDecl(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         currentRule: OutputModelObjects.RuleFunction, struct: OutputModelObjects.AltLabelStructDecl): Lines {
-        const result: Lines = [];
+        const result: Lines = this.startRendering("AltLabelStructDecl");
 
         result.push(`export class ${struct.escapedName} extends ${this.toTitleCase(struct.parentRule)}Context {`);
 
@@ -1658,7 +1724,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(...this.formatLines(block, 4));
         result.push(`}`);
 
-        return result;
+        return this.endRendering("AltLabelStructDecl", result);
     }
 
     private renderListenerDispatchMethod(grammarName: string, struct: OutputModelObjects.StructDecl,
@@ -1768,7 +1834,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
     private startRendering(section: string): Lines {
         if (logRendering) {
-            return [`// Start rendering ${section}`];
+            return [`/* Start rendering ${section} */`];
         }
 
         return [];
@@ -1776,7 +1842,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
     private endRendering(section: string, lines: Lines): Lines {
         if (logRendering) {
-            lines.push(`// End rendering ${section}`);
+            lines.push(`/* End rendering ${section} */`);
         }
 
         return lines;
