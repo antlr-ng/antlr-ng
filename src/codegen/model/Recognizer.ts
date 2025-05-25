@@ -75,7 +75,7 @@ export abstract class Recognizer extends OutputModelObject {
         }
 
         if (g.getOptionString("superClass")) {
-            this.superClass = new ActionText(undefined, g.getOptionString("superClass") ?? undefined);
+            this.superClass = new ActionText(undefined, [g.getOptionString("superClass")]);
         }
 
         this.tokenNames = Recognizer.translateTokenStringsToTarget(g.getTokenDisplayNames(), gen);

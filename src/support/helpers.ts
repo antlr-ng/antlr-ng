@@ -5,6 +5,7 @@
 
 import { IntervalSet, Token, type Vocabulary } from "antlr4ng";
 
+import { CodeBlockForOuterMostAlt } from "../codegen/model/CodeBlockForOuterMostAlt.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import type { ICodeBlockForOuterMostAlt } from "../types.js";
@@ -38,7 +39,7 @@ export const isTokenName = (id: string): boolean => {
  * @returns `true` if the object implements the interface; otherwise, `false`.
  */
 export const isCodeBlockForOuterMostAlt = (obj: object): obj is ICodeBlockForOuterMostAlt => {
-    return ("codeBlockLevel" in obj) && ("treeLevel" in obj);
+    return obj instanceof CodeBlockForOuterMostAlt;
 };
 
 /**
