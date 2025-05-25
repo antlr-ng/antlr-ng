@@ -6,14 +6,10 @@
 /* eslint-disable jsdoc/require-param */
 
 import { ModelElement } from "../../../misc/ModelElement.js";
-import { type IOutputModelFactory } from "../../IOutputModelFactory.js";
 import { SrcOp } from "../SrcOp.js";
 import { type Decl } from "./Decl.js";
 
 export class CodeBlock extends SrcOp {
-    public codeBlockLevel: number;
-    public treeLevel: number;
-
     @ModelElement
     public locals = new Set<Decl>();
 
@@ -22,17 +18,6 @@ export class CodeBlock extends SrcOp {
 
     @ModelElement
     public ops: SrcOp[] = [];
-
-    public constructor(factory: IOutputModelFactory);
-    public constructor(factory: IOutputModelFactory, treeLevel: number, codeBlockLevel: number);
-    public constructor(...args: unknown[]) {
-        const factory = args[0] as IOutputModelFactory;
-        super(factory);
-        if (args.length === 3) {
-            this.treeLevel = args[1] as number;
-            this.codeBlockLevel = args[2] as number;
-        }
-    }
 
     /** Add local var decl */
     public addLocalDecl(d: Decl): void {

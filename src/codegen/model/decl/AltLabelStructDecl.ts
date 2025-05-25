@@ -11,7 +11,7 @@ import { ListenerDispatchMethod } from "../ListenerDispatchMethod.js";
 import { VisitorDispatchMethod } from "../VisitorDispatchMethod.js";
 import { StructDecl } from "./StructDecl.js";
 
-/** A StructDecl to handle a -&gt; label on alt */
+/** A StructDecl to handle a -> label on alt */
 export class AltLabelStructDecl extends StructDecl {
     public altNum: number;
     public parentRule: string;

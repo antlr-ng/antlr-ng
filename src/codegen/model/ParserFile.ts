@@ -42,7 +42,7 @@ export class ParserFile extends OutputFile {
         this.grammarName = g.name;
 
         if (g.getOptionString("contextSuperClass")) {
-            this.contextSuperClass = new ActionText(undefined, g.getOptionString("contextSuperClass"));
+            this.contextSuperClass = new ActionText(undefined, [g.getOptionString("contextSuperClass")]);
         }
     }
 
