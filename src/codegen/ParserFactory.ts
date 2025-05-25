@@ -371,10 +371,9 @@ export class ParserFactory implements IOutputModelFactory {
         if (r.namedActions.has("after") || r.namedActions.has("finally")) {
             // See OutputModelController.buildLeftRecursiveRuleFunction and Parser.exitRule for other places
             // which set stop.
-            const gen = this.getGenerator();
-            const codegenTemplates = gen.templates;
-            const setStopTokenAST = codegenTemplates.getInstanceOf("recRuleSetStopToken")!;
-            const setStopTokenAction = new Action(this, ruleFunction.ruleCtx, setStopTokenAST);
+            const targetGenerator = this.getGenerator().targetGenerator;
+            const code = targetGenerator.renderRecRuleSetStopToken();
+            const setStopTokenAction = new Action(this, ruleFunction.ruleCtx, code);
             const ops = new Array<SrcOp>(1);
             ops.push(setStopTokenAction);
 

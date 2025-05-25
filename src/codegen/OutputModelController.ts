@@ -5,8 +5,6 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
-import type { IST } from "stringtemplate4ts";
-
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
 import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
@@ -17,7 +15,6 @@ import { Utils } from "../misc/Utils.js";
 import { Alternative } from "../tool/Alternative.js";
 import type { ErrorManager } from "../tool/ErrorManager.js";
 import { Grammar } from "../tool/Grammar.js";
-import { IssueCode } from "../tool/Issues.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { Rule } from "../tool/Rule.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
@@ -150,7 +147,7 @@ export class OutputModelController {
         ruleFunction.fillNamedActions(this.factory, r);
 
         if (r instanceof LeftRecursiveRule) {
-            this.buildLeftRecursiveRuleFunction(r, ruleFunction as LeftRecursiveRuleFunction);
+            this.buildLeftRecursiveRuleFunction(parser, r, ruleFunction as LeftRecursiveRuleFunction);
         } else {
             this.buildNormalRuleFunction(r, ruleFunction);
         }
@@ -158,25 +155,25 @@ export class OutputModelController {
         const g = this.getGrammar();
         for (const a of r.actions) {
             if (a instanceof PredAST) {
-                const p = a;
                 let rsf = parser.sempredFuncs.get(r);
                 if (rsf === undefined) {
                     rsf = new RuleSempredFunction(this.factory, r, ruleFunction.ctxType);
                     parser.sempredFuncs.set(r, rsf);
                 }
-                rsf.actions.set(g.sempreds.get(p)!, new Action(this.factory, p));
+                rsf.actions.set(g.sempreds.get(a)!, new Action(this.factory, a));
             }
         }
 
         this.popCurrentRule();
     }
 
-    public buildLeftRecursiveRuleFunction(r: LeftRecursiveRule, ruleFunction: LeftRecursiveRuleFunction): void {
+    public buildLeftRecursiveRuleFunction(parser: Parser, r: LeftRecursiveRule,
+        ruleFunction: LeftRecursiveRuleFunction): void {
         this.buildNormalRuleFunction(r, ruleFunction);
 
         // Now inject code to start alts.
         const gen = this.factory.getGenerator()!;
-        const codegenTemplates = gen.templates;
+        const targetGenerator = gen.targetGenerator;
 
         // Pick out alt(s) for primaries.
         const outerAlt = ruleFunction.code[0] as CodeBlockForOuterMostAlt;
@@ -210,50 +207,37 @@ export class OutputModelController {
                 continue;
             }
 
-            const altActionST = codegenTemplates.getInstanceOf("recRuleReplaceContext")!;
-            altActionST.add("ctxName", Utils.capitalize(altInfo.altLabel));
-            const altAction = new Action(this.factory, ruleFunction.altLabelCtxs!.get(altInfo.altLabel)!, altActionST);
+            const code = targetGenerator.renderRecRuleReplaceContext(Utils.capitalize(altInfo.altLabel));
+            const altAction = new Action(this.factory, ruleFunction.altLabelCtxs!.get(altInfo.altLabel), code);
             const alt = primaryAltsCode[i];
             alt.insertOp(0, altAction);
         }
 
         // Insert code to set ctx.stop after primary block and before op * loop.
-        const setStopTokenAST = codegenTemplates.getInstanceOf("recRuleSetStopToken")!;
-        const setStopTokenAction = new Action(this.factory, ruleFunction.ruleCtx, setStopTokenAST);
+        let code = targetGenerator.renderRecRuleSetStopToken();
+        const setStopTokenAction = new Action(this.factory, ruleFunction.ruleCtx, code);
         outerAlt.insertOp(1, setStopTokenAction);
 
         // Insert code to set previous context at start of * loop.
-        const setPrevCtx = codegenTemplates.getInstanceOf("recRuleSetPrevCtx")!;
-        const setPrevCtxAction = new Action(this.factory, ruleFunction.ruleCtx, setPrevCtx);
+        code = targetGenerator.renderRecRuleSetPrevCtx();
+        const setPrevCtxAction = new Action(this.factory, ruleFunction.ruleCtx, code);
         opAltStarBlock.addIterationOp(setPrevCtxAction);
 
         // Insert code in front of each op alt to create specialized ctx if there was an alt label.
         for (let i = 0; i < opAltsCode.length; i++) {
-            let altActionST: IST;
             const altInfo = r.recOpAlts.getElement(i)!;
-            let templateName: string;
+
             if (altInfo.altLabel !== undefined) {
-                templateName = "recRuleLabeledAltStartAction";
-                altActionST = codegenTemplates.getInstanceOf(templateName)!;
-                altActionST.add("currentAltLabel", altInfo.altLabel);
+                code = targetGenerator.renderRecRuleLabeledAltStartAction(
+                    parser.name, r.name, altInfo.altLabel, altInfo.leftRecursiveRuleRefLabel, altInfo.isListLabel,
+                );
             } else {
-                templateName = "recRuleAltStartAction";
-                altActionST = codegenTemplates.getInstanceOf(templateName)!;
-                altActionST.add("ctxName", Utils.capitalize(r.name));
-            }
-
-            altActionST.add("ruleName", r.name);
-
-            // Add label of any lr ref we deleted.
-            altActionST.add("label", altInfo.leftRecursiveRuleRefLabel);
-            if (altActionST.impl!.formalArguments!.has("isListLabel")) {
-                altActionST.add("isListLabel", altInfo.isListLabel);
-            } else if (altInfo.isListLabel) {
-                this.errorManager.toolError(IssueCode.CodeTemaplateArgIssue, templateName, "isListLabel");
+                code = targetGenerator.renderRecRuleAltStartAction(parser.name, r.name, r.name,
+                    altInfo.leftRecursiveRuleRefLabel, altInfo.isListLabel);
             }
 
             const decl = ruleFunction.altLabelCtxs!.get(altInfo.altLabel!)!;
-            const altAction = new Action(this.factory, decl, altActionST);
+            const altAction = new Action(this.factory, decl, code);
             opAltsCode[i].insertOp(0, altAction);
         }
     }
