@@ -204,6 +204,21 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
     renderRecRuleAltStartAction(parserName: string, ruleName: string, ctxName: string, label: string | undefined,
         isListLabel: boolean): Lines;
 
+    /** Part of the left-recursive-rule pre-rendering. */
+    renderRecRuleReplaceContext(ctxName: string): Lines;
+
+    renderRecRuleAltPredicate(ruleName: string, opPrec: number): Lines;
+    renderRecRuleSetReturnAction(src: string, name: string): Lines;
+    renderRecRuleSetStopToken(): Lines;
+
+    renderRecRuleSetPrevCtx(): Lines;
+
+    renderRecRuleLabeledAltStartAction(parserName: string, ruleName: string, currentAltLabel: string,
+        label: string | undefined, isListLabel: boolean): Lines;
+
+    renderRecRuleAltStartAction(parserName: string, ruleName: string, ctxName: string, label: string | undefined,
+        isListLabel: boolean): Lines;
+
     /** @returns the full name for a rule function. */
     getRuleFunctionContextStructName(r: Rule): string;
 

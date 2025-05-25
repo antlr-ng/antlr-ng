@@ -5,6 +5,7 @@
 
 import { IntervalSet, Token, type Vocabulary } from "antlr4ng";
 
+import { CodeBlockForOuterMostAlt } from "../codegen/model/CodeBlockForOuterMostAlt.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import { Character } from "./Character.js";

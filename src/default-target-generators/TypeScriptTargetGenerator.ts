@@ -1438,7 +1438,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     /** Produces smaller bytecode only when `bits.ttypes` contains more than two items. */
     private renderBitsetBitfieldComparison(s: OutputModelObjects.TestSetInline,
         bits: OutputModelObjects.Bitset): string {
-        return `(${this.renderTestShiftInRange(this.renderOffsetShiftVar(s.varName, bits.shift))}` +
+        return `(${this.renderTestShiftInRange(this.renderOffsetShiftVar(s.varName, bits.shift))} ` +
             `&& ((1 << ${this.renderOffsetShiftVar(s.varName, bits.shift)}) & ${bits.calculated}) !== 0)`;
     }
 
@@ -1914,10 +1914,6 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             }).join(", ");
         }
 
-        result.push(
-            "// for running tests with parameters, TODO: discuss strategy for typed parameters in CI",
-            "// eslint-disable-next-line no-unused-vars",
-            "type int = number;",
         result.push(`export class ${struct.escapedName} extends ${superClass}${interfaces} {`);
 
         const decls = this.renderDecls(outputFile, struct.name, struct.attrs);
