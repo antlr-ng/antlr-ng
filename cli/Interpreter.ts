@@ -119,7 +119,6 @@ export class Interpreter {
                 generateVisitor: false,
                 atn: false,
             },
-            language: "TypeScript",
             longMessages: false,
             warningsAreErrors: false,
             forceAtn: false,

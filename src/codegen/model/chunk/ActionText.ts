@@ -5,11 +5,12 @@
 
 import { ActionChunk } from "./ActionChunk.js";
 import { StructDecl } from "../decl/StructDecl.js";
+import type { Lines } from "../../ITargetGenerator.js";
 
 export class ActionText extends ActionChunk {
-    public text?: string;
+    public text?: Lines;
 
-    public constructor(ctx?: StructDecl, text?: string) {
+    public constructor(ctx?: StructDecl, text?: Lines) {
         super(ctx);
         this.text = text;
     }

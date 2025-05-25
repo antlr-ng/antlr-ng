@@ -201,7 +201,7 @@ export class ActionTranslator implements IActionSplitterListener {
         if (this.node.resolver.resolveToAttribute(x.text!, this.node) !== null) {
             // Must be a member access to a predefined attribute like $ctx.foo.
             this.attr(expr, x);
-            this.chunks.push(new ActionText(this.nodeContext, "." + y.text!));
+            this.chunks.push(new ActionText(this.nodeContext, ["." + y.text!]));
 
             return;
         }
@@ -271,7 +271,7 @@ export class ActionTranslator implements IActionSplitterListener {
     }
 
     public text(text: string): void {
-        this.chunks.push(new ActionText(this.nodeContext, text));
+        this.chunks.push(new ActionText(this.nodeContext, [text]));
     }
 
     public getTokenLabel(x: string): string {
