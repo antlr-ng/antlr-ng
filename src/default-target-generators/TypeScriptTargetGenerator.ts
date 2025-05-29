@@ -148,6 +148,9 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             [OutputModelObjects.TokenTypeDecl, (outputFile, recognizerName, srcOp) => {
                 return this.renderTokenTypeDecl(srcOp as OutputModelObjects.TokenTypeDecl);
             }],
+            [OutputModelObjects.TokenListDecl, (outputFile, recognizerName, srcOp) => {
+                return this.renderTokenListDecl(srcOp as OutputModelObjects.TokenListDecl);
+            }],
             [OutputModelObjects.ThrowNoViableAlt, (outputFile, recognizerName, srcOp) => {
                 return this.renderThrowNoViableAlt(srcOp as OutputModelObjects.ThrowNoViableAlt);
             }],

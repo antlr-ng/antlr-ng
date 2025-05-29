@@ -176,7 +176,7 @@ export class ToolTestUtils {
                 if (ignoreWarnings) {
                     const errors = [];
                     for (const error of queue.errors) {
-                        const msgST = queue.errorManager.getMessageTemplate(error)!;
+                        const msgST = queue.errorManager.formatMessage(error)!;
                         errors.push(msgST.render());
                     }
 

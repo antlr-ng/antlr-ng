@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { Command, Option } from "commander";
+import { Command } from "commander";
 import { type IFs, fs as defaultFs } from "memfs";
 import { useFileSystem as ufs } from "stringtemplate4ts";
 
@@ -39,7 +39,6 @@ export interface IToolParameters {
     lib?: string,
     atn?: boolean,
     encoding?: string,
-    msgFormat?: string,
     longMessages?: boolean;
     generateListener?: boolean,
     generateVisitor?: boolean,
@@ -86,8 +85,6 @@ export const parseToolParameters = (args: string[]): IToolParameters => {
         .option("--lib <path>", "specify location of grammars, tokens files")
         .option<boolean>("--atn <boolean>", "Generate rule augmented transition network diagrams.", parseBoolean)
         .option("-e, --encoding <string>", "Specify grammar file encoding; e.g., ucs-2.")
-        .addOption(new Option("--message-format <string>", "Specify output style for messages in antlr, gnu, " +
-            "vs2005.").choices(["antlr", "gnu", "vs2005"]))
         .option<boolean>("--long-messages <boolean>",
             "Show exception details when available for errors and warnings.", parseBoolean)
         .option<boolean>("-l, --generate-listener <boolean>", "Generate parse tree listener.", parseBoolean)

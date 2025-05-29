@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ANTLRMessage } from "./ANTLRMessage.js";
+import { Issue } from "./Issue.js";
 import type { ErrorManager } from "./ErrorManager.js";
 
 export class ToolListener {
@@ -17,27 +17,20 @@ export class ToolListener {
         console.log(msg);
     }
 
-    public error(msg: ANTLRMessage): void {
-        const msgST = this.errorManager.getMessageTemplate(msg);
-        if (msgST) {
-            let outputMsg = msgST.render();
-            if (this.errorManager.formatWantsSingleLineMessage()) {
-                outputMsg = outputMsg.replaceAll("\n", " ");
-            }
-
-            console.log(outputMsg);
-        }
+    public error(msg: Issue): void {
+        console.error(this.formatMessage(msg));
     }
 
-    public warning(msg: ANTLRMessage): void {
-        const msgST = this.errorManager.getMessageTemplate(msg);
-        if (msgST) {
-            let outputMsg = msgST.render();
-            if (this.errorManager.formatWantsSingleLineMessage()) {
-                outputMsg = outputMsg.replaceAll("\n", " ");
-            }
+    public warning(msg: Issue): void {
+        console.warn(this.formatMessage(msg));
+    }
 
-            console.log(outputMsg);
+    private formatMessage(msg: Issue): string {
+        let text = msg.toString();
+        if (this.errorManager.formatWantsSingleLineMessage()) {
+            text = text.replaceAll("\n", " ");
         }
+
+        return text;
     }
 }

@@ -57,8 +57,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
 
     public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage,
         targetGenerator: ITargetGenerator) {
-        super(new CommonTreeNodeStream(ruleAST),
-            tool.errorManager);
+        super(new CommonTreeNodeStream(ruleAST), tool.errorManager);
         this.tool = tool;
         this.ruleName = ruleName;
         this.language = language;
@@ -124,7 +123,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         }
 
         if (this.altAssociativity.get(alt) && this.altAssociativity.get(alt) !== assoc) {
-            this.tool.errorManager.toolError(IssueCode.InternalError, "all operators of alt " + alt +
+            this.tool.errorManager.toolError(IssueCode.InternalError, undefined, "all operators of alt " + alt +
                 " of left-recursive rule must have same associativity");
         }
         this.altAssociativity.set(alt, assoc);
