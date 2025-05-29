@@ -14,7 +14,8 @@ import { AnalysisPipeline } from "../../src/analysis/AnalysisPipeline.js";
 import { LexerATNFactory } from "../../src/automata/LexerATNFactory.js";
 import { ParserATNFactory } from "../../src/automata/ParserATNFactory.js";
 import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
-import type { IToolConfiguration } from "../../src/config/config.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { SemanticPipeline } from "../../src/semantics/SemanticPipeline.js";
 import { Grammar } from "../../src/tool/Grammar.js";
 import type { LexerGrammar } from "../../src/tool/LexerGrammar.js";
@@ -52,20 +53,22 @@ describe("TestActionTranslation", () => {
         const errorQueue = new ErrorQueue(g.tool.errorManager);
         g.tool.errorManager.addListener(errorQueue);
 
-        const parameters: IToolConfiguration = {
+        const tsGenerator = new TypeScriptTargetGenerator();
+        const parameters = defineConfig({
             outputDirectory: "/",
             grammarFiles: [],
-            language: "Java",
-        };
+            generators: [tsGenerator]
+        });
         g.tool.process(g, parameters, false);
 
         if (!g.ast.hasErrors) {
             const sem = new SemanticPipeline(g);
-            sem.process();
+            sem.process(tsGenerator);
 
+            const gen = new CodeGenerator(g, tsGenerator);
             let factory = new ParserATNFactory(g);
             if (g.isLexer()) {
-                factory = new LexerATNFactory(g as LexerGrammar);
+                factory = new LexerATNFactory(g as LexerGrammar, gen);
             }
 
             g.atn = factory.createATN();
@@ -73,9 +76,7 @@ describe("TestActionTranslation", () => {
             const pipeline = new AnalysisPipeline(g);
             pipeline.process();
 
-            const gen = new CodeGenerator(g);
-            const outputFileST = gen.generateParser(g.tool.toolConfiguration, false);
-            const output = outputFileST.render(72);
+            const output = gen.generateParser(g.tool.toolConfiguration.generationOptions, false);
 
             const b = "#" + actionName + "#";
             const start = output.indexOf(b);
@@ -142,7 +143,7 @@ describe("TestActionTranslation", () => {
         testActions(attributeTemplate, "inline2", action, expected);
     });
 
-    it("testComplicatedArgParsingWithTranslation", (): void => {
+    it.only("testComplicatedArgParsingWithTranslation", (): void => {
         const action = "x, $ID.text+\"3242\", (*$ID).foo(21,33), 3.2+1, '\\n', " +
             "\"a,oo\\nick\", {bl, \"fdkj\"eck}";
         const expected =

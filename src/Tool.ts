@@ -67,7 +67,7 @@ export class Tool implements ITool {
             }
 
             // Reset and (re)configure the error manager.
-            this.errorManager.configure(this.toolConfiguration.longMessages, this.toolConfiguration.warningsAreErrors);
+            this.errorManager.configure(this.toolConfiguration.messageFormatOptions);
 
             this.processGrammarsOnCommandLine();
         } catch {
@@ -78,7 +78,7 @@ export class Tool implements ITool {
                     const logName = this.logMgr.save();
                     console.log("wrote " + logName);
                 } catch (ioe) {
-                    this.errorManager.toolError(IssueCode.InternalError, ioe);
+                    this.errorManager.toolError(IssueCode.InternalError, ioe as Error);
                 }
             }
         }
@@ -97,6 +97,9 @@ export class Tool implements ITool {
      */
     public process(g: Grammar, configuration: IToolConfiguration, genCode: boolean): void {
         this.toolConfiguration = configuration;
+
+        // Reset and (re)configure the error manager.
+        this.errorManager.configure(configuration.messageFormatOptions);
 
         g.loadImportedGrammars(new Set());
 
@@ -164,7 +167,7 @@ export class Tool implements ITool {
                     const fileName = this.getOutputFile(g, g.name + ".interp");
                     fileSystem.writeFileSync(fileName, interpFile);
                 } catch (ioe) {
-                    this.errorManager.toolError(IssueCode.CannotWriteFile, ioe);
+                    this.errorManager.toolError(IssueCode.CannotWriteFile, ioe as Error);
                 }
             }
 
@@ -312,7 +315,7 @@ export class Tool implements ITool {
 
             return this.parse(input);
         } catch (ioe) {
-            this.errorManager.toolError(IssueCode.CannotOpenFile, ioe, fileName);
+            this.errorManager.toolError(IssueCode.CannotOpenFile, ioe as Error, fileName);
             throw ioe;
         }
     }
@@ -412,7 +415,7 @@ export class Tool implements ITool {
                     const dot = dotGenerator.getDOTFromState(g.atn!.ruleToStartState[r.index]!, g.isLexer());
                     this.writeDOTFile(g, r, dot);
                 } catch (ioe) {
-                    this.errorManager.toolError(IssueCode.CannotWriteFile, ioe);
+                    this.errorManager.toolError(IssueCode.CannotWriteFile, ioe as Error);
                     throw ioe;
                 }
             }

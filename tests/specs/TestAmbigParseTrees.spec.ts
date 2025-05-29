@@ -9,14 +9,14 @@ import {
     BasicBlockStartState, CharStream, CommonTokenStream, DecisionState, PredictionMode, Trees
 } from "antlr4ng";
 
-import type { IToolConfiguration } from "../../src/config/config.js";
+import { defineConfig } from "../../src/config/config.js";
 import { GrammarParserInterpreter } from "../../src/tool/GrammarParserInterpreter.js";
 import { Grammar, LexerGrammar } from "../../src/tool/index.js";
 
-const dummyParameters: IToolConfiguration = {
+const dummyParameters = defineConfig({
     grammarFiles: [],
     outputDirectory: "",
-};
+});
 
 describe("TestAmbigParseTrees", () => {
     const testInterpAtSpecificAlt = (lg: LexerGrammar, g: Grammar, startRule: string, startAlt: number, input: string,
