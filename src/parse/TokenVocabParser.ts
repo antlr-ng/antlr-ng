@@ -50,7 +50,7 @@ export class TokenVocabParser {
                 try {
                     tokenType = Number.parseInt(tokenTypeS);
                 } catch {
-                    this.g.tool.errorManager.toolError(IssueCode.TokensFileSyntaxError,
+                    this.g.tool.errorManager.toolError(IssueCode.TokensFileSyntaxError, undefined,
                         vocabName + Constants.VocabFileExtension, " bad token type: " + tokenTypeS,
                         lineNum);
                     tokenType = Token.INVALID_TYPE;
@@ -60,7 +60,7 @@ export class TokenVocabParser {
                 tokens.set(tokenID, tokenType);
                 maxTokenType = Math.max(maxTokenType, tokenType);
             } else if (tokenDef.length > 0) {
-                this.g.tool.errorManager.toolError(IssueCode.TokensFileSyntaxError,
+                this.g.tool.errorManager.toolError(IssueCode.TokensFileSyntaxError, undefined,
                     vocabName + Constants.VocabFileExtension, " bad token def: " + tokenDef, lineNum);
             }
         }
@@ -115,12 +115,12 @@ export class TokenVocabParser {
                     this.g.fileName, inTree?.token ?? null, inTreeValue);
             } else {
                 // Must be from -D option on cmd-line not token in tree.
-                this.g.tool.errorManager.toolError(IssueCode.CannotFindTokensFile, vocabName,
+                this.g.tool.errorManager.toolError(IssueCode.CannotFindTokensFile, undefined, vocabName,
                     this.g.name);
             }
-        } catch (e) {
-            const message = e instanceof Error ? e.message : String(e);
-            this.g.tool.errorManager.toolError(IssueCode.ErrorReadingTokensFile, e, vocabName, message);
+        } catch (error) {
+            const e = error instanceof Error ? error : new Error(String(error));
+            this.g.tool.errorManager.toolError(IssueCode.ErrorReadingTokensFile, e, vocabName);
         }
 
         return "";

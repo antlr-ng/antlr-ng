@@ -39,8 +39,11 @@ if (parameters.config) {
             package: parameters.package,
             generateDependencies: parameters.generateDependencies,
         },
-        longMessages: parameters.longMessages,
-        warningsAreErrors: parameters.warningsAreErrors,
+        messageFormatOptions: {
+            longMessages: parameters.longMessages,
+            warningsAreErrors: parameters.warningsAreErrors,
+        },
+
         forceAtn: parameters.forceAtn,
         log: parameters.log,
     });

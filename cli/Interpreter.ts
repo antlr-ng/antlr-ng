@@ -8,12 +8,12 @@
 import { Option, program } from "commander";
 import { memfs } from "memfs";
 import * as nodeFs from "node:fs";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { CharStream, CommonToken, CommonTokenStream, DecisionInfo, ParseInfo } from "antlr4ng";
 
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import type { IToolConfiguration } from "../src/config/config.js";
+import { defineConfig } from "../src/config/config.js";
 import { copyFolderToMemFs } from "../src/support/fs-helpers.js";
 import { useFileSystem } from "../src/tool-parameters.js";
 import { Tool } from "../src/Tool.js";
@@ -111,7 +111,7 @@ export class Interpreter {
         const tool = new Tool();
         const listener = new ToolListener(tool.errorManager);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: interpreterOptions.grammars,
             outputDirectory: ".",
             generationOptions: {
@@ -119,13 +119,15 @@ export class Interpreter {
                 generateVisitor: false,
                 atn: false,
             },
-            longMessages: false,
-            warningsAreErrors: false,
+            messageFormatOptions: {
+                longMessages: false,
+                warningsAreErrors: false,
+            },
             forceAtn: false,
             log: false,
             lib: ".",
             generators: [],
-        };
+        });
 
         if (interpreterOptions.grammars.length === 1) {
             // Must be a combined grammar.

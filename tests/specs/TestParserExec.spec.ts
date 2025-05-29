@@ -104,7 +104,7 @@ describe.sequential("TestParserExec", () => {
                     "PslParser", "PslLexer", "floating_constant", " . 234", false, false, tempDir);
 
                 for (const error of queue.errors) {
-                    const msgST = queue.errorManager.getMessageTemplate(error)!;
+                    const msgST = queue.errorManager.formatMessage(error)!;
                     generationErrors += msgST.render();
                 }
             });

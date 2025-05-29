@@ -5,10 +5,10 @@
 
 /* eslint-disable jsdoc/require-param */
 
-import { ATN, ATNState, HashSet, RuleStartState, RuleStopState, RuleTransition } from "antlr4ng";
+import { ATN, ATNState, HashSet, RuleStartState, RuleStopState, RuleTransition, type Token } from "antlr4ng";
 
 import type { Grammar } from "../tool/Grammar.js";
-import { LeftRecursionCyclesMessage } from "../tool/LeftRecursionCyclesMessage.js";
+import { IssueCode } from "../tool/Issues.js";
 import type { Rule } from "../tool/Rule.js";
 
 export class LeftRecursionDetector {
@@ -50,7 +50,12 @@ export class LeftRecursionDetector {
             }
 
             if (this.listOfRecursiveCycles.length > 0) {
-                this.leftRecursionCycles(this.g.fileName, this.listOfRecursiveCycles);
+                const token = LeftRecursionDetector.getStartTokenOfFirstRule(this.listOfRecursiveCycles);
+                const line = token?.line ?? -1;
+                const column = token?.column ?? -1;
+
+                this.g.tool.errorManager.syntaxError(IssueCode.LeftRecursionCycles, this.g.fileName, line, column,
+                    undefined, this.listOfRecursiveCycles);
             }
 
             return;
@@ -129,8 +134,13 @@ export class LeftRecursionDetector {
         }
     }
 
-    private leftRecursionCycles(fileName: string, cycles: Rule[][]): void {
-        const msg = new LeftRecursionCyclesMessage(fileName, cycles);
-        this.g.tool.errorManager.error(msg);
+    private static getStartTokenOfFirstRule(cycles: Rule[][]): Token | undefined {
+        for (const collection of cycles) {
+            for (const rule of collection) {
+                return rule.ast.token;
+            }
+        }
+
+        return undefined;
     }
 }

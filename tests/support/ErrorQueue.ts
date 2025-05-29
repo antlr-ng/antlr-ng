@@ -48,7 +48,7 @@ export class ErrorQueue extends ToolListener {
 
         let buf = "";
         for (const m of this.all) {
-            const st = this.errorManager.getMessageTemplate(m)!;
+            const st = this.errorManager.formatMessage(m)!;
             buf += st.render() + "\n";
         }
 

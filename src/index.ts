@@ -6,7 +6,7 @@
 export { IToolParameters } from "./tool-parameters.js";
 
 export * from "./Tool.js";
-export * from "./tool/ANTLRMessage.js";
+export * from "./tool/Issue.js";
 export * from "./tool/ast/GrammarAST.js";
 export * from "./tool/ast/GrammarRootAST.js";
 export * from "./tool/ErrorManager.js";

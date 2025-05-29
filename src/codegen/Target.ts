@@ -80,7 +80,7 @@ export abstract class Target {
             const theirVersion = RuntimeMetaData.getMajorMinorVersion(version);
             const ourVersion = RuntimeMetaData.getMajorMinorVersion(antlrVersion);
             if (theirVersion !== ourVersion) {
-                this.gen.g!.tool.errorManager.toolError(IssueCode.IncompatibleToolAndTemplates, version,
+                this.gen.g!.tool.errorManager.toolError(IssueCode.IncompatibleToolAndTemplates, undefined, version,
                     antlrVersion, language);
             }
             templates = this.loadTemplates();
@@ -560,7 +560,8 @@ export abstract class Target {
             }
 
             private reportError(msg: STMessage): void {
-                this.$outer.gen.g!.tool.errorManager.toolError(IssueCode.StringTemplateWarning, msg.toString());
+                this.$outer.gen.g!.tool.errorManager.toolError(IssueCode.StringTemplateWarning, undefined,
+                    msg.toString());
             }
         }(this));
 
@@ -573,11 +574,7 @@ export abstract class Target {
 
         try {
             return new STGroupFile(groupFileName);
-        } catch (e) {
-            if (reportErrorIfFail) {
-                this.gen.g!.tool.errorManager.toolError(IssueCode.MissingCodeGenTemplates, e, this.gen.language);
-            }
-
+        } catch {
             return undefined;
         }
     }
