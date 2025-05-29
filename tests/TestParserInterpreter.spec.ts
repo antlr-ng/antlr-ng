@@ -9,7 +9,6 @@ import { describe, expect, it } from "vitest";
 
 import { CharStream, CommonTokenStream, ParseTree } from "antlr4ng";
 
-import type { IToolParameters } from "../src/tool-parameters.js";
 import { Grammar, LexerGrammar } from "../src/tool/index.js";
 
 describe("TestParserInterpreter", () => {
@@ -29,13 +28,13 @@ describe("TestParserInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "A : 'a' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s :  ;",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "s", "", "s");
         testInterp(lg, g, "s", "a", "s");
@@ -45,13 +44,13 @@ describe("TestParserInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "A : 'a' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : A ;",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         const t = testInterp(lg, g, "s", "a", "(s a)");
         expect(t.getSourceInterval().toString()).toBe("0..0");
@@ -61,13 +60,13 @@ describe("TestParserInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "A : 'a' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : A EOF ;",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         const t = testInterp(lg, g, "s", "a", "(s a <EOF>)");
         expect(t.getSourceInterval().toString()).toBe("0..1");
@@ -77,14 +76,14 @@ describe("TestParserInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "A : 'a' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : x ;\n" +
             "x : A EOF ;",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         const t = testInterp(lg, g, "s", "a", "(s (x a <EOF>))");
         expect(t.getSourceInterval().toString()).toBe("0..1");
@@ -95,7 +94,7 @@ describe("TestParserInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "A : 'a' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -103,7 +102,7 @@ describe("TestParserInterpreter", () => {
             "x : A EOF ;\n" +
             "y : ;",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         const t = testInterp(lg, g, "s", "a", "(s (x a <EOF>) y)");
         expect(t.getSourceInterval().toString()).toBe("0..1"); // s
@@ -114,7 +113,7 @@ describe("TestParserInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "A : 'a' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -122,7 +121,7 @@ describe("TestParserInterpreter", () => {
             "x : EOF ;\n" +
             "y : ;",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         const t = testInterp(lg, g, "s", "", "(s (x <EOF>) y)");
         expect(t.getSourceInterval().toString()).toBe("0..0"); // s
@@ -133,14 +132,14 @@ describe("TestParserInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "A : 'a' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : x EOF ;\n" +
             "x : ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         const t = testInterp(lg, g, "s", "", "(s x <EOF>)");
         expect(t.getSourceInterval().toString()).toBe("0..0"); // s
@@ -151,7 +150,7 @@ describe("TestParserInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "A : 'a' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -160,7 +159,7 @@ describe("TestParserInterpreter", () => {
             "y : z ;\n" +
             "z : ;",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         const t = testInterp(lg, g, "s", "", "(s (x <EOF>) (y z))");
         expect(t.getSourceInterval().toString()).toBe("0..0"); // s
@@ -171,14 +170,14 @@ describe("TestParserInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "A : 'a' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : x A ;\n" +
             "x : ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         const t = testInterp(lg, g, "s", "a", "(s x a)");
         expect(t.getSourceInterval().toString()).toBe("0..0"); // s
@@ -193,13 +192,13 @@ describe("TestParserInterpreter", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : A{;} | B ;",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "s", "a", "(s a)");
         testInterp(lg, g, "s", "b", "(s b)");
@@ -211,14 +210,14 @@ describe("TestParserInterpreter", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : t C ;\n" +
             "t : A{;} | B ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "s", "ac", "(s (t a) c)");
         testInterp(lg, g, "s", "bc", "(s (t b) c)");
@@ -230,7 +229,7 @@ describe("TestParserInterpreter", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -238,7 +237,7 @@ describe("TestParserInterpreter", () => {
             "t : u ;\n" +
             "u : A{;} | B ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "s", "ac", "(s (t (u a)) c)");
         testInterp(lg, g, "s", "bc", "(s (t (u b)) c)");
@@ -250,13 +249,13 @@ describe("TestParserInterpreter", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : A? B ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "s", "b", "(s b)");
         testInterp(lg, g, "s", "ab", "(s a b)");
@@ -268,13 +267,13 @@ describe("TestParserInterpreter", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : (A{;}|B)? C ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "s", "c", "(s c)");
         testInterp(lg, g, "s", "ac", "(s a c)");
@@ -287,13 +286,13 @@ describe("TestParserInterpreter", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : A* B ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "s", "b", "(s b)");
         testInterp(lg, g, "s", "ab", "(s a b)");
@@ -306,13 +305,13 @@ describe("TestParserInterpreter", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "s : (A{;}|B)* C ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "s", "c", "(s c)");
         testInterp(lg, g, "s", "ac", "(s a c)");
@@ -329,7 +328,7 @@ describe("TestParserInterpreter", () => {
             "C : 'c' ;\n" +
             "PLUS : '+' ;\n" +
             "MULT : '*' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -339,7 +338,7 @@ describe("TestParserInterpreter", () => {
             "  | A\n" +
             "  ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "s", "a", "(s (e a))");
         testInterp(lg, g, "s", "a+a", "(s (e (e a) + (e a)))");
@@ -361,7 +360,7 @@ describe("TestParserInterpreter", () => {
             "C : 'c' ;\n" +
             "PLUS : '+' ;\n" +
             "MULT : '*' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -371,7 +370,7 @@ describe("TestParserInterpreter", () => {
             "  | A\n" +
             "  ;\n",
             lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "e", "a", "(e a)");
         testInterp(lg, g, "e", "a+a", "(e (e a) + (e a))");
@@ -392,7 +391,7 @@ describe("TestParserInterpreter", () => {
             "RB:  ')';\n" +
             "ID: [a-z_][a-z_0-9]*;\n" +
             "WS: [ \\t\\n\\r]+ -> skip;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -403,7 +402,7 @@ describe("TestParserInterpreter", () => {
             "    | e 'and' e\n" +
             "    | 'new' ID '(' e ')'\n" +
             "    ;", lg);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, false);
 
         testInterp(lg, g, "e", "NEW Abc (Not a AND not B)", "(e NEW Abc ( (e (e Not (e a)) AND (e not (e B))) ))");
     });
