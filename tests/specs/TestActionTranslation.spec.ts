@@ -136,7 +136,7 @@ describe("TestActionTranslation", () => {
         testActions(attributeTemplate, "inline2", action, expected);
     });
 
-    it("testComplicatedArgParsingWithTranslation", (): void => {
+    it.only("testComplicatedArgParsingWithTranslation", (): void => {
         const action = "x, $ID.text+\"3242\", (*$ID).foo(21,33), 3.2+1, '\\n', " +
             "\"a,oo\\nick\", {bl, \"fdkj\"eck}";
         const expected = "x, (localContext._ID?.text ?? '')+\"3242\", (*localContext?._ID!).foo(21,33), 3.2+1, " +

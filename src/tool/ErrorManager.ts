@@ -60,10 +60,7 @@ export class ErrorManager {
     public configure(longMessages?: boolean, warningsAreErrors?: boolean) {
         this.errors = 0;
         this.warnings = 0;
-        this.longMessages = longMessages ?? false;
-        this.warningsAreErrors = warningsAreErrors ?? false;
-
-        this.loadFormat();
+        this.formatOptions = formatOptions;
     }
 
     public formatWantsSingleLineMessage(): boolean {
