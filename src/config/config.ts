@@ -8,28 +8,52 @@ import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
 /** Options which control the output of code and support files. */
 export interface IGenerationOptions {
     /** Generate augmented transition network diagrams. (default: false) */
-    atn?: boolean,
+    atn: boolean,
 
     /** Generate a parse tree listener (default: false). */
-    generateListener?: boolean,
+    generateListener: boolean,
 
     /** Generate a parse tree visitor (default: false). */
-    generateVisitor?: boolean,
+    generateVisitor: boolean,
 
     /** Generate an interpreter data file (*.interp, default: false). */
-    generateInterpreterData?: boolean;
+    generateInterpreterData: boolean;
 
     /** Set this to true to generate a declaration file (header file etc.). */
-    generateDeclarationFile?: boolean,
+    generateDeclarationFile: boolean,
 
-    generateBaseListener?: boolean,
-    generateBaseVisitor?: boolean,
+    generateBaseListener: boolean,
+    generateBaseVisitor: boolean,
 
     /** Specify a package/namespace for the generated code. */
-    package?: string,
+    package: string,
 
     /** Generate a diagram of grammar dependencies. (default: false). */
-    generateDependencies?: boolean,
+    generateDependencies: boolean,
+}
+
+/** Settings which determine the format of tool messages and related aspects. */
+export interface IToolMessageOptions {
+    /** Treat warnings as errors. (default: false) */
+    warningsAreErrors: boolean,
+
+    /** Show exception details when available for errors and warnings. (default: false) */
+    longMessages: boolean;
+
+    /**
+     * How to format code location information. Placeholders in angles are replace with the corresponding values.
+     * Default: "<file>:<line>:<column>:".
+     */
+    locationFormat: string,
+
+    /**
+     * How to format the message. Placeholders in angles are replaced with the corresponding values.
+     * Default: "<severity>(<issueCode>): <location> <message>".
+     */
+    messageFormat: string,
+
+    /** Print the entire message on a single line, if true (default: true). */
+    singleLine: boolean,
 }
 
 /** A configuration for the antlr-ng tool. */
@@ -50,11 +74,8 @@ export interface IToolConfiguration {
      */
     lib: string,
 
-    /** Show exception details when available for errors and warnings. (default: false) */
-    longMessages: boolean;
-
-    /** Treat warnings as errors. (default: false) */
-    warningsAreErrors: boolean,
+    /** Configuration for tool messages. */
+    messageFormatOptions: IToolMessageOptions,
 
     /** Use the ATN simulator for all predictions. (default: false) */
     forceAtn: boolean,
@@ -75,27 +96,38 @@ export interface IToolConfiguration {
  *
  * @returns The final configuration.
  */
-export const defineConfig = (config: Partial<IToolConfiguration>): IToolConfiguration => {
-    const options = config.generationOptions ?? {};
-    options.atn ??= false;
-    options.generateListener ??= false;
-    options.generateVisitor ??= false;
-    options.generateInterpreterData ??= false;
-    options.package ??= "";
-    options.generateDependencies ??= false;
-    options.generateDeclarationFile ??= false;
-    options.generateBaseListener ??= false;
-    options.generateBaseVisitor ??= false;
+export const defineConfig = (config: DeepPartial<IToolConfiguration>): IToolConfiguration => {
+    const generationOptions: Partial<IGenerationOptions> = config.generationOptions ?? {};
+    generationOptions.atn ??= false;
+    generationOptions.generateListener ??= false;
+    generationOptions.generateVisitor ??= false;
+    generationOptions.generateInterpreterData ??= false;
+    generationOptions.package ??= "";
+    generationOptions.generateDependencies ??= false;
+    generationOptions.generateDeclarationFile ??= false;
+    generationOptions.generateBaseListener ??= false;
+    generationOptions.generateBaseVisitor ??= false;
+
+    const messageFormatOptions: Partial<IToolMessageOptions> = config.messageFormatOptions ?? {};
+    messageFormatOptions.longMessages ??= false;
+    messageFormatOptions.warningsAreErrors ??= false;
+    messageFormatOptions.locationFormat ??= "<file>:<line>:<column>:";
+    messageFormatOptions.messageFormat ??= "<severity>(<issueCode>): <location> <message>";
+    messageFormatOptions.singleLine ??= true;
 
     return {
         grammarFiles: config.grammarFiles ?? [],
         outputDirectory: config.outputDirectory ?? ".",
         lib: config.lib ?? ".",
-        longMessages: config.longMessages ?? false,
-        warningsAreErrors: config.warningsAreErrors ?? false,
+        messageFormatOptions: messageFormatOptions as IToolMessageOptions,
         forceAtn: config.forceAtn ?? false,
         log: config.log ?? false,
-        generators: config.generators ?? [],
-        generationOptions: options,
+        generators: (config.generators ?? []) as ITargetGenerator[],
+        generationOptions: generationOptions as IGenerationOptions,
     };
 };
+
+/** Make all entries and their children (recursively) in type T partial (except array members). */
+export type DeepPartial<T> = T extends Array<infer U>
+    ? Array<U extends object ? DeepPartial<U> : U>
+    : T extends object ? { [P in keyof T]?: DeepPartial<T[P]> } : T;

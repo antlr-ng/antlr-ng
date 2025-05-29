@@ -18,7 +18,7 @@ import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
 import { ClassFactory } from "../ClassFactory.js";
 
-import { targetLanguages, type SupportedLanguage } from "../codegen/CodeGenerator.js";
+import { type SupportedLanguage } from "../codegen/CodeGenerator.js";
 import { Constants } from "../Constants.js";
 
 import { CharSupport } from "../misc/CharSupport.js";
@@ -32,7 +32,6 @@ import type { Constructor } from "src/support/helpers.js";
 import { basename } from "../support/fs-helpers.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import type { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
-import { ANTLRMessage } from "./ANTLRMessage.js";
 import type { ActionAST } from "./ast/ActionAST.js";
 import type { GrammarAST } from "./ast/GrammarAST.js";
 import type { GrammarASTWithOptions } from "./ast/GrammarASTWithOptions.js";
@@ -43,6 +42,7 @@ import type { AttributeDict } from "./AttributeDict.js";
 import type { GrammarParserInterpreter } from "./GrammarParserInterpreter.js";
 import type { IAttribute } from "./IAttribute.js";
 import type { IAttributeResolver } from "./IAttributeResolver.js";
+import { Issue } from "./Issue.js";
 import { IssueCode } from "./Issues.js";
 import type { LexerGrammar } from "./LexerGrammar.js";
 import type { Rule } from "./Rule.js";
@@ -237,8 +237,8 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
             const hush = {
                 info: (msg: string): void => { /* ignored */ },
-                error: (msg: ANTLRMessage): void => { /* ignored */ },
-                warning: (msg: ANTLRMessage): void => { /* ignored */ },
+                error: (msg: Issue): void => { /* ignored */ },
+                warning: (msg: Issue): void => { /* ignored */ },
             };
 
             this.tool.errorManager.addListener(hush as ToolListener);
@@ -283,8 +283,8 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
         const hush = {
             info: (msg: string): void => { /* ignored */ },
-            error: (msg: ANTLRMessage): void => { /* ignored */ },
-            warning: (msg: ANTLRMessage): void => { /* ignored */ },
+            error: (msg: Issue): void => { /* ignored */ },
+            warning: (msg: Issue): void => { /* ignored */ },
         };
 
         grammar.tool.errorManager.addListener(hush as ToolListener);
@@ -1125,9 +1125,6 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
     public getLanguage(): SupportedLanguage {
         const language = this.getOptionString("language") as SupportedLanguage | undefined;
-        if (language && !targetLanguages.includes(language)) {
-            this.tool.errorManager.toolError(IssueCode.CannotCreateTargetGenerator, language);
-        }
 
         return language ?? "TypeScript";
     }
