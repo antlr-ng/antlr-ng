@@ -9,19 +9,27 @@ import { ATNState } from "antlr4ng";
 
 import { ATNPrinter } from "../../src/automata/ATNPrinter.js";
 import { LexerATNFactory } from "../../src/automata/LexerATNFactory.js";
-import type { IToolConfiguration } from "../../src/config/config.js";
+import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { ANTLRv4Parser } from "../../src/generated/ANTLRv4Parser.js";
 import { convertMapToString } from "../../src/support/helpers.js";
-import type { IToolParameters } from "../../src/tool-parameters.js";
 import { LexerGrammar } from "../../src/tool/LexerGrammar.js";
 import type { GrammarAST } from "../../src/tool/ast/GrammarAST.js";
 import type { RuleAST } from "../../src/tool/ast/RuleAST.js";
 import { Grammar, Tool } from "../../src/tool/index.js";
 import { ErrorQueue } from "../support/ErrorQueue.js";
 
+const tsGenerator = new TypeScriptTargetGenerator();
+const dummyParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
+
 describe("TestATNConstruction", () => {
     const checkRuleATN = (g: Grammar, ruleName: string, expecting: string): void => {
-        g.tool.process(g, {} as IToolConfiguration, false);
+        g.tool.process(g, dummyParameters, false);
 
         const r = g.getRule(ruleName)!;
         const startState = g.getATN().ruleToStartState[r.index];
@@ -32,7 +40,7 @@ describe("TestATNConstruction", () => {
     };
 
     const checkTokensRule = (g: LexerGrammar, modeName: string, expecting: string): void => {
-        g.tool.process(g, {} as IToolConfiguration, false);
+        g.tool.process(g, dummyParameters, false);
 
         if (!modeName) {
             modeName = "DEFAULT_MODE";
@@ -44,7 +52,8 @@ describe("TestATNConstruction", () => {
             return;
         }
 
-        const f = new LexerATNFactory(g);
+        const codeGenerator = new CodeGenerator("TypeScript", tsGenerator);
+        const f = new LexerATNFactory(g, codeGenerator);
         const nfa = f.createATN();
         const startState = nfa.modeNameToStartState.get(modeName);
         const serializer = new ATNPrinter(g, startState!);
@@ -641,6 +650,7 @@ describe("TestATNConstruction", () => {
             "A : a;\n"; // Error: parser rule referenced in lexer rule.
 
         const tool = new Tool();
+        tool.errorManager.configure(dummyParameters.messageFormatOptions);
 
         const errorQueue = new ErrorQueue(tool.errorManager);
         tool.errorManager.removeListeners();
@@ -677,7 +687,7 @@ describe("TestATNConstruction", () => {
             "\t ID : 'a'..'z'+ ;\n" +
             "\t WS : (' '|'\\n') -> skip ;";
         const g = new Grammar(grammarString);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, dummyParameters, false);
 
         const expecting =
             "RuleStart_e_2->s7\n" +

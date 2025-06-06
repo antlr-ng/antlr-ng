@@ -5,10 +5,8 @@
 
 import { IntervalSet, Token, type Vocabulary } from "antlr4ng";
 
-import { CodeBlockForOuterMostAlt } from "../codegen/model/CodeBlockForOuterMostAlt.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import type { CommonTree } from "../tree/CommonTree.js";
-import type { ICodeBlockForOuterMostAlt } from "../types.js";
 import { Character } from "./Character.js";
 
 /** A generic constructor type. */
@@ -29,17 +27,6 @@ export interface IPosition { line: number, column: number; }
  */
 export const isTokenName = (id: string): boolean => {
     return Character.isUpperCase(id.charCodeAt(0));
-};
-
-/**
- * Does the given object implement the `ICodeBlockForOuterMostAlt` interface?
- *
- * @param obj The object to check.
- *
- * @returns `true` if the object implements the interface; otherwise, `false`.
- */
-export const isCodeBlockForOuterMostAlt = (obj: object): obj is ICodeBlockForOuterMostAlt => {
-    return obj instanceof CodeBlockForOuterMostAlt;
 };
 
 /**

@@ -68,7 +68,7 @@ describe("TestActionTranslation", () => {
             const gen = new CodeGenerator(g, tsGenerator);
             let factory = new ParserATNFactory(g);
             if (g.isLexer()) {
-                factory = new LexerATNFactory(g as LexerGrammar, gen);
+                factory = new LexerATNFactory(g as LexerGrammar, gen.targetGenerator);
             }
 
             g.atn = factory.createATN();
@@ -143,64 +143,61 @@ describe("TestActionTranslation", () => {
         testActions(attributeTemplate, "inline2", action, expected);
     });
 
-    it.only("testComplicatedArgParsingWithTranslation", (): void => {
+    it("testComplicatedArgParsingWithTranslation", (): void => {
         const action = "x, $ID.text+\"3242\", (*$ID).foo(21,33), 3.2+1, '\\n', " +
             "\"a,oo\\nick\", {bl, \"fdkj\"eck}";
-        const expected =
-            "x, (((AContext)_localctx).ID!=null?((AContext)_localctx).ID.getText():null)+\"3242\", " +
-            "(*((AContext)_localctx).ID).foo(21,33), 3.2+1, '\\n', \"a,oo\\nick\", {bl, \"fdkj\"eck}";
+        const expected = "x, (localContext._ID?.text ?? '')+\"3242\", (*localContext?._ID!).foo(21,33), 3.2+1, " +
+            "'\\n', \"a,oo\\nick\", {bl, \"fdkj\"eck}";
         testActions(attributeTemplate, "inline", action, expected);
     });
 
     it("testArguments", (): void => {
         const action = "$x; $ctx.x";
-        const expected = "_localctx.x; _localctx.x";
+        const expected = "localContext?.x!; localContext.x";
         testActions(attributeTemplate, "inline", action, expected);
     });
 
     it("testReturnValue", (): void => {
         const action = "$y; $ctx.y";
-        const expected = "_localctx.y; _localctx.y";
+        const expected = "localContext.y; localContext.y";
         testActions(attributeTemplate, "inline", action, expected);
     });
 
     it("testReturnValueWithNumber", (): void => {
         const action = "$ctx.x1";
-        const expected = "_localctx.x1";
+        const expected = "localContext.x1";
         testActions(attributeTemplate, "inline", action, expected);
     });
 
     it("testReturnValuesCurrentRule", (): void => {
         const action = "$y; $ctx.y;";
-        const expected = "_localctx.y; _localctx.y;";
+        const expected = "localContext.y; localContext.y;";
         testActions(attributeTemplate, "inline", action, expected);
     });
 
     it("testReturnValues", (): void => {
         const action = "$lab.e; $b.e; $y.e = \"\";";
-        const expected = "((AContext)_localctx).lab.e; ((AContext)_localctx).b.e; _localctx.y.e = \"\";";
+        const expected = "localContext._lab!.e; localContext._b!.e; localContext.y.e = \"\";";
         testActions(attributeTemplate, "inline", action, expected);
     });
 
     it("testReturnWithMultipleRuleRefs", (): void => {
         const action = "$c.x; $c.y;";
-        const expected = "((AContext)_localctx).c.x; ((AContext)_localctx).c.y;";
+        const expected = "localContext._c!.x; localContext._c!.y;";
         testActions(attributeTemplate, "inline", action, expected);
     });
 
     it("testTokenRefs", (): void => {
         const action = "$id; $ID; $id.text; $id.getText(); $id.line;";
-        const expected = "((AContext)_localctx).id; ((AContext)_localctx).ID; (((AContext)_localctx).id!=" +
-            "null?((AContext)_localctx).id.getText():null); ((AContext)_localctx).id.getText(); " +
-            "(((AContext)_localctx).id!=null?((AContext)_localctx).id.getLine():0);";
+        const expected = "localContext?._id!; localContext?._ID!; (localContext._id?.text ?? ''); " +
+            "localContext?._id!.getText(); (localContext._id?.line ?? 0);";
         testActions(attributeTemplate, "inline", action, expected);
     });
 
     it("testRuleRefs", (): void => {
         const action = "$lab.start; $c.text;";
-        const expected = "(((AContext)_localctx).lab!=null?(((AContext)_localctx).lab.start):null); " +
-            "(((AContext)_localctx).c!=null?_input.getText(((AContext)_localctx).c.start,((AContext)_localctx)." +
-            "c.stop):null);";
+        const expected = "(localContext._lab!.start); (localContext._c != null ? " +
+            "this.tokenStream.getTextFromRange(localContext._c.start, localContext._c.stop) : '');";
         testActions(attributeTemplate, "inline", action, expected);
     });
 
@@ -241,14 +238,14 @@ describe("TestActionTranslation", () => {
 
         // ref to value returned from recursive call to rule
         let action = "$v = $e.v;";
-        let expected = "((EContext)_localctx).v = ((EContext)_localctx).e.v;";
+        let expected = "(localContext!._v = localContext._e!.v)";
         testActions(recursiveTemplate, "inline", action, expected);
         testActions(leftRecursiveTemplate, "inline", action, expected);
 
         // ref to predefined attribute obtained from recursive call to rule
         action = "$v = $e.text.length();";
-        expected = "((EContext)_localctx).v = (((EContext)_localctx).e!=null?_input.getText(((EContext)_localctx)." +
-            "e.start,((EContext)_localctx).e.stop):null).length();";
+        expected = "(localContext!._v = (localContext._e != null ? this.tokenStream.getTextFromRange(localContext." +
+            "_e.start, localContext._e.stop) : '').length())";
         testActions(recursiveTemplate, "inline", action, expected);
         testActions(leftRecursiveTemplate, "inline", action, expected);
     });
@@ -258,7 +255,7 @@ describe("TestActionTranslation", () => {
 
         // this is the expected translation for all cases
         const expected =
-            "_localctx.text; _input.getText(_localctx.start, _input.LT(-1))";
+            "localContext.text; this.tokenStream.getTextFromRange(localContext.start, this.tokenStream.LT(-1))";
 
         testActions(attributeTemplate, "init", action, expected);
         testActions(attributeTemplate, "inline", action, expected);

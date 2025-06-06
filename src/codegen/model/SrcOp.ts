@@ -5,10 +5,9 @@
 
 /* eslint-disable jsdoc/require-returns */
 
-import { isCodeBlockForOuterMostAlt } from "../../support/helpers.js";
 import { type GrammarAST } from "../../tool/ast/GrammarAST.js";
-import type { ICodeBlockForOuterMostAlt } from "../../types.js";
 import { type IOutputModelFactory } from "../IOutputModelFactory.js";
+import type { CodeBlockForOuterMostAlt } from "./CodeBlockForOuterMostAlt.js";
 import { type CodeBlock } from "./decl/CodeBlock.js";
 import { OutputModelObject } from "./OutputModelObject.js";
 import { type RuleFunction } from "./RuleFunction.js";
@@ -34,14 +33,14 @@ export abstract class SrcOp extends OutputModelObject {
     }
 
     /** Walk upwards in model tree, looking for outer alt's code block. */
-    public getOuterMostAltCodeBlock(): ICodeBlockForOuterMostAlt | undefined {
-        if (isCodeBlockForOuterMostAlt(this)) {
+    public getOuterMostAltCodeBlock(): CodeBlockForOuterMostAlt | undefined {
+        if (this.isCodeBlockForOuterMostAlt()) {
             return this;
         }
 
         let p = this.enclosingBlock;
         while (p) {
-            if (isCodeBlockForOuterMostAlt(p)) {
+            if (p.isCodeBlockForOuterMostAlt()) {
                 return p;
             }
 
@@ -60,4 +59,6 @@ export abstract class SrcOp extends OutputModelObject {
 
         return this.enclosingRuleFunction!.name;
     }
+    protected isCodeBlockForOuterMostAlt(): this is CodeBlockForOuterMostAlt { return false; }
+
 }

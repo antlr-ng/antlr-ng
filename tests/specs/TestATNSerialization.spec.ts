@@ -9,14 +9,22 @@ import { describe, expect, it } from "vitest";
 
 import { ATNDeserializer, ATNSerializer } from "antlr4ng";
 
-import type { IToolParameters } from "../../src/tool-parameters.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { Grammar, LexerGrammar } from "../../src/tool/index.js";
 import { ATNDescriber } from "../support/ATNDescriber.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
 
+const tsGenerator = new TypeScriptTargetGenerator();
+const testParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
+
 describe("TestATNSerialization", () => {
     const checkResults = (g: Grammar, expecting: string): void => {
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const atn = ToolTestUtils.createATN(g, true);
         const serialized = ATNSerializer.getSerialized(atn);
@@ -96,7 +104,7 @@ describe("TestATNSerialization", () => {
             "parser grammar T;\n" +
             "tokens {A, B, C}\n" +
             "a : ~A ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const expecting =
             "max type 3\n" +
@@ -266,7 +274,7 @@ describe("TestATNSerialization", () => {
             "lexer grammar L;\n" +
             "A : 'a' ;\n" +
             "B : 'b' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 2\n" +
@@ -302,7 +310,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "INT : '\\u{1F4A9}' ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +
@@ -329,7 +337,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "INT : ('a'..'\\u{1F4A9}') ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +
@@ -357,7 +365,7 @@ describe("TestATNSerialization", () => {
             "lexer grammar L;\n" +
             "SMP : ('\\u{1F4A9}' | '\\u{1F4AF}') ;\n" +
             "BMP : ('a' | 'x') ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 2\n" +
@@ -395,7 +403,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ([A-Z_]|'Ā'..'\\uFFFC') ([A-Z_0-9]|'Ā'..'\\uFFFC')*; // FFFD+ are not valid char\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +
@@ -442,7 +450,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "INT : ~'a' ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +
@@ -470,7 +478,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "INT : '0'..'9' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +
@@ -496,7 +504,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "INT : 'a' EOF ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +
@@ -656,7 +664,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ('a'|'b'|'e'|'p'..'t')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +
@@ -734,7 +742,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ('\u4E9C'|'\u4E9D'|'\u6C5F'|'\u305F'..'\u307B')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +
@@ -812,7 +820,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ('\\u4E9C'|'\\u4E9D'|'\\u6C5F'|'\\u305F'..'\\u307B')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +
@@ -890,7 +898,7 @@ describe("TestATNSerialization", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ('\\u{1F4A9}'|'\\u{1F4AA}'|'\\u{1F441}'|'\\u{1D40F}'..'\\u{1D413}')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const expecting =
             "max type 1\n" +

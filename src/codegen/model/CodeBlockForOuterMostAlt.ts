@@ -24,4 +24,6 @@ export class CodeBlockForOuterMostAlt extends CodeBlockForAlt {
         this.alt = alt;
         this.altLabel = alt.ast.altLabel?.getText() ?? undefined;
     }
+
+    protected override isCodeBlockForOuterMostAlt(): this is CodeBlockForOuterMostAlt { return true; };
 }

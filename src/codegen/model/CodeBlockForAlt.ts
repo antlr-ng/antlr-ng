@@ -6,4 +6,5 @@
 import { CodeBlock } from "./decl/CodeBlock.js";
 
 /** Contains Rewrite block (usually as last op) */
-export class CodeBlockForAlt extends CodeBlock { }
+export class CodeBlockForAlt extends CodeBlock {
+}

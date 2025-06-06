@@ -8,9 +8,17 @@
 import { describe, expect, it } from "vitest";
 
 import { ATN, CharStream, DFA, Lexer, LexerATNSimulator, Token } from "antlr4ng";
-import type { IToolParameters } from "../../src/tool-parameters.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { LexerGrammar } from "../../src/tool/index.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
+const dummyParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
 
 /**
  * Lexer rules are little quirky when it comes to wildcards. Problem
@@ -64,7 +72,7 @@ describe("TestATNLexerInterpreter", () => {
     const execLexer = (grammar: string, grammarFileName: string, input: string): string => {
         const lg = new LexerGrammar(grammar);
         lg.fileName = grammarFileName;
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const atn = ToolTestUtils.createATN(lg, true);
         const inputString = CharStream.fromString(input);
@@ -82,7 +90,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "A : 'a' ;\n" +
             "B : 'b' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "A, B, A, B, EOF";
         checkLexerMatches(lg, "abab", expecting);
@@ -96,7 +104,7 @@ describe("TestATNLexerInterpreter", () => {
             "  ;\n" +
             "Z : 'z'\n" +
             "  ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         checkLexerMatches(lg, "xy", "A, EOF");
         checkLexerMatches(lg, "xyz", "A, EOF");
@@ -108,7 +116,7 @@ describe("TestATNLexerInterpreter", () => {
             "A : 'xyz'\n" + // make sure nongreedy mech cut off doesn't kill this alt
             "  | 'xy'\n" +
             "  ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         checkLexerMatches(lg, "xy", "A, EOF");
         checkLexerMatches(lg, "xyz", "A, EOF");
@@ -122,7 +130,7 @@ describe("TestATNLexerInterpreter", () => {
             "  ;\n" +
             "Z : 'z'\n" +
             "  ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         checkLexerMatches(lg, "xy", "A, EOF");
         checkLexerMatches(lg, "xyz", "A, EOF");
@@ -136,7 +144,7 @@ describe("TestATNLexerInterpreter", () => {
             "  ;\n" +
             "Z : 'z'\n" +
             "  ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         checkLexerMatches(lg, "xy", "A, EOF");
         checkLexerMatches(lg, "xyz", "A, EOF");
@@ -147,7 +155,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "A : 'xy' ;\n" +
             "B : 'xy' . 'z' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         checkLexerMatches(lg, "xy", "A, EOF");
         checkLexerMatches(lg, "xyqz", "B, EOF");
@@ -158,7 +166,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "INT : '0'..'9'+ ;\n" +
             "ID : 'a'..'z'+ ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, INT, ID, INT, EOF";
         checkLexerMatches(lg, "a34bde3", expecting);
@@ -168,7 +176,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ~('a'|'b')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, "c", expecting);
@@ -178,7 +186,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ('\u611B'|'\u611C')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, "\u611B", expecting);
@@ -188,7 +196,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ~('\u611B'|'\u611C')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, "\u611D", expecting);
@@ -198,7 +206,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ~('\u611B'|'\u611C')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, String.fromCodePoint(0x1F4A9), expecting);
@@ -208,7 +216,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ('\\u{1F4A9}'|'\\u{1F4AA}')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, String.fromCodePoint(0x1F4A9), expecting);
@@ -218,7 +226,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ~('a'|'b')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, String.fromCodePoint(0x1F4A9), expecting);
@@ -228,7 +236,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ~('a'|'b')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, "\u611B", expecting);
@@ -238,7 +246,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ~('a'|'b')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, String.fromCodePoint(0x1F4A9), expecting);
@@ -248,7 +256,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ~('\\u{1F4A9}'|'\\u{1F4AA}')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, "\u611B", expecting);
@@ -258,7 +266,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ~('\\u{1F4A9}'|'\\u{1F4AA}')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, String.fromCodePoint(0x1D7C0), expecting);
@@ -268,7 +276,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ('\\u{1F4A9}'..'\\u{1F4B0}')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, String.fromCodePoint(0x1F4AF), expecting);
@@ -278,7 +286,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "ID : ('\\u611B'..'\\u{1F4B0}')\n ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "ID, EOF";
         checkLexerMatches(lg, String.fromCodePoint(0x12001), expecting);
@@ -290,7 +298,7 @@ describe("TestATNLexerInterpreter", () => {
             "KEND : 'end' ;\n" +
             "ID : 'a'..'z'+ ;\n" +
             "WS : (' '|'\\n')+ ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         let expecting = "ID, EOF";
         expecting = "KEND, EOF";
@@ -307,7 +315,7 @@ describe("TestATNLexerInterpreter", () => {
             "INT : DIGIT+ ;\n" +
             "fragment DIGIT : '0'..'9' ;\n" +
             "WS : (' '|'\\n')+ ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "INT, WS, INT, EOF";
         checkLexerMatches(lg, "32 99", expecting);
@@ -318,7 +326,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "CMT : '/*' (CMT | ~'*')+ '*/' ;\n" +
             "WS : (' '|'\\n')+ ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, WS, CMT, EOF";
         checkLexerMatches(lg, "/* ick */\n/* /*nested*/ */", expecting);
@@ -329,7 +337,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "CMT : '/*' (CMT | .)*? '*/' ;\n" +
             "WS : (' '|'\\n')+ ;");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, WS, CMT, WS, EOF";
         checkLexerMatches(lg,
@@ -343,7 +351,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "CMT : '//' .* '\\n' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, EOF";
         checkLexerMatches(lg, "//x\n//y\n", expecting);
@@ -353,7 +361,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "CMT : '//' .*? '\\n' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, CMT, EOF";
         checkLexerMatches(lg, "//x\n//y\n", expecting);
@@ -363,7 +371,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "STR : '[' ('~' ']' | .)* ']' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         checkLexerMatches(lg, "[a~]b]", "STR, EOF");
         checkLexerMatches(lg, "[a]", "STR, EOF");
@@ -373,7 +381,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "CMT : '//' .+ '\\n' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, EOF";
         checkLexerMatches(lg, "//x\n//y\n", expecting);
@@ -383,7 +391,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "CMT : '//' .+? '\\n' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, CMT, EOF";
         checkLexerMatches(lg, "//x\n//y\n", expecting);
@@ -394,7 +402,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "CMT : '/*' ('*/')? '*/' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, EOF";
         checkLexerMatches(lg, "/**/", expecting);
@@ -405,7 +413,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "A : '<a>' ;\n" +
             "B : '<' .+ '>' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "B, EOF";
         checkLexerMatches(lg, "<a><x>", expecting);
@@ -416,7 +424,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "A : '<a>' ;\n" +
             "B : '<' .+? '>' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "A, B, EOF";
         checkLexerMatches(lg, "<a><x>", expecting);
@@ -426,7 +434,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "CMT : '//' ~('\\n')* ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, EOF";
         checkLexerMatches(lg, "//x", expecting);
@@ -436,7 +444,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "CMT : '//' ~('\\n'|'\\r')* ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, EOF";
         checkLexerMatches(lg, "//x", expecting);
@@ -450,7 +458,7 @@ describe("TestATNLexerInterpreter", () => {
         const lg = new LexerGrammar(
             "lexer grammar L;\n" +
             "CMT : '//' .* (EOF|'\\n') ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "CMT, EOF";
         checkLexerMatches(lg, "//", expecting);
@@ -461,7 +469,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "A : 'a' ;\n" + // shorter than 'a' EOF, despite EOF being 0 width
             "B : 'a' EOF ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "B, EOF";
         checkLexerMatches(lg, "a", expecting);
@@ -472,7 +480,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "A : 'a' EOF ;\n" +
             "B : 'a';\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "A, EOF";
         checkLexerMatches(lg, "a", expecting);
@@ -483,7 +491,7 @@ describe("TestATNLexerInterpreter", () => {
             "lexer grammar L;\n" +
             "DONE : EOF ;\n" +
             "A : 'a';\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const expecting = "A, DONE, EOF";
         checkLexerMatches(lg, "a", expecting);
@@ -508,7 +516,7 @@ describe("TestATNLexerInterpreter", () => {
             "SET:                    [a-z0-9]+;\n" + // [a-zA-Z0-9]
             "RANGE:                  ('а'..'я')+;"
         );
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const inputString =
             "and AND aND\n" +
@@ -567,7 +575,7 @@ describe("TestATNLexerInterpreter", () => {
             "TOKEN_0:         FRAGMENT 'd'+;\n" +
             "TOKEN_1:         FRAGMENT 'e'+;\n" +
             "FRAGMENT:        'abc';\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const inputString =
             "ABCDDD";
@@ -592,7 +600,7 @@ describe("TestATNLexerInterpreter", () => {
             "RUSSIAN_TOKEN:   [а-я]+;\n" +
             "WS:              [ ]+ -> skip;"
         );
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         const inputString = "abcXYZ äéöüßÄÉÖÜß àâæçÙÛÜŸ ćčđĐŠŽ àèéÌÒÙ áéÚÜ¡¿ αβγΧΨΩ абвЭЮЯ ";
 
@@ -616,7 +624,7 @@ describe("TestATNLexerInterpreter", () => {
             "options { caseInsensitive = true; }\n" +
             "TOKEN: ('A'..'z')+;\n"
         );
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         // No range transformation because of mixed character case in range borders
         const inputString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz";
@@ -629,7 +637,7 @@ describe("TestATNLexerInterpreter", () => {
             "TOKEN1 options { caseInsensitive=true; } : [a-f]+;\n" +
             "WS: [ ]+ -> skip;"
         );
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, dummyParameters, false);
 
         checkLexerMatches(lg, "ABCDEF", "TOKEN1, EOF");
     });

@@ -9,8 +9,16 @@ import { describe, expect, it } from "vitest";
 
 import { CharStream, CommonTokenStream, InterpreterRuleContext, Trees } from "antlr4ng";
 
-import type { IToolParameters } from "../../src/tool-parameters.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { Grammar, LexerGrammar } from "../../src/tool/index.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
+const testParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
 
 /**
  * Tests to ensure GrammarParserInterpreter subclass of ParserInterpreter
@@ -24,7 +32,7 @@ describe("TestGrammarParserInterpreter", () => {
             "ID : [a-z]+ ;\n" +
             "INT : [0-9]+ ;\n" +
             "WS : [ \\r\\t\\n]+ ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         return lg;
     })();
@@ -49,7 +57,7 @@ describe("TestGrammarParserInterpreter", () => {
             "  | INT{;}\n" +
             "  ;\n",
             lexerGrammar);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         testInterp(g, "s", "a", "(s:1 a)");
         testInterp(g, "s", "3", "(s:2 3)");
@@ -62,7 +70,7 @@ describe("TestGrammarParserInterpreter", () => {
             "  | INT\n" +
             "  ;\n",
             lexerGrammar);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         testInterp(g, "s", "a", "(s:1 a)");
         testInterp(g, "s", "3", "(s:1 3)");
@@ -75,7 +83,7 @@ describe("TestGrammarParserInterpreter", () => {
             "  | INT # bar\n" +
             "  ;\n",
             lexerGrammar);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         // it won't show the labels here because my simple node text provider above just shows the alternative
         testInterp(g, "s", "a", "(s:1 a)");
@@ -88,7 +96,7 @@ describe("TestGrammarParserInterpreter", () => {
             "s : ID\n" +
             "  ;\n",
             lexerGrammar);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         testInterp(g, "s", "a", "(s:1 a)");
     });
@@ -103,7 +111,7 @@ describe("TestGrammarParserInterpreter", () => {
             "  | ID\n" +
             "  ;\n",
             lexerGrammar);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         testInterp(g, "s", "a", "(s:1 (e:4 a) <EOF>)");
         testInterp(g, "e", "a", "(e:4 a)");

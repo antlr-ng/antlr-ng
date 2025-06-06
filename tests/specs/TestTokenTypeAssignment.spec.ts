@@ -6,9 +6,17 @@
 import { Token } from "antlr4ng";
 
 import { describe, expect, it } from "vitest";
-import { Grammar, LexerGrammar } from "../../src/tool/index.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { convertArrayToString, convertMapToString } from "../../src/support/helpers.js";
-import type { IToolParameters } from "../../src/tool-parameters.js";
+import { Grammar, LexerGrammar } from "../../src/tool/index.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
+const testParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
 
 describe("TestTokenTypeAssignment", () => {
     const checkSymbols = (g: Grammar, rules: string[], allValidTokens: string[]): void => {
@@ -50,7 +58,7 @@ describe("TestTokenTypeAssignment", () => {
             "parser grammar t;\n" +
             "a : A | B;\n" +
             "b : C ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const rules = ["a", "b"];
         const tokenNames = ["A", "B", "C"];
@@ -66,7 +74,7 @@ describe("TestTokenTypeAssignment", () => {
             "}\n" +
             "a : A | B;\n" +
             "b : C ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const rules = ["a", "b"];
         const tokenNames = ["A", "B", "C", "D"];
@@ -82,7 +90,7 @@ describe("TestTokenTypeAssignment", () => {
             "}\n" +
             "A : 'a';\n" +
             "C : 'c' ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const rules = ["A", "C"];
         const tokenNames = ["A", "C", "D"];
@@ -97,7 +105,7 @@ describe("TestTokenTypeAssignment", () => {
             "ID : 'a' ;\n" +
             "FOO : 'foo' ;\n" + // "foo" is not a token name
             "C : 'c' ;\n"); // nor is 'c'
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const rules = ["a", "b"];
         const tokenNames = ["C", "FOO", "ID", "'begin'", "'end'", "';'"];
@@ -110,7 +118,7 @@ describe("TestTokenTypeAssignment", () => {
             "grammar t;\n" +
             "a : 'x' E ; \n" +
             "E: 'x' '0' ;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const literals = "['x']";
         let foundLiterals = convertArrayToString([...g.stringLiteralToTypeMap.keys()]);
@@ -136,7 +144,7 @@ describe("TestTokenTypeAssignment", () => {
             "grammar t;\n" +
             "a : 'x' X ; \n" +
             "X: 'x' {true}?;\n"); // must match as alias even with pred
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         expect(convertMapToString(g.stringLiteralToTypeMap)).toBe("{'x'=1}");
         expect(convertMapToString(g.tokenNameToTypeMap)).toBe("{EOF=-1, X=1}");
@@ -151,7 +159,7 @@ describe("TestTokenTypeAssignment", () => {
             "grammar t;\n" +
             "a : 'a' ;\n" +
             "A : 'a' ;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const rules = ["a"];
         const tokenNames = ["A", "'a'"];
@@ -164,7 +172,7 @@ describe("TestTokenTypeAssignment", () => {
             "a : 'a'|'b' ;\n" +
             "A : 'a' ;\n" +
             "B : 'b' ;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const rules = ["a"];
         const tokenNames = ["A", "'a'", "B", "'b'"];
@@ -177,7 +185,7 @@ describe("TestTokenTypeAssignment", () => {
         const g = new Grammar(
             "grammar t;\n" +
             "a : '\\n';\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const literals = g.stringLiteralToTypeMap.keys();
 
@@ -189,7 +197,7 @@ describe("TestTokenTypeAssignment", () => {
         const g = new Grammar(
             "grammar t;\n" +
             "a : '\\uABCD';\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const literals = g.stringLiteralToTypeMap.keys();
 
@@ -201,7 +209,7 @@ describe("TestTokenTypeAssignment", () => {
         const g = new Grammar(
             "grammar t;\n" +
             "a : '\\u{1ABCD}';\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const literals = g.stringLiteralToTypeMap.keys();
 

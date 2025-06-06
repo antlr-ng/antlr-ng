@@ -22,15 +22,16 @@ import { ST } from "stringtemplate4ts";
 import { Constants } from "../src/Constants.js";
 import { LexerATNFactory } from "../src/automata/LexerATNFactory.js";
 import { ParserATNFactory } from "../src/automata/ParserATNFactory.js";
-import type { IToolConfiguration } from "../src/config/config.js";
-import type { Constructor } from "../src/misc/Utils.js";
+import { defineConfig, type IToolConfiguration } from "../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { SemanticPipeline } from "../src/semantics/SemanticPipeline.js";
 import { copyFolderFromMemFs, generateRandomFilename } from "../src/support/fs-helpers.js";
+import type { Constructor } from "../src/support/helpers.js";
 import { fileSystem } from "../src/tool-parameters.js";
 import { ToolListener } from "../src/tool/ToolListener.js";
 import { Tool, type Grammar, type LexerGrammar } from "../src/tool/index.js";
-import type { InterpreterTreeTextProvider } from "./support/InterpreterTreeTextProvider.js";
 import { ErrorQueue } from "./support/ErrorQueue.js";
+import type { InterpreterTreeTextProvider } from "./support/InterpreterTreeTextProvider.js";
 
 export type MethodKeys<T extends Parser> = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -92,6 +93,8 @@ export const xpathTestGrammar =
     "NEWLINE:'\\r'? '\\n' -> skip;     // return newlines to parser (is end-statement signal)\n" +
     "WS  :   [ \\t]+ -> skip ; // toss out whitespace\n"
     ;
+
+const tsGenerator = new TypeScriptTargetGenerator();
 
 /**
  * This class generates test parsers/lexers in the virtual filesystem, but executes them on the physical file system,
@@ -163,12 +166,11 @@ export class ToolTestUtils {
             const tempTestDir = generateRandomFilename("/tmp/AntlrTestErrors-");
             fileSystem.mkdirSync(tempTestDir, { recursive: true });
             try {
-                const parameters: IToolConfiguration = {
+                const parameters = defineConfig({
                     grammarFiles: [tempTestDir + "/" + fileName],
                     outputDirectory: tempTestDir,
-                    generateListener: false,
-                    generateVisitor: false,
-                };
+                    generators: [tsGenerator],
+                });
 
                 const queue = this.antlrOnString(parameters, grammarStr, false);
 
@@ -176,8 +178,7 @@ export class ToolTestUtils {
                 if (ignoreWarnings) {
                     const errors = [];
                     for (const error of queue.errors) {
-                        const msgST = queue.errorManager.formatMessage(error)!;
-                        errors.push(msgST.render());
+                        errors.push(error.toString());
                     }
 
                     if (errors.length > 0) {
@@ -205,13 +206,15 @@ export class ToolTestUtils {
         fileSystem.writeFileSync(join(workDir, runOptions.grammarFileName), runOptions.grammarStr);
 
         try {
-            const parameters: IToolConfiguration = {
+            const parameters = defineConfig({
                 grammarFiles: [workDir + "/" + runOptions.grammarFileName],
                 outputDirectory: workDir,
-                language: "TypeScript",
-                generateListener: runOptions.useListener,
-                generateVisitor: runOptions.useVisitor,
-            };
+                generationOptions: {
+                    generateListener: runOptions.useListener,
+                    generateVisitor: runOptions.useVisitor,
+                },
+                generators: [tsGenerator],
+            });
             const queue = this.antlrOnString(parameters, runOptions.grammarStr, false);
             expect(queue.errors.length).toBe(0);
 
@@ -264,7 +267,7 @@ export class ToolTestUtils {
         ToolTestUtils.semanticProcess(g);
         expect(g.tool.getNumErrors()).toBe(0);
 
-        const f = g.isLexer() ? new LexerATNFactory(g as LexerGrammar) : new ParserATNFactory(g);
+        const f = g.isLexer() ? new LexerATNFactory(g as LexerGrammar, tsGenerator) : new ParserATNFactory(g);
 
         g.atn = f.createATN();
         expect(g.tool.getNumErrors()).toBe(0);
@@ -308,7 +311,7 @@ export class ToolTestUtils {
         if (!g.ast.hasErrors) {
             const tool = new Tool();
             const sem = new SemanticPipeline(g);
-            sem.process();
+            sem.process(tsGenerator);
             for (const imp of g.getImportedGrammars()) {
                 tool.processNonCombinedGrammar(imp, false);
             }
@@ -427,13 +430,15 @@ export class ToolTestUtils {
         fileSystem.mkdirSync(workDir, { recursive: true });
         fileSystem.writeFileSync(join(workDir, runOptions.grammarFileName), runOptions.grammarStr);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: [join(workDir, runOptions.grammarFileName)],
             outputDirectory: workDir,
-            language: "TypeScript",
-            generateListener: runOptions.useListener,
-            generateVisitor: runOptions.useVisitor,
-        };
+            generationOptions: {
+                generateListener: runOptions.useListener,
+                generateVisitor: runOptions.useVisitor,
+            },
+            generators: [tsGenerator],
+        });
         const queue = this.antlrOnFile(parameters, false);
         this.writeTestFile(workDir, runOptions);
         writeFileSync(join(workDir, "input"), runOptions.input);
