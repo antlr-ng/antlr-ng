@@ -9,7 +9,6 @@ import { describe, expect, it } from "vitest";
 
 import { IssueCode, issueTypes } from "../../src/tool/Issues.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
-import { antlrVersion } from "../../src/version.js";
 
 /**
  * This class depended on lexer actions for customized error messages. In the official ANTLR4 grammar these action
@@ -768,54 +767,6 @@ describe("TestToolSyntaxErrors", () => {
         const expected =
             "error(" + IssueCode.ReservedRuleName + "): A.g4:3:1: cannot declare a rule with reserved " +
             "name EOF\n";
-
-        const pair = [
-            grammar,
-            expected
-        ];
-
-        ToolTestUtils.testErrors(pair, true);
-    });
-
-    /**
-     * This is a regression test for antlr/antlr4#649 "unknown target causes null ptr exception.".
-     * https://github.com/antlr/antlr4/issues/649
-     * Stops before processing the lexer
-     */
-    it("testInvalidLanguageInGrammarWithLexerCommand", () => {
-        const grammar =
-            "grammar T;\n" +
-            "options { language=Foo; }\n" +
-            "start : 'T' EOF;\n" +
-            "Something : 'something' -> channel(CUSTOM);";
-        const expected =
-            "error(" + IssueCode.CannotCreateTargetGenerator + "):  ANTLR cannot generate Foo code as of " +
-            "version " + antlrVersion + "\n" +
-            "error(" + IssueCode.ImplicitStringDefinition + "): T.g4:3:8: cannot create implicit token for " +
-            "string literal in non-combined grammar: 'T'\n";
-        const pair = [
-            grammar,
-            expected
-        ];
-
-        ToolTestUtils.testErrors(pair, true);
-    });
-
-    /**
-     * This is a regression test for antlr/antlr4#649 "unknown target causes
-     * null ptr exception.".
-     * https://github.com/antlr/antlr4/issues/649
-     */
-    it("testInvalidLanguageInGrammar", () => {
-        const grammar =
-            "grammar T;\n" +
-            "options { language=Foo; }\n" +
-            "start : 'T' EOF;\n";
-        const expected =
-            "error(" + IssueCode.CannotCreateTargetGenerator + "):  ANTLR cannot generate Foo code as of " +
-            "version " + antlrVersion + "\n" +
-            "error(" + IssueCode.ImplicitStringDefinition + "): T.g4:3:8: cannot create implicit token for " +
-            "string literal in non-combined grammar: 'T'\n";
 
         const pair = [
             grammar,

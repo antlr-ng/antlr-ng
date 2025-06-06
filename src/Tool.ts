@@ -145,12 +145,10 @@ export class Tool implements ITool {
                 return;
             }
 
-            const codeGenerator = new CodeGenerator(g, targetGenerator);
-
             // Build atn from AST.
             let factory: IATNFactory;
             if (g.isLexer()) {
-                factory = new LexerATNFactory(g as LexerGrammar, codeGenerator);
+                factory = new LexerATNFactory(g as LexerGrammar, targetGenerator);
             } else {
                 factory = new ParserATNFactory(g);
             }
@@ -181,6 +179,7 @@ export class Tool implements ITool {
 
             // Generate code.
             if (genCode) {
+                const codeGenerator = new CodeGenerator(g, targetGenerator);
                 const gen = new CodeGenPipeline(g, codeGenerator, this.toolConfiguration.generationOptions);
                 gen.process();
             }

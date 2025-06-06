@@ -11,10 +11,9 @@ import {
     LexerPopModeAction, LexerPushModeAction, LexerSkipAction, LexerTypeAction, NotSetTransition, SetTransition, Token,
     TokensStartState, Transition
 } from "antlr4ng";
-import type { STGroup } from "stringtemplate4ts";
 
 import { Constants } from "../Constants.js";
-import { CodeGenerator } from "../codegen/CodeGenerator.js";
+import type { ITargetGenerator } from "../codegen/ITargetGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import { EscapeSequenceParsing, ResultType } from "../misc/EscapeSequenceParsing.js";
@@ -27,8 +26,8 @@ import { RangeAST } from "../tool/ast/RangeAST.js";
 import { TerminalAST } from "../tool/ast/TerminalAST.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import { ATNOptimizer } from "./ATNOptimizer.js";
-import { ICharSetParseState, Mode } from "./ICharsetParserState.js";
 import type { IStatePair } from "./IATNFactory.js";
+import { ICharSetParseState, Mode } from "./ICharsetParserState.js";
 import { ParserATNFactory } from "./ParserATNFactory.js";
 import { RangeBorderCharactersData } from "./RangeBorderCharactersData.js";
 
@@ -39,8 +38,6 @@ interface ICharactersDataCheckStatus {
 
 export class LexerATNFactory extends ParserATNFactory {
 
-    private codegenTemplates: STGroup;
-
     /** Maps from an action index to a {@link LexerAction} object. */
     private indexToActionMap = new Map<number, LexerAction>();
 
@@ -49,11 +46,8 @@ export class LexerATNFactory extends ParserATNFactory {
 
     private readonly ruleCommands = new Array<string>();
 
-    public constructor(g: LexerGrammar, codeGenerator: CodeGenerator) {
+    public constructor(g: LexerGrammar, private targetGenerator: ITargetGenerator) {
         super(g);
-
-        // Use code generation to get correct language templates for lexer commands.
-        this.codegenTemplates = codeGenerator.templates;
     }
 
     public override createATN(): ATN {
@@ -401,31 +395,42 @@ export class LexerATNFactory extends ParserATNFactory {
         }
 
         // Fall back to standard action generation for the command.
-        const cmdST = this.codegenTemplates.getInstanceOf("Lexer" + CharSupport.capitalize(id.getText()) + "Command");
-        if (cmdST === null) {
-            this.g.tool.errorManager.grammarError(IssueCode.InvalidLexerCommand, this.g.fileName, id.token!,
-                id.getText());
-
-            return this.epsilon(id);
-        }
-
         const callCommand = arg !== undefined;
-        const containsArg = cmdST.impl?.formalArguments?.has("arg") ?? false;
-        if (callCommand !== containsArg) {
-            const errorType = callCommand
-                ? IssueCode.UnwantedLexerCommandArgument
-                : IssueCode.MissingLexerCommandArgument;
-            this.g.tool.errorManager.grammarError(errorType, this.g.fileName, id.token!, id.getText());
-
-            return this.epsilon(id);
-        }
-
         if (callCommand) {
-            cmdST.add("arg", arg.getText());
-            cmdST.add("grammar", arg.g);
-        }
+            const method = this.targetGenerator.lexerCallCommandMap.get(id.getText());
+            if (!method) {
+                // Check if the command just doesn't expect parameters (i.e. is not a call command).
+                const temp = this.targetGenerator.lexerCommandMap.get(id.getText());
+                if (temp) {
+                    this.g.tool.errorManager.grammarError(IssueCode.UnwantedLexerCommandArgument, this.g.fileName,
+                        id.token!, id.getText());
+                } else {
+                    this.g.tool.errorManager.grammarError(IssueCode.InvalidLexerCommand, this.g.fileName, id.token!,
+                        id.getText());
+                }
 
-        return this.action(cmdST.render());
+                return this.epsilon(id);
+            }
+
+            return this.action(method(arg.getText(), arg.g).join("\n"));
+        } else {
+            const method = this.targetGenerator.lexerCommandMap.get(id.getText());
+            if (!method) {
+                // Check if the command is a call command (i.e. expects an argument).
+                const temp = this.targetGenerator.lexerCallCommandMap.get(id.getText());
+                if (temp) {
+                    this.g.tool.errorManager.grammarError(IssueCode.MisingLexerCommandArgument, this.g.fileName,
+                        id.token!, id.getText());
+                } else {
+                    this.g.tool.errorManager.grammarError(IssueCode.InvalidLexerCommand, this.g.fileName, id.token!,
+                        id.getText());
+                }
+
+                return this.epsilon(id);
+            }
+
+            return this.action(method().join("\n"));
+        }
     }
 
     private applyPrevStateAndMoveToCodePoint(

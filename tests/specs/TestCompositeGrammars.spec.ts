@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 /*
  * Copyright (c) Mike Lischke. All rights reserved.
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
@@ -11,14 +12,18 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { generateRandomFilename } from "../../src/support/fs-helpers.js";
 import { convertMapToString } from "../../src/support/helpers.js";
 import { fileSystem } from "../../src/tool-parameters.js";
-import { ANTLRMessage } from "../../src/tool/ANTLRMessage.js";
 import { Grammar } from "../../src/tool/index.js";
+import { Issue } from "../../src/tool/Issue.js";
 import { IssueCode } from "../../src/tool/Issues.js";
 import { ErrorQueue } from "../support/ErrorQueue.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
 
 describe("TestCompositeGrammars", () => {
     const sort = <K extends string, V extends number>(data: Map<K, V>): Map<K, V> => {
@@ -36,18 +41,18 @@ describe("TestCompositeGrammars", () => {
         return dup;
     };
 
-    const checkGrammarSemanticsWarning = (errorQueue: ErrorQueue, expectedMessage: ANTLRMessage): void => {
-        let foundMsg: ANTLRMessage | undefined;
+    const checkGrammarSemanticsWarning = (errorQueue: ErrorQueue, expectedMessage: Issue): void => {
+        let foundMsg: Issue | undefined;
         for (const m of errorQueue.warnings) {
-            if (m.issueCode === expectedMessage.issueCode) {
+            if (m.code === expectedMessage.code) {
                 foundMsg = m;
             }
         }
 
         expect(foundMsg).toBeDefined();
-        expect(foundMsg).instanceOf(ANTLRMessage);
+        expect(foundMsg).instanceOf(Issue);
 
-        expect(foundMsg!.args.join(", ")).toBe(expectedMessage.args.join(", "));
+        expect(foundMsg!.paramsAsString).toBe(expectedMessage.paramsAsString);
         if (errorQueue.size() !== 1) {
             console.error(errorQueue);
         }
@@ -72,11 +77,11 @@ describe("TestCompositeGrammars", () => {
                 "WS : (' '|'\\n') -> skip ;\n";
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: subdir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -95,11 +100,11 @@ describe("TestCompositeGrammars", () => {
                 "s : 'a' ;\n";
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -123,11 +128,11 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c';\n";
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -153,11 +158,11 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> popMode;\n";
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -182,11 +187,11 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c';\n";
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -212,11 +217,11 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> channel(CH_C);\n";
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -243,11 +248,11 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> channel(CH_C);\n";
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -274,11 +279,11 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> popMode;\n";
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -305,11 +310,11 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> popMode;\n";
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -336,19 +341,20 @@ describe("TestCompositeGrammars", () => {
                 "C : 'c' -> popMode;\n";
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-                lib: tempDir
-            }, false);
+                lib: tempDir,
+                generators: [tsGenerator],
+            }), false);
             expect(queue.all).toHaveLength(1);
 
             const msg = queue.all[0];
-            expect(msg.issueCode).toBe(IssueCode.ModeNotInLexer);
-            expect(msg.args[0]).toBe("X");
-            expect(msg.line).toBe(3);
-            expect(msg.column).toBe(5);
-            expect(basename(msg.fileName)).toBe("M.g4");
+            expect(msg.code).toBe(IssueCode.ModeNotInLexer);
+            expect(msg["params"].arg).toBe("X");
+            expect(msg["params"].line).toBe(3);
+            expect(msg["params"].column).toBe(5);
+            expect(basename(msg["params"].fileName!)).toBe("M.g4");
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
         }
@@ -397,10 +403,11 @@ describe("TestCompositeGrammars", () => {
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
 
-            const parameters = {
+            const parameters = defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-            };
+                generators: [tsGenerator],
+            });
             g.tool.process(g, parameters, false);
 
             const expectedTokenIDToTypeMap = "{EOF=-1, B=1, A=2, C=3, WS=4}";
@@ -431,18 +438,19 @@ describe("TestCompositeGrammars", () => {
                 "import S;\n";
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-                lib: tempDir
-            }, false);
+                lib: tempDir,
+                generators: [tsGenerator],
+            }), false);
             const msg = queue.errors[0];
 
-            expect(msg.issueCode).toBe(IssueCode.UndefinedRuleRef);
-            expect(msg.args[0]).toBe("c");
-            expect(msg.line).toBe(2);
-            expect(msg.column).toBe(10);
-            expect(basename(msg.fileName)).toBe("S.g4");
+            expect(msg.code).toBe(IssueCode.UndefinedRuleRef);
+            expect(msg["params"].arg).toBe("c");
+            expect(msg["params"].line).toBe(2);
+            expect(msg["params"].column).toBe(10);
+            expect(basename(msg["params"].fileName!)).toBe("S.g4");
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
         }
@@ -469,12 +477,13 @@ describe("TestCompositeGrammars", () => {
                 "WS : (' '|'\\n') -> skip ;\n";
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-                lib: tempDir
-            }, false);
-            expect(queue.all[0].issueCode).toBe(IssueCode.CannotFindImportedGrammar);
+                lib: tempDir,
+                generators: [tsGenerator],
+            }), false);
+            expect(queue.all[0].code).toBe(IssueCode.CannotFindImportedGrammar);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
         }
@@ -503,11 +512,11 @@ describe("TestCompositeGrammars", () => {
             const outdir = tempDir + "/out";
             fileSystem.mkdirSync(outdir);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: outdir,
                 grammarFiles: [tempDir + "/M.g4"],
-                lib: subdir
-            }, false);
+                lib: subdir,
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -543,18 +552,19 @@ describe("TestCompositeGrammars", () => {
             const outdir = tempDir + "/out";
             fileSystem.mkdirSync(outdir);
 
-            let queue = ToolTestUtils.antlrOnFile({
+            let queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/MLexer.g4"],
-                lib: outdir
-            }, false);
+                lib: outdir,
+                generators: [tsGenerator],
+            }), false);
             expect(queue.all).toHaveLength(0);
 
-            queue = ToolTestUtils.antlrOnFile({
+            queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: outdir,
                 grammarFiles: [tempDir + "/MParser.g4"],
                 lib: subdir
-            }, false);
+            }), false);
             expect(queue.all).toHaveLength(0);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
@@ -585,15 +595,16 @@ describe("TestCompositeGrammars", () => {
             const queue = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(queue);
 
-            const parameters = {
+            const parameters = defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-            };
+            });
             g.tool.process(g, parameters, false);
 
             const expectedArg = "S";
             const expectedMsgID = IssueCode.OptionsInDelegate;
-            const expectedMessage = new ANTLRMessage(expectedMsgID, g.fileName, -1, -1, expectedArg);
+            const expectedMessage = new Issue(expectedMsgID, g.tool.toolConfiguration.messageFormatOptions,
+                { fileName: g.fileName, line: -1, column: -1, arg: expectedArg });
             checkGrammarSemanticsWarning(queue, expectedMessage);
 
             expect(queue.errors).toHaveLength(0);
@@ -624,13 +635,13 @@ describe("TestCompositeGrammars", () => {
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
 
-            const parameters = {
+            const parameters = defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-            };
+            });
             g.tool.process(g, parameters, false);
 
-            expect(errors.errors[0].issueCode).toBe(IssueCode.SyntaxError);
+            expect(errors.errors[0].code).toBe(IssueCode.SyntaxError);
         } finally {
             fileSystem.rmSync(tempDir, { recursive: true });
         }
@@ -665,10 +676,11 @@ describe("TestCompositeGrammars", () => {
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
 
-            const parameters = {
+            const parameters = defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-            };
+                generators: [tsGenerator],
+            });
             g.tool.process(g, parameters, false);
 
             const expectedTokenIDToTypeMap = "{EOF=-1, M=1}"; // S and T aren't imported; overridden
@@ -735,10 +747,11 @@ describe("TestCompositeGrammars", () => {
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
 
-            const parameters = {
+            const parameters = defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-            };
+                generators: [tsGenerator],
+            });
             g.tool.process(g, parameters, false);
 
             expect(errors.all).toHaveLength(0);
@@ -782,10 +795,11 @@ describe("TestCompositeGrammars", () => {
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
 
-            const parameters = {
+            const parameters = defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-            };
+                generators: [tsGenerator],
+            });
             g.tool.process(g, parameters, false);
 
             const expectedTokenIDToTypeMap = "{EOF=-1, M=1, T=2}";
@@ -841,10 +855,11 @@ describe("TestCompositeGrammars", () => {
             const errors = new ErrorQueue(g.tool.errorManager);
             g.tool.errorManager.addListener(errors);
 
-            const parameters = {
+            const parameters = defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-            };
+                generators: [tsGenerator],
+            });
             g.tool.process(g, parameters, false);
 
             const expectedTokenIDToTypeMap = "{EOF=-1, T4=1, T3=2}";
@@ -881,10 +896,10 @@ describe("TestCompositeGrammars", () => {
                 "WS : (' '|'\\n') -> skip ;\n";
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
-            const queue = ToolTestUtils.antlrOnFile({
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
                 outputDirectory: tempDir,
                 grammarFiles: [tempDir + "/M.g4"],
-            }, false);
+            }), false);
 
             expect(queue.all).toHaveLength(0);
         } finally {

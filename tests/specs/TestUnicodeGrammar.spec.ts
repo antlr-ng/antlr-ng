@@ -7,16 +7,24 @@ import { describe, expect, it } from "vitest";
 
 import { CharStream, CommonTokenStream } from "antlr4ng";
 
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { Grammar } from "../../src/tool/index.js";
 import { InterpreterTreeTextProvider } from "../support/InterpreterTreeTextProvider.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
-import type { IToolParameters } from "../../src/tool-parameters.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
+const testParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
 
 describe("TestUnicodeGrammar", () => {
 
     const parseTreeForGrammarWithInput = (grammarText: string, rootRule: string, inputText: string): string => {
         const grammar = new Grammar(grammarText);
-        grammar.tool.process(grammar, {} as IToolParameters, false);
+        grammar.tool.process(grammar, testParameters, false);
 
         const lexEngine = grammar.createLexerInterpreter(CharStream.fromString(inputText));
         const tokens = new CommonTokenStream(lexEngine);
@@ -37,7 +45,7 @@ describe("TestUnicodeGrammar", () => {
         expect(parseTreeForGrammarWithInput(grammarText, "r", inputText)).toBe("(r:1 " + inputText + ")");
     });
 
-    // Disabled in the original Java code. Needs changes in the tool to work.
+    // TODO: Disabled in the original Java code. Needs changes in the tool to work.
     it.skip("unicodeSurrogatePairLiteralInGrammar", () => {
         const grammarText =
             "grammar Unicode;\n" +

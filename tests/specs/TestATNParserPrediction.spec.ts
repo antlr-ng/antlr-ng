@@ -11,12 +11,20 @@ import { describe, expect, it } from "vitest";
 
 import { DFA, Lexer, LexerATNSimulator, ParserRuleContext, PredictionContextCache } from "antlr4ng";
 
-import type { IToolParameters } from "../../src/tool-parameters.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { Grammar, LexerGrammar } from "../../src/tool/index.js";
 import { LeftRecursiveRule } from "../../src/tool/LeftRecursiveRule.js";
 import { MockIntTokenStream } from "../support/MockIntTokenStream.js";
 import { ParserInterpreterForTesting } from "../support/ParserInterpreterForTesting.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
+const testParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
 
 describe("TestATNParserPrediction", () => {
     /** first check that the ATN predicts right alt. Then check adaptive prediction. */
@@ -76,12 +84,12 @@ describe("TestATNParserPrediction", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "a : A{;} | B ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 0;
         checkPredictedAlt(lg, g, decision, "a", 1);
@@ -112,12 +120,12 @@ describe("TestATNParserPrediction", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "a : A | ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 0;
         checkPredictedAlt(lg, g, decision, "a", 1);
@@ -143,12 +151,12 @@ describe("TestATNParserPrediction", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "a : A | A B ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         checkPredictedAlt(lg, g, 0, "a", 1);
         checkPredictedAlt(lg, g, 0, "ab", 2);
@@ -180,14 +188,14 @@ describe("TestATNParserPrediction", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "a : x | y ;\n" +
             "x : A ;\n" +
             "y : B ;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 0;
         checkPredictedAlt(lg, g, decision, "a", 1);
@@ -217,7 +225,7 @@ describe("TestATNParserPrediction", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -225,7 +233,7 @@ describe("TestATNParserPrediction", () => {
             "a : x B ;\n" +
             "b : x C ;\n" +
             "x : A | ;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 0;
         checkPredictedAlt(lg, g, decision, "a", 1);
@@ -262,12 +270,12 @@ describe("TestATNParserPrediction", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "a : A | A | A B ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 0;
         checkPredictedAlt(lg, g, decision, "a", 1);
@@ -300,12 +308,12 @@ describe("TestATNParserPrediction", () => {
             "A : 'a' ;\n" +
             "B : 'b' ;\n" +
             "C : 'c' ;\n");
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "a : A B | A B | A B C ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 0;
         checkPredictedAlt(lg, g, decision, "ab", 1);
@@ -345,7 +353,7 @@ describe("TestATNParserPrediction", () => {
             "RP : ')' ;\n" +
             "INT : '0'..'9'+ ;\n"
         );
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -354,7 +362,7 @@ describe("TestATNParserPrediction", () => {
             "e : LP e RP\n" +
             "  | INT\n" +
             "  ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 0;
         checkPredictedAlt(lg, g, decision, "34b", 1);
@@ -408,7 +416,7 @@ describe("TestATNParserPrediction", () => {
             "RP : ')' ;\n" +
             "INT : '0'..'9'+ ;\n"
         );
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
@@ -417,7 +425,7 @@ describe("TestATNParserPrediction", () => {
             "e : LP e RP\n" +
             "  | INT\n" +
             "  ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 0;
         checkPredictedAlt(lg, g, decision, "34a", 1);
@@ -476,13 +484,13 @@ describe("TestATNParserPrediction", () => {
             "SEMI : ';' ;\n" +
             "INT : '0'..'9'+ ;\n"
         );
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "tokens {ID,SEMI,INT}\n" +
             "a : (ID | ID ID?) SEMI ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 1;
         checkPredictedAlt(lg, g, decision, "a;", 1);
@@ -497,13 +505,13 @@ describe("TestATNParserPrediction", () => {
             "SEMI : ';' ;\n" +
             "INT : '0'..'9'+ ;\n"
         );
-        lg.tool.process(lg, {} as IToolParameters, false);
+        lg.tool.process(lg, testParameters, false);
 
         const g = new Grammar(
             "parser grammar T;\n" +
             "tokens {ID,SEMI,INT}\n" +
             "a : ID | ID | ID SEMI ;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const decision = 0;
         checkPredictedAlt(lg, g, decision, "a", 1);
@@ -521,7 +529,7 @@ describe("TestATNParserPrediction", () => {
             "ID : [a-z]+ ;\n" +
             "INT : [0-9]+ ;\n" +
             "WS : [ \\r\\t\\n]+ ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const e = g.getRule("e");
         expect(e instanceof LeftRecursiveRule).toBe(true);
@@ -541,7 +549,7 @@ describe("TestATNParserPrediction", () => {
             "ID : [a-z]+ ;\n" +
             "INT : [0-9]+ ;\n" +
             "WS : [ \\r\\t\\n]+ ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const e = g.getRule("e");
         expect(e instanceof LeftRecursiveRule).toBe(true);
@@ -564,7 +572,7 @@ describe("TestATNParserPrediction", () => {
             "ID : [a-z]+ ;\n" +
             "INT : [0-9]+ ;\n" +
             "WS : [ \\r\\t\\n]+ ;");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const e = g.getRule("e");
         expect(e instanceof LeftRecursiveRule).toBe(true);
