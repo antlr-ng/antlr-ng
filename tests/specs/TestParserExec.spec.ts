@@ -12,9 +12,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
-import type { IToolConfiguration } from "../../src/config/config.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { Grammar } from "../../src/tool/index.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
 
 /**
  * Test parser execution.
@@ -51,42 +54,6 @@ import { ToolTestUtils } from "../ToolTestUtils.js";
 // Need to run the sequentially, as they use console output for verification.
 describe.sequential("TestParserExec", () => {
     /**
-     * This is a regression test for antlr/antlr4#118.
-     * https://github.com/antlr/antlr4/issues/118
-     */
-    //@Disabled("Performance impact of passing this test may not be worthwhile")
-    it.skip("testStartRuleWithoutEOF", async () => {
-        const tempDir = mkdtempSync(join(tmpdir(), "AntlrLexerActions"));
-        try {
-            const grammar =
-                "grammar T;\n" +
-                "s @after {this.dumpDFA();}\n" +
-                "  : ID | ID INT ID ;\n" +
-                "ID : 'a'..'z'+ ;\n" +
-                "INT : '0'..'9'+ ;\n" +
-                "WS : (' '|'\\t'|'\\n')+ -> skip ;\n";
-
-            let hasErrors = false;
-            const output = await ToolTestUtils.captureTerminalOutput(async () => {
-                const queue = await ToolTestUtils.execParser("T.g4", grammar, "TParser", "TLexer", "s", "abc 34", false,
-                    true, tempDir);
-                hasErrors = queue.errors.length > 0;
-            });
-
-            const expecting =
-                "Decision 0:\n" +
-                "s0-ID->s1\n" +
-                "s1-INT->s2\n" +
-                "s2-EOF->:s3=>1\n"; // Must point at accept state
-
-            expect(output.output).toEqual(expecting);
-            expect(hasErrors).toBe(false);
-        } finally {
-            rmSync(tempDir, { recursive: true });
-        }
-    });
-
-    /**
      * This is a regression test for antlr/antlr4#588 "ClassCastException during
      * semantic predicate handling".
      * https://github.com/antlr/antlr4/issues/588
@@ -104,8 +71,7 @@ describe.sequential("TestParserExec", () => {
                     "PslParser", "PslLexer", "floating_constant", " . 234", false, false, tempDir);
 
                 for (const error of queue.errors) {
-                    const msgST = queue.errorManager.formatMessage(error)!;
-                    generationErrors += msgST.render();
+                    generationErrors += error.toString();
                 }
             });
 
@@ -234,10 +200,12 @@ describe.sequential("TestParserExec", () => {
     });
 
     it("Fail Element Option", () => {
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: ["T.g4"],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
+
         const grammarText = `grammar T;
             s : a ;
             a : a ID {false}?<fail='custom message'>
@@ -248,9 +216,8 @@ describe.sequential("TestParserExec", () => {
         const g = new Grammar(grammarText);
         g.tool.process(g, parameters, false);
 
-        const gen = new CodeGenerator(g);
-        const outputFileST = gen.generateParser(g.tool.toolConfiguration);
-        const outputFile = outputFileST.render();
-        expect(outputFile).toContain("FailedPredicateException(this, \"false\", \"custom message\");");
+        const gen = new CodeGenerator(g, tsGenerator);
+        const outputFile = gen.generateParser(g.tool.toolConfiguration.generationOptions);
+        expect(outputFile).toContain("createFailedPredicateException(\"false\", \"custom message\");");
     });
 });

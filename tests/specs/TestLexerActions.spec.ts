@@ -11,6 +11,15 @@ import { describe, expect, it } from "vitest";
 import { ToolTestUtils } from "../ToolTestUtils.js";
 import { Grammar } from "../../src/tool/index.js";
 import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
+import { defineConfig } from "../../src/config/config.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
+const testParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
 
 // Need to run the sequentially, as they use console output for verification.
 describe.sequential("TestLexerActions", () => {
@@ -432,12 +441,11 @@ fragment WS: [ \\r\\t\\n]+ ;
             ID : 'a'..'z'+ ;
             WS : (' '|'\\n') -> skip ;`;
         const g = new Grammar(grammarText);
-        g.tool.process(g, false);
+        g.tool.process(g, testParameters, false);
 
-        const gen = new CodeGenerator(g);
-        const outputFileST = gen.generateParser(g.tool.toolConfiguration);
-        const outputFile = outputFileST.render();
-        expect(outputFile).toContain("FailedPredicateException(this, \"false\", \"custom message\");");
+        const gen = new CodeGenerator(g, tsGenerator);
+        const outputFile = gen.generateParser(g.tool.toolConfiguration.generationOptions);
+        expect(outputFile).toContain("createFailedPredicateException(\"false\", \"custom message\");");
         expect(outputFile).toContain("return c.match(/^[0-9a-zA-Z_]+$/);");
     });
 });

@@ -9,8 +9,16 @@ import { describe, expect, it } from "vitest";
 
 import { BufferedTokenStream, CharStream, Token, type TokenSource, type TokenStream } from "antlr4ng";
 
-import type { IToolParameters } from "../../src/tool-parameters.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { LexerGrammar } from "../../src/tool/index.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
+const testParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
 
 describe("TestBufferedTokenStream", () => {
     const createTokenStream = (src: TokenSource): TokenStream => {
@@ -27,7 +35,7 @@ describe("TestBufferedTokenStream", () => {
             "PLUS : '+';\n" +
             "MULT : '*';\n" +
             "WS : ' '+;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         // Tokens: 012345678901234567
         // Input:  x = 3 * 0 + 2 * 0;
@@ -51,7 +59,7 @@ describe("TestBufferedTokenStream", () => {
             "PLUS : '+';\n" +
             "MULT : '*';\n" +
             "WS : ' '+;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         // Tokens: 012345678901234567
         // Input:  x = 3 * 0 + 2 * 0;
@@ -74,7 +82,7 @@ describe("TestBufferedTokenStream", () => {
             "PLUS : '+';\n" +
             "MULT : '*';\n" +
             "WS : ' '+;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         // Tokens: 012345678901234567
         // Input:  x = 3 * 0 + 2 * 0;
@@ -106,7 +114,7 @@ describe("TestBufferedTokenStream", () => {
             "PLUS : '+';\n" +
             "MULT : '*';\n" +
             "WS : ' '+;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         // Tokens: 012345678901234567
         // Input:  x = 3 * 0 + 2 * 0;
@@ -135,7 +143,7 @@ describe("TestBufferedTokenStream", () => {
             "PLUS : '+';\n" +
             "MULT : '*';\n" +
             "WS : ' '+;\n");
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         // Tokens: 012345678901234567
         // Input:  x = 3 * 0 + 2 * 0;

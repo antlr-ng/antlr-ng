@@ -7,14 +7,22 @@ import { describe, expect, it } from "vitest";
 
 import { ATNDeserializer, ATNSerializer } from "antlr4ng";
 
-import type { IToolParameters } from "../../src/tool-parameters.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { Grammar, LexerGrammar } from "../../src/tool/index.js";
 import { ATNDescriber } from "../support/ATNDescriber.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
 
+const tsGenerator = new TypeScriptTargetGenerator();
+const dummyParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
+
 describe("TestATNDeserialization", () => {
     const checkDeserializationIsStable = (g: Grammar): void => {
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, dummyParameters, false);
         const atn = ToolTestUtils.createATN(g, false);
         const serialized = ATNSerializer.getSerialized(atn);
         const atnData = new ATNDescriber(atn, g.getTokenNames()).decode(serialized);

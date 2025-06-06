@@ -52,6 +52,9 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         "type", "from", "of",
     ]);
 
+    public readonly lexerCommandMap: Map<string, () => Lines>;
+    public readonly lexerCallCommandMap: Map<string, (arg: string, grammar: Grammar) => Lines>;
+
     private static readonly defaultValues: Record<string, string> = {
         "bool": "false",
         "int": "0",
@@ -183,6 +186,23 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
                 return this.renderAction(srcOp as OutputModelObjects.Action);
             }],
         ]);
+
+    public constructor() {
+        super();
+
+        this.lexerCommandMap = new Map<string, () => Lines>([
+            ["skip", this.renderLexerSkipCommand],
+            ["more", this.renderLexerMoreCommand],
+            ["popMode", this.renderLexerPopModeCommand],
+        ]);
+
+        this.lexerCallCommandMap = new Map<string, (arg: string, grammar: Grammar) => Lines>([
+            ["type", this.renderLexerTypeCommand],
+            ["channel", this.renderLexerChannelCommand],
+            ["mode", this.renderLexerModeCommand],
+            ["pushMode", this.renderLexerPushModeCommand],
+        ]);
+    }
 
     public renderParserFile(parserFile: OutputModelObjects.ParserFile): string {
         const result: Lines = [
@@ -379,7 +399,9 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return result.join("\n");
     }
 
-    public renderLexerRuleContext(): Lines { return ["antlr.ParserRuleContext"]; }
+    public renderLexerRuleContext(): Lines {
+        return ["antlr.ParserRuleContext"];
+    }
 
     public getRuleFunctionContextStructName(r: Rule): string {
         if (r.g.isLexer()) {
@@ -464,7 +486,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderParser(parserFile: OutputModelObjects.ParserFile): Lines {
         const parser = parserFile.parser;
 
-        const baseClass = parser.superClass ? this.renderActionChunks([parser.superClass]).join("") : "antlr.Lexer";
+        const baseClass = parser.superClass ? this.renderActionChunks([parser.superClass]) : "antlr.Parser";
         const result: Lines = [
             `export class ${parser.name} extends ${baseClass} {`
         ];
@@ -544,7 +566,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             block.push(`    }`);
             block.push("");
             block.push(`    return true;`);
-            block.push(`} `);
+            block.push(`}`);
             block.push("");
 
             block.push(...funcs);
@@ -584,7 +606,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderLexer(lexer: OutputModelObjects.Lexer, namedActions: Map<string, OutputModelObjects.Action>): Lines {
         const result: Lines = [];
 
-        const baseClass = lexer.superClass ? this.renderActionChunks([lexer.superClass]).join("") : "antlr.Lexer";
+        const baseClass = lexer.superClass ? this.renderActionChunks([lexer.superClass]) : "antlr.Lexer";
         result.push(`export class ${lexer.name} extends ${baseClass} {`);
 
         const block: Lines = [];
@@ -726,7 +748,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderRuleActionFunction(r: OutputModelObjects.RuleActionFunction): Lines {
         const result: Lines = this.startRendering("ruleActionFunction");
 
-        result.push(`private ${r.name}_action(localContext: ${r.ctxType} | null, actionIndex: number): void {`);
+        result.push(`private ${r.name}_action(localContext: ${r.ctxType}, actionIndex: number): void {`);
         result.push(`    switch (actionIndex) {`);
 
         for (const [index, action] of r.actions) {
@@ -747,14 +769,16 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderRuleSempredFunction(r: OutputModelObjects.RuleSempredFunction): Lines {
         const result: Lines = this.startRendering("ruleSempredFunction");
 
-        result.push(`private ${r.name}_sempred(localContext: ${r.ctxType} | null, predIndex: number): boolean {`);
+        result.push(`private ${r.name}_sempred(localContext: ${r.ctxType}, predIndex: number): boolean {`);
         result.push(`    switch (predIndex) {`);
 
         for (const [index, action] of r.actions) {
             result.push(`        case ${index}: {`);
 
             const actionText = this.renderAction(action).join("");
-            result.push(`            return ${actionText};`);
+
+            // No line breaks between `return` and the action.
+            result.push(`            return ${actionText.trimStart()};`);
             result.push(`        }`);
             result.push("");
         }
@@ -1315,7 +1339,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     /** Produces smaller bytecode only when `bits.ttypes` contains more than two items. */
     private renderBitsetBitfieldComparison(s: OutputModelObjects.TestSetInline,
         bits: OutputModelObjects.Bitset): string {
-        return `(${this.renderTestShiftInRange(this.renderOffsetShiftVar(s.varName, bits.shift))} ` +
+        return `(${this.renderTestShiftInRange(this.renderOffsetShiftVar(s.varName, bits.shift))}` +
             `&& ((1 << ${this.renderOffsetShiftVar(s.varName, bits.shift)}) & ${bits.calculated}) !== 0)`;
     }
 
@@ -1363,7 +1387,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             args += precedence;
 
             if (r.argExprsChunks) {
-                args += ", " + this.renderActionChunks(r.argExprsChunks).join(" ");
+                args += ", " + this.renderActionChunks(r.argExprsChunks);
             }
         }
 
@@ -1458,7 +1482,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             return [];
         }
 
-        return [...this.renderActionChunks(a.chunks)];
+        return [this.renderActionChunks(a.chunks)];
     }
 
     private renderSemPred(p: OutputModelObjects.SemPred): Lines {
@@ -1466,12 +1490,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
         result.push(`this.state = ${p.stateNumber};`);
 
-        const chunks = this.renderActionChunks(p.chunks).join(""); // Should actually be only one chunk.
+        const chunks = this.renderActionChunks(p.chunks);
         result.push(`if (!(${chunks})) {`);
 
-        const failChunks = this.renderActionChunks(p.failChunks).join("");
+        const failChunks = this.renderActionChunks(p.failChunks);
         result.push(`    throw this.createFailedPredicateException` +
-            `(${p.predicate}${failChunks.length > 0 ? failChunks : (p.msg ? p.msg : "")});`);
+            `(${p.predicate}, ${failChunks.length > 0 ? failChunks : (p.msg ? p.msg : "")});`);
         result.push(`}`);
 
         return this.endRendering("SemPred", result);
@@ -1494,35 +1518,39 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderLabelRef(t: OutputModelObjects.LabelRef): string {
         const ctx = this.renderContext(t);
 
-        return `${ctx}._${t.escapedName} `;
+        return `${ctx}._${t.escapedName}`;
     }
 
     private renderListLabelRef(t: OutputModelObjects.ListLabelRef): Lines {
         const ctx = this.renderContext(t);
         const name = this.renderListLabelName(t.escapedName);
 
-        return [`${ctx}?._${name} `];
+        return [`${ctx}?._${name}`];
     }
 
-    private renderLocalRef(a: OutputModelObjects.LocalRef): Lines { return [`localContext.${a.escapedName} `]; }
+    private renderLocalRef(a: OutputModelObjects.LocalRef): Lines {
+        return [`localContext.${a.escapedName}`];
+    }
 
     private renderNonLocalAttrRef(s: OutputModelObjects.NonLocalAttrRef): Lines {
         return [`(this.getInvokingContext(${s.ruleIndex}) as ` +
-            `${this.toTitleCase(s.ruleName)}Context).${s.escapedName} `];
+            `${this.toTitleCase(s.ruleName)}Context).${s.escapedName}`];
     }
 
     private renderQRetValueRef(a: OutputModelObjects.QRetValueRef): Lines {
         const ctx = this.renderContext(a);
 
-        return [`${ctx}._${a.dict}!.${a.escapedName} `];
+        return [`${ctx}._${a.dict}!.${a.escapedName}`];
     }
 
-    private renderRetValueRef(a: OutputModelObjects.RetValueRef): Lines { return [`localContext.${a.escapedName} `]; }
+    private renderRetValueRef(a: OutputModelObjects.RetValueRef): Lines {
+        return [`localContext.${a.escapedName}`];
+    }
 
     private renderRulePropertyRef(r: OutputModelObjects.RulePropertyRef): Lines {
         const ctx = this.renderContext(r);
 
-        return [`(${ctx}._${r.label}?.start)`];
+        return [`(${ctx}._${r.label}!.start)`];
     }
 
     private renderRulePropertyRefCtx(r: OutputModelObjects.RulePropertyRefCtx): Lines {
@@ -1538,13 +1566,13 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderRulePropertyRefStart(r: OutputModelObjects.RulePropertyRefStart): Lines {
         const ctx = this.renderContext(r);
 
-        return [`(${ctx}._${r.label}?.start)`];
+        return [`(${ctx}._${r.label}!.start)`];
     }
 
     private renderRulePropertyRefStop(r: OutputModelObjects.RulePropertyRefStop): Lines {
         const ctx = this.renderContext(r);
 
-        return [`(${ctx}._${r.label}?.stop)`];
+        return [`(${ctx}._${r.label}!.stop)`];
     }
 
     private renderRulePropertyRefText(r: OutputModelObjects.RulePropertyRefText): Lines {
@@ -1641,13 +1669,15 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderTokenRef(t: OutputModelObjects.TokenRef): Lines {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}?._${t.escapedName})`];
+        return [`${ctx}?._${t.escapedName}!`];
     }
 
-    private renderInputSymbolType(file: OutputModelObjects.LexerFile): Lines { return [file.inputSymbolType ?? "Token"]; }
+    private renderInputSymbolType(file: OutputModelObjects.LexerFile): Lines {
+        return [file.inputSymbolType ?? "Token"];
+    }
 
     private renderAddToLabelList = (a: OutputModelObjects.AddToLabelList): Lines => {
-        const ctx = this.renderContext(a);
+        const ctx = this.renderContext(a.label);
 
         return [`(${ctx}._${a.listName}.push(${this.renderLabelRef(a.label)}!));`];
     };
@@ -1736,7 +1766,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         const contextSuperClass = (outputFile as OutputModelObjects.ParserFile).contextSuperClass;
         let superClass = "antlr.ParserRuleContext";
         if (contextSuperClass) {
-            superClass = this.renderActionChunks([contextSuperClass]).join("");
+            superClass = this.renderActionChunks([contextSuperClass]);
         }
 
         let interfaces = "";
@@ -1928,15 +1958,35 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return result;
     }
 
-    private renderLexerSkipCommand(): Lines { return ["this.skip();"]; }
-    private renderLexerMoreCommand(): Lines { return ["this.more();"]; }
-    private renderLexerPopModeCommand(): Lines { return ["this.popMode();"]; }
-    private renderLexerTypeCommand(arg: string, grammar: Grammar): Lines { return [`this.type = ${arg};`]; }
-    private renderLexerChannelCommand(arg: string, grammar: Grammar): Lines { return [`this.channel = ${arg};`]; }
-    private renderLexerModeCommand(arg: string, grammar: Grammar): Lines { return [`this.mode = ${arg};`]; }
-    private renderLexerPushModeCommand(arg: string, grammar: Grammar): Lines { return [`this.pushMode(${arg});`]; }
+    private renderLexerSkipCommand = (): Lines => {
+        return ["this.skip();"];
+    };
 
-    private renderActionChunks(chunks?: OutputModelObjects.ActionChunk[]): Lines {
+    private renderLexerMoreCommand = (): Lines => {
+        return ["this.more();"];
+    };
+
+    private renderLexerPopModeCommand = (): Lines => {
+        return ["this.popMode();"];
+    };
+
+    private renderLexerTypeCommand = (arg: string, grammar: Grammar): Lines => {
+        return [`this.type = ${arg};`];
+    };
+
+    private renderLexerChannelCommand = (arg: string, grammar: Grammar): Lines => {
+        return [`this.channel = ${arg};`];
+    };
+
+    private renderLexerModeCommand = (arg: string, grammar: Grammar): Lines => {
+        return [`this.mode = ${arg};`];
+    };
+
+    private renderLexerPushModeCommand = (arg: string, grammar: Grammar): Lines => {
+        return [`this.pushMode(${arg});`];
+    };
+
+    private renderActionChunks(chunks?: OutputModelObjects.ActionChunk[]): string {
         const result: Lines = [];
 
         if (chunks) {
@@ -1948,12 +1998,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             }
         }
 
-        return result;
+        return result.join("");
     }
 
     private renderImplicitTokenLabel(tokenName: string): Lines { return [tokenName]; }
     private renderImplicitRuleLabel(ruleName: string): Lines { return [ruleName]; };
-    private renderImplicitSetLabel(id: string): Lines { return [`_tset${id} `]; };
+    private renderImplicitSetLabel(id: string): Lines { return [`_tset${id}`]; };
     private renderListLabelName(label: string): Lines { return [label]; }
 
     /** For any action chunk, what is correctly-typed context struct ptr? */

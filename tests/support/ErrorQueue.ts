@@ -3,15 +3,15 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import type { ANTLRMessage } from "../../src/tool/ANTLRMessage.js";
+import type { Issue } from "../../src/tool/Issue.js";
 import { ToolListener } from "../../src/tool/ToolListener.js";
 import { ErrorManager } from "../../src/tool/ErrorManager.js";
 
 export class ErrorQueue extends ToolListener {
     public readonly infos: string[] = [];
-    public readonly errors: ANTLRMessage[] = [];
-    public readonly warnings: ANTLRMessage[] = [];
-    public readonly all: ANTLRMessage[] = [];
+    public readonly errors: Issue[] = [];
+    public readonly warnings: Issue[] = [];
+    public readonly all: Issue[] = [];
 
     // TODO: reorganize the error manager to avoid cross-references.
     public constructor(errorManager: ErrorManager) {
@@ -22,17 +22,17 @@ export class ErrorQueue extends ToolListener {
         this.infos.push(msg);
     }
 
-    public error(msg: ANTLRMessage): void {
+    public error(msg: Issue): void {
         this.errors.push(msg);
         this.all.push(msg);
     }
 
-    public warning(msg: ANTLRMessage): void {
+    public warning(msg: Issue): void {
         this.warnings.push(msg);
         this.all.push(msg);
     }
 
-    public errorToolMessage(msg: ANTLRMessage): void {
+    public errorToolMessage(msg: Issue): void {
         this.errors.push(msg);
         this.all.push(msg);
     }
@@ -48,8 +48,7 @@ export class ErrorQueue extends ToolListener {
 
         let buf = "";
         for (const m of this.all) {
-            const st = this.errorManager.formatMessage(m)!;
-            buf += st.render() + "\n";
+            buf += m.toString() + "\n";
         }
 
         return buf;
