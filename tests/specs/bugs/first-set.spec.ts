@@ -15,6 +15,7 @@ import { defineConfig } from "../../../src/config/config.js";
 import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { DOTGenerator } from "../../../src/tool/DOTGenerator.js";
 import { Grammar, LexerGrammar } from "../../../src/tool/index.js";
+import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
 
 const tsGenerator = new TypeScriptTargetGenerator();
 

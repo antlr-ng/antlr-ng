@@ -1438,7 +1438,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     /** Produces smaller bytecode only when `bits.ttypes` contains more than two items. */
     private renderBitsetBitfieldComparison(s: OutputModelObjects.TestSetInline,
         bits: OutputModelObjects.Bitset): string {
-        return `(${this.renderTestShiftInRange(this.renderOffsetShiftVar(s.varName, bits.shift))} ` +
+        return `(${this.renderTestShiftInRange(this.renderOffsetShiftVar(s.varName, bits.shift))}` +
             `&& ((1 << ${this.renderOffsetShiftVar(s.varName, bits.shift)}) & ${bits.calculated}) !== 0)`;
     }
 
@@ -2115,12 +2115,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return [`this.channel = ${arg};`];
     };
 
+
+
     private renderLexerModeCommand = (arg: string, grammar: Grammar): Lines => {
         return [`this.mode = ${arg};`];
     };
-
     private renderLexerPushModeCommand = (arg: string, grammar: Grammar): Lines => {
         return [`this.pushMode(${arg});`];
     };
-
 }
