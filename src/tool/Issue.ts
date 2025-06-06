@@ -41,18 +41,18 @@ export class Issue {
 
         let location = "";
 
-        if (this.params.line !== -1) {
-            if (this.params.fileName === undefined) {
-                this.params.fileName = "<unknown>";
-            }
+        location = locationTemplate.replace("<file>", this.params.fileName ?? "<unknown>");
 
-            location = locationTemplate.replace("<file>", this.params.fileName);
+        if (this.params.line !== -1) {
             location = location.replace("<line>", String(this.params.line));
             location = location.replace("<column>", String(this.params.column));
+        } else {
+            location = location.replace("<line>", "");
+            location = location.replace("<column>", "");
         }
 
-        let message = "";
         const issue = issueTypes.get(this.code)!;
+        let message = issue.message;
         if (this.verbose && issue.verboseMessage) {
             message = issue.verboseMessage;
 
@@ -80,5 +80,27 @@ export class Issue {
         result = result.replace("<message>", message);
 
         return result;
+    }
+
+    /**
+     * For testing only.
+     *
+     * @returns A string representation of the parameters used to create this issue.
+     */
+    public get paramsAsString(): string {
+        const args: string[] = [];
+        if (this.params.arg !== undefined) {
+            args.push(String(this.params.arg));
+        }
+
+        if (this.params.arg2 !== undefined) {
+            args.push(String(this.params.arg2));
+        }
+
+        if (this.params.arg3 !== undefined) {
+            args.push(String(this.params.arg3));
+        }
+
+        return args.join(", ");
     }
 }

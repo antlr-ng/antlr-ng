@@ -38,11 +38,10 @@ export class RangeBorderCharactersData {
             if (notImpliedCharacters.length > 0) {
                 grammar.tool.errorManager.grammarError(IssueCode.RangeProbablyContainsNotImpliedCharacter,
                     grammar.fileName, tree.token!,
-                    {
-                        arg: String.fromCodePoint(from),
-                        arg2: String.fromCodePoint(to),
-                        arg3: notImpliedCharacters.toString()
-                    });
+                    String.fromCodePoint(from),
+                    String.fromCodePoint(to),
+                    notImpliedCharacters.toString()
+                );
             }
         }
 

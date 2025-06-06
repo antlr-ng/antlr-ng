@@ -12,9 +12,12 @@ import { CharStream, CommonTokenStream, DecisionInfo } from "antlr4ng";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { IToolConfiguration } from "../../src/config/config.js";
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { Grammar, LexerGrammar } from "../../src/tool/index.js";
 import { ToolTestUtils, xpathTestGrammar } from "../ToolTestUtils.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
 
 describe("TestParserProfiler", () => {
     let lg: LexerGrammar;
@@ -30,10 +33,11 @@ describe("TestParserProfiler", () => {
             "PLUS : '+' ;\n" +
             "MULT : '*' ;\n");
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: ["L.g4"],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
         lg.tool.process(lg, parameters, false);
     });
 
@@ -69,10 +73,11 @@ describe("TestParserProfiler", () => {
             "  ;\n",
             lg);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: ["L.g4"],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
         g.tool.process(g, parameters, false);
 
         const info = interpAndGetDecisionInfo(lg, g, "s", ";");
@@ -91,10 +96,11 @@ describe("TestParserProfiler", () => {
             "  ;\n",
             lg);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: ["L.g4"],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
         g.tool.process(g, parameters, false);
 
         const info = interpAndGetDecisionInfo(lg, g, "s", "xyz;");
@@ -113,10 +119,11 @@ describe("TestParserProfiler", () => {
             "  ;\n",
             lg);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: ["L.g4"],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
         g.tool.process(g, parameters, false);
 
         const info = interpAndGetDecisionInfo(lg, g, "s", "xyz;", "abc;");
@@ -135,10 +142,11 @@ describe("TestParserProfiler", () => {
             "  ;\n",
             lg);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: ["L.g4"],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
         g.tool.process(g, parameters, false);
 
         // The '.' vs ';' causes another ATN transition
@@ -158,10 +166,11 @@ describe("TestParserProfiler", () => {
             "  ;\n",
             lg);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: ["L.g4"],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
         g.tool.process(g, parameters, false);
 
         const info = interpAndGetDecisionInfo(lg, g, "s", "a.b;");
@@ -183,10 +192,11 @@ describe("TestParserProfiler", () => {
             "  ;\n",
             lg);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: ["L.g4"],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
         g.tool.process(g, parameters, false);
 
         const info = interpAndGetDecisionInfo(lg, g, "s", "a.b;", "a.b;");
@@ -207,10 +217,11 @@ describe("TestParserProfiler", () => {
             "e : INT | ;\n",
             lg);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: [],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
         g.tool.process(g, parameters, false);
 
         const info = interpAndGetDecisionInfo(lg, g, "a", "; 1 x");
@@ -246,10 +257,11 @@ describe("TestParserProfiler", () => {
             "  ;\n",
             lg);
 
-        const parameters: IToolConfiguration = {
+        const parameters = defineConfig({
             grammarFiles: [],
             outputDirectory: ".",
-        };
+            generators: [tsGenerator],
+        });
         g.tool.process(g, parameters, false);
 
         // pred forces to

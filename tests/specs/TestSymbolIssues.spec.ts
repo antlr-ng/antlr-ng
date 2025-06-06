@@ -7,11 +7,19 @@
 
 import { describe, expect, it } from "vitest";
 
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
+import { convertArrayToString, convertMapToString } from "../../src/support/helpers.js";
 import { IssueCode } from "../../src/tool/Issues.js";
 import { LexerGrammar } from "../../src/tool/index.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
-import { convertArrayToString, convertMapToString } from "../../src/support/helpers.js";
-import type { IToolParameters } from "../../src/tool-parameters.js";
+
+const tsGenerator = new TypeScriptTargetGenerator();
+const testParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
 
 describe("TestSymbolIssues", () => {
     const testDataA = [
@@ -146,7 +154,7 @@ describe("TestSymbolIssues", () => {
             "C : 'a' ;\n";
 
         const g = new LexerGrammar(grammar);
-        g.tool.process(g, {} as IToolParameters, false);
+        g.tool.process(g, testParameters, false);
 
         const expectedTokenIDToTypeMap = "{EOF=-1, A=1, B=2, C=3}";
         const expectedStringLiteralToTypeMap = "{}";

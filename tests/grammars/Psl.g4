@@ -5,7 +5,7 @@ grammar Psl;
 
 @parser::members {
     private printPosition(name: string, tok: Token): void {
-        console.log(`${name}: pos ${tok.column}, len ${tok.text.length}`);
+        console.log(`${name}: pos ${tok.column}, len ${tok.text!.length}`);
     }
 
     /**
@@ -31,7 +31,7 @@ grammar Psl;
         }
 
         for (let j = 0; j < aCommas.length; ++j) {
-            const p1 = aDigits[j].column + aDigits[j].text.length;
+            const p1 = aDigits[j].column + aDigits[j].text!.length;
             const p2 = aCommas[j].column;
             const p3 = aDigits[j + 1].column;
 
@@ -69,7 +69,7 @@ grammar Psl;
 
         if (whole !== null) {
             foundDigits = true;
-            column = whole.column + whole.text.length;
+            column = whole.column + whole.text!.length;
             if (column !== period.column) {
                 return false;
             }
@@ -123,7 +123,7 @@ floating_constant
 			this.isValidFloatingConstant($comma_number.stop, $PERIOD, $fraction)
 		}? <fail = 'COMMA:A floating-point constant cannot have internal white space'>
     | PERIOD fraction = DIGIT_SEQUENCE {
-    			this.isValidFloatingConstant(null, $PERIOD, $fraction)
+            this.isValidFloatingConstant(null, $PERIOD, $fraction)
 		}? <fail = {
 			"DEC:A floating-point constant cannot have internal white space"
 		}>

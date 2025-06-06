@@ -4,6 +4,7 @@
  */
 
 import type { Rule } from "../tool/Rule.js";
+import type { IGrammar } from "../types.js";
 import type { LexerFile } from "./model/LexerFile.js";
 import type { ListenerFile } from "./model/ListenerFile.js";
 import type { ParserFile } from "./model/ParserFile.js";
@@ -102,32 +103,41 @@ export interface ITargetGeneratorCallables {
 /** Defines the structure for a target generator. */
 export interface ITargetGenerator extends ITargetGeneratorCallables {
     /** A unique identifier for the generator. */
-    id: string;
+    readonly id: string;
 
     /** The human readably language name for the generator. */
-    language: string;
+    readonly language: string;
 
     /** A list of specifiers that can be used to identify this language (not case sensitive). */
-    languageSpecifiers: string[];
+    readonly languageSpecifiers: string[];
 
     /** Does this target need a declaration file (e.g. a C/C++ header file or type definitions for JavaScript)? */
-    needsDeclarationFile?: boolean;
+    readonly needsDeclarationFile?: boolean;
 
     /** The extension to be used for generated files which contain code (including the dot). */
-    codeFileExtension: string;
+    readonly codeFileExtension: string;
 
     /** The extension to be used for generated files which contain type definitions (including the dot). */
-    declarationFileExtension?: string;
+    readonly declarationFileExtension?: string;
 
     /** Reserved words of this language. */
-    reservedWords: Set<string>;
+    readonly reservedWords: Set<string>;
 
     /** The rule context name is the rule followed by a suffix; e.g., r becomes rContext. */
-    contextNameSuffix: string;
+    readonly contextNameSuffix: string;
 
-    lexerRuleContext: string;
+    readonly lexerRuleContext: string;
 
-    ruleContextNameSuffix: string;
+    readonly ruleContextNameSuffix: string;
+
+    /** Maps lexer commands to methods which render that command. */
+    readonly lexerCommandMap: Map<string, () => Lines>;
+
+    /**
+     * Maps lexer call commands to methods which render that command. The first argument is the command argument, the
+     * second is the grammar object.
+     */
+    readonly lexerCallCommandMap: Map<string, (arg: string, grammar: IGrammar) => Lines>;
 
     /** Part of the left-recursive-rule pre-rendering. */
     renderRecRuleReplaceContext(ctxName: string): Lines;

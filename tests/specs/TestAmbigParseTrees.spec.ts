@@ -12,10 +12,12 @@ import {
 import { defineConfig } from "../../src/config/config.js";
 import { GrammarParserInterpreter } from "../../src/tool/GrammarParserInterpreter.js";
 import { Grammar, LexerGrammar } from "../../src/tool/index.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 
 const dummyParameters = defineConfig({
     grammarFiles: [],
     outputDirectory: "",
+    generators: [new TypeScriptTargetGenerator()]
 });
 
 describe("TestAmbigParseTrees", () => {

@@ -11,15 +11,18 @@ import { describe, expect, it } from "vitest";
 import { ATNSerializer } from "antlr4ng";
 
 import { CodeGenerator } from "../../../src/codegen/CodeGenerator.js";
-import type { IToolConfiguration } from "../../../src/config/config.js";
+import { defineConfig } from "../../../src/config/config.js";
 import { DOTGenerator } from "../../../src/tool/DOTGenerator.js";
 import { Grammar, LexerGrammar } from "../../../src/tool/index.js";
+import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
 
-// Dummy parameters for the tests.
-const parameters: IToolConfiguration = {
+const tsGenerator = new TypeScriptTargetGenerator();
+
+const parameters = defineConfig({
     grammarFiles: [],
     outputDirectory: "",
-};
+    generators: [tsGenerator],
+});
 
 describe("General", () => {
     it("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
@@ -135,11 +138,10 @@ describe("General", () => {
         const g = new Grammar(grammarText);
         g.tool.process(g, parameters, false);
 
-        const gen = new CodeGenerator(g);
-        const outputFileST = gen.generateParser(g.tool.toolConfiguration);
-        const outputFile = outputFileST.render();
-        expect(outputFile).toContain("FailedPredicateException(this, \"false\", \"custom message\");");
-        expect(outputFile).toContain("\"\"\"Returns `True` iff on the current index of the parser's");
+        const gen = new CodeGenerator(g, tsGenerator);
+        const output = gen.generateParser(g.tool.toolConfiguration.generationOptions);
+        expect(output).toContain("createFailedPredicateException(\"false\", \"custom message\");");
+        expect(output).toContain("\"\"\"Returns `True` iff on the current index of the parser's");
     });
 
 });

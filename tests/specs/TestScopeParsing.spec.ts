@@ -5,8 +5,9 @@
 
 import { describe, expect, it } from "vitest";
 
+import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { ScopeParser } from "../../src/parse/ScopeParser.js";
-import type { IToolParameters } from "../../src/tool-parameters.js";
 import { IAttribute } from "../../src/tool/IAttribute.js";
 import { Grammar } from "../../src/tool/index.js";
 
@@ -14,6 +15,13 @@ interface IParameter {
     input: string;
     output: string;
 }
+
+const tsGenerator = new TypeScriptTargetGenerator();
+const testParameters = defineConfig({
+    grammarFiles: [],
+    outputDirectory: "",
+    generators: [tsGenerator]
+});
 
 describe("TestScopeParsing", () => {
 
@@ -69,7 +77,7 @@ describe("TestScopeParsing", () => {
 
     it.each(getAllTestDescriptors())("testArgs: %s", (parameter: IParameter): void => {
         const dummy = new Grammar("grammar T; a:'a';");
-        dummy.tool.process(dummy, {} as IToolParameters, false);
+        dummy.tool.process(dummy, testParameters, false);
 
         const attributes = ScopeParser.parseTypedArgList(null, parameter.input, dummy).attributes;
         const out: string[] = [];
