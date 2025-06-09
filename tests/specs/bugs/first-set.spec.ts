@@ -26,7 +26,7 @@ const parameters = defineConfig({
 });
 
 describe("General", () => {
-    it.only("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
+    it("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
         const sourcePath = fileURLToPath(new URL("data/abbLexer.g4", import.meta.url));
         const lexerGrammarText = await readFile(sourcePath, "utf8");
         const lexerGrammar = new LexerGrammar(lexerGrammarText);
