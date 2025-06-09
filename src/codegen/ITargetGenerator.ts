@@ -13,12 +13,6 @@ import type { VisitorFile } from "./model/VisitorFile.js";
 /** Represets a single code point in Unicode. */
 export type CodePoint = number;
 
-/** Variables set during a generation run to pass values around that can be used in the individual methods. */
-export interface IGenerationVariables {
-    [key: string]: string | boolean | number | undefined;
-    declaration: boolean;
-}
-
 export type Lines = Array<string | undefined>;
 
 /**
@@ -98,6 +92,32 @@ export interface ITargetGeneratorCallables {
      * @returns The generated code as a string.
      */
     renderBaseVisitorFile(file: VisitorFile, declaration: boolean): string;
+
+    /**
+     * Renders the content of the unit test file with the given parameters. The test file is used to execute a single
+     * unit test for a grammar. It contains the necessary imports, the test function and the code to parse
+     * a given input string with the specified parser and lexer.
+     *
+     * @param grammarName The name of the grammar to be tested.
+     * @param lexerName The name of the lexer to be used in the test.
+     * @param parserName The name of the parser to be used in the test.
+     * @param parserStartRuleName The start rule of the parser to be used in the test.
+     * @param showDiagnosticErrors If true, the test will show diagnostic errors in the output.
+     * @param traceATN If true, the test will print ATN tracing information.
+     * @param profile If true, the test will profile the parsing process.
+     * @param showDFA If true, the test will show the DFA state information from the lexer.
+     * @param useListener If true, the test will use a listener to print processing information.
+     * @param useVisitor If true, the test will use a visitor. This is used mostly to test importing the generated
+     *                   visitor class.
+     * @param predictionMode The prediction mode to be used in the test. This can be one of the
+     *                       following: "LL", "SLL", "LL_EXACT_AMBIG_DETECTION".
+     *                       If undefined, the default prediction mode of the parser will be used.
+     * @param buildParseTree If true, the test will build a parse tree from the input string and print it.
+     */
+    renderTestFile(grammarName: string, lexerName: string, parserName: string | undefined,
+        parserStartRuleName: string | undefined, showDiagnosticErrors: boolean, traceATN: boolean, profile: boolean,
+        showDFA: boolean, useListener: boolean, useVisitor: boolean, predictionMode: string, buildParseTree: boolean,
+    ): string;
 }
 
 /** Defines the structure for a target generator. */

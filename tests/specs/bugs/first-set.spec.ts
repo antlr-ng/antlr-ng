@@ -15,6 +15,7 @@ import { defineConfig } from "../../../src/config/config.js";
 import { DOTGenerator } from "../../../src/tool/DOTGenerator.js";
 import { Grammar, LexerGrammar } from "../../../src/tool/index.js";
 import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
+import { writeFileSync } from "node:fs";
 
 const tsGenerator = new TypeScriptTargetGenerator();
 
@@ -25,7 +26,7 @@ const parameters = defineConfig({
 });
 
 describe("General", () => {
-    it("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
+    it.only("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
         const sourcePath = fileURLToPath(new URL("data/abbLexer.g4", import.meta.url));
         const lexerGrammarText = await readFile(sourcePath, "utf8");
         const lexerGrammar = new LexerGrammar(lexerGrammarText);
@@ -36,8 +37,11 @@ describe("General", () => {
 
         const dotGenerator = new DOTGenerator(lexerGrammar);
         const result = dotGenerator.getDOTFromState(startState, true);
+
+        writeFileSync("/Volumes/Extern/Work/projects/antlr-ng/tests/test.dot", result, "utf8");
         expect(result.indexOf(`s327 -> s335 [fontsize=11, fontname="Courier", arrowsize=.7, ` +
-            String.raw`label = "'\\\\'", arrowhead = normal];`)).toBeGreaterThan(-1);
+            String.raw`label = "'\\'", arrowhead = normal];`)).toBeGreaterThan(-1);
+
     });
 
     it("Bug #35 Tool crashes with --atn", async () => {

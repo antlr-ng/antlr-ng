@@ -8,7 +8,6 @@
 // cspell: ignore blort
 
 import { describe, it } from "vitest";
-import { ErrorBuffer, ST, STGroup } from "stringtemplate4ts";
 
 import { IssueCode } from "../../src/tool/Issues.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
@@ -184,54 +183,50 @@ describe("TestAttributeChecks", () => {
             "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:10:19: reference to undefined rule S in non-local ref $S::i\n"],
         ["$a::z", "error(" + IssueCode.UnknownRuleAttribute + "): A.g4:10:16: unknown attribute z for rule a in $a::z\n"],
 
-        ["$S::j", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:10:13: reference to undefined rule S in non-local ref $S::j\n"],
-        ["$S::j = 3;", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:10:13: reference to undefined rule S in non-local ref $S::j = 3;\n"],
-        ["$S::j = $S::k;", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:10:13: reference to undefined rule S in non-local ref $S::j = $S::k;\n"],
+        ["$S::j", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:11:13: reference to undefined rule S in non-local ref $S::j\n"],
+        ["$S::j = 3;", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:11:13: reference to undefined rule S in non-local ref $S::j = 3;\n"],
+        ["$S::j = $S::k;", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:11:13: reference to undefined rule S in non-local ref $S::j = $S::k;\n"],
     ];
 
-    const testAction = (location: string, action: string, expected: string, template: string): void => {
-        const g = new STGroup("<", ">");
-        g.setListener(new ErrorBuffer()); // hush warnings
-        const st = new ST(g, template);
-        st.add(location, action);
-        const grammar = st.render();
+    const testAction = (location: string, action: string, expected: string): void => {
+        const grammar = attributeTemplate.replace("<" + location + ">", action);
         ToolTestUtils.testErrors([grammar, expected], true);
     };
 
     it.each(membersChecks)("testMembersActions: %s", (action, expected) => {
-        testAction("members", action, expected, attributeTemplate);
+        testAction("members", action, expected);
     });
 
     it.each(dynMembersChecks)("testDynamicMembersActions: %s", (action, expected): void => {
-        testAction("members", action, expected, attributeTemplate);
+        testAction("members", action, expected);
     });
 
     it.each(initChecks)("testInitActions: %s", (action, expected): void => {
-        testAction("init", action, expected, attributeTemplate);
+        testAction("init", action, expected);
     });
 
     it.each(dynInitChecks)("testDynamicInitActions: %s", (action, expected): void => {
-        testAction("init", action, expected, attributeTemplate);
+        testAction("init", action, expected);
     });
 
     it.each(inlineChecks)("testInlineActions", (action, expected): void => {
-        testAction("inline", action, expected, attributeTemplate);
+        testAction("inline", action, expected);
     });
 
     it.each(dynInlineChecks)("testDynamicInlineActions", (action, expected): void => {
-        testAction("inline", action, expected, attributeTemplate);
+        testAction("inline", action, expected);
     });
 
     it.each(badInlineChecks)("testBadInlineActions", (action, expected): void => {
-        testAction("inline", action, expected, attributeTemplate);
+        testAction("inline", action, expected);
     });
 
     it.each(finallyChecks)("testFinallyActions", (action, expected): void => {
-        testAction("finally", action, expected, attributeTemplate);
+        testAction("finally", action, expected);
     });
 
     it.each(dynFinallyChecks)("testDynamicFinallyActions", (action, expected): void => {
-        testAction("finally", action, expected, attributeTemplate);
+        testAction("finally", action, expected);
     });
 
     it("testTokenRef", (): void => {

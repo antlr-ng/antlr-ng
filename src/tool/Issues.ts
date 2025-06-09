@@ -34,7 +34,6 @@ export enum IssueCode {
     ErrorReadingImportedGrammar,
     InternalError,
     TokensFileSyntaxError,
-    StringTemplateWarning,
 
     // Code generation errors.
 
@@ -209,11 +208,6 @@ export const issueTypes = new Map<IssueCode, IssueDetails>([
     [IssueCode.TokensFileSyntaxError, {
         message: ".tokens file syntax error <arg>:<arg2>",
         severity: IssueSeverity.Error
-    }],
-    [IssueCode.StringTemplateWarning, {
-        message: "template error: <arg> <arg2>",
-        verboseMessage: "template error: <arg> <arg2>: <exception><stackTrace>",
-        severity: IssueSeverity.Warning
     }],
     [IssueCode.IncompatibleToolAndTemplates, {
         message: "<arg3> code generation target requires antlr-ng <arg2>; it can't be loaded by the current " +

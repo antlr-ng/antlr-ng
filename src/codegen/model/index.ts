@@ -12,7 +12,6 @@ export { ArgAction } from "./ArgAction.js";
 export { CaptureNextToken } from "./CaptureNextToken.js";
 export { CaptureNextTokenType } from "./CaptureNextTokenType.js";
 export { ActionChunk } from "./chunk/ActionChunk.js";
-export { ActionTemplate } from "./chunk/ActionTemplate.js";
 export { ActionText } from "./chunk/ActionText.js";
 export { ArgRef } from "./chunk/ArgRef.js";
 export { LabelRef } from "./chunk/LabelRef.js";

@@ -6,12 +6,11 @@
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
 import { CommonToken, IntervalSet, Token, type TokenStream } from "antlr4ng";
-import { STGroupFile, type STGroup } from "stringtemplate4ts";
 
 import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
-import { CodeGenerator, type SupportedLanguage } from "../codegen/CodeGenerator.js";
+import { type SupportedLanguage } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { dupTree } from "../support/helpers.js";
@@ -23,6 +22,7 @@ import { RuleRefAST } from "../tool/ast/RuleRefAST.js";
 import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 import { LeftRecursiveRuleWalker } from "../tree/walkers/LeftRecursiveRuleWalker.js";
 import { ILeftRecursiveRuleAltInfo } from "./ILeftRecursiveRuleAltInfo.js";
+import type { ActionAST } from "../tool/ast/ActionAST.js";
 
 enum Associativity {
     Left = "left",
@@ -46,25 +46,18 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     /** Tokens from which rule AST comes from */
     public readonly tokenStream: TokenStream;
 
-    public retvals: GrammarAST;
-    public readonly codegenTemplates: STGroup;
+    public retvals?: ActionAST;
     public readonly language: string;
 
     public altAssociativity = new Map<number, Associativity>();
 
-    private static readonly templateGroupFile = "/templates/LeftRecursiveRules.stg";
-    private static readonly recRuleTemplates = new STGroupFile(LeftRecursiveRuleAnalyzer.templateGroupFile);
-
     public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage,
-        targetGenerator: ITargetGenerator) {
+        private targetGenerator: ITargetGenerator) {
         super(new CommonTreeNodeStream(ruleAST), tool.errorManager);
         this.tool = tool;
         this.ruleName = ruleName;
         this.language = language;
         this.tokenStream = ruleAST.g.tokenStream;
-
-        // use codegen to get correct language templates; that's it though
-        this.codegenTemplates = new CodeGenerator(language, targetGenerator).templates;
     }
 
     /**
@@ -102,7 +95,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         return false;
     }
 
-    public override setReturnValues(t: GrammarAST): void {
+    public override setReturnValues(t: ActionAST): void {
         this.retvals = t;
     }
 
@@ -236,40 +229,46 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     // --------- get transformed rules ----------------
 
     public getArtificialOpPrecRule(): string {
-        const ruleST = LeftRecursiveRuleAnalyzer.recRuleTemplates.getInstanceOf("recRule")!;
-        ruleST.add("ruleName", this.ruleName);
-        const ruleArgST = this.codegenTemplates.getInstanceOf("recRuleArg");
-        ruleST.add("argName", ruleArgST);
-        const setResultST = this.codegenTemplates.getInstanceOf("recRuleSetResultAction");
-        ruleST.add("setResultAction", setResultST);
-        ruleST.add("userRetvals", this.retvals);
+        const lines: string[] = [];
+
+        if (this.retvals) {
+            lines.push(`${this.ruleName}[${this.retvals.getText()}]`);
+        } else {
+            lines.push(this.ruleName);
+        }
+
+        const primaryAlts = this.prefixAndOtherAlts.map((a) => { return a.altText; }).join("\n        | ");
+        lines.push(`    :   ( {} ${primaryAlts}`);
+        lines.push("        )");
+        lines.push("        (");
 
         const opPrecRuleAlts = new OrderedHashMap<number, ILeftRecursiveRuleAltInfo>();
         this.binaryAlts.forEach((value, key) => {
             opPrecRuleAlts.set(key, value);
         });
+
         this.ternaryAlts.forEach((value, key) => {
             opPrecRuleAlts.set(key, value);
         });
+
         this.suffixAlts.forEach((value, key) => {
             opPrecRuleAlts.set(key, value);
         });
 
+        const optAlts: string[] = [];
         for (const [alt, altInfo] of opPrecRuleAlts) {
-            const altST = LeftRecursiveRuleAnalyzer.recRuleTemplates.getInstanceOf("recRuleAlt")!;
-            const predST = this.codegenTemplates.getInstanceOf("recRuleAltPredicate")!;
-            predST.add("opPrec", this.precedence(alt));
-            predST.add("ruleName", this.ruleName);
-            altST.add("pred", predST);
-            altST.add("alt", altInfo);
-            altST.add("precOption", Constants.PrecedenceOptionName);
-            altST.add("opPrec", this.precedence(alt));
-            ruleST.add("opAlts", altST);
+            const precedence = this.precedence(alt);
+
+            const predicate = this.targetGenerator.renderRecRuleAltPredicate(this.ruleName, precedence);
+            const altText = `{${predicate}}?<${Constants.PrecedenceOptionName}=${precedence}> ${altInfo.altText}`;
+            optAlts.push(altText);
         }
 
-        ruleST.add("primaryAlts", this.prefixAndOtherAlts);
+        lines.push("            " + optAlts.join("\n            | "));
+        lines.push("        )*");
+        lines.push("    ;");
 
-        const result = ruleST.render();
+        const result = lines.join("\n");
         this.tool.logInfo({ component: "left-recursion", msg: result });
 
         return result;

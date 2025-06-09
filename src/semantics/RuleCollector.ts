@@ -5,7 +5,6 @@
 
 import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
-import { MultiMap } from "stringtemplate4ts";
 import { LeftRecursiveRuleAnalyzer } from "../analysis/LeftRecursiveRuleAnalyzer.js";
 import { DictType } from "../misc/types.js";
 import { Utils } from "../misc/Utils.js";
@@ -25,7 +24,7 @@ export class RuleCollector extends GrammarTreeVisitor {
     public g: Grammar;
 
     public nameToRuleMap = new Map<string, Rule>();
-    public ruleToAltLabels = new MultiMap<string, GrammarAST>();
+    public ruleToAltLabels = new Map<string, GrammarAST[]>();
     public altLabelToRuleName = new Map<string, string>();
     private grammarCaseInsensitive = false;
 
@@ -81,7 +80,13 @@ export class RuleCollector extends GrammarTreeVisitor {
 
     public override discoverOuterAlt(alt: AltAST): void {
         if (alt.altLabel && this.currentRuleName) {
-            this.ruleToAltLabels.map(this.currentRuleName, alt.altLabel);
+            let altLabels = this.ruleToAltLabels.get(this.currentRuleName);
+            if (altLabels === undefined) {
+                altLabels = [];
+                this.ruleToAltLabels.set(this.currentRuleName, altLabels);
+            }
+            altLabels.push(alt.altLabel);
+
             const altLabel = alt.altLabel.getText();
             this.altLabelToRuleName.set(Utils.capitalize(altLabel), this.currentRuleName);
             this.altLabelToRuleName.set(Utils.decapitalize(altLabel), this.currentRuleName);

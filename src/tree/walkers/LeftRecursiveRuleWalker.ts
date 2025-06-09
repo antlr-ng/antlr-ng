@@ -5,6 +5,7 @@
 
 import { Constants } from "../../Constants.js";
 import { ANTLRv4Lexer } from "../../generated/ANTLRv4Lexer.js";
+import type { ActionAST } from "../../tool/ast/ActionAST.js";
 import type { AltAST } from "../../tool/ast/AltAST.js";
 import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import type { ErrorManager } from "../../tool/ErrorManager.js";
@@ -90,7 +91,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
                 return isLeftRec;
             }
 
-            const a = this.match(this.input, ANTLRv4Lexer.ARG_ACTION)!;
+            const a = this.match<ActionAST>(this.input, ANTLRv4Lexer.ARG_ACTION)!;
             if (this.failed) {
                 return isLeftRec;
             }
@@ -215,7 +216,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
     protected prefixAlt(altTree: AltAST, alt: number): void { /**/ }
     protected suffixAlt(altTree: AltAST, alt: number): void {/**/ }
     protected otherAlt(altTree: AltAST, alt: number): void { /**/ }
-    protected setReturnValues(t: GrammarAST): void { /**/ }
+    protected setReturnValues(t: ActionAST): void { /**/ }
 
     private exceptionGroup(): void {
         while (true) {

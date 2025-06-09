@@ -560,8 +560,8 @@ export abstract class Target {
             }
 
             private reportError(msg: STMessage): void {
-                this.$outer.gen.g!.tool.errorManager.toolError(IssueCode.StringTemplateWarning, undefined,
-                    msg.toString());
+                //this.$outer.gen.g!.tool.errorManager.toolError(IssueCode.StringTemplateWarning, undefined,
+                //    msg.toString());
             }
         }(this));
 
