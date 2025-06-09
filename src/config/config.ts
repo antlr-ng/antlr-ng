@@ -22,7 +22,10 @@ export interface IGenerationOptions {
     /** Set this to true to generate a declaration file (header file etc.). */
     generateDeclarationFile: boolean,
 
+    /** Generate a base listener class (default: false). */
     generateBaseListener: boolean,
+
+    /** Generate a base visitor class (default: false). */
     generateBaseVisitor: boolean,
 
     /** Specify a package/namespace for the generated code. */
@@ -90,9 +93,9 @@ export interface IToolConfiguration {
 }
 
 /**
- * Used to defined a user configuration for antlr-ng. Input values are evaluated and completed with default values.
+ * Used to define a full tool configuration for antlr-ng. Input values are evaluated and completed with default values.
  *
- * @param config The user configuration.
+ * @param config The configuration to check and complete.
  *
  * @returns The final configuration.
  */

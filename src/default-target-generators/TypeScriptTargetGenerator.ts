@@ -483,6 +483,111 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return result;
     }
 
+    public renderTestFile(grammarName: string, lexerName: string, parserName: string | undefined,
+        parserStartRuleName: string | undefined, showDiagnosticErrors: boolean, traceATN: boolean, profile: boolean,
+        showDFA: boolean, useListener: boolean, useVisitor: boolean, predictionMode: string, buildParseTree: boolean,
+    ): string {
+        const lines: Lines = [
+            `import fs from "node:fs";`,
+            `import {`,
+            `	CharStream,	CommonTokenStream, DiagnosticErrorListener, Lexer, ParseTreeListener, ParseTreeWalker,`,
+            `    ParserRuleContext, PredictionMode, TerminalNode, ErrorNode, PredictionContext`,
+            `} from 'antlr4ng';`,
+            `import { ${lexerName} } from './${lexerName}.js';`
+        ];
+
+        if (parserName) {
+            lines.push(`import { ${parserName} } from './${parserName}.js';`);
+
+            if (useListener) {
+                lines.push(`import { ${grammarName}Listener } from './${grammarName}Listener.js';`);
+            }
+
+            if (useVisitor) {
+                lines.push(`import { ${grammarName}Visitor } from './${grammarName}Visitor.js';`);
+            }
+
+            lines.push(
+                `class TreeShapeListener implements ParseTreeListener {`,
+                `    public enterEveryRule(ctx: ParserRuleContext) {`,
+                `        for (let i = 0; i < ctx.getChildCount(); i++) {`,
+                `            const child = ctx.getChild(i) as ParserRuleContext;`,
+                `            const parent = child.parent;`,
+                `            if (parent!.ruleContext !== ctx || !(parent instanceof ParserRuleContext)) {`,
+                `                throw "Invalid parse tree shape detected.";`,
+                `            }`,
+                `        }`,
+                `    }`,
+                ``,
+                `   public visitTerminal(node: TerminalNode): void { }`,
+                `	public visitErrorNode(node: ErrorNode): void { }`,
+                `	public exitEveryRule(ctx: ParserRuleContext): void { }`,
+                `}`,
+            );
+        }
+
+        lines.push(
+            `export const main = (text: string): void => {`,
+            ``,
+            `    const input = CharStream.fromString(text);`,
+            `    input.name = "input";`,
+            `    const lexer = new ${lexerName}(input);`,
+            `    const stream = new CommonTokenStream(lexer);`,
+        );
+
+        if (parserName) {
+            lines.push(`    const parser = new ${parserName}(stream);`);
+
+            if (showDiagnosticErrors) {
+                lines.push(`parser.addErrorListener(new DiagnosticErrorListener());`);
+            }
+
+            lines.push(
+                `    parser.printer = {`,
+                `        println : function(s: string) { console.log(s); },`,
+                `        print : function(s: string) { process.stdout.write(s); }`,
+                `    };`,
+            );
+
+            if (profile) {
+                lines.push(`    parser.setProfile(true);`);
+            }
+
+            lines.push(`    parser.interpreter.predictionMode = PredictionMode.${predictionMode};`);
+            lines.push(`    parser.buildParseTree = ${buildParseTree};`);
+            lines.push(`    parser.interpreter.traceATNSimulator = ${traceATN};`);
+            lines.push(`    PredictionContext.traceATNSimulator = ${traceATN};`);
+
+            lines.push(`    const tree = parser.${parserStartRuleName}();`);
+
+            if (profile) {
+                lines.push(
+                    `    const decisionInfo = parser.getParseInfo()!.getDecisionInfo();`,
+                    `    console.log(\`[\${ decisionInfo.join(', ') }]\`);`,
+                );
+            }
+
+            lines.push(`    ParseTreeWalker.DEFAULT.walk(new TreeShapeListener(), tree);`);
+        } else {
+            lines.push(
+                `    stream.fill();`,
+                `    for(let i = 0; i < stream.tokens.length; ++i) {`,
+                `        console.log(stream.tokens[i].toString());`,
+                `    }`,
+            );
+
+            if (showDFA) {
+                lines.push(`    process.stdout.write(lexer.interpreter.decisionToDFA[antlr4.Lexer.DEFAULT_MODE].` +
+                    `toLexerString());`,
+                );
+            }
+        }
+
+        lines.push("}");
+
+        return lines.join("\n");
+    }
+
     private renderParser(parserFile: OutputModelObjects.ParserFile): Lines {
         const parser = parserFile.parser;
 
@@ -1511,9 +1616,13 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return this.endRendering("ExceptionClause", result);
     }
 
-    private renderActionTemplate(t: OutputModelObjects.ActionTemplate): Lines { return [t.st.render()]; }
-    private renderActionText(t: OutputModelObjects.ActionText): Lines { return t.text ?? []; }
-    private renderArgRef(a: OutputModelObjects.ArgRef): Lines { return [`localContext?.${a.escapedName}!`]; }
+    private renderActionText(t: OutputModelObjects.ActionText): Lines {
+        return t.text ?? [];
+    }
+
+    private renderArgRef(a: OutputModelObjects.ArgRef): Lines {
+        return [`localContext?.${a.escapedName}!`];
+    }
 
     private renderLabelRef(t: OutputModelObjects.LabelRef): string {
         const ctx = this.renderContext(t);
@@ -1686,9 +1795,17 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return [`_${t.escapedName}: ${this.renderTokenLabelType(file)} | null = null;`];
     }
 
-    private renderTokenTypeDecl(t: OutputModelObjects.TokenTypeDecl): Lines { return [`let ${t.escapedName}: number;`]; }
-    private renderTokenListDecl(t: OutputModelObjects.TokenListDecl): Lines { return [`_${t.escapedName}: antlr.Token[] = [];`]; }
-    private renderRuleContextDecl(r: OutputModelObjects.RuleContextDecl): Lines { return [`_${r.escapedName}?: ${r.ctxName};`]; }
+    private renderTokenTypeDecl(t: OutputModelObjects.TokenTypeDecl): Lines {
+        return [`let ${t.escapedName}: number;`];
+    }
+
+    private renderTokenListDecl(t: OutputModelObjects.TokenListDecl): Lines {
+        return [`_${t.escapedName}: antlr.Token[] = [];`];
+    }
+
+    private renderRuleContextDecl(r: OutputModelObjects.RuleContextDecl): Lines {
+        return [`_${r.escapedName}?: ${r.ctxName};`];
+    }
 
     private renderRuleContextListDecl(rdecl: OutputModelObjects.RuleContextListDecl): Lines {
         return [`_${rdecl.escapedName}: ${rdecl.ctxName} [] = [];`];

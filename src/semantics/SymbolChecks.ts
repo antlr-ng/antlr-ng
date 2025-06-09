@@ -176,14 +176,14 @@ export class SymbolChecks {
         this.checkDeclarationRuleConflicts(r, r.args, this.tokenIDs, IssueCode.ArgConflictsWithToken);
 
         this.checkDeclarationRuleConflicts(r, r.retvals, new Set(this.nameToRuleMap.keys()),
-            IssueCode.RetvalConflkictsWithRule);
+            IssueCode.RetvalConflictsWithRule);
         this.checkDeclarationRuleConflicts(r, r.retvals, this.tokenIDs, IssueCode.RetvalConflictsWithToken);
 
         this.checkDeclarationRuleConflicts(r, r.locals, new Set(this.nameToRuleMap.keys()),
             IssueCode.LocalConflictsWithRule);
         this.checkDeclarationRuleConflicts(r, r.locals, this.tokenIDs, IssueCode.LocalConflictsWithToken);
 
-        this.checkLocalConflictingDeclarations(r, r.retvals, r.args, IssueCode.RetValuConflictsWithArg);
+        this.checkLocalConflictingDeclarations(r, r.retvals, r.args, IssueCode.RetValueConflictsWithArg);
         this.checkLocalConflictingDeclarations(r, r.locals, r.args, IssueCode.LocalConflictsWithArg);
         this.checkLocalConflictingDeclarations(r, r.locals, r.retvals, IssueCode.LocalConflictsWithRetval);
     }

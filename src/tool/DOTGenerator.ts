@@ -7,22 +7,16 @@
 
 import {
     ATNConfig, ATNState, AbstractPredicateTransition, ActionTransition, AtomTransition, BlockEndState, BlockStartState,
-    DFA, DFAState, DecisionState, NotSetTransition, PlusBlockStartState, PlusLoopbackState, RangeTransition,
+    DFAState, DecisionState, NotSetTransition, PlusBlockStartState, PlusLoopbackState, RangeTransition,
     RuleStartState, RuleStopState, RuleTransition, SetTransition, StarBlockStartState, StarLoopEntryState,
     StarLoopbackState, Token,
+    type Transition
 } from "antlr4ng";
-import { STGroupFile, IST } from "stringtemplate4ts";
 
-import { Utils } from "../misc/Utils.js";
 import { Grammar } from "./Grammar.js";
 
 /** The DOT (part of graphviz) generation aspect. */
 export class DOTGenerator {
-    /** Library of output templates; use `<attrname>` format. */
-    private static readonly templatePath = "/templates/dot/graphs.stg";
-
-    private static readonly stLib = new STGroupFile(this.templatePath);
-
     private arrowhead = "normal";
     private rankdir = "LR";
     private grammar: Grammar;
@@ -32,24 +26,18 @@ export class DOTGenerator {
     }
 
     /**
-     * @returns a String containing a DOT description that, when displayed, will show the incoming state machine
-     * visually.  All nodes reachable from startState will be included.
+     * @returns A string containing a DOT description that, when displayed, will show the incoming state machine
+     *          visually. All nodes reachable from startState will be included.
      */
     public getDOTFromState(startState: ATNState, isLexer = false, ruleNames?: string[]): string {
         ruleNames ??= Array.from(this.grammar.rules.keys());
 
         // The output DOT graph for visualization.
         const markedStates = new Set<ATNState>();
-        const dot = DOTGenerator.stLib.getInstanceOf("atn");
-        if (!dot) {
-            throw new Error("no such template: atn");
-        }
 
-        dot.add("startState", startState.stateNumber);
-        dot.add("rankdir", this.rankdir);
+        const edges: string[] = [];
 
         const work: ATNState[] = [startState];
-
         while (true) {
             const s = work.shift();
             if (!s) {
@@ -67,70 +55,50 @@ export class DOTGenerator {
             }
 
             // Make a DOT edge for each transition.
-            let edgeST: IST | null;
             for (let i = 0; i < s.transitions.length; ++i) {
                 const edge = s.transitions[i];
                 if (edge instanceof RuleTransition) {
-                    const rr = (edge);
-
                     // Don't jump to other rules, but display edge to follow node.
-                    edgeST = DOTGenerator.stLib.getInstanceOf("edge");
-                    if (!edgeST) {
-                        throw new Error("no such template: edge");
-                    }
-
-                    let label = "<" + ruleNames[rr.ruleIndex];
-                    if ((rr.target as RuleStartState).isLeftRecursiveRule) {
-                        label += `[${rr.precedence}]`;
+                    let label = "";
+                    label = "<" + ruleNames[edge.ruleIndex];
+                    if ((edge.target as RuleStartState).isLeftRecursiveRule) {
+                        label += `[${edge.precedence}]`;
                     }
                     label += ">";
 
-                    edgeST.add("label", label);
-                    edgeST.add("src", `s${s.stateNumber}`);
-                    edgeST.add("target", `s${rr.followState.stateNumber}`);
-                    edgeST.add("arrowhead", this.arrowhead);
-                    dot.add("edges", edgeST);
-                    work.push(rr.followState);
+                    edges.push(this.renderEdge(`s${s.stateNumber}`, -1, `s${edge.followState.stateNumber}`, label,
+                        this.arrowhead));
+
+                    work.push(edge.followState);
+
                     continue;
                 }
 
+                const src = `s${s.stateNumber}`;
+                const target = `s${edge.target.stateNumber}`;
+                const arrowhead = this.arrowhead;
+                let transitionIndex = -1;
+                if (s.transitions.length > 1) {
+                    transitionIndex = i;
+                }
+
                 if (edge instanceof ActionTransition) {
-                    edgeST = DOTGenerator.stLib.getInstanceOf("action-edge");
-                    if (!edgeST) {
-                        throw new Error("no such template: action-edge");
-                    }
-
-                    edgeST.add("label", this.getEdgeLabel(edge.toString()));
+                    edges.push(this.renderActionEdge(src, target, this.getEdgeLabel(edge.toString()), arrowhead,
+                        transitionIndex));
                 } else if (edge instanceof AbstractPredicateTransition) {
-                    edgeST = DOTGenerator.stLib.getInstanceOf("edge");
-                    if (!edgeST) {
-                        throw new Error("no such template: edge");
-                    }
-
-                    edgeST.add("label", this.getEdgeLabel(edge.toString()));
+                    edges.push(this.renderEdge(src, transitionIndex, target, this.getEdgeLabel(edge.toString()),
+                        arrowhead));
                 } else if (edge.isEpsilon) {
-                    edgeST = DOTGenerator.stLib.getInstanceOf("epsilon-edge");
-                    if (!edgeST) {
-                        throw new Error("no such template: epsilon-edge");
-                    }
-
-                    edgeST.add("label", this.getEdgeLabel(edge.toString()));
                     let loopback = false;
                     if (edge.target instanceof PlusBlockStartState) {
                         loopback = s.equals((edge.target).loopBackState);
-                    } else {
-                        if (edge.target instanceof StarLoopEntryState) {
-                            loopback = s.equals((edge.target).loopBackState);
-                        }
+                    } else if (edge.target instanceof StarLoopEntryState) {
+                        loopback = s.equals((edge.target).loopBackState);
                     }
 
-                    edgeST.add("loopback", loopback);
+                    edges.push(this.renderEpsilonEdge(src, this.getEdgeLabel(edge.toString()), target, arrowhead,
+                        transitionIndex, loopback));
                 } else if (edge instanceof AtomTransition) {
-                    edgeST = DOTGenerator.stLib.getInstanceOf("edge");
-                    if (!edgeST) {
-                        throw new Error("no such template: edge");
-                    }
-
                     let label = edge.labelValue.toString();
                     if (isLexer) {
                         if (edge.labelValue === Token.EOF) {
@@ -142,13 +110,8 @@ export class DOTGenerator {
                         label = this.grammar.getTokenDisplayName(edge.labelValue)!;
                     }
 
-                    edgeST.add("label", this.getEdgeLabel(label));
+                    edges.push(this.renderEdge(src, transitionIndex, target, label, arrowhead));
                 } else if (edge instanceof SetTransition) {
-                    edgeST = DOTGenerator.stLib.getInstanceOf("edge");
-                    if (!edgeST) {
-                        throw new Error("no such template: edge");
-                    }
-
                     let label = edge.label.toString();
                     if (isLexer) {
                         label = edge.label.toString(true);
@@ -160,13 +123,8 @@ export class DOTGenerator {
                         label = "~" + label;
                     }
 
-                    edgeST.add("label", this.getEdgeLabel(label));
+                    edges.push(this.renderEdge(src, transitionIndex, target, this.getEdgeLabel(label), arrowhead));
                 } else if (edge instanceof RangeTransition) {
-                    edgeST = DOTGenerator.stLib.getInstanceOf("edge");
-                    if (!edgeST) {
-                        throw new Error("no such template: edge");
-                    }
-
                     let label = edge.label.toString();
                     if (isLexer) {
                         label = edge.toString();
@@ -174,43 +132,23 @@ export class DOTGenerator {
                         label = edge.label.toStringWithVocabulary(this.grammar.getVocabulary());
                     }
 
-                    edgeST.add("label", this.getEdgeLabel(label));
+                    edges.push(this.renderEdge(src, transitionIndex, target, label, arrowhead));
                 } else {
-                    edgeST = DOTGenerator.stLib.getInstanceOf("edge");
-                    if (!edgeST) {
-                        throw new Error("no such template: edge");
-                    }
-
-                    edgeST.add("label", this.getEdgeLabel(edge.toString()));
+                    edges.push(this.renderEdge(src, transitionIndex, target, this.getEdgeLabel(edge.toString()),
+                        arrowhead));
                 }
 
-                edgeST.add("src", `s${s.stateNumber}`);
-                edgeST.add("target", `s${edge.target.stateNumber}`);
-                edgeST.add("arrowhead", this.arrowhead);
-                if (s.transitions.length > 1) {
-                    edgeST.add("transitionIndex", i);
-                } else {
-                    edgeST.add("transitionIndex", false);
-                }
-
-                dot.add("edges", edgeST);
                 work.push(edge.target);
             }
         }
 
+        const states: string[] = [];
         for (const s of markedStates) {
             if (!(s instanceof RuleStopState)) {
                 continue;
             }
 
-            const st = DOTGenerator.stLib.getInstanceOf("stopstate");
-            if (!st) {
-                throw new Error("no such template: stopstate");
-            }
-
-            st.add("name", `s${s.stateNumber}`);
-            st.add("label", this.getStateLabel(s));
-            dot.add("states", st);
+            states.push(this.renderStopState(this.getStateLabel(s), `s${s.stateNumber}`));
         }
 
         for (const s of markedStates) {
@@ -218,100 +156,10 @@ export class DOTGenerator {
                 continue;
             }
 
-            const st = DOTGenerator.stLib.getInstanceOf("state");
-            if (!st) {
-                throw new Error("no such template: state");
-            }
-
-            st.add("name", `s${s.stateNumber}`);
-            st.add("label", this.getStateLabel(s));
-            st.add("transitions", s.transitions);
-            dot.add("states", st);
+            states.push(this.renderState(this.getStateLabel(s), `s${s.stateNumber}`, s.transitions));
         }
 
-        return dot.render();
-    }
-
-    public getDOTFromDFA(dfa: DFA, isLexer: boolean): string {
-        if (!dfa.s0) {
-            return "";
-        }
-
-        const dot = DOTGenerator.stLib.getInstanceOf("dfa");
-        if (!dot) {
-            throw new Error("no such template: dfa");
-        }
-
-        dot.add("name", `DFA${dfa.decision}`);
-        dot.add("startState", dfa.s0.stateNumber);
-        dot.add("rankdir", this.rankdir);
-
-        // Define stop states first; seems to be a bug in DOT where double circle.
-        for (const d of dfa.getStates()) {
-            if (!d.isAcceptState) {
-                continue;
-            }
-
-            const st = DOTGenerator.stLib.getInstanceOf("stopstate");
-            if (!st) {
-                throw new Error("no such template: stopstate");
-            }
-
-            st.add("name", `s${d.stateNumber}`);
-            st.add("label", this.getStateLabel(d));
-            dot.add("states", st);
-        }
-
-        for (const d of dfa.getStates()) {
-            if (d.isAcceptState) {
-                continue;
-            }
-
-            if (d.stateNumber === Number.MAX_VALUE) {
-                continue;
-            }
-
-            const st = DOTGenerator.stLib.getInstanceOf("state");
-            if (!st) {
-                throw new Error("no such template: state");
-            }
-
-            st.add("name", `s${d.stateNumber}`);
-            st.add("label", this.getStateLabel(d));
-            dot.add("states", st);
-        }
-
-        for (const d of dfa.getStates()) {
-            for (let i = 0; i < d.edges.length; i++) {
-                const target = d.edges[i];
-                if (target.stateNumber === Number.MAX_VALUE) {
-                    continue;
-                }
-
-                const ttype = i - 1; // We shift up for EOF as -1 for parser.
-                let label = ttype.toString();
-                if (isLexer) {
-                    label = "'" + this.getEdgeLabel(String.fromCodePoint(i)) + "'";
-                } else {
-                    label = this.grammar.getTokenDisplayName(ttype)!;
-                }
-
-                const st = DOTGenerator.stLib.getInstanceOf("edge");
-                if (!st) {
-                    throw new Error("no such template: edge");
-                }
-
-                st.add("label", label);
-                st.add("src", `s${d.stateNumber}`);
-                st.add("target", `s${target.stateNumber}`);
-                st.add("arrowhead", this.arrowhead);
-                dot.add("edges", st);
-            }
-        }
-
-        const output = dot.render();
-
-        return Utils.sortLinesInString(output);
+        return this.renderAtn(states, edges);
     }
 
     private getStateLabel(s: DFAState | ATNState): string {
@@ -398,10 +246,134 @@ export class DOTGenerator {
      */
     private getEdgeLabel(label: string): string {
         label = label.replaceAll("\\", "\\\\");
-        label = label.replaceAll("\"", "\\\"");
-        label = label.replaceAll("\n", "\\\\n");
+        label = label.replaceAll('"', '\\"');
+        label = label.replaceAll("\n", String.raw`\\\n`);
         label = label.replaceAll("\r", "");
 
         return label;
     }
-}
+
+    private renderAtn(states: string[], edges: string[]): string {
+        const lines = [
+            `digraph ATN {`,
+            `rankdir=LR;`,
+            ...states,
+            ...edges,
+            `}`,
+        ];
+
+        return lines.join("\n");
+    }
+
+    private renderDfa(name: string, rankdir: string, states: ATNState[], edges: string[]): string {
+        const lines = [
+            `digraph ${name} {`,
+            `rankdir=${rankdir};`,
+            ...states,
+            ...edges,
+            `}`,
+        ];
+
+        return lines.join("\n");
+    }
+
+    private renderState(label: string, name: string, transitions: Transition[]): string {
+        let result = `${name}[fontsize = 11, label="`;
+
+        if (transitions.length > 1) {
+            result += `{${label}|`;
+
+            const transitionsWithIndex = transitions.map((t, i) => {
+                return `<p${i}>`;
+            });
+            result += `{${transitionsWithIndex.join("|")}}}`;
+        } else {
+            result += label;
+        }
+        result += `"`;
+
+        if (transitions.length > 1) {
+            result += `, shape=record, fixedsize=false`;
+        } else {
+            result += `, shape=circle, fixedsize=true, width=.55`;
+        }
+
+        result += `, peripheries=1];`;
+
+        return result;
+    }
+
+    private renderStopState(label: string, name: string, actionIndex = -1, useBox = false): string {
+        let result = `${name}[fontsize = 11, label="${label}`;
+
+        if (actionIndex >= 0) {
+            result += `\naction:${actionIndex}`;
+        }
+        result += `", `;
+
+        if (useBox) {
+            result += `shape=polygon,sides=4,peripheries=2,fixedsize=false`;
+        } else {
+            result += `shape=doublecircle, fixedsize=true, width=.6`;
+        }
+        result += `];`;
+
+        return result;
+    }
+
+    private renderEdge(src: string, transitionIndex: number, target: string, label: string, arrowHead: string): string {
+        let result = src;
+
+        if (transitionIndex >= 0) {
+            result += `:p${transitionIndex}`;
+        }
+
+        result += ` -> ${target} [fontsize=11, fontname="Courier", arrowsize=.7, label = "${label}"`;
+
+        if (arrowHead) {
+            result += `, arrowhead = ${arrowHead}`;
+        }
+
+        result += "];";
+
+        return result;
+    }
+
+    private renderActionEdge(src: string, target: string, label: string, arrowHead: string,
+        transitionIndex: number): string {
+        let result = src;
+
+        if (transitionIndex >= 0) {
+            result += `:p${transitionIndex}`;
+        }
+
+        result += ` -> ${target} [fontsize=11, fontname="Courier", arrowsize=.7, label = "${label}"`;
+
+        if (arrowHead) {
+            result += `, arrowhead = ${arrowHead}`;
+        }
+
+        result += "];";
+
+        return result;
+    }
+
+    private renderEpsilonEdge(src: string, label: string, target: string, arrowHead: string, transitionIndex: number,
+        loopback = false): string {
+        let result = src;
+
+        if (transitionIndex >= 0) {
+            result += `:p${transitionIndex}`;
+        }
+
+        result += ` -> ${target} [fontname="Times-Italic", label="&epsilon;"`;
+
+        if (loopback) {
+            result += ` -> , style="dashed"`;
+        }
+
+        result += "];";
+
+        return result;
+    }
+};
