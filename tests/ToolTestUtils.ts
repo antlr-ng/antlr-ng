@@ -10,14 +10,13 @@ import { expect } from "vitest";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { existsSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, symlinkSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 
 import {
     ATN, ATNDeserializer, ATNSerializer, CharStream, CommonTokenStream, escapeWhitespace, Lexer, LexerATNSimulator,
     ParseTree, PredictionMode, Token, type Parser
 } from "antlr4ng";
-import { ST } from "stringtemplate4ts";
 
 import { Constants } from "../src/Constants.js";
 import { LexerATNFactory } from "../src/automata/LexerATNFactory.js";
@@ -41,12 +40,12 @@ export type MethodKeys<T extends Parser> = {
 export interface IRunOptions {
     grammarFileName: string;
     grammarStr: string;
-    parserName: string | null;
-    lexerName: string | null;
+    parserName?: string;
+    lexerName: string;
     grammarName: string;
     useListener: boolean;
     useVisitor: boolean;
-    startRuleName: string | null;
+    startRuleName?: string;
     input: string;
     profile: boolean;
     showDiagnosticErrors: boolean;
@@ -104,8 +103,8 @@ const tsGenerator = new TypeScriptTargetGenerator();
 export class ToolTestUtils {
     public static async execLexer(grammarFileName: string, grammarStr: string, lexerName: string, input: string,
         workingDir: string): Promise<ErrorQueue> {
-        const runOptions = this.createOptionsForToolTests(grammarFileName, grammarStr, null, lexerName, false, false,
-            null, input, false, false);
+        const runOptions = this.createOptionsForToolTests(grammarFileName, grammarStr, undefined, lexerName, false,
+            false, undefined, input, false, false);
 
         return await ToolTestUtils.execRecognizer(runOptions, workingDir);
     }
@@ -119,21 +118,17 @@ export class ToolTestUtils {
         return await ToolTestUtils.execRecognizer(runOptions, workingDir);
     }
 
-    public static createOptionsForToolTests(grammarFileName: string, grammarStr: string, parserName: string | null,
-        lexerName: string | null, useListener: boolean, useVisitor: boolean, startRuleName: string | null,
+    public static createOptionsForToolTests(grammarFileName: string, grammarStr: string, parserName: string | undefined,
+        lexerName: string, useListener: boolean, useVisitor: boolean, startRuleName: string | undefined,
         input: string, profile: boolean, showDiagnosticErrors: boolean): IRunOptions {
-        const isCombinedGrammar = lexerName != null && parserName != null;
+        const isCombinedGrammar = parserName != null;
         let grammarName;
         if (isCombinedGrammar) {
             grammarName = lexerName.endsWith("Lexer")
                 ? lexerName.substring(0, lexerName.length - "Lexer".length)
                 : lexerName;
         } else {
-            if (parserName != null) {
-                grammarName = parserName;
-            } else {
-                grammarName = lexerName!;
-            }
+            grammarName = lexerName!;
         }
 
         return {
@@ -227,7 +222,7 @@ export class ToolTestUtils {
             }
 
             const lexerConstructor = await this.importClass<Lexer>(join(workDir, runOptions.lexerName + ".js"),
-                runOptions.lexerName!);
+                runOptions.lexerName);
             const parserConstructor = await this.importClass<Parser>(join(workDir, runOptions.parserName + ".js"),
                 runOptions.parserName!);
 
@@ -458,26 +453,25 @@ export class ToolTestUtils {
 
     /** Generates the TypeScript test file to run the generated parser + lexer files. */
     private static writeTestFile(workDir: string, runOptions: IRunOptions): void {
-        const sourcePath = fileURLToPath(new URL("helpers/Test.ts.stg", import.meta.url));
-        const text = readFileSync(sourcePath, "utf8");
-        const outputFileST = new ST(text);
-        outputFileST.add("grammarName", runOptions.grammarName);
-        outputFileST.add("lexerName", runOptions.lexerName);
-        outputFileST.add("parserName", runOptions.parserName);
-        outputFileST.add("parserStartRuleName", runOptions.startRuleName);
-        outputFileST.add("showDiagnosticErrors", runOptions.showDiagnosticErrors);
-        outputFileST.add("traceATN", runOptions.traceATN);
-        outputFileST.add("profile", runOptions.profile);
-        outputFileST.add("showDFA", runOptions.showDFA);
-        outputFileST.add("useListener", runOptions.useListener);
-        outputFileST.add("useVisitor", runOptions.useVisitor);
-
         const mode = runOptions.predictionMode === PredictionMode.LL ? "LL" :
             runOptions.predictionMode === PredictionMode.SLL ? "SLL" : "LL_EXACT_AMBIG_DETECTION";
-        outputFileST.add("predictionMode", mode);
-        outputFileST.add("buildParseTree", runOptions.buildParseTree);
 
-        writeFileSync(join(workDir, "Test.ts"), outputFileST.render());
+        const testContent = tsGenerator.renderTestFile(
+            runOptions.grammarName,
+            runOptions.lexerName,
+            runOptions.parserName ?? undefined,
+            runOptions.startRuleName,
+            runOptions.showDiagnosticErrors,
+            runOptions.traceATN,
+            runOptions.profile,
+            runOptions.showDFA,
+            runOptions.useListener,
+            runOptions.useVisitor,
+            mode,
+            runOptions.buildParseTree
+        );
+
+        writeFileSync(join(workDir, "Test.ts"), testContent);
     }
 
     private static async importClass<T>(fileName: string, className: string): Promise<Constructor<T>> {

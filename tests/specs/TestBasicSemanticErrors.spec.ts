@@ -3,11 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-// cspell: ignore blech
-
 import { describe, it } from "vitest";
-
-import { ST } from "stringtemplate4ts";
 
 import { IssueCode } from "../../src/tool/Issues.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
@@ -26,7 +22,7 @@ describe("TestBasicSemanticErrors", () => {
         "options { x=y; }\n" +
         "\n" +
         "a\n" +
-        "options { blech=bar; greedy=true; }\n" +
+        "options { opt22=bar; greedy=true; }\n" +
         "        :       ID\n" +
         "        ;\n" +
         "b : ( options { ick=bar; greedy=true; } : ID )+ ;\n" +
@@ -42,7 +38,7 @@ describe("TestBasicSemanticErrors", () => {
         " or import); please merge\n" +
         "error(" + IssueCode.RepeatedPrequel + "): U.g4:8:0: repeated grammar prequel spec (options, tokens, " +
         "or import); please merge\n" +
-        "warning(" + IssueCode.IllegalOption + "): U.g4:12:10: unsupported option blech\n" +
+        "warning(" + IssueCode.IllegalOption + "): U.g4:12:10: unsupported option opt22\n" +
         "warning(" + IssueCode.IllegalOption + "): U.g4:12:21: unsupported option greedy\n" +
         "warning(" + IssueCode.IllegalOption + "): U.g4:15:16: unsupported option ick\n" +
         "warning(" + IssueCode.IllegalOption + "): U.g4:15:25: unsupported option greedy\n" +
@@ -72,21 +68,21 @@ describe("TestBasicSemanticErrors", () => {
     });
 
     it("testArgumentRetvalLocalConflicts", (): void => {
-        const grammarTemplate =
+        const grammar =
             "grammar T;\n" +
-            "ss<if(args)>[<args>]<endif> <if(retvals)>returns [<retvals>]<endif>\n" +
-            "<if(locals)>locals [<locals>]<endif>\n" +
-            "  : <body> EOF;\n" +
+            "ss[int expr] returns [int expr]\n" +
+            "locals [int expr]\n" +
+            "  : expr=expr EOF;\n" +
             "expr : '=';\n";
 
         const expected =
             "error(" + IssueCode.ArgConflictsWithRule + "): T.g4:2:7: parameter expr conflicts with rule " +
             "with same name\n" +
-            "error(" + IssueCode.RetvalConflkictsWithRule + "): T.g4:2:26: return value expr conflicts with " +
+            "error(" + IssueCode.RetvalConflictsWithRule + "): T.g4:2:26: return value expr conflicts with " +
             "rule with same name\n" +
             "error(" + IssueCode.LocalConflictsWithRule + "): T.g4:3:12: local expr conflicts with rule " +
             "with same name\n" +
-            "error(" + IssueCode.RetValuConflictsWithArg + "): T.g4:2:26: return value expr conflicts with " +
+            "error(" + IssueCode.RetValueConflictsWithArg + "): T.g4:2:26: return value expr conflicts with " +
             "parameter with same name\n" +
             "error(" + IssueCode.LocalConflictsWithArg + "): T.g4:3:12: local expr conflicts with parameter" +
             " with same name\n" +
@@ -101,12 +97,7 @@ describe("TestBasicSemanticErrors", () => {
             "error(" + IssueCode.LabelConflictsWithLocal + "): T.g4:4:4: label expr conflicts with local" +
             " with same name\n";
 
-        const grammarST = new ST(grammarTemplate);
-        grammarST.add("args", "int expr");
-        grammarST.add("retvals", "int expr");
-        grammarST.add("locals", "int expr");
-        grammarST.add("body", "expr=expr");
-        ToolTestUtils.testErrors([grammarST.render(), expected]);
+        ToolTestUtils.testErrors([grammar, expected]);
     });
 
 });

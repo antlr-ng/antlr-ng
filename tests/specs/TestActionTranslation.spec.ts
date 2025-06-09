@@ -5,7 +5,6 @@
 
 // cspell: ignore xmltag fdkj
 
-import { STGroupString } from "stringtemplate4ts";
 import { describe, expect, it } from "vitest";
 
 import "../../src/Tool.js"; // To kick off the loading of the tool
@@ -23,7 +22,6 @@ import { ErrorQueue } from "../support/ErrorQueue.js";
 
 describe("TestActionTranslation", () => {
     const attributeTemplate =
-        "attributeTemplate(members,init,inline,finally,inline2) ::= <<\n" +
         "parser grammar A;\n" +
         "@members {#members#<members>#end-members#}\n" +
         "a[int x, int x1] returns [int y]\n" +
@@ -38,16 +36,11 @@ describe("TestActionTranslation", () => {
         "    :   {#inline2#<inline2>#end-inline2#}\n" +
         "    ;\n" +
         "c returns [int x, int y] : ;\n" +
-        "d	 :   ;\n" +
-        ">>";
+        "d	 :   ;";
 
     const testActions = (templates: string, actionName: string, action: string, expected: string): void => {
-        const lp = templates.indexOf("(");
-        const name = templates.substring(0, lp);
-        const group = new STGroupString(templates);
-        const st = group.getInstanceOf(name)!;
-        st.add(actionName, action);
-        const grammar = st.render();
+        const grammar = templates.replace(`<${actionName}>`, action);
+
         const g = new Grammar(grammar);
 
         const errorQueue = new ErrorQueue(g.tool.errorManager);
@@ -215,17 +208,15 @@ describe("TestActionTranslation", () => {
      */
     it("testRuleRefsRecursive", (): void => {
         const recursiveTemplate =
-            "recursiveTemplate(inline) ::= <<\n" +
             "parser grammar A;\n" +
             "e returns [int v]\n" +
             "    :   INT {$v = $INT.int;}\n" +
             "    |   '(' e ')' {\n" +
             "		 #inline#<inline>#end-inline#\n" +
             "		 }\n" +
-            "    ;\n" +
-            ">>";
+            "    ;";
+
         const leftRecursiveTemplate =
-            "recursiveTemplate(inline) ::= <<\n" +
             "parser grammar A;\n" +
             "e returns [int v]\n" +
             "    :   a=e op=('*'|'/') b=e  {$v = eval($a.v, $op.type, $b.v);}\n" +
@@ -233,8 +224,7 @@ describe("TestActionTranslation", () => {
             "    |   '(' e ')' {\n" +
             "		 #inline#<inline>#end-inline#\n" +
             "		 }\n" +
-            "    ;\n" +
-            ">>";
+            "    ;";
 
         // ref to value returned from recursive call to rule
         let action = "$v = $e.v;";

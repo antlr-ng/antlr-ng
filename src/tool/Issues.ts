@@ -34,7 +34,6 @@ export enum IssueCode {
     ErrorReadingImportedGrammar,
     InternalError,
     TokensFileSyntaxError,
-    StringTemplateWarning,
 
     // Code generation errors.
 
@@ -54,14 +53,14 @@ export enum IssueCode {
     InvalidRuleParameterRef,
     UnknownRuleAttribute,
     UnknownAtrributeInScopoe,
-    IsloatedRuleRef,
+    IsolatedRuleRef,
     LabelConflictsWithRule,
     LabelConflictsWithToken,
     LabelConflictsWithArg,
     LabelConflictsWithRetval,
     LabelConflictsWithLocal,
     LabelTypeConflict,
-    RetValuConflictsWithArg,
+    RetValueConflictsWithArg,
     MissingRuleArgs,
     RuleHasNoArgs,
     IllegalOption,
@@ -90,7 +89,7 @@ export enum IssueCode {
     LexerCommandPlacementIssue,
     UnsupportedReferenceInLexerSet,
     AssignmentToListLabel,
-    RetvalConflkictsWithRule,
+    RetvalConflictsWithRule,
     RetvalConflictsWithToken,
     ArgConflictsWithRule,
     ArgConflictsWithToken,
@@ -210,11 +209,6 @@ export const issueTypes = new Map<IssueCode, IssueDetails>([
         message: ".tokens file syntax error <arg>:<arg2>",
         severity: IssueSeverity.Error
     }],
-    [IssueCode.StringTemplateWarning, {
-        message: "template error: <arg> <arg2>",
-        verboseMessage: "template error: <arg> <arg2>: <exception><stackTrace>",
-        severity: IssueSeverity.Warning
-    }],
     [IssueCode.IncompatibleToolAndTemplates, {
         message: "<arg3> code generation target requires antlr-ng <arg2>; it can't be loaded by the current " +
             "antlr-ng <arg>",
@@ -268,7 +262,7 @@ export const issueTypes = new Map<IssueCode, IssueDetails>([
         message: "attribute <arg> isn't a valid property in <arg2>",
         severity: IssueSeverity.Error
     }],
-    [IssueCode.IsloatedRuleRef, {
+    [IssueCode.IsolatedRuleRef, {
         message: "missing attribute access on rule reference <arg> in <arg2>",
         severity: IssueSeverity.Error
     }],
@@ -296,7 +290,7 @@ export const issueTypes = new Map<IssueCode, IssueDetails>([
         message: "label <arg> type mismatch with previous definition: <arg2>",
         severity: IssueSeverity.Error
     }],
-    [IssueCode.RetValuConflictsWithArg, {
+    [IssueCode.RetValueConflictsWithArg, {
         message: "return value <arg> conflicts with parameter with same name",
         severity: IssueSeverity.Error
     }],
@@ -415,7 +409,7 @@ export const issueTypes = new Map<IssueCode, IssueDetails>([
         message: "cannot assign a value to list label <arg>",
         severity: IssueSeverity.Error
     }],
-    [IssueCode.RetvalConflkictsWithRule, {
+    [IssueCode.RetvalConflictsWithRule, {
         message: "return value <arg> conflicts with rule with same name",
         severity: IssueSeverity.Error
     }],

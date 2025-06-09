@@ -576,7 +576,7 @@ export class Tool implements ITool {
                 if (this.toolConfiguration.generationOptions.generateDependencies) {
                     const dep = new BuildDependencyGenerator(this, g, this.toolConfiguration.generationOptions,
                         targetGenerator, this.toolConfiguration.lib);
-                    console.log(dep.getDependencies().render());
+                    console.log(dep.getDependencies());
                 } else {
                     if (this.errorManager.errors === 0) {
                         this.process(g, this.toolConfiguration, true);
