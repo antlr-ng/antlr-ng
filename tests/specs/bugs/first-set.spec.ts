@@ -12,10 +12,9 @@ import { ATNSerializer } from "antlr4ng";
 
 import { CodeGenerator } from "../../../src/codegen/CodeGenerator.js";
 import { defineConfig } from "../../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { DOTGenerator } from "../../../src/tool/DOTGenerator.js";
 import { Grammar, LexerGrammar } from "../../../src/tool/index.js";
-import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
-import { writeFileSync } from "node:fs";
 
 const tsGenerator = new TypeScriptTargetGenerator();
 
@@ -38,7 +37,6 @@ describe("General", () => {
         const dotGenerator = new DOTGenerator(lexerGrammar);
         const result = dotGenerator.getDOTFromState(startState, true);
 
-        writeFileSync("/Volumes/Extern/Work/projects/antlr-ng/tests/test.dot", result, "utf8");
         expect(result.indexOf(`s327 -> s335 [fontsize=11, fontname="Courier", arrowsize=.7, ` +
             String.raw`label = "'\\'", arrowhead = normal];`)).toBeGreaterThan(-1);
 
