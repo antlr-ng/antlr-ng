@@ -6,6 +6,12 @@
 
 # antlr-ng Release Notes
 
+## 1.0.10
+
+- Fixed Bug #63: Newest ANTLRv4*.g4/LexerAdaptor.ts doesn't work for a couple of grammars
+- Fixed Bug #61 Visitor file and Listener file generations do not get packageName passed to them
+- Set up automatic API documentation (typedoc), which is used on the antlr-ng home page
+
 ## 1.0.9
 
 Removed the need for a top-level await, which gets in the way when transpiling the code to CJS (e.g. in VS Code extensions).
