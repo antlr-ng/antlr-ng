@@ -54,7 +54,7 @@ export class TestSetInline extends SrcOp {
     private static createBitsets(factory: IOutputModelFactory, set: IntervalSet, wordSize: number,
         useZeroOffset: boolean): Bitset[] {
         const bitsetList: Bitset[] = [];
-        const target = factory.getGenerator()!.target;
+        const target = factory.getGenerator()!.targetGenerator;
 
         const wSize = BigInt(wordSize);
         let current: Bitset | undefined;

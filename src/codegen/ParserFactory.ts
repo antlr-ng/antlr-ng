@@ -174,7 +174,7 @@ export class ParserFactory implements IOutputModelFactory {
     }
 
     public getTokenListLabelDecl(label: string): TokenListDecl {
-        return new TokenListDecl(this, this.gen.target.getListLabel(label));
+        return new TokenListDecl(this, this.gen.targetGenerator.renderListLabelName(label));
     }
 
     public set(setAST: GrammarAST, labelAST: GrammarAST | null, invert: boolean): SrcOp[] {
@@ -248,7 +248,7 @@ export class ParserFactory implements IOutputModelFactory {
             this.getCurrentRuleFunction()!.addContextDecl(labelAST.getAltLabel()!, d);
 
             if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-                const listLabel = this.gen.target.getListLabel(label);
+                const listLabel = this.gen.targetGenerator.renderListLabelName(label);
                 const l = new TokenListDecl(this, listLabel);
                 this.getCurrentRuleFunction()!.addContextDecl(labelAST.getAltLabel()!, l);
             }
@@ -352,7 +352,7 @@ export class ParserFactory implements IOutputModelFactory {
     }
 
     public getLL1Test(look: IntervalSet, blkAST: GrammarAST): SrcOp[] {
-        return [new TestSetInline(this, blkAST, look, this.gen.target.getInlineTestSetWordSize())];
+        return [new TestSetInline(this, blkAST, look, this.gen.targetGenerator.inlineTestSetWordSize)];
     }
 
     public getGenerator(): CodeGenerator {
@@ -396,17 +396,17 @@ export class ParserFactory implements IOutputModelFactory {
 
         const generator = this.gen.targetGenerator;
         if (ast.getType() === ANTLRv4Parser.SET || ast.getType() === ANTLRv4Parser.WILDCARD) {
-            const implLabel = this.gen.target.getImplicitSetLabel(String(ast.token!.tokenIndex));
+            const implLabel = this.gen.targetGenerator.renderImplicitSetLabel(String(ast.token!.tokenIndex));
             d = this.getTokenLabelDecl(implLabel);
             (d as TokenDecl).isImplicit = true;
         } else if (ast.getType() === ANTLRv4Parser.RULE_REF) { // A rule reference?
             const r = this.g.getRule(ast.getText())!;
-            const implLabel = this.gen.target.getImplicitRuleLabel(ast.getText());
+            const implLabel = this.gen.targetGenerator.renderImplicitRuleLabel(ast.getText());
             const ctxName = generator.getRuleFunctionContextStructName(r);
             d = new RuleContextDecl(this, implLabel, ctxName);
             (d as RuleContextDecl).isImplicit = true;
         } else {
-            const implLabel = this.gen.target.getImplicitTokenLabel(ast.getText());
+            const implLabel = this.gen.targetGenerator.renderImplicitTokenLabel(ast.getText());
             d = this.getTokenLabelDecl(implLabel);
             (d as TokenDecl).isImplicit = true;
         }
@@ -420,9 +420,9 @@ export class ParserFactory implements IOutputModelFactory {
     public getAddToListOpIfListLabelPresent(op: ILabeledOp, label: GrammarAST | null): AddToLabelList | null {
         let labelOp = null;
         if (label?.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-            const target = this.gen.target;
-            const listLabel = target.getListLabel(label.getText());
-            const listRuntimeName = target.escapeIfNeeded(listLabel);
+            const targetGenerator = this.gen.targetGenerator;
+            const listLabel = targetGenerator.renderListLabelName(label.getText());
+            const listRuntimeName = targetGenerator.escapeIfNeeded(listLabel);
             labelOp = new AddToLabelList(this, listRuntimeName, op.labels[0]);
         }
 

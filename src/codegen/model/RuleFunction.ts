@@ -82,7 +82,7 @@ export class RuleFunction extends OutputModelObject {
         super(factory);
 
         this.name = r.name;
-        this.escapedName = factory.getGenerator()!.target.escapeIfNeeded(r.name);
+        this.escapedName = factory.getGenerator()!.targetGenerator.escapeIfNeeded(r.name);
         this.rule = r;
         this.modifiers = this.nodesToStrings(r.modifiers ?? []);
 
@@ -242,7 +242,7 @@ export class RuleFunction extends OutputModelObject {
             const generator = this.factory!.getGenerator()!.targetGenerator;
             const ctxName = generator.getRuleFunctionContextStructName(ruleRef);
             if (needList) {
-                if (this.factory!.getGenerator()!.target.supportsOverloadedMethods()) {
+                if (this.factory!.getGenerator()!.targetGenerator.supportsOverloadedMethods) {
                     decls.push(new ContextRuleListGetterDecl(this.factory!, refLabelName, ctxName));
                 }
 
@@ -252,7 +252,7 @@ export class RuleFunction extends OutputModelObject {
             }
         } else {
             if (needList) {
-                if (this.factory!.getGenerator()!.target.supportsOverloadedMethods()) {
+                if (this.factory!.getGenerator()!.targetGenerator.supportsOverloadedMethods) {
                     decls.push(new ContextTokenListGetterDecl(this.factory!, refLabelName));
                 }
 

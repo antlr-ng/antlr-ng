@@ -29,9 +29,9 @@ export class DartTarget extends Target {
         return new Map([...Target.defaultCharValueEscape, ...DartTarget.targetCharValueEscape]);
     }
 
-    public override getTargetStringLiteralFromANTLRStringLiteral(generator: CodeGenerator, literal: string,
+    public override getTargetStringLiteralFromANTLRStringLiteral(literal: string,
         addQuotes: boolean, escapeSpecial: boolean): string {
-        return super.getTargetStringLiteralFromANTLRStringLiteral(generator, literal, addQuotes, escapeSpecial)
+        return super.getTargetStringLiteralFromANTLRStringLiteral(literal, addQuotes, escapeSpecial)
             .replaceAll("$", "\\$");
     }
 

@@ -24,7 +24,7 @@ export class MatchSet extends MatchToken {
         super(factory, ast);
 
         const st = ast.atnState!.transitions[0] as SetTransition;
-        const wordSize = factory.getGenerator()!.target.getInlineTestSetWordSize();
+        const wordSize = factory.getGenerator()!.targetGenerator.inlineTestSetWordSize;
 
         this.expr = new TestSetInline(factory, undefined, st.set, wordSize);
 
