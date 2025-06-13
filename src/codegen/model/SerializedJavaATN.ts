@@ -25,7 +25,7 @@ export class SerializedJavaATN extends SerializedATN {
         data = this.encodeIntsWith16BitWords(data);
 
         const size = data.length;
-        const target = factory.getGenerator()!.target;
+        const target = factory.getGenerator()!.targetGenerator;
         const segmentLimit = target.getSerializedATNSegmentLimit();
         this.segments = new Array<string[]>(Math.trunc((size + segmentLimit - 1) / segmentLimit));
         let segmentIndex = 0;

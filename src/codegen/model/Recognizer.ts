@@ -62,7 +62,7 @@ export abstract class Recognizer extends OutputModelObject {
 
         for (const [key, ttype] of g.tokenNameToTypeMap) {
             if (ttype > 0) {
-                this.tokens.set(gen.target.escapeIfNeeded(key), ttype);
+                this.tokens.set(gen.targetGenerator.escapeIfNeeded(key), ttype);
             }
         }
 
@@ -109,11 +109,11 @@ export abstract class Recognizer extends OutputModelObject {
 
         if (tokenName.startsWith("'")) {
             const targetString =
-                gen.target.getTargetStringLiteralFromANTLRStringLiteral(gen, tokenName, false, true);
+                gen.targetGenerator.getTargetStringLiteralFromANTLRStringLiteral(tokenName, false, true);
 
             return "\"'" + targetString + "'\"";
         } else {
-            return gen.target.getTargetStringLiteralFromString(tokenName, true);
+            return gen.targetGenerator.getTargetStringLiteralFromString(tokenName, true);
         }
     }
 

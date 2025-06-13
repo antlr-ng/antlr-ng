@@ -11,22 +11,11 @@ import { Grammar } from "../tool/Grammar.js";
 import { IssueCode } from "../tool/Issues.js";
 import { OutputModelController } from "./OutputModelController.js";
 import { ParserFactory } from "./ParserFactory.js";
-import { Target } from "./Target.js";
 
 // Possible targets:
 import type { IGenerationOptions } from "../config/config.js";
 import { fileSystem } from "../tool-parameters.js";
 import type { ITargetGenerator } from "./ITargetGenerator.js";
-import { CppTarget } from "./target/CppTarget.js";
-import { CSharpTarget } from "./target/CSharpTarget.js";
-import { DartTarget } from "./target/DartTarget.js";
-import { GoTarget } from "./target/GoTarget.js";
-import { JavaScriptTarget } from "./target/JavaScriptTarget.js";
-import { JavaTarget } from "./target/JavaTarget.js";
-import { PHPTarget } from "./target/PHPTarget.js";
-import { Python3Target } from "./target/Python3Target.js";
-import { SwiftTarget } from "./target/SwiftTarget.js";
-import { TypeScriptTarget } from "./target/TypeScriptTarget.js";
 
 export const targetLanguages = [
     "Cpp", "CSharp", "Dart", "Go", "JavaScript", "Java", "PHP", "Python3", "Swift", "TypeScript"
@@ -36,22 +25,8 @@ export type SupportedLanguage = typeof targetLanguages[number];
 
 /**  General controller for code gen. Can instantiate sub generator(s). */
 export class CodeGenerator {
-    public target: Target;
     public readonly g?: Grammar;
     public readonly language: SupportedLanguage;
-
-    private static languageMap = new Map<SupportedLanguage, new (generator: CodeGenerator) => Target>([
-        ["Cpp", CppTarget],
-        ["CSharp", CSharpTarget],
-        ["Dart", DartTarget],
-        ["Go", GoTarget],
-        ["JavaScript", JavaScriptTarget],
-        ["Java", JavaTarget],
-        ["PHP", PHPTarget],
-        ["Python3", Python3Target],
-        ["Swift", SwiftTarget],
-        ["TypeScript", TypeScriptTarget],
-    ]);
 
     private readonly tool?: Tool;
 
@@ -61,7 +36,6 @@ export class CodeGenerator {
         this.tool = this.g?.tool;
 
         this.language = (grammarOrLanguage instanceof Grammar) ? this.g!.getLanguage() : grammarOrLanguage;
-        this.target = new (CodeGenerator.languageMap.get(this.language)!)(this);
     }
 
     public get forJava(): boolean {
@@ -123,23 +97,23 @@ export class CodeGenerator {
     }
 
     public writeRecognizer(generatedText: string, header: boolean): void {
-        this.target.genFile(this.g, generatedText, this.getRecognizerFileName(header));
+        this.writeFile(generatedText, this.getRecognizerFileName(header));
     }
 
     public writeListener(generatedText: string, header: boolean): void {
-        this.target.genFile(this.g, generatedText, this.getListenerFileName(header));
+        this.writeFile(generatedText, this.getListenerFileName(header));
     }
 
     public writeBaseListener(generatedText: string, header: boolean): void {
-        this.target.genFile(this.g, generatedText, this.getBaseListenerFileName(header));
+        this.writeFile(generatedText, this.getBaseListenerFileName(header));
     }
 
     public writeVisitor(generatedText: string, header: boolean): void {
-        this.target.genFile(this.g, generatedText, this.getVisitorFileName(header));
+        this.writeFile(generatedText, this.getVisitorFileName(header));
     }
 
     public writeBaseVisitor(generatedText: string, header: boolean): void {
-        this.target.genFile(this.g, generatedText, this.getBaseVisitorFileName(header));
+        this.writeFile(generatedText, this.getBaseVisitorFileName(header));
     }
 
     /**
@@ -150,11 +124,11 @@ export class CodeGenerator {
         const tokenVocabSerialization = this.getTokenVocabOutput();
         const fileName = this.getVocabFileName();
         if (fileName) {
-            this.target.genFile(this.g, tokenVocabSerialization, fileName);
+            this.writeFile(tokenVocabSerialization, fileName);
         }
     }
 
-    public write(code: string, fileName: string): void {
+    public writeFile(code: string, fileName: string): void {
         if (this.tool === undefined) {
             return;
         }
@@ -171,34 +145,24 @@ export class CodeGenerator {
         }
     }
 
-    public getRecognizerFileName(header?: boolean): string {
-        header ??= false;
-
-        return this.target.getRecognizerFileName(this.targetGenerator, header);
+    public getRecognizerFileName(declarationFile?: boolean): string {
+        return this.targetGenerator.getRecognizerFileName(declarationFile ?? false, this.g!.getRecognizerName());
     }
 
-    public getListenerFileName(header?: boolean): string {
-        header ??= false;
-
-        return this.target.getListenerFileName(this.targetGenerator, header);
+    public getListenerFileName(declarationFile?: boolean): string {
+        return this.targetGenerator.getListenerFileName(declarationFile ?? false, this.g!.name);
     }
 
-    public getVisitorFileName(header?: boolean): string {
-        header ??= false;
-
-        return this.target.getVisitorFileName(this.targetGenerator, header);
+    public getVisitorFileName(declarationFile?: boolean): string {
+        return this.targetGenerator.getVisitorFileName(declarationFile ?? false, this.g!.name);
     }
 
-    public getBaseListenerFileName(header?: boolean): string {
-        header ??= false;
-
-        return this.target.getBaseListenerFileName(this.targetGenerator, header);
+    public getBaseListenerFileName(declarationFile?: boolean): string {
+        return this.targetGenerator.getBaseListenerFileName(declarationFile ?? false, this.g!.name);
     }
 
-    public getBaseVisitorFileName(header?: boolean): string {
-        header ??= false;
-
-        return this.target.getBaseVisitorFileName(this.targetGenerator, header);
+    public getBaseVisitorFileName(declarationFile?: boolean): string {
+        return this.targetGenerator.getBaseVisitorFileName(declarationFile ?? false, this.g!.name);
     }
 
     /**

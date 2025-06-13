@@ -23,7 +23,7 @@ export class MatchToken extends RuleElement implements ILabeledOp {
             const gen = factory.getGenerator()!;
             this.ttype = g.getTokenType(ast.getText());
 
-            const target = gen.target;
+            const target = gen.targetGenerator;
             this.name = target.getTokenTypeAsTargetLabel(g, this.ttype);
             this.escapedName = target.escapeIfNeeded(this.name);
         }

@@ -5,7 +5,6 @@
 
 import { Command } from "commander";
 import { type IFs, fs as defaultFs } from "memfs";
-import { useFileSystem as ufs } from "stringtemplate4ts";
 
 export let fileSystem: IFs = defaultFs;
 
@@ -19,7 +18,6 @@ import { antlrVersion } from "./version.js";
 export const useFileSystem = (fs: IFs): void => {
     // antlr-ng and ST4TS share the same virtual file system.
     fileSystem = fs;
-    ufs(fs);
 };
 
 /**
