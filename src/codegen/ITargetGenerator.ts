@@ -3,6 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import type { Grammar } from "../tool/Grammar.js";
 import type { Rule } from "../tool/Rule.js";
 import type { IGrammar } from "../types.js";
 import type { LexerFile } from "./model/LexerFile.js";
@@ -94,6 +95,17 @@ export interface ITargetGeneratorCallables {
     renderBaseVisitorFile(file: VisitorFile, declaration: boolean): string;
 
     /**
+     * Should be same for all refs to same token like ctx.ID within single rule function for literals like 'while',
+     * we gen _s<ttype>
+     */
+    renderImplicitTokenLabel(tokenName: string): string;
+    renderImplicitRuleLabel(ruleName: string): string;
+    renderImplicitSetLabel(id: string): string;
+    renderListLabelName(label: string): string;
+
+    escapeIfNeeded(identifier: string): string;
+
+    /**
      * Renders the content of the unit test file with the given parameters. The test file is used to execute a single
      * unit test for a grammar. It contains the necessary imports, the test function and the code to parse
      * a given input string with the specified parser and lexer.
@@ -125,6 +137,9 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
     /** A unique identifier for the generator. */
     readonly id: string;
 
+    /** The version of the generator. */
+    readonly version: string;
+
     /** The human readably language name for the generator. */
     readonly language: string;
 
@@ -149,6 +164,20 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
     readonly lexerRuleContext: string;
 
     readonly ruleContextNameSuffix: string;
+
+    readonly wantsBaseListener: boolean;
+
+    readonly wantsBaseVisitor: boolean;
+
+    readonly supportsOverloadedMethods: boolean;
+
+    readonly isATNSerializedAsInts: boolean;
+
+    /**
+     * How many bits should be used to do inline token type tests? Java assumes a 64-bit word for bitsets. Must be a
+     * valid word size for your target like 8, 16, 32, 64, etc...
+     */
+    readonly inlineTestSetWordSize: number;
 
     /** Maps lexer commands to methods which render that command. */
     readonly lexerCommandMap: Map<string, () => Lines>;
@@ -187,6 +216,96 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
      * @returns The converted string.
      */
     getTargetStringLiteralFromString(s: string, quoted?: boolean): string;
+
+    /**
+     * Generate TParser.java and TLexer.java from T.g4 if combined, else just use T.java as output regardless of type.
+     *
+     * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
+     *        it will be for a code file (e.g. TParser.java).
+     * @param recognizerName The name of the recognizer, such as TParser or TLexer.
+     *
+     * @returns The file name for the recognizer, such as TParser.java or TLexer.cpp.
+     */
+    getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string): string;
+
+    /**
+     * A given grammar T, return the listener name such as TListener.java, if we're using the Java target.
+     *
+     * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
+     *        it will be for a code file (e.g. TParser.java).
+     * @param grammarName The name of the grammar, which determinse the base name of the listener.
+     *
+     * @returns The file name for the listener, such as TListener.java or TListener.ts.
+     */
+    getListenerFileName(forDeclarationFile: boolean, grammarName: string): string;
+
+    /**
+     * A given grammar T, return the visitor name such as TVisitor.java, if we're using the Java target.
+     *
+     * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
+     *        it will be for a code file (e.g. TParser.java).
+     * @param grammarName The name of the grammar, which determinse the base name of the listener.
+     *
+     * @returns The file name for the visitor, such as TVisitor.java or TVisitor.ts.
+     */
+    getVisitorFileName(forDeclarationFile: boolean, grammarName: string): string;
+
+    /**
+     * A given grammar T, return a blank listener implementation such as TBaseListener.java, if we're using the
+     * Java target.
+     *
+     * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
+     *        it will be for a code file (e.g. TParser.java).
+     * @param grammarName The name of the grammar, which determinse the base name of the listener.
+     *
+     * @returns The file name for the base listener, such as TBaseListener.java or TBaseListener.ts.
+     */
+    getBaseListenerFileName(forDeclarationFile: boolean, grammarName: string): string;
+
+    /**
+     * A given grammar T, return a blank vistor implementation such as TBaseListener.java, if we're using the
+     * Java target.
+     *
+     * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
+     *        it will be for a code file (e.g. TParser.java).
+     * @param grammarName The name of the grammar, which determinse the base name of the listener.
+     *
+     * @returns The file name for the base visitor, such as TBaseVisitor.java or TBaseVisitor.ts.
+     */
+    getBaseVisitorFileName(forDeclarationFile: boolean, grammarName: string): string;
+
+    /**
+     * Get a meaningful name for a token type useful during code generation. Literals without associated names
+     * are converted to the string equivalent of their integer values. Used to generate x==ID and x==34 type
+     * comparisons etc...  Essentially we are looking for the most obvious way to refer to a token type in the
+     * generated code.
+     *
+     * @param g The grammar object containing the token names.
+     * @param ttype The token type to convert to a label.
+     *
+     * @returns The token type as a label. If the token type is not defined in the grammar, it returns the
+     *          string representation of the token type.
+     */
+    getTokenTypeAsTargetLabel(g: Grammar, ttype: number): string;
+
+    /**
+     * Converts from an TypeScript string literal found in a grammar file to an equivalent string literal in the target
+     * language.
+     *
+     * For Java, this is the translation `'a\n"'` -> `"a\n\""`. Expect single quotes around the incoming literal.
+     * Just flip the quotes and replace double quotes with `\"`.
+     *
+     * Note that we have decided to allow people to use '\"' without penalty, so we must build the target string in
+     * a loop as {@link String.replaceAll} cannot handle both `\"` and `"` without a lot of messing around.
+     *
+     * @param literal The string literal to convert.
+     * @param addQuotes If true, the string is quoted. If false, it is not.
+     * @param escapeSpecial If true, escape special characters.
+     *
+     * @returns The converted string.
+     */
+    getTargetStringLiteralFromANTLRStringLiteral(literal: string, addQuotes: boolean,
+        escapeSpecial?: boolean): string;
 
     /** Allows to transform a token identifier to a different string (e.g. to avoid keyword collissions). */
     tokenNameTransformer?: (name: string) => string;

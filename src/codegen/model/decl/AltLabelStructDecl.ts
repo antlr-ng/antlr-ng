@@ -3,6 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import { Utils } from "../../../misc/Utils.js";
 import { MurmurHash } from "../../../support/MurmurHash.js";
 import { Rule } from "../../../tool/Rule.js";
 import { IOutputModelFactory } from "../../IOutputModelFactory.js";
@@ -17,7 +18,8 @@ export class AltLabelStructDecl extends StructDecl {
     public parentRule: string;
     public constructor(factory: IOutputModelFactory, r: Rule, altNum: number, label: string) {
         // Override name set in super to the label ctx.
-        super(factory, r, factory.getGenerator()!.target.getAltLabelContextStructName(label));
+        const suffix = Utils.capitalize(label) + factory.getGenerator()!.targetGenerator.ruleContextNameSuffix;
+        super(factory, r, suffix);
         this.altNum = altNum;
         this.parentRule = r.name;
         this.derivedFromName = label;

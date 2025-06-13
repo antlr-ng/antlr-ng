@@ -38,7 +38,7 @@ export class InvokeRule extends RuleElement implements ILabeledOp {
         const identifier = ast.getText();
         const r = factory.getGrammar()!.getRule(identifier)!;
         this.name = r.name;
-        this.escapedName = gen.target.escapeIfNeeded(this.name);
+        this.escapedName = gen.targetGenerator.escapeIfNeeded(this.name);
         this.ctxName = generator.getRuleFunctionContextStructName(r);;
 
         const rf = factory.getCurrentRuleFunction()!;
@@ -48,7 +48,7 @@ export class InvokeRule extends RuleElement implements ILabeledOp {
             const label = labelAST.getText();
             if (labelAST.parent!.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
                 factory.defineImplicitLabel(ast, this);
-                const listLabel = gen.target.getListLabel(label);
+                const listLabel = gen.targetGenerator.renderListLabelName(label);
                 decl = new RuleContextListDecl(factory, listLabel, this.ctxName);
             } else {
                 decl = new RuleContextDecl(factory, label, this.ctxName);
@@ -64,7 +64,7 @@ export class InvokeRule extends RuleElement implements ILabeledOp {
 
         // If action refs rule as rule name not label, we need to define implicit label.
         if (factory.getCurrentOuterMostAlt().ruleRefsInActions.has(identifier)) {
-            const label = gen.target.getImplicitRuleLabel(identifier);
+            const label = gen.targetGenerator.renderImplicitRuleLabel(identifier);
             const d = new RuleContextDecl(factory, label, this.ctxName);
             this.labels.push(d);
             rf.addContextDecl(ast.getAltLabel()!, d);

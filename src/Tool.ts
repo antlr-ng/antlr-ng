@@ -7,7 +7,6 @@ import { ATNSerializer, CharStream, CommonTokenStream } from "antlr4ng";
 
 import { ANTLRv4Parser } from "./generated/ANTLRv4Parser.js";
 
-import { useFileSystem } from "stringtemplate4ts";
 import { ClassFactory } from "./ClassFactory.js";
 import { Constants } from "./Constants.js";
 import { UndefChecker } from "./UndefChecker.js";
@@ -590,9 +589,5 @@ export class Tool implements ITool {
         ClassFactory.createTool = () => {
             return new Tool();
         };
-
-        // Make sure the template engine uses the same virtual file system as we do.
-        // This early registration is useful if you don't need a private file system for the templates.
-        useFileSystem(fileSystem);
     }
 }

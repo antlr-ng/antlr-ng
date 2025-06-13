@@ -42,7 +42,7 @@ export class SemPred extends Action {
             this.predicate = this.predicate.substring(1, this.predicate.length - 2);
         }
 
-        this.predicate = gen.target.getTargetStringLiteralFromString(this.predicate);
+        this.predicate = gen.targetGenerator.getTargetStringLiteralFromString(this.predicate);
         if (!failNode) {
             return;
         }
@@ -52,8 +52,7 @@ export class SemPred extends Action {
             const rf = factory.getCurrentRuleFunction() ?? null;
             this.failChunks = ActionTranslator.translateAction(factory, rf, failActionNode.token!, failActionNode);
         } else {
-            this.msg = gen.target.getTargetStringLiteralFromANTLRStringLiteral(gen, failNode.getText(), true,
-                true);
+            this.msg = gen.targetGenerator.getTargetStringLiteralFromANTLRStringLiteral(failNode.getText(), true, true);
         }
     }
 

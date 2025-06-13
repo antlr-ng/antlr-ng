@@ -8,22 +8,17 @@
 import * as OutputModelObjects from "src/codegen/model/index.js";
 import { GeneratorBase } from "../codegen/GeneratorBase.js";
 import type { ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
-import type { IndexedObject } from "../support/helpers.js";
+import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import type { OptionalBlockAST } from "../tool/ast/OptionalBlockAST.js";
 import type { Grammar } from "../tool/Grammar.js";
 import type { Rule } from "../tool/Rule.js";
-import { antlrVersion } from "../version.js";
-import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
-
-/** For debugging: when set to true includes start and end markers for each part. */
-// eslint-disable-next-line prefer-const
-let logRendering = false;
 
 /** The constructor type of OutputModelObject class. Used the source op lookup map. */
 type OutputModelObjectConstructor = new (...args: unknown[]) => OutputModelObjects.OutputModelObject;
 
 export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetGenerator {
     public readonly id = "generator.default.typescript";
+    public readonly version = "1.0.0";
 
     public readonly language = "TypeScript";
     public readonly languageSpecifiers = ["typescript", "ts"];
@@ -35,10 +30,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     /** The rule context name is the rule followed by a suffix, e.g. r becomes rContext. */
     public readonly ruleContextNameSuffix = "Context";
 
+    public override readonly inlineTestSetWordSize = 32;
+
     /**
      * https://github.com/microsoft/TypeScript/issues/2536
      */
-    public readonly reservedWords = new Set([
+    public override readonly reservedWords = new Set([
         // Resrved words:
         "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "enum",
         "export", "extends", "false", "finally", "for", "function", "if", "import", "in", "instanceof", "new", "null",
@@ -54,13 +51,6 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
     public readonly lexerCommandMap: Map<string, () => Lines>;
     public readonly lexerCallCommandMap: Map<string, (arg: string, grammar: Grammar) => Lines>;
-
-    private static readonly defaultValues: Record<string, string> = {
-        "bool": "false",
-        "int": "0",
-        "float": "0.0",
-        "string": "\"\"",
-    };
 
     /**
      * Code blocks are at the heart of code generation. This map allows easy lookup of the correct render method for a
@@ -586,6 +576,10 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         lines.push("}");
 
         return lines.join("\n");
+    }
+
+    protected override renderTypedContext(ctx: OutputModelObjects.StructDecl): string {
+        return ctx.provideCopyFrom ? `(localContext as ${ctx.name})` : `localContext`;
     }
 
     private renderParser(parserFile: OutputModelObjects.ParserFile): Lines {
@@ -1899,7 +1893,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         let startLogEntry: string | undefined = undefined;
         let endLogEntry: string | undefined = undefined;
 
-        if (logRendering && decls.length > 0) {
+        if (this.logRendering && decls.length > 0) {
             startLogEntry = decls.shift();
             endLogEntry = decls.pop();
         }
@@ -1960,7 +1954,6 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
                 block.push(...this.renderListenerDispatchMethod(parser.grammarName, struct, method));
             }
         }
-        // block.push(`<extensionMembers; separator="\n">`); Don't see where this is actually used.
 
         result.push(...this.formatLines(block, 4));
         result.push(`}`);
@@ -2103,68 +2096,4 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return [`this.pushMode(${arg});`];
     };
 
-    private renderActionChunks(chunks?: OutputModelObjects.ActionChunk[]): string {
-        const result: Lines = [];
-
-        if (chunks) {
-            for (const chunk of chunks) {
-                const methodName = `render${chunk.constructor.name}`;
-                const executor = this as IndexedObject<TypeScriptTargetGenerator>;
-                const method = executor[methodName] as (chunk: OutputModelObjects.ActionChunk) => Lines;
-                result.push(...method.call(executor, chunk) as Lines);
-            }
-        }
-
-        return result.join("");
-    }
-
-    private renderImplicitTokenLabel(tokenName: string): Lines { return [tokenName]; }
-    private renderImplicitRuleLabel(ruleName: string): Lines { return [ruleName]; };
-    private renderImplicitSetLabel(id: string): Lines { return [`_tset${id}`]; };
-    private renderListLabelName(label: string): Lines { return [label]; }
-
-    /** For any action chunk, what is correctly-typed context struct ptr? */
-    private renderContext(actionChunk: OutputModelObjects.ActionChunk): string {
-        if (!actionChunk.ctx) {
-            return "";
-        }
-
-        return this.renderTypedContext(actionChunk.ctx);
-    }
-
-    /** Only casts localContext to the type when the cast isn't redundant (i.e. to a sub-context for a labeled alt) */
-    private renderTypedContext(ctx: OutputModelObjects.StructDecl): string {
-        return ctx.provideCopyFrom ? `(localContext as ${ctx.name})` : `localContext`;
-    }
-
-    private renderFileHeader(file: OutputModelObjects.OutputFile): Lines {
-        return [`// Generated from ${file.grammarFileName} by antlr-ng ${antlrVersion}. Do not edit!`];
-    }
-
-    private initValue(typeName: string): Lines {
-        const value = TypeScriptTargetGenerator.defaultValues[typeName] as string | undefined;
-
-        return [value ?? "{}"];
-    }
-
-    private startRendering(section: string): Lines {
-        if (logRendering) {
-            return [`/* Start rendering ${section} */`];
-        }
-
-        return [];
-    }
-
-    private endRendering(section: string, lines: Lines): Lines {
-        if (logRendering) {
-            if (lines.length === 1) {
-                // Don't render log lines if the section is empty.
-                return [];
-            }
-
-            lines.push(`/* End rendering ${section} */`);
-        }
-
-        return lines;
-    }
 }

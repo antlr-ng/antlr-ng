@@ -13,7 +13,7 @@ import { IssueCode } from "../tool/Issues.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
 import { CodeGenerator } from "./CodeGenerator.js";
 import { IOutputModelFactory } from "./IOutputModelFactory.js";
-import { Target } from "./Target.js";
+import type { ITargetGenerator } from "./ITargetGenerator.js";
 import { RuleFunction } from "./model/RuleFunction.js";
 import { ActionChunk } from "./model/chunk/ActionChunk.js";
 import { ActionText } from "./model/chunk/ActionText.js";
@@ -76,7 +76,7 @@ export class ActionTranslator implements IActionSplitterListener {
     ]);
 
     private readonly gen: CodeGenerator;
-    private readonly target: Target;
+    private readonly targetGenerator: ITargetGenerator;
     private readonly node: ActionAST;
     private rf?: RuleFunction;
     private readonly chunks = new Array<ActionChunk>();
@@ -87,7 +87,7 @@ export class ActionTranslator implements IActionSplitterListener {
         this.factory = factory;
         this.node = node;
         this.gen = factory.getGenerator()!;
-        this.target = this.gen.target;
+        this.targetGenerator = this.gen.targetGenerator;
     }
 
     public static translateAction(factory: IOutputModelFactory, rf: RuleFunction | null,
@@ -131,7 +131,7 @@ export class ActionTranslator implements IActionSplitterListener {
         this.gen.g?.tool.logInfo({ component: "action-translator", msg: "attr " + x.text });
         const a = this.node.resolver.resolveToAttribute(x.text!, this.node);
         const name = x.text!;
-        const escapedName = this.target.escapeIfNeeded(name);
+        const escapedName = this.targetGenerator.escapeIfNeeded(name);
 
         if (a !== null) {
             switch (a.dict!.type) {
@@ -166,7 +166,8 @@ export class ActionTranslator implements IActionSplitterListener {
             const tokenLabel = this.getTokenLabel(name);
 
             // $label
-            this.chunks.push(new TokenRef(this.nodeContext, tokenLabel, this.target.escapeIfNeeded(tokenLabel)));
+            this.chunks.push(new TokenRef(this.nodeContext, tokenLabel,
+                this.targetGenerator.escapeIfNeeded(tokenLabel)));
 
             return;
         }
@@ -175,7 +176,8 @@ export class ActionTranslator implements IActionSplitterListener {
             const tokenLabel = this.getTokenLabel(name);
 
             // $x for x=ID etc...
-            this.chunks.push(new LabelRef(this.nodeContext, tokenLabel, this.target.escapeIfNeeded(tokenLabel)));
+            this.chunks.push(new LabelRef(this.nodeContext, tokenLabel,
+                this.targetGenerator.escapeIfNeeded(tokenLabel)));
 
             return;
         }
@@ -192,7 +194,7 @@ export class ActionTranslator implements IActionSplitterListener {
             const ruleLabel = this.getRuleLabel(name);
 
             // $r for r rule ref
-            this.chunks.push(new LabelRef(this.nodeContext, ruleLabel, this.target.escapeIfNeeded(ruleLabel)));
+            this.chunks.push(new LabelRef(this.nodeContext, ruleLabel, this.targetGenerator.escapeIfNeeded(ruleLabel)));
         }
     }
 
@@ -217,14 +219,14 @@ export class ActionTranslator implements IActionSplitterListener {
 
         switch (a.dict!.type) {
             case DictType.Argument: {
-                this.chunks.push(new ArgRef(this.nodeContext, y.text!, this.target.escapeIfNeeded(y.text!)));
+                this.chunks.push(new ArgRef(this.nodeContext, y.text!, this.targetGenerator.escapeIfNeeded(y.text!)));
                 break;
             }
 
             // Has to be current rule.
             case DictType.Return: {
                 this.chunks.push(new QRetValueRef(this.nodeContext, this.getRuleLabel(x.text!), y.text!,
-                    this.target.escapeIfNeeded(y.text!)));
+                    this.targetGenerator.escapeIfNeeded(y.text!)));
                 break;
             }
 
@@ -247,15 +249,15 @@ export class ActionTranslator implements IActionSplitterListener {
     public setAttr(_expr: string, x: Token, rhs: Token): void {
         this.gen.g?.tool.logInfo({ component: "action-translator", msg: "setAttr " + x.text + " " + rhs.text });
         const rhsChunks = ActionTranslator.translateActionChunk(this.factory, this.rf!, rhs.text!, this.node, x);
-        const s = new SetAttr(this.nodeContext, x.text!, this.target.escapeIfNeeded(x.text!), rhsChunks);
+        const s = new SetAttr(this.nodeContext, x.text!, this.targetGenerator.escapeIfNeeded(x.text!), rhsChunks);
         this.chunks.push(s);
     }
 
     public nonLocalAttr(_expr: string, x: Token, y: Token): void {
         this.gen.g?.tool.logInfo({ component: "action-translator", msg: "nonLocalAttr " + x.text! + "::" + y.text! });
         const r = this.factory.g.getRule(x.text!);
-        this.chunks.push(new NonLocalAttrRef(this.nodeContext, x.text!, y.text!, this.target.escapeIfNeeded(y.text!),
-            r!.index));
+        this.chunks.push(new NonLocalAttrRef(this.nodeContext, x.text!, y.text!,
+            this.targetGenerator.escapeIfNeeded(y.text!), r!.index));
     }
 
     public setNonLocalAttr(_expr: string, x: Token, y: Token, rhs: string): void {
@@ -265,7 +267,7 @@ export class ActionTranslator implements IActionSplitterListener {
         });
         const r = this.factory.g.getRule(x.text!);
         const rhsChunks = ActionTranslator.translateActionChunk(this.factory, this.rf!, rhs, this.node);
-        const s = new SetNonLocalAttr(this.nodeContext, x.text!, y.text!, this.target.escapeIfNeeded(y.text!),
+        const s = new SetNonLocalAttr(this.nodeContext, x.text!, y.text!, this.targetGenerator.escapeIfNeeded(y.text!),
             r!.index, rhsChunks);
         this.chunks.push(s);
     }
@@ -279,7 +281,7 @@ export class ActionTranslator implements IActionSplitterListener {
             return x;
         }
 
-        return this.target.getImplicitTokenLabel(x);
+        return this.targetGenerator.renderImplicitTokenLabel(x);
     }
 
     public getRuleLabel(x: string): string {
@@ -287,7 +289,7 @@ export class ActionTranslator implements IActionSplitterListener {
             return x;
         }
 
-        return this.target.getImplicitRuleLabel(x);
+        return this.targetGenerator.renderImplicitRuleLabel(x);
     }
 
     protected getTokenPropertyRef(x: string, y: string): TokenPropertyRef {

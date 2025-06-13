@@ -16,7 +16,7 @@ export class StarBlock extends Loop {
     public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: IQuantifierAST, alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST, alts);
 
-        this.loopLabel = factory.getGenerator()!.target.getLoopLabel(blkOrEbnfRootAST);
+        this.loopLabel = factory.getGenerator()!.targetGenerator.getLoopLabel(blkOrEbnfRootAST);
 
         const star = blkOrEbnfRootAST.atnState as StarLoopEntryState;
         this.loopBackStateNumber = star.loopBackState.stateNumber;

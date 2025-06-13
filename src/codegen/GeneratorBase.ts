@@ -3,10 +3,15 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import * as OutputModelObjects from "src/codegen/model/index.js";
 import { CharSupport } from "src/misc/CharSupport.js";
 import { Character } from "src/support/Character.js";
-import type { CodeGenerator } from "./CodeGenerator.js";
-import type { CodePoint, Lines } from "./ITargetGenerator.js";
+import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
+import type { IndexedObject } from "../support/helpers.js";
+import type { GrammarAST } from "../tool/ast/GrammarAST.js";
+import { Grammar } from "../tool/Grammar.js";
+import type { CodePoint, ITargetGenerator, Lines } from "./ITargetGenerator.js";
+import { UnicodeEscapes } from "./UnicodeEscapes.js";
 
 /** Flags used when rendering a collection. */
 export interface IRenderCollectionOptions {
@@ -30,10 +35,10 @@ export interface IRenderCollectionOptions {
 }
 
 /**
- * Base class for all target generators. It provides some common functionality.
+ * Base class for all target generators. It provides some common functionality and helper methods/fields.
  * The actual code generation is done in the subclasses.
  */
-export abstract class GeneratorBase {
+export abstract class GeneratorBase implements Partial<ITargetGenerator> {
     /**
      * For pure strings of Unicode char, how can we display it in the target language as a literal. Useful for dumping
      * predicates and such that may refer to chars that need to be escaped when represented as strings.
@@ -52,6 +57,30 @@ export abstract class GeneratorBase {
         ['"'.codePointAt(0)!, '\\"'],
         ["\\".codePointAt(0)!, "\\\\"],
     ]);
+
+    public abstract readonly reservedWords: Set<string>;
+
+    /** For debugging: when set to true includes start and end markers for each part. */
+    public logRendering = false;
+
+    /** The version of this generator. */
+    public abstract readonly version: string;
+
+    public abstract readonly language: string;
+
+    public abstract readonly codeFileExtension: string;
+
+    public readonly wantsBaseListener = false;
+
+    public readonly wantsBaseVisitor = false;
+
+    public readonly supportsOverloadedMethods = true;
+
+    public readonly isATNSerializedAsInts = true;
+
+    public inlineTestSetWordSize = 64;
+
+    public readonly declarationFileExtension?: string;
 
     /**
      * Returns the default escape map for the target language. This is used to escape characters in strings.
@@ -116,25 +145,32 @@ export abstract class GeneratorBase {
         return result;
     }
 
-    /**
-     * Converts from an antlr-ng string literal found in a grammar file to an equivalent string literal in the target
-     * language.
-     *
-     * For Java, this is the translation `'a\n"'` -> `"a\n\""`. Expect single quotes around the incoming literal.
-     * Just flip the quotes and replace double quotes with `\"`.
-     *
-     * Note that we have decided to allow people to use '\"' without penalty, so we must build the target string in
-     * a loop as {@link String.replaceAll} cannot handle both `\"` and `"` without a lot of messing around.
-     *
-     * @param generator The code generator instance.
-     * @param literal The string literal to convert.
-     * @param addQuotes If true, the string is quoted. If false, it is not.
-     * @param escapeSpecial If true, escape special characters.
-     *
-     * @returns The converted string.
-     */
-    public getTargetStringLiteralFromANTLRStringLiteral(generator: CodeGenerator, literal: string,
-        addQuotes: boolean, escapeSpecial?: boolean): string {
+    public escapeIfNeeded(identifier: string): string {
+        return this.reservedWords.has(identifier) ? this.escapeWord(identifier) : identifier;
+    }
+
+    public getTokenTypeAsTargetLabel(g: Grammar, ttype: number): string {
+        const name = this.escapeIfNeeded(g.getTokenName(ttype) ?? "");
+
+        // If name is not valid, return the token type instead.
+        if (Grammar.INVALID_TOKEN_NAME === name) {
+            return String(ttype);
+        }
+
+        return name;
+    }
+
+    public getTokenTypesAsTargetLabels(g: Grammar, tokenTypes: number[]): string[] {
+        const labels = new Array<string>(tokenTypes.length);
+        for (let i = 0; i < tokenTypes.length; i++) {
+            labels[i] = this.getTokenTypeAsTargetLabel(g, tokenTypes[i]);
+        }
+
+        return labels;
+    }
+
+    public getTargetStringLiteralFromANTLRStringLiteral(literal: string, addQuotes: boolean,
+        escapeSpecial?: boolean): string {
         escapeSpecial ??= false;
 
         let result = "";
@@ -375,6 +411,184 @@ export abstract class GeneratorBase {
         return result;
     }
 
+    public getLoopLabel(ast: GrammarAST): string {
+        return "loop" + ast.token!.tokenIndex;
+    }
+
+    public getLoopCounter(ast: GrammarAST): string {
+        return "cnt" + ast.token!.tokenIndex;
+    }
+
+    public getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string): string {
+        const extension = (forDeclarationFile && this.declarationFileExtension)
+            ? this.declarationFileExtension
+            : this.codeFileExtension;
+
+        return recognizerName + extension;
+    }
+
+    public getListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
+        return this.filenameForType(forDeclarationFile, "Listener", grammarName);
+    }
+
+    public getVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
+        return this.filenameForType(forDeclarationFile, "Visitor", grammarName);
+    }
+
+    public getBaseListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
+        return this.filenameForType(forDeclarationFile, "BaseListener", grammarName);
+    }
+
+    public getBaseVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
+        return this.filenameForType(forDeclarationFile, "BaseVisitor", grammarName);
+    }
+
+    /**
+     * Gets the maximum number of 16-bit unsigned integers that can be encoded in a single segment (a declaration in
+     * target language) of the serialized ATN. E.g., in C++, a small segment length results in multiple decls like:
+     *
+     *   static const int32_t serializedATNSegment1[] = {
+     *     0x7, 0x12, 0x2, 0x13, 0x7, 0x13, 0x2, 0x14, 0x7, 0x14, 0x2, 0x15, 0x7,
+     *        0x15, 0x2, 0x16, 0x7, 0x16, 0x2, 0x17, 0x7, 0x17, 0x2, 0x18, 0x7,
+     *        0x18, 0x2, 0x19, 0x7, 0x19, 0x2, 0x1a, 0x7, 0x1a, 0x2, 0x1b, 0x7,
+     *        0x1b, 0x2, 0x1c, 0x7, 0x1c, 0x2, 0x1d, 0x7, 0x1d, 0x2, 0x1e, 0x7,
+     *        0x1e, 0x2, 0x1f, 0x7, 0x1f, 0x2, 0x20, 0x7, 0x20, 0x2, 0x21, 0x7,
+     *        0x21, 0x2, 0x22, 0x7, 0x22, 0x2, 0x23, 0x7, 0x23, 0x2, 0x24, 0x7,
+     *        0x24, 0x2, 0x25, 0x7, 0x25, 0x2, 0x26,
+     *   };
+     *
+     * instead of one big one. Targets are free to ignore this like JavaScript does.
+     *
+     * This is primarily needed by Java target to limit size of any single ATN string to 65k length.
+     *
+     * {@link SerializedATN.getSegments}
+     *
+     * @returns the serialized ATN segment limit
+     */
+    public getSerializedATNSegmentLimit(): number {
+        return Number.MAX_VALUE;
+    }
+
+    public grammarSymbolCausesIssueInGeneratedCode(idNode: GrammarAST): boolean {
+        switch (idNode.parent?.getType()) {
+            case ANTLRv4Parser.ASSIGN: {
+                switch (idNode.parent.parent?.getType()) {
+                    case ANTLRv4Parser.ELEMENT_OPTIONS:
+                    case ANTLRv4Parser.OPTIONS: {
+                        return false;
+                    }
+
+                    default: {
+                        break;
+                    }
+                }
+
+                break;
+            }
+
+            case ANTLRv4Parser.AT:
+            case ANTLRv4Parser.ELEMENT_OPTIONS: {
+                return false;
+            }
+
+            case ANTLRv4Parser.LEXER_ACTION_CALL: {
+                if (idNode.childIndex === 0) {
+                    // First child is the command name which is part of the ANTLR language.
+                    return false;
+                }
+
+                // Arguments to the command should be checked.
+                break;
+            }
+
+            default: {
+                break;
+            }
+
+        }
+
+        return this.reservedWords.has(idNode.getText());
+    }
+
+    public renderImplicitTokenLabel(tokenName: string): string { return tokenName; }
+    public renderImplicitRuleLabel(ruleName: string): string { return ruleName; };
+    public renderImplicitSetLabel(id: string): string { return `_tset${id}`; };
+    public renderListLabelName(label: string): string { return label; }
+
+    protected static addEscapedChar(map: Map<Character, string>, key: number, representation?: number): void {
+        representation = representation ?? key;
+        map.set(key, "\\" + representation);
+    }
+
+    /**
+     * Escape the Unicode code point appropriately for this language and append the escaped value to `sb`.
+     * It exists for flexibility and backward compatibility with external targets, The static method
+     * {@link UnicodeEscapes.appendEscapedCodePoint(StringBuilder, int, String)} can be used as well
+     * if default escaping method (Java) is used or language is officially supported
+     *
+     * @param codePoint The Unicode code point to escape.
+     * @param escape If true, the code point is escaped with a leading backslash.
+     *
+     * @returns The escaped code point as a string.
+     */
+    protected createUnicodeEscapedCodePoint(codePoint: number, escape?: boolean): string {
+        let result = UnicodeEscapes.escapeCodePoint(codePoint, this.language);
+
+        if (escape) {
+            result = "\\" + result;
+        }
+
+        return result;
+    }
+
+    protected shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(codePoint: number): boolean {
+        return codePoint < 0x20   // Control characters up to but not including space.
+            || codePoint === 0x5C // backslash
+            || codePoint >= 0x7F; // DEL and beyond (keeps source code 7-bit US-ASCII).
+    }
+
+    protected escapeChar(v: number): string {
+        return `\\u${v.toString(16).padStart(4, "0")}`;
+    }
+
+    protected renderActionChunks(chunks?: OutputModelObjects.ActionChunk[]): string {
+        const result: Lines = [];
+
+        if (chunks) {
+            for (const chunk of chunks) {
+                const methodName = `render${chunk.constructor.name}`;
+                const executor = this as IndexedObject<GeneratorBase>;
+                const method = executor[methodName] as (chunk: OutputModelObjects.ActionChunk) => Lines;
+                result.push(...method.call(executor, chunk) as Lines);
+            }
+        }
+
+        return result.join("");
+    }
+
+    /**
+     * For any action chunk, what is correctly-typed context struct ptr?
+     *
+     * @param actionChunk The action chunk to render the context for.
+     *
+     * @returns The rendered context as a string. If the action chunk does not have a context, an empty string
+     *          is returned.
+     */
+    protected renderContext(actionChunk: OutputModelObjects.ActionChunk): string {
+        if (!actionChunk.ctx) {
+            return "";
+        }
+
+        return this.renderTypedContext(actionChunk.ctx);
+    }
+
+    protected renderFileHeader(file: OutputModelObjects.OutputFile): Lines {
+        return [`// Generated from ${file.grammarFileName} by antlr-ng ${this.version}. Do not edit!`];
+    }
+
+    /** Only casts localContext to the type when the cast isn't redundant (i.e. to a sub-context for a labeled alt) */
+    protected abstract renderTypedContext(ctx: OutputModelObjects.StructDecl): string;
+
     protected escapeWord(word: string): string {
         return word + "_";
     }
@@ -388,35 +602,32 @@ export abstract class GeneratorBase {
         }
     }
 
-    protected shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(codePoint: number): boolean {
-        return codePoint < 0x20   // Control characters up to but not including space.
-            || codePoint === 0x5C // backslash
-            || codePoint >= 0x7F; // DEL and beyond (keeps source code 7-bit US-ASCII).
-    }
-
-    protected escapeChar(v: number): string {
-        return `\\u${v.toString(16).padStart(4, "0")}`;
-    }
-
-    /**
-     * Escapes the Unicode code point appropriately for this language and append the escaped value to `sb`.
-     * It exists for flexibility and backward compatibility with external targets, The static method
-     * {@link UnicodeEscapes.appendEscapedCodePoint(StringBuilder, int, String)} can be used as well
-     * if default escaping method (Java) is used or language is officially supported
-     *
-     * @param codePoint The code point to escape.
-     * @param escape If true, the code point is escaped.
-     *
-     * @returns The escaped code point as a string.
-     */
-    private createUnicodeEscapedCodePoint(codePoint: number, escape?: boolean): string {
-        let result = this.escapeCodePoint(codePoint);
-
-        if (escape) {
-            result = "\\" + result;
+    protected startRendering(section: string): Lines {
+        if (this.logRendering) {
+            return [`/* Start rendering ${section} */`];
         }
 
-        return result;
+        return [];
     }
 
+    protected endRendering(section: string, lines: Lines): Lines {
+        if (this.logRendering) {
+            if (lines.length === 1) {
+                // Don't render log lines if the section is empty.
+                return [];
+            }
+
+            lines.push(`/* End rendering ${section} */`);
+        }
+
+        return lines;
+    }
+
+    private filenameForType(forDeclarationFile: boolean, type: string, grammarName: string): string {
+        const extension = (forDeclarationFile && this.declarationFileExtension)
+            ? this.declarationFileExtension
+            : this.codeFileExtension;
+
+        return grammarName + type + extension;
+    }
 }

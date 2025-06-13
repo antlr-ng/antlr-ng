@@ -48,14 +48,14 @@ export abstract class Choice extends RuleElement {
 
     public getAltLookaheadAsStringLists(altLookSets: IntervalSet[]): ITokenInfo[][] {
         const altLook: ITokenInfo[][] = [];
-        const target = this.factory!.getGenerator()!.target;
+        const targetGenerator = this.factory!.getGenerator()!.targetGenerator;
         const grammar = this.factory!.g;
 
         for (const s of altLookSets) {
             const list = s.toArray();
             const info: ITokenInfo[] = [];
             for (const set of list) {
-                info.push({ type: set, name: target.getTokenTypeAsTargetLabel(grammar, set) });
+                info.push({ type: set, name: targetGenerator.getTokenTypeAsTargetLabel(grammar, set) });
             }
             altLook.push(info);
         }
