@@ -8,3 +8,6 @@ src/generated
 tests/generated
 src/version.ts
 tests/grammars/generated
+docs/.vitepress/dist
+docs/.vitepress/cache
+docs/api

@@ -7,6 +7,7 @@
 <img src="docs/antlr-ng-logo3.svg" title="ANTLR Next Generation" alt="antlr-ng the parser generator" style="height: 200px" /><br/>
 <label style="font-size: 90%">Part of the Next Generation ANTLR Project</label>
 </p>
+
 <hr />
 
 # antlr-ng - Next Generation ANTLR

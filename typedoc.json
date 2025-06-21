@@ -1,28 +1,18 @@
 {
     "name": "<span class='antlrng'>antlr-ng</span> Tool Class Hierarchy",
-    "hidePageTitle": true,
-    "searchInDocuments": true,
+    "entryPoints": [
+        "src/index.ts"
+    ],
     "plugin": [
-        "typedoc-plugin-markdown"
+        "typedoc-plugin-markdown",
+        "typedoc-vitepress-theme"
     ],
-    "readme": "none",
-    "basePath": "api",
-    "theme": "default",
-    "cleanOutputDir": true,
     "titleLink": "https://www.antlr-ng.org/",
-    "excludeProtected": true,
-    "excludeNotDocumented": true,
-    "excludeInternal": true,
-    "externalPattern": [],
-    "intentionallyNotExported": [
-        "ITool",
-        "IGrammar",
-        "IGrammarRootAST"
-    ],
-    "outputs": [
-        {
-            "name": "markdown",
-            "path": "../website-antlr-ng/public/api"
-        }
-    ]
+    "indexFormat": "table",
+    "useCodeBlocks": true,
+    "disableSources": true,
+    "sanitizeComments": true,
+    "out": "./docs/api",
+    "gitRemote": "antlr-ng",
+    "gitRevision": "main",
 }
