@@ -3,6 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { Grammar } from "../tool/Grammar.js";
 import type { Rule } from "../tool/Rule.js";
 import type { IGrammar } from "../types.js";
@@ -217,6 +218,8 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
      */
     getTargetStringLiteralFromString(s: string, quoted?: boolean): string;
 
+    getLoopLabel(ast: GrammarAST): string;
+
     /**
      * Generate TParser.java and TLexer.java from T.g4 if combined, else just use T.java as output regardless of type.
      *
@@ -273,6 +276,30 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
      * @returns The file name for the base visitor, such as TBaseVisitor.java or TBaseVisitor.ts.
      */
     getBaseVisitorFileName(forDeclarationFile: boolean, grammarName: string): string;
+
+    /**
+     * Gets the maximum number of 16-bit unsigned integers that can be encoded in a single segment (a declaration in
+     * target language) of the serialized ATN. E.g., in C++, a small segment length results in multiple decls like:
+     *
+     *   static const int32_t serializedATNSegment1[] = {
+     *     0x7, 0x12, 0x2, 0x13, 0x7, 0x13, 0x2, 0x14, 0x7, 0x14, 0x2, 0x15, 0x7,
+     *        0x15, 0x2, 0x16, 0x7, 0x16, 0x2, 0x17, 0x7, 0x17, 0x2, 0x18, 0x7,
+     *        0x18, 0x2, 0x19, 0x7, 0x19, 0x2, 0x1a, 0x7, 0x1a, 0x2, 0x1b, 0x7,
+     *        0x1b, 0x2, 0x1c, 0x7, 0x1c, 0x2, 0x1d, 0x7, 0x1d, 0x2, 0x1e, 0x7,
+     *        0x1e, 0x2, 0x1f, 0x7, 0x1f, 0x2, 0x20, 0x7, 0x20, 0x2, 0x21, 0x7,
+     *        0x21, 0x2, 0x22, 0x7, 0x22, 0x2, 0x23, 0x7, 0x23, 0x2, 0x24, 0x7,
+     *        0x24, 0x2, 0x25, 0x7, 0x25, 0x2, 0x26,
+     *   };
+     *
+     * instead of one big one. Targets are free to ignore this like JavaScript does.
+     *
+     * This is primarily needed by Java target to limit size of any single ATN string to 65k length.
+     *
+     * {@link SerializedATN.getSegments}
+     *
+     * @returns the serialized ATN segment limit
+     */
+    getSerializedATNSegmentLimit(): number;
 
     /**
      * Get a meaningful name for a token type useful during code generation. Literals without associated names
