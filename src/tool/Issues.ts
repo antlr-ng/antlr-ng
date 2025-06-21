@@ -147,8 +147,8 @@ export interface IssueDetails {
 /**
  * A map of all issues that can be reported by the antlr-ng tool.
  * Some messages contain arguments, which are replaced by the actual values when the message is rendered.
- * The <arg>, <arg2> and <arg3> placeholders are used to indicate where the main arguments should be placed.
- * There can be up to two additional arguments (<exception> and <stackTrace>) which are used for verbose messages.
+ * The `<arg>`, `<arg2>` and `<arg3>` placeholders are used to indicate where the main arguments should be placed.
+ * There can be up to two additional arguments (`<exception>` and `<stackTrace>`) which are used for verbose messages.
  */
 export const issueTypes = new Map<IssueCode, IssueDetails>([
     [IssueCode.NoGrammarsFound, {

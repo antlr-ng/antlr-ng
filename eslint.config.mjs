@@ -30,7 +30,13 @@ export default tslint.config(
             parser: tslint.parser,
             parserOptions: {
                 projectService: {
-                    allowDefaultProject: ["eslint.config.mjs", "build/*.ts", "vitest.config.ts"],
+                    allowDefaultProject: [
+                        "eslint.config.mjs",
+                        "build/*.ts",
+                        "vitest.config.ts",
+                        "docs/.vitepress/config.ts",
+                        "docs/.vitepress/theme/index.ts",
+                    ],
                     defaultProject: "tsconfig.json",
                 },
                 tsconfigRootDir: import.meta.dirname,
