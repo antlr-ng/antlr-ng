@@ -10,7 +10,7 @@
 
 <hr />
 
-# antlr-ng - Next Generation ANTLR
+# <span class="antlrng">antlr-ng</span> - Next Generation ANTLR
 
 **Another Tool for Language Recognition**
 

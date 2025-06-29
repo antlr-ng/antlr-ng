@@ -3,8 +3,233 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* Restor the inline display of images. */
+@font-face {
+    font-family: 'Godber';
+    src: url('/fonts/Godber.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    --vp-layout-max-width: 100%;
+}
+
+.VPContent.is-home .container {
+    max-width: 100%;
+}
+
+.landingPageContent {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.antlrng {
+    font-family: Godber, sans-serif;
+    font-size: 130%;
+    font-variant-ligatures: common-ligatures;
+    font-feature-settings: "liga" 1, "clig" 1;
+}
+
+/* Restore the inline display of images. */
 img {
     display: inline;
     vertical-align: middle;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    flex: 0 0 350px;
+    color: #000;
+    align-items: center;
+    justify-content: center;
+}
+
+.header .gradient {
+    position: absolute;
+    height: 350px;
+    width: 100%;
+    border: none;
+    background-image: linear-gradient(-45deg, #e19c77 0%, #59a49a 100%);
+}
+
+.header .background {
+    position: absolute;
+    height: 350px;
+    width: 100%;
+    border: none;
+    background-image: url(/images/writing1.svg);
+    background-repeat: repeat;
+    background-size: 500px auto;
+    background-attachment: fixed;
+    opacity: 25%;
+}
+
+.header .logo {
+    z-index: 1;
+    width: auto;
+    height: 200px;
+    padding-right: 40px;
+    margin-top: -50px;
+    filter: drop-shadow(2px 2px 5px #00000060);
+}
+
+.highlight {
+    flex: 0 0 auto;
+    position: relative;
+    margin-top: -80px;
+
+    z-index: 2;
+
+    max-width: var(--content-width);
+
+    margin-left: auto;
+    margin-right: auto;
+
+    box-shadow: 0 5px 25px #00000080;
+}
+
+.grammar-example {
+    height: 250px;
+    z-index: 2;
+}
+
+.header.zigzag {
+    --mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50%/20px 100%;
+    -webkit-mask: var(--mask);
+    mask: var(--mask);
+}
+
+.header #title-host {
+    display: flex;
+    flex-direction: column;
+}
+
+.header #title-host * {
+    z-index: 1;
+}
+
+.header .title {
+    font-size: 100px;
+    font-family: Godber, 'OpenSans', sans-serif;
+    padding: 0;
+    height: 70px;
+}
+
+.header .subtitle {
+    font-size: 25px;
+    font-family: Godber, 'OpenSans', sans-serif;
+    font-weight: 800;
+}
+
+.landingPageContent .footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: auto;
+    margin-bottom: 64px;
+    height: 100px;
+    border-top: 1px solid var(--vp-c-divider);
+    font-size: 80%;
+    ;
+}
+
+.landingPageContent .features {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin: 50px 0 0 0;
+    column-gap: 20px;
+}
+
+.landingPageContent .box {
+    display: flex;
+    flex-direction: column;
+    background: var(--vp-c-bg-alt);
+    border-radius: 10px;
+    padding: 20px;
+    width: 25%;
+}
+
+.landingPageContent .box .feature-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.landingPageContent .box .box-content {
+    overflow: auto;
+}
+
+.landingPageContent .box .feature-icon {
+    float: left;
+    width: 70px;
+    height: 70px;
+    margin: 0 20px 0 0;
+}
+
+#logoBox {
+    display: flex;
+    align-items: center;
+    padding-right: 100px;
+}
+
+#logoBox > .logo {
+    flex: 0 0 200px;
+    height: 200px;
+    padding: 0;
+    margin: 10px 50px 10px 0;
+}
+
+pre.shiki.complete-dark.vp-code {
+    /* Always use a dark background for code blocks. */
+    background-color: #2e2e2e;
+}
+
+div.language-bash pre.shiki.complete-dark.vp-code code span {
+    /* Restet text color for bash code. */
+    color: #d4d4d4 !important;
+}
+
+.custom-block.note {
+    display: block;
+    margin: 20px 20px 20px 0;
+    padding: 20px;
+
+    border: solid 1px var(--vp-code-link-hover-color);
+    border-left-width: 30px;
+    border-radius: 0;
+    background-color: inherit;
+}
+
+.VPContent button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--vp-button-brand-bg);
+    border: 1px solid var(--vp-button-brand-border);
+    border-radius: 4px;
+    color: var(--vp-button-brand-text);
+    padding: 3px 8px;
+    margin: 2px 10px;
+    min-width: 80px;
+    cursor: default;
+}
+
+/* The standard max width is really too small. Lots of empty space around it on large screens. */
+@media (min-width: 1440px) {
+    .VPDoc:not(.has-sidebar) .content {
+        max-width: 1084px !important;
+        /* your desired width */
+    }
+
+    .VPDoc:not(.has-sidebar) .container {
+        max-width: 1404px !important;
+    }
+
+    .VPDoc.has-aside .content-container {
+        max-width: 988px !important;
+    }
 }
