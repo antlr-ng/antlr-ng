@@ -75,7 +75,7 @@
         "generate-parser": "antlr-ng -Dlanguage=TypeScript --exact-output-dir",
         "generate-unicode-data": "tsx ./build/generate-unicode-data.ts",
         "generate-version-file": "tsx ./build/generate-version-file.ts",
-        "generate-docs": "typedoc --watch --options typedoc.json",
+        "generate-docs": "typedoc --options typedoc.json",
         "docs:dev": "vitepress dev docs",
         "docs:build": "vitepress build docs",
         "docs:preview": "vitepress preview docs"
