@@ -1,7 +1,8 @@
 {
     "name": "<span class='antlrng'>antlr-ng</span> Tool Class Hierarchy",
     "entryPoints": [
-        "src/index.ts"
+        "src/index.ts",
+        "src/codegen/ITargetGenerator.ts"
     ],
     "plugin": [
         "typedoc-plugin-markdown",
@@ -12,6 +13,8 @@
     "useCodeBlocks": true,
     "disableSources": true,
     "sanitizeComments": true,
+    "readme": "none",
+    "docsRoot": "./docs",
     "out": "./docs/api",
     "gitRemote": "antlr-ng",
     "gitRevision": "main",

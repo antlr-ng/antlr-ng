@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
+/* Railroad diagrams */
+
+/* The connection lines. */
+svg.railroad-diagram path {
+    stroke-width: 2;
+    stroke: rgb(72, 151, 196);
+    fill: rgba(0, 0, 0, 0);
+}
+
+/* All text except comments. */
+svg.railroad-diagram text {
+    font: bold 12px "Source Code Pro", monospace;
+    text-anchor: middle;
+    fill: #424242;
+}
+
+/* Comment text */
+svg.railroad-diagram text.comment {
+    font: italic 10px "Source Code Pro", monospace;
+    fill: #404040;
+}
+
+/* The terminal boxes. */
+svg.railroad-diagram g.terminal rect {
+    stroke-width: 2;
+    stroke: rgb(72, 151, 196);
+    fill: rgb(183, 219, 234);
+}
+
+svg.railroad-diagram g.non-terminal rect {
+    /* The non-terminal boxes. */
+    stroke-width: 2;
+    stroke: rgb(72, 151, 196);
+    fill: rgba(255, 255, 255, 1);
+}

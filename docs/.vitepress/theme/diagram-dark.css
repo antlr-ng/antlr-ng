@@ -1,0 +1,224 @@
+/*
+ * Copyright (c) Mike Lischke. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ */
+
+/*
+ * This file contains all default CSS rules for the dark vscode them, used for various diagrams and graphs.
+ * Use the "antlr4.customCSS" setting in vscode to specify your own file, if you like to override some rules.
+ *
+ * Usually most of the appearance is defined in light.css and here we only have some adjustments for
+ * the dark theme.
+ */
+
+/* ATN graphs. */
+
+html.dark .marker {
+    fill: #eee;
+    stroke: none;
+}
+
+html.dark .stateLabel {
+    fill: #202020;
+}
+
+html.dark .stateTypeLabel {
+    fill: #404040;
+}
+
+html.dark .linkLabel {
+    fill: #ddd;
+}
+
+html.dark .linkLabel > .heading {
+    fill: cadetblue;
+}
+
+html.dark .state {
+    stroke: white;
+    filter: url(#white-glow);
+}
+
+/* Railroad diagrams */
+
+html.dark svg.railroad-diagram path {
+    /* The connection lines. */
+    stroke-width: 2;
+    stroke: darkgray;
+    fill: rgba(0, 0, 0, 0);
+}
+
+html.dark svg.railroad-diagram text {
+    /* All text except comments. */
+    font: bold 12px Hack, "Source Code Pro", monospace;
+    text-anchor: middle;
+    fill: #404040;
+    /* Use fill instead of color for svg text. */
+}
+
+html.dark svg.railroad-diagram text.comment {
+    /* Comment text */
+    font: italic 10px Hack, "Source Code Pro", monospace;
+    fill: #909090;
+}
+
+html.dark svg.railroad-diagram g.non-terminal rect {
+    /* The non-terminal boxes. */
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(255, 255, 255, 1);
+}
+
+html.dark svg.railroad-diagram g.terminal rect {
+    /* The terminal boxes. */
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(255, 255, 255, 0.7);
+}
+
+html.dark svg.railroad-diagram text.diagram-text {
+    /* Multiple choice text, not working atm. */
+    font-size: 12px Hack, "Source Code Pro", monospace;
+    fill: red;
+}
+
+html.dark svg.railroad-diagram path.diagram-text {
+    /* Multiple choice text, not working atm. */
+    stroke-width: 1;
+    stroke: red;
+    fill: white;
+    cursor: help;
+}
+
+html.dark svg.railroad-diagram g.diagram-text:hover path.diagram-text {
+    /* Multiple choice text, not working atm. */
+    fill: #f00;
+}
+
+/* Call graphs */
+
+html.dark .node-source {
+    fill: #e6db74;
+}
+
+html.dark .node-target {
+    fill: #45aa73;
+}
+
+html.dark .module-1 {
+    fill: #0ca9fd;
+}
+
+html.dark .module-2 {
+    fill: #63bf8d;
+}
+
+html.dark .module-3 {
+    fill: #ff8801;
+}
+
+html.dark .module-4 {
+    fill: #b9fc34;
+}
+
+html.dark .module-5 {
+    fill: #90e0e0;
+}
+
+html.dark .module-6 {
+    fill: #b4a3f5;
+}
+
+html.dark .module-7 {
+    fill: #f92672;
+}
+
+html.dark .module-8 {
+    fill: #e9e901;
+}
+
+html.dark .module-9 {
+    fill: #83be69;
+}
+
+html.dark .module-10 {
+    fill: #f1d18c;
+}
+
+html.dark .node:hover {
+    fill: #fff;
+}
+
+html.dark .node-source {
+    fill: #ff5711;
+}
+
+html.dark .node-target {
+    fill: #45aa73;
+}
+
+html.dark .link-source,
+html.dark .link-target {
+    stroke-opacity: 1;
+    stroke-width: 2px;
+}
+
+html.dark .link {
+    stroke: #fff;
+    stroke-opacity: .2;
+    fill: none;
+    pointer-events: none;
+}
+
+html.dark .link-source {
+    stroke-opacity: 1;
+    stroke-width: 2px;
+    stroke: #45aa73;
+}
+
+html.dark .link-target {
+    stroke-opacity: 1;
+    stroke-width: 2px;
+    stroke: #ff5711;
+}
+
+html.dark .link-dimmed {
+    stroke-opacity: 0.075;
+}
+
+/* Parse trees */
+html.dark .tree-node {
+    stroke-width: 2;
+    stroke: #404040;
+    fill: rgba(255, 255, 255, 1);
+}
+
+html.dark g .tree-root {
+    stroke-width: 2;
+    fill: #3a3c37;
+    stroke: #ffffff;
+}
+
+html.dark g .tree-leaf {
+    stroke-width: 2;
+    fill: #828e66;
+    stroke: #ffffff;
+}
+
+html.dark g .tree-error {
+    stroke-width: 2;
+    fill: rgb(187, 43, 33);
+    stroke: #ffffff;
+}
+
+html.dark g .token-value {
+    fill: white;
+    stroke: none;
+    font: 12pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
+}
+
+html.dark g .token-range {
+    fill: #bb832c;
+    stroke: none;
+    font: 8pt "Source Code Pro", "Hack", "Consolas", "Andale Mono", monospace;
+}
