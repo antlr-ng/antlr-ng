@@ -977,10 +977,10 @@ ContextTokenListIndexedGetterDecl(t) ::= <<
 
 ContextRuleGetterDecl(r) ::= <<
 <r.escapedName; format="cap">() I<r.ctxName><if(!r.signature)> {
-	var t antlr.RuleContext;
+	var t antlr.RuleContext
 	for _, ctx := range s.GetChildren() {
 		if _, ok := ctx.(I<r.ctxName>); ok {
-			t = ctx.(antlr.RuleContext);
+			t = ctx.(antlr.RuleContext)
 			break
 		}
 	}
