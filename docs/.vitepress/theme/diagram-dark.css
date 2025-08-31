@@ -167,7 +167,6 @@ html.dark .link {
     stroke: #fff;
     stroke-opacity: .2;
     fill: none;
-    pointer-events: none;
 }
 
 html.dark .link-source {
