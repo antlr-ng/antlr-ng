@@ -10,4 +10,5 @@ src/version.ts
 tests/grammars/generated
 docs/.vitepress/dist
 docs/.vitepress/cache
-docs/api
+docs/api/index
+docs/api/codegen
