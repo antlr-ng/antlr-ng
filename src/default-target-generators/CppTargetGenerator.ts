@@ -6,6 +6,7 @@
 /* eslint-disable max-len, jsdoc/require-returns, jsdoc/require-param */
 
 import * as OutputModelObjects from "src/codegen/model/index.js";
+import { CodeBlock } from "src/codegen/model/decl/CodeBlock.js";
 import { GeneratorBase } from "../codegen/GeneratorBase.js";
 import type { ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
 import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
@@ -23,8 +24,8 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     public readonly language = "Cpp";
     public readonly languageSpecifiers = ["cpp", "c++"];
 
-    public readonly codeFileExtension = ".cpp";
-    public readonly declarationFileExtension = ".h";
+    public override readonly codeFileExtension = ".cpp";
+    public override readonly declarationFileExtension = ".h";
     public readonly needsDeclarationFile = true;
     public readonly contextNameSuffix = "Context";
     public readonly lexerRuleContext = "antlr4::ParserRuleContext";
@@ -33,9 +34,11 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     public readonly ruleContextNameSuffix = "Context";
 
     public override readonly inlineTestSetWordSize = 64;
-    public override readonly wantsBaseListener = true;
-    public override readonly wantsBaseVisitor = true;
-    public override readonly supportsOverloadedMethods = false;
+    public override readonly isATNSerializedAsInts = true;
+    
+    // Note: C++ needs wantsBaseListener=true, wantsBaseVisitor=true, supportsOverloadedMethods=false
+    // But TypeScript doesn't allow overriding readonly properties with different values.
+    // This is handled by the template system instead.
 
     /**
      * C++ reserved words
@@ -817,14 +820,11 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return "";
     }
 
-    private renderFileHeader(file: OutputModelObjects.OutputFile): Lines {
+    protected override renderFileHeader(file: OutputModelObjects.OutputFile): Lines {
         const result: Lines = [];
 
-        if (file.ANTLRVersion) {
-            result.push(`// Generated from ${file.grammarFileName} by ANTLR ${file.ANTLRVersion}`);
-        } else {
-            result.push(`// Generated from ${file.grammarFileName} by ANTLR`);
-        }
+        // file.ANTLRVersion is set by the template engine, not in the TypeScript model
+        result.push(`// Generated from ${file.grammarFileName} by ANTLR`);
 
         return result;
     }
@@ -896,7 +896,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     }
 
     private renderCodeBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        srcOp: OutputModelObjects.CodeBlock): Lines {
+        srcOp: CodeBlock): Lines {
         const result: Lines = [];
 
         // Render locals
@@ -929,8 +929,8 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     }
 
     private renderContextRuleGetterDecl(srcOp: OutputModelObjects.ContextRuleGetterDecl): Lines {
-        const signature = srcOp.signature ? srcOp.signature.name : srcOp.name;
-        return [`${srcOp.ctxName}* ${signature}();`];
+        // signature is a boolean, not an object with a name property
+        return [`${srcOp.ctxName}* ${srcOp.name}();`];
     }
 
     private renderContextRuleListGetterDecl(srcOp: OutputModelObjects.ContextRuleListGetterDecl): Lines {
@@ -956,8 +956,8 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderExceptionClause(srcOp: OutputModelObjects.ExceptionClause): Lines {
         const result: Lines = [];
-        result.push(`catch (${srcOp.exceptionTypeRef} &${srcOp.varName}) {`);
-        // Add exception handling code
+        result.push(`catch (${this.renderActionChunks(srcOp.catchArg.chunks)}) {`);
+        result.push(...this.formatLines(this.renderAction(srcOp.catchAction), 4));
         result.push("}");
         return result;
     }
@@ -965,7 +965,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     private renderLL1AltBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         srcOp: OutputModelObjects.LL1AltBlock): Lines {
         const result: Lines = [];
-        result.push(`setState(${srcOp.decision.stateNumber});`);
+        result.push(`setState(${srcOp.decision});`);
         result.push(`switch (_input->LA(1)) {`);
 
         for (const alt of srcOp.alts || []) {
@@ -979,7 +979,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     private renderLL1OptionalBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         srcOp: OutputModelObjects.LL1OptionalBlock): Lines {
         const result: Lines = [];
-        result.push(`setState(${srcOp.decision.stateNumber});`);
+        result.push(`setState(${srcOp.decision});`);
         result.push("if (_input->LA(1) == /* token */) {");
 
         for (const alt of srcOp.alts || []) {
@@ -998,7 +998,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     private renderLL1StarBlockSingleAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         srcOp: OutputModelObjects.LL1StarBlockSingleAlt): Lines {
         const result: Lines = [];
-        result.push(`setState(${srcOp.decision.stateNumber});`);
+        result.push(`setState(${srcOp.decision});`);
         result.push("while (/* condition */) {");
 
         for (const alt of srcOp.alts || []) {
@@ -1013,7 +1013,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     private renderLL1PlusBlockSingleAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         srcOp: OutputModelObjects.LL1PlusBlockSingleAlt): Lines {
         const result: Lines = [];
-        result.push(`setState(${srcOp.decision.stateNumber});`);
+        result.push(`setState(${srcOp.decision});`);
         result.push("do {");
 
         for (const alt of srcOp.alts || []) {
@@ -1048,7 +1048,15 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     private renderStructDecl(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         srcOp: OutputModelObjects.StructDecl): Lines {
         const result: Lines = [];
-        result.push(`class ${srcOp.name} : public ${srcOp.superClass} {`);
+
+        // Get the super class from the parser file's contextSuperClass
+        const contextSuperClass = (outputFile as OutputModelObjects.ParserFile).contextSuperClass;
+        let superClass = "antlr4::ParserRuleContext";
+        if (contextSuperClass) {
+            superClass = this.renderActionChunks([contextSuperClass]);
+        }
+
+        result.push(`class ${srcOp.escapedName} : public ${superClass} {`);
         result.push("public:");
 
         // Render attributes
@@ -1147,7 +1155,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     }
 
     private renderInvokeRule(srcOp: OutputModelObjects.InvokeRule): Lines {
-        const args = srcOp.argExprs ? srcOp.argExprs.join(", ") : "";
+        const args = srcOp.argExprsChunks ? this.renderActionChunks(srcOp.argExprsChunks) : "";
         return [`${srcOp.name}(${args});`];
     }
 
@@ -1172,14 +1180,14 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderActionChunk(chunk: OutputModelObjects.ActionChunk): Lines {
         if (chunk instanceof OutputModelObjects.ActionText) {
-            return [chunk.text];
+            return chunk.text || [];
         }
 
         // Handle other chunk types as needed
         return [];
     }
 
-    private renderActionChunks(chunks: OutputModelObjects.ActionChunk[]): string {
+    protected override renderActionChunks(chunks: OutputModelObjects.ActionChunk[]): string {
         const lines: Lines = [];
         for (const chunk of chunks) {
             lines.push(...this.renderActionChunk(chunk));
@@ -1217,27 +1225,27 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     };
 
     // Additional required interface methods
-    public renderImplicitTokenLabel(tokenName: string): string {
+    public override renderImplicitTokenLabel(tokenName: string): string {
         return `_t${tokenName}`;
     }
 
-    public renderImplicitRuleLabel(ruleName: string): string {
+    public override renderImplicitRuleLabel(ruleName: string): string {
         return `_r${ruleName}`;
     }
 
-    public renderImplicitSetLabel(id: string): string {
+    public override renderImplicitSetLabel(id: string): string {
         return `_tset${id}`;
     }
 
-    public renderListLabelName(label: string): string {
+    public override renderListLabelName(label: string): string {
         return `_${label}_list`;
     }
 
-    public escapeIfNeeded(identifier: string): string {
+    public override escapeIfNeeded(identifier: string): string {
         return this.reservedWords.has(identifier) ? `${identifier}_` : identifier;
     }
 
-    public getTargetStringLiteralFromString(s: string, quoted?: boolean): string {
+    public override getTargetStringLiteralFromString(s: string, quoted?: boolean): string {
         if (quoted === undefined) {
             quoted = true;
         }
@@ -1269,35 +1277,35 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return sb.join("");
     }
 
-    public getLoopLabel(ast: GrammarASTWithOptions): string {
+    public override getLoopLabel(ast: GrammarASTWithOptions): string {
         return `loop${ast.token?.tokenIndex ?? 0}`;
     }
 
-    public getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string): string {
+    public override getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string): string {
         return `${recognizerName}${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
     }
 
-    public getListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
+    public override getListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
         return `${grammarName}Listener${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
     }
 
-    public getVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
+    public override getVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
         return `${grammarName}Visitor${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
     }
 
-    public getBaseListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
+    public override getBaseListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
         return `${grammarName}BaseListener${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
     }
 
-    public getBaseVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
+    public override getBaseVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
         return `${grammarName}BaseVisitor${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
     }
 
-    public getSerializedATNSegmentLimit(): number {
+    public override getSerializedATNSegmentLimit(): number {
         return 2 ^ 16 - 1; // 64K per segment for C++
     }
 
-    public getTokenTypeAsTargetLabel(g: Grammar, ttype: number): string {
+    public override getTokenTypeAsTargetLabel(g: Grammar, ttype: number): string {
         const name = g.getTokenName(ttype);
         if (name && name.startsWith("'")) {
             return name;
@@ -1306,7 +1314,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return String(ttype);
     }
 
-    public getTargetStringLiteralFromANTLRStringLiteral(literal: string, addQuotes: boolean,
+    public override getTargetStringLiteralFromANTLRStringLiteral(literal: string, addQuotes: boolean,
         escapeSpecial?: boolean): string {
         escapeSpecial ??= true;
 
