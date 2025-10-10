@@ -36,7 +36,7 @@ wantsSingleLineMessage() ::= "true"
 `]]);
 
 /**
- * A class to take care of individual {@link ANTLRMessage}s. It can notify registered listeners about incomming
+ * A class to take care of individual {@link ANTLRMessage}s. It can notify registered listeners about incoming
  * messages and ensures proper formatting of the messages.
  */
 export class ErrorManager {

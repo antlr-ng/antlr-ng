@@ -107,7 +107,7 @@ export class AttributeChecks implements IActionSplitterListener {
                 this.g.tool.errorManager.grammarError(IssueCode.UnknownSimpleAttribute, this.g.fileName, x, x.text!,
                     expr);
             } else {
-                this.g.tool.errorManager.grammarError(IssueCode.UnknownAtrributeInScopoe, this.g.fileName, y, y.text!,
+                this.g.tool.errorManager.grammarError(IssueCode.UnknownAttributeInScope, this.g.fileName, y, y.text!,
                     expr);
             }
         }
@@ -154,7 +154,7 @@ export class AttributeChecks implements IActionSplitterListener {
             }
 
             if (this.isolatedRuleRef(x.text!) !== null) {
-                this.g.tool.errorManager.grammarError(IssueCode.IsloatedRuleRef, this.g.fileName, x, x.text, expr);
+                this.g.tool.errorManager.grammarError(IssueCode.IsolatedRuleRef, this.g.fileName, x, x.text, expr);
 
                 return;
             }

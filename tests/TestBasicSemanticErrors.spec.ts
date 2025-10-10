@@ -82,11 +82,11 @@ describe("TestBasicSemanticErrors", () => {
         const expected =
             "error(" + IssueCode.ArgConflictsWithRule + "): T.g4:2:7: parameter expr conflicts with rule " +
             "with same name\n" +
-            "error(" + IssueCode.RetvalConflkictsWithRule + "): T.g4:2:26: return value expr conflicts with " +
+            "error(" + IssueCode.RetvalConflictsWithRule + "): T.g4:2:26: return value expr conflicts with " +
             "rule with same name\n" +
             "error(" + IssueCode.LocalConflictsWithRule + "): T.g4:3:12: local expr conflicts with rule " +
             "with same name\n" +
-            "error(" + IssueCode.RetValuConflictsWithArg + "): T.g4:2:26: return value expr conflicts with " +
+            "error(" + IssueCode.RetValueConflictsWithArg + "): T.g4:2:26: return value expr conflicts with " +
             "parameter with same name\n" +
             "error(" + IssueCode.LocalConflictsWithArg + "): T.g4:3:12: local expr conflicts with parameter" +
             " with same name\n" +

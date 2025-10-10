@@ -56,7 +56,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
     public ruleCollector: RuleCollector;
 
     /**
-     * When this is `true`, the semantic checks will report {@link IssueCode.UnrecognizedAsscoOption} where
+     * When this is `true`, the semantic checks will report {@link IssueCode.UnrecognizedAssocOption} where
      * appropriate. This may be set to `false` to disable this specific check.
      *
      * The default value is `true`.
@@ -453,7 +453,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
             if (elem.getType() !== ANTLRv4Parser.ALT) {
                 const optionID = id.token!;
                 const fileName = optionID.inputStream?.getSourceName();
-                this.g.tool.errorManager.grammarError(IssueCode.UnrecognizedAsscoOption, fileName ?? "<none>",
+                this.g.tool.errorManager.grammarError(IssueCode.UnrecognizedAssocOption, fileName ?? "<none>",
                     optionID, this.currentRuleName);
             }
         }

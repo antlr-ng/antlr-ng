@@ -156,7 +156,7 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
 
     /** Not valid for non-lexers. */
     public range(a: GrammarAST, b: GrammarAST): IStatePair | null {
-        this.g.tool.errorManager.grammarError(IssueCode.TplemjRangeInParser, this.g.fileName, a.token!, a.token?.text,
+        this.g.tool.errorManager.grammarError(IssueCode.TokenRangeInParser, this.g.fileName, a.token!, a.token?.text,
             b.token?.text);
 
         // From a..b, yield ATN for just a.

@@ -82,7 +82,7 @@ describe("TestSymbolIssues", () => {
         // YIELDS
         "error(" + IssueCode.LabelConflictsWithArg +
         "): D.g4:4:21: label j conflicts with parameter with same name\n" +
-        "error(" + IssueCode.RetValuConflictsWithArg +
+        "error(" + IssueCode.RetValueConflictsWithArg +
         "): D.g4:6:22: return value i conflicts with parameter with same name\n"
     ];
 

@@ -415,7 +415,7 @@ export class LexerATNFactory extends ParserATNFactory {
         if (callCommand !== containsArg) {
             const errorType = callCommand
                 ? IssueCode.UnwantedLexerCommandArgument
-                : IssueCode.MisingLexerCommandArgument;
+                : IssueCode.MissingLexerCommandArgument;
             this.g.tool.errorManager.grammarError(errorType, this.g.fileName, id.token!, id.getText());
 
             return this.epsilon(id);

@@ -250,7 +250,7 @@ export class OutputModelController {
             if (altActionST.impl!.formalArguments!.has("isListLabel")) {
                 altActionST.add("isListLabel", altInfo.isListLabel);
             } else if (altInfo.isListLabel) {
-                this.errorManager.toolError(IssueCode.CodeTemaplateArgIssue, templateName, "isListLabel");
+                this.errorManager.toolError(IssueCode.CodeTemplateArgIssue, templateName, "isListLabel");
             }
 
             const decl = ruleFunction.altLabelCtxs!.get(altInfo.altLabel!)!;

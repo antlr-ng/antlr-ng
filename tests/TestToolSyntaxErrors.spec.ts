@@ -308,7 +308,7 @@ describe("TestToolSyntaxErrors", () => {
 
             "error(" + IssueCode.UnwantedLexerCommandArgument + "): A.g4:4:14: lexer command popMode does " +
             "not take any arguments\n" +
-            "error(" + IssueCode.MisingLexerCommandArgument + "): A.g4:5:14: missing argument for lexer " +
+            "error(" + IssueCode.MissingLexerCommandArgument + "): A.g4:5:14: missing argument for lexer " +
             "command type\n"
         ];
         ToolTestUtils.testErrors(pair, true);
@@ -713,7 +713,7 @@ describe("TestToolSyntaxErrors", () => {
             "  |<assoc=right> x '*' x   // ok\n" +
             "  ;\n";
         const expected =
-            "warning(" + IssueCode.UnrecognizedAsscoOption + "): A.g4:3:10: rule x contains an assoc terminal " +
+            "warning(" + IssueCode.UnrecognizedAssocOption + "): A.g4:3:10: rule x contains an assoc terminal " +
             "option in an unrecognized location\n";
 
         const pair = [

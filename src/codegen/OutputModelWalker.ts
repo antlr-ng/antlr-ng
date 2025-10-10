@@ -51,7 +51,7 @@ export class OutputModelWalker {
         }
 
         if (!st.impl?.formalArguments) {
-            this.tool.errorManager.toolError(IssueCode.CodeTemaplateArgIssue, templateName, "<none>");
+            this.tool.errorManager.toolError(IssueCode.CodeTemplateArgIssue, templateName, "<none>");
 
             return st;
         }
