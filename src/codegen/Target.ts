@@ -604,7 +604,7 @@ export abstract class Target {
 
             public iOError(msg: STMessage): void {
                 this.reportError(msg);
-            };
+            }
 
             private reportError(msg: STMessage): void {
                 this.$outer.gen.g!.tool.errorManager.toolError(IssueCode.StringTemplateWarning, msg.toString());
