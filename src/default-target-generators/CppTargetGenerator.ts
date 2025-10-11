@@ -35,10 +35,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     public override readonly inlineTestSetWordSize = 64;
     public override readonly isATNSerializedAsInts = true;
-    
-    // TODO: C++ needs wantsBaseListener=true, wantsBaseVisitor=true, supportsOverloadedMethods=false
-    // To override these, the base class properties need type annotations (: boolean) instead of literal type inference.
-    // This requires a change to GeneratorBase class.
+    public override readonly wantsBaseListener = true;
+    public override readonly wantsBaseVisitor = true;
+    public override readonly supportsOverloadedMethods = false;
 
     /**
      * C++ reserved words

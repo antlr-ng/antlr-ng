@@ -70,13 +70,13 @@ export abstract class GeneratorBase implements Partial<ITargetGenerator> {
 
     public abstract readonly codeFileExtension: string;
 
-    public readonly wantsBaseListener = false;
+    public readonly wantsBaseListener: boolean = false;
 
-    public readonly wantsBaseVisitor = false;
+    public readonly wantsBaseVisitor: boolean = false;
 
-    public readonly supportsOverloadedMethods = true;
+    public readonly supportsOverloadedMethods: boolean = true;
 
-    public readonly isATNSerializedAsInts = true;
+    public readonly isATNSerializedAsInts: boolean = true;
 
     public inlineTestSetWordSize = 64;
 
