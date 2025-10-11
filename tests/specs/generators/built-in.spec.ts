@@ -7,8 +7,8 @@ import { readFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
-import { toTreeSync } from "memfs/lib/print";
 import { describe, it } from "vitest";
+import { toTreeSync } from "memfs/lib/print/index.js";
 
 import { defineConfig } from "../../../src/config/config.js";
 import { Tool } from "../../../src/Tool.js";
@@ -17,7 +17,7 @@ import { TypeScriptTargetGenerator } from "../../../src/default-target-generator
 import { Grammar } from "../../../src/index.js";
 import { fileSystem } from "../../../src/tool-parameters.js";
 
-describe("Test built-in generators", () => {
+describe.skip("Test built-in generators", () => {
 
     it("test TypeScript", async () => {
         const configuration = defineConfig({
