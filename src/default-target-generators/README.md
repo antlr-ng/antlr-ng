@@ -1,6 +1,6 @@
-# ANTLR-ng Default Target Generators
+# antlr-ng Default Target Generators
 
-This directory contains the default target generators for ANTLR-ng. These generators are responsible for generating code in various programming languages from ANTLR grammar files.
+This directory contains the default target generators for antlr-ng. These generators were created from the old string template scripts in ANTLR4 and are made to reproducde exactly the same output like the old ST4 based generation. They are here in this repo only for a short period of time and will be published as own NPM package later.
 
 ## Overview
 
@@ -9,7 +9,8 @@ Target generators implement the `ITargetGenerator` interface and extend `Generat
 ## Available Generators
 
 ### TypeScriptTargetGenerator.ts
-The TypeScript target generator produces TypeScript code from ANTLR grammars. It generates:
+
+The TypeScript target generator produces TypeScript code from ANTLR4 grammars. It generates:
 - Parser files (.ts)
 - Lexer files (.ts)
 - Listener interfaces (.ts)
@@ -21,6 +22,7 @@ TypeScript features:
 - Generates type-safe code with proper TypeScript types
 
 ### CppTargetGenerator.ts
+
 The C++ target generator produces C++ code from ANTLR grammars. It generates:
 - Parser header and implementation files (.h, .cpp)
 - Lexer header and implementation files (.h, .cpp)
@@ -36,11 +38,7 @@ C++ features:
 
 ## Template Files
 
-The generators work in conjunction with StringTemplate4 files located in `templates/codegen/`:
-- `Cpp/Cpp.stg` - Main C++ templates
-- `Cpp/Files.stg` - C++ file structure templates
-
-These templates define the structure of generated files and work with the data provided by the target generators.
+The generators are TypeScript implementations based on the StringTemplate4 files located in `templates/codegen/`. Once all languages are done these templatest will be removed.
 
 ## Creating a New Target Generator
 
@@ -65,30 +63,26 @@ To create a new target generator:
    - `reservedWords` set
    - Other language-specific settings
 
-See `TargetGenerator.ts.template` for a template to get started.
-
 ## Key Concepts
 
 ### Output Model Objects
+
 The generators process output model objects (OMOs) which represent semantic elements of the grammar:
+
 - `ParserFile`, `LexerFile` - Top-level file structures
 - `RuleFunction` - Parser rules
 - `StructDecl` - Rule context classes
 - `SrcOp` - Various source operations (match, invoke, etc.)
 
 ### Source Operations
+
 The `srcOpMap` in each generator maps output model object types to render methods. This allows clean separation of concerns and easy addition of new operations.
 
 ### Code Generation Flow
-1. ANTLR-ng parses the grammar file
+
+1. antlr-ng parses the grammar file
 2. The output model controller creates output model objects
 3. The target generator walks the model and renders code
 4. The rendered code is written to output files
 
 ## Notes
-
-### TypeScript Limitations
-Due to TypeScript's readonly property semantics, some properties like `wantsBaseListener`, `wantsBaseVisitor`, and `supportsOverloadedMethods` cannot be overridden with different values when they're defined as readonly in the base class. These are handled by the template system instead or documented as limitations.
-
-### Template System Integration
-While the generators in this directory produce code programmatically, they work alongside the StringTemplate4-based system for compatibility with existing ANTLR tooling and to leverage template-based code generation for certain aspects.

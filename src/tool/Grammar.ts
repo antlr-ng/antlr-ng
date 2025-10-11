@@ -27,9 +27,9 @@ import { TokenVocabParser } from "../parse/TokenVocabParser.js";
 import { GrammarType } from "../support/GrammarType.js";
 import type { IGrammar, ITool } from "../types.js";
 
-import { Utils } from "src/misc/Utils.js";
-import type { Constructor } from "src/support/helpers.js";
+import { Utils } from "../misc/Utils.js";
 import { basename } from "../support/fs-helpers.js";
+import type { Constructor } from "../support/helpers.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import type { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 import type { ActionAST } from "./ast/ActionAST.js";
@@ -839,9 +839,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
     }
 
     public getPredicateDisplayString(pred: SemanticContext.Predicate): string {
-        if (this.indexToPredMap === null) {
-            this.indexToPredMap = this.getIndexToPredicateMap();
-        }
+        this.indexToPredMap ??= this.getIndexToPredicateMap();
         const actionAST = this.indexToPredMap.get(pred.predIndex)!;
 
         return actionAST.getText();

@@ -5,16 +5,15 @@
 
 /* eslint-disable max-len, jsdoc/require-returns, jsdoc/require-param */
 
-import * as OutputModelObjects from "src/codegen/model/index.js";
 import { CodeBlock } from "src/codegen/model/decl/CodeBlock.js";
+import * as OutputModelObjects from "src/codegen/model/index.js";
 import { GeneratorBase } from "../codegen/GeneratorBase.js";
 import type { ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
 import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
-import type { OptionalBlockAST } from "../tool/ast/OptionalBlockAST.js";
 import type { Grammar } from "../tool/Grammar.js";
 import type { Rule } from "../tool/Rule.js";
 
-/** The constructor type of OutputModelObject class. Used the source op lookup map. */
+/** The constructor type of OutputModelObject class. Used in the source op lookup map. */
 type OutputModelObjectConstructor = new (...args: unknown[]) => OutputModelObjects.OutputModelObject;
 
 export class CppTargetGenerator extends GeneratorBase implements ITargetGenerator {
@@ -109,22 +108,18 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
                 return this.renderLL1AltBlock(outputFile, recognizerName, srcOp as OutputModelObjects.LL1AltBlock);
             }],
             [OutputModelObjects.LL1OptionalBlock, (outputFile, recognizerName, srcOp) => {
-
                 return this.renderLL1OptionalBlock(outputFile, recognizerName,
                     srcOp as OutputModelObjects.LL1OptionalBlock);
             }],
             [OutputModelObjects.LL1OptionalBlockSingleAlt, (outputFile, recognizerName, srcOp) => {
-
                 return this.renderLL1OptionalBlockSingleAlt(outputFile, recognizerName,
                     srcOp as OutputModelObjects.LL1OptionalBlockSingleAlt);
             }],
             [OutputModelObjects.LL1StarBlockSingleAlt, (outputFile, recognizerName, srcOp) => {
-
                 return this.renderLL1StarBlockSingleAlt(outputFile, recognizerName,
                     srcOp as OutputModelObjects.LL1StarBlockSingleAlt);
             }],
             [OutputModelObjects.LL1PlusBlockSingleAlt, (outputFile, recognizerName, srcOp) => {
-
                 return this.renderLL1PlusBlockSingleAlt(outputFile, recognizerName,
                     srcOp as OutputModelObjects.LL1PlusBlockSingleAlt);
             }],
@@ -165,7 +160,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
                 return this.renderWildcard(srcOp as OutputModelObjects.Wildcard);
             }],
             [OutputModelObjects.ContextRuleListIndexedGetterDecl, (outputFile, recognizerName, srcOp) => {
-
                 return this.renderContextRuleListIndexedGetterDecl(
                     srcOp as OutputModelObjects.ContextRuleListIndexedGetterDecl);
             }],
@@ -212,7 +206,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     public renderParserFile(parserFile: OutputModelObjects.ParserFile, declaration: boolean): string {
         // C++ requires both header (.h) and implementation (.cpp) files
         if (declaration) {
-
             return this.renderParserHeader(parserFile);
         } else {
             return this.renderParserImplementation(parserFile);
@@ -221,7 +214,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     public renderLexerFile(lexerFile: OutputModelObjects.LexerFile, declaration: boolean): string {
         if (declaration) {
-
             return this.renderLexerHeader(lexerFile);
         } else {
             return this.renderLexerImplementation(lexerFile);
@@ -230,7 +222,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     public renderBaseListenerFile(file: OutputModelObjects.ListenerFile, declaration: boolean): string {
         if (declaration) {
-
             return this.renderBaseListenerHeader(file);
         } else {
             return this.renderBaseListenerImplementation(file);
@@ -239,7 +230,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     public renderListenerFile(listenerFile: OutputModelObjects.ListenerFile, declaration: boolean): string {
         if (declaration) {
-
             return this.renderListenerHeader(listenerFile);
         } else {
             return this.renderListenerImplementation(listenerFile);
@@ -248,7 +238,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     public renderBaseVisitorFile(file: OutputModelObjects.VisitorFile, declaration: boolean): string {
         if (declaration) {
-
             return this.renderBaseVisitorHeader(file);
         } else {
             return this.renderBaseVisitorImplementation(file);
@@ -257,7 +246,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     public renderVisitorFile(visitorFile: OutputModelObjects.VisitorFile, declaration: boolean): string {
         if (declaration) {
-
             return this.renderVisitorHeader(visitorFile);
         } else {
             return this.renderVisitorImplementation(visitorFile);
@@ -277,7 +265,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     }
 
     public renderRecRuleReplaceContext(ctxName: string): Lines {
-
         return [
             `_localctx = std::make_shared<${ctxName}>(_localctx);`,
             "_ctx = _localctx;",
@@ -298,7 +285,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     }
 
     public renderRecRuleSetPrevCtx(): Lines {
-
         return [
             "if (_parseListeners != nullptr) {",
             "    triggerExitRuleEvent();",
@@ -327,6 +313,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         result.push(`pushNewRecursionContext(_localctx, _startState, ${parserName}::RULE_${ruleName});`);
+
         return result;
     }
 
@@ -345,6 +332,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         result.push(`pushNewRecursionContext(_localctx, _startState, ${parserName}::RULE_${ruleName});`);
+
         return result;
     }
 
@@ -429,7 +417,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return this.reservedWords.has(identifier) ? this.escapeWord(identifier) : identifier;
     }
 
-
     public override getTargetStringLiteralFromString(s: string, quoted?: boolean): string {
         quoted ??= true;
 
@@ -490,7 +477,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     public override getTokenTypeAsTargetLabel(g: Grammar, ttype: number): string {
         const name = g.getTokenName(ttype);
-        if (name && name.startsWith("'")) {
+        if (name?.startsWith("'")) {
             return name;
         }
 
@@ -516,6 +503,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         // file.ANTLRVersion is set by the template engine, not in the TypeScript model
         result.push(`// Generated from ${file.grammarFileName} by ANTLR`);
+
         return result;
     }
     protected override renderActionChunks(chunks: OutputModelObjects.ActionChunk[]): string {
@@ -958,12 +946,12 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return "";
     }
 
-
     private renderRuleFunctionDeclaration(rule: OutputModelObjects.RuleFunction): Lines {
         const result: Lines = [];
         const ruleName = this.escapeIfNeeded(rule.name);
 
         result.push(`    ${this.toTitleCase(rule.name)}Context* ${ruleName}();`);
+
         return result;
     }
 
@@ -1309,10 +1297,8 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const result: Lines = [];
-        if (srcOp.chunks) {
-            for (const chunk of srcOp.chunks) {
-                result.push(...this.renderActionChunk(chunk));
-            }
+        for (const chunk of srcOp.chunks) {
+            result.push(...this.renderActionChunk(chunk));
         }
 
         return result;
@@ -1327,42 +1313,33 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return [];
     }
 
-
     // Lexer command methods
     private renderLexerSkipCommand = (): Lines => {
-
         return ["skip();"];
     };
 
     private renderLexerMoreCommand = (): Lines => {
-
         return ["more();"];
     };
 
     private renderLexerPopModeCommand = (): Lines => {
-
         return ["popMode();"];
     };
 
     private renderLexerTypeCommand = (arg: string, grammar: Grammar): Lines => {
-
         return [`setType(${arg});`];
     };
 
     private renderLexerChannelCommand = (arg: string, grammar: Grammar): Lines => {
-
         return [`setChannel(${arg});`];
     };
 
     private renderLexerModeCommand = (arg: string, grammar: Grammar): Lines => {
-
         return [`setMode(${arg});`];
     };
 
     private renderLexerPushModeCommand = (arg: string, grammar: Grammar): Lines => {
-
         return [`pushMode(${arg});`];
     };
 
-    // Additional required interface methods
 }

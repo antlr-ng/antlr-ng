@@ -7,7 +7,7 @@
 
 import { ATN, ATNSerializer } from "antlr4ng";
 
-import { Character } from "src/support/Character.js";
+import { Character } from "../../support/Character.js";
 import { GeneratorBase } from "../GeneratorBase.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { SerializedATN } from "./SerializedATN.js";

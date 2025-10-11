@@ -5,7 +5,7 @@
 
 /* eslint-disable max-len, jsdoc/require-returns, jsdoc/require-param */
 
-import * as OutputModelObjects from "src/codegen/model/index.js";
+import * as OutputModelObjects from "../codegen/model/index.js";
 import { GeneratorBase } from "../codegen/GeneratorBase.js";
 import type { ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
 import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
@@ -13,7 +13,7 @@ import type { OptionalBlockAST } from "../tool/ast/OptionalBlockAST.js";
 import type { Grammar } from "../tool/Grammar.js";
 import type { Rule } from "../tool/Rule.js";
 
-/** The constructor type of OutputModelObject class. Used the source op lookup map. */
+/** The constructor type of OutputModelObject class. Used in the source op lookup map. */
 type OutputModelObjectConstructor = new (...args: unknown[]) => OutputModelObjects.OutputModelObject;
 
 export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetGenerator {

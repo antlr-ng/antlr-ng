@@ -3,14 +3,14 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import * as OutputModelObjects from "src/codegen/model/index.js";
-import { CharSupport } from "src/misc/CharSupport.js";
-import { Character } from "src/support/Character.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
+import { CharSupport } from "../misc/CharSupport.js";
+import { Character } from "../support/Character.js";
 import type { IndexedObject } from "../support/helpers.js";
 import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { Grammar } from "../tool/Grammar.js";
 import type { CodePoint, ITargetGenerator, Lines } from "./ITargetGenerator.js";
+import * as OutputModelObjects from "./model/index.js";
 import { UnicodeEscapes } from "./UnicodeEscapes.js";
 
 /** Flags used when rendering a collection. */
