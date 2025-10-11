@@ -71,119 +71,156 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     private readonly srcOpMap = new Map<OutputModelObjectConstructor,
         (outputFile: OutputModelObjects.OutputFile, recognizerName: string, srcOp: OutputModelObjects.SrcOp) => Lines>([
             [OutputModelObjects.AddToLabelList, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderAddToLabelList(srcOp as OutputModelObjects.AddToLabelList);
             }],
             [OutputModelObjects.AttributeDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderAttributeDecl(srcOp as OutputModelObjects.AttributeDecl);
             }],
             [OutputModelObjects.CaptureNextToken, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderCaptureNextToken(srcOp as OutputModelObjects.CaptureNextToken);
             }],
             [OutputModelObjects.CaptureNextTokenType, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderCaptureNextTokenType(srcOp as OutputModelObjects.CaptureNextTokenType);
             }],
             [OutputModelObjects.CodeBlockForAlt, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderCodeBlockForAlt(outputFile, recognizerName, srcOp as OutputModelObjects.CodeBlockForAlt);
             }],
             [OutputModelObjects.CodeBlockForOuterMostAlt, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, srcOp as OutputModelObjects.CodeBlockForOuterMostAlt);
             }],
             [OutputModelObjects.ContextRuleGetterDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderContextRuleGetterDecl(srcOp as OutputModelObjects.ContextRuleGetterDecl);
             }],
             [OutputModelObjects.ContextRuleListGetterDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderContextRuleListGetterDecl(srcOp as OutputModelObjects.ContextRuleListGetterDecl);
             }],
             [OutputModelObjects.ContextTokenGetterDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderContextTokenGetterDecl(recognizerName, srcOp as OutputModelObjects.ContextTokenGetterDecl);
             }],
             [OutputModelObjects.ContextTokenListGetterDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderContextTokenListGetterDecl(srcOp as OutputModelObjects.ContextTokenListGetterDecl);
             }],
             [OutputModelObjects.ContextTokenListIndexedGetterDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderContextTokenListIndexedGetterDecl(recognizerName, srcOp as OutputModelObjects.ContextTokenListIndexedGetterDecl);
             }],
             [OutputModelObjects.ExceptionClause, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderExceptionClause(srcOp as OutputModelObjects.ExceptionClause);
             }],
             [OutputModelObjects.LL1AltBlock, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderLL1AltBlock(outputFile, recognizerName, srcOp as OutputModelObjects.LL1AltBlock);
             }],
             [OutputModelObjects.LL1OptionalBlock, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderLL1OptionalBlock(outputFile, recognizerName,
                     srcOp as OutputModelObjects.LL1OptionalBlock);
             }],
             [OutputModelObjects.LL1OptionalBlockSingleAlt, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderLL1OptionalBlockSingleAlt(outputFile, recognizerName,
                     srcOp as OutputModelObjects.LL1OptionalBlockSingleAlt);
             }],
             [OutputModelObjects.LL1StarBlockSingleAlt, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderLL1StarBlockSingleAlt(outputFile, recognizerName,
                     srcOp as OutputModelObjects.LL1StarBlockSingleAlt);
             }],
             [OutputModelObjects.LL1PlusBlockSingleAlt, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderLL1PlusBlockSingleAlt(outputFile, recognizerName,
                     srcOp as OutputModelObjects.LL1PlusBlockSingleAlt);
             }],
             [OutputModelObjects.MatchToken, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderMatchToken(recognizerName, srcOp as OutputModelObjects.MatchToken);
             }],
             [OutputModelObjects.MatchSet, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderMatchSet(srcOp as OutputModelObjects.MatchSet);
             }],
             [OutputModelObjects.MatchNotSet, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderMatchNotSet(srcOp as OutputModelObjects.MatchNotSet);
             }],
             [OutputModelObjects.RuleContextDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderRuleContextDecl(srcOp as OutputModelObjects.RuleContextDecl);
             }],
             [OutputModelObjects.RuleContextListDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderRuleContextListDecl(srcOp as OutputModelObjects.RuleContextListDecl);
             }],
             [OutputModelObjects.StructDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderStructDecl(outputFile, recognizerName, srcOp as OutputModelObjects.StructDecl);
             }],
             [OutputModelObjects.TestSetInline, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderTestSetInline(srcOp as OutputModelObjects.TestSetInline);
             }],
             [OutputModelObjects.TokenDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderTokenDecl(outputFile, recognizerName, srcOp as OutputModelObjects.TokenDecl);
             }],
             [OutputModelObjects.TokenTypeDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderTokenTypeDecl(srcOp as OutputModelObjects.TokenTypeDecl);
             }],
             [OutputModelObjects.TokenListDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderTokenListDecl(srcOp as OutputModelObjects.TokenListDecl);
             }],
             [OutputModelObjects.ThrowNoViableAlt, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderThrowNoViableAlt(srcOp as OutputModelObjects.ThrowNoViableAlt);
             }],
             [OutputModelObjects.Wildcard, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderWildcard(srcOp as OutputModelObjects.Wildcard);
             }],
             [OutputModelObjects.ContextRuleListIndexedGetterDecl, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderContextRuleListIndexedGetterDecl(
                     srcOp as OutputModelObjects.ContextRuleListIndexedGetterDecl);
             }],
             [OutputModelObjects.StarBlock, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderStarBlock(outputFile, recognizerName, srcOp as OutputModelObjects.StarBlock);
             }],
             [OutputModelObjects.PlusBlock, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderPlusBlock(outputFile, recognizerName, srcOp as OutputModelObjects.PlusBlock);
             }],
             [OutputModelObjects.OptionalBlock, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderOptionalBlock(outputFile, recognizerName, srcOp as OutputModelObjects.OptionalBlock);
             }],
             [OutputModelObjects.AltBlock, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderAltBlock(outputFile, recognizerName, srcOp as OutputModelObjects.AltBlock);
             }],
             [OutputModelObjects.InvokeRule, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderInvokeRule(srcOp as OutputModelObjects.InvokeRule);
             }],
             [OutputModelObjects.SemPred, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderSemPred(srcOp as OutputModelObjects.SemPred);
             }],
             [OutputModelObjects.Action, (outputFile, recognizerName, srcOp) => {
+
                 return this.renderAction(srcOp as OutputModelObjects.Action);
             }],
         ]);
@@ -208,58 +245,72 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     public renderParserFile(parserFile: OutputModelObjects.ParserFile, declaration: boolean): string {
         // C++ requires both header (.h) and implementation (.cpp) files
         if (declaration) {
+
             return this.renderParserHeader(parserFile);
         } else {
+
             return this.renderParserImplementation(parserFile);
         }
     }
 
     public renderLexerFile(lexerFile: OutputModelObjects.LexerFile, declaration: boolean): string {
         if (declaration) {
+
             return this.renderLexerHeader(lexerFile);
         } else {
+
             return this.renderLexerImplementation(lexerFile);
         }
     }
 
     public renderBaseListenerFile(file: OutputModelObjects.ListenerFile, declaration: boolean): string {
         if (declaration) {
+
             return this.renderBaseListenerHeader(file);
         } else {
+
             return this.renderBaseListenerImplementation(file);
         }
     }
 
     public renderListenerFile(listenerFile: OutputModelObjects.ListenerFile, declaration: boolean): string {
         if (declaration) {
+
             return this.renderListenerHeader(listenerFile);
         } else {
+
             return this.renderListenerImplementation(listenerFile);
         }
     }
 
     public renderBaseVisitorFile(file: OutputModelObjects.VisitorFile, declaration: boolean): string {
         if (declaration) {
+
             return this.renderBaseVisitorHeader(file);
         } else {
+
             return this.renderBaseVisitorImplementation(file);
         }
     }
 
     public renderVisitorFile(visitorFile: OutputModelObjects.VisitorFile, declaration: boolean): string {
         if (declaration) {
+
             return this.renderVisitorHeader(visitorFile);
         } else {
+
             return this.renderVisitorImplementation(visitorFile);
         }
     }
 
     public renderLexerRuleContext(): Lines {
+
         return ["antlr4::ParserRuleContext"];
     }
 
     public getRuleFunctionContextStructName(r: Rule): string {
         if (r.g.isLexer()) {
+
             return this.renderLexerRuleContext().join("");
         }
 
@@ -267,6 +318,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     }
 
     public renderRecRuleReplaceContext(ctxName: string): Lines {
+
         return [
             `_localctx = std::make_shared<${ctxName}>(_localctx);`,
             "_ctx = _localctx;",
@@ -275,18 +327,22 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     }
 
     public renderRecRuleAltPredicate(ruleName: string, opPrec: number): Lines {
+
         return [`precpred(_ctx, ${opPrec})`];
     }
 
     public renderRecRuleSetReturnAction(src: string, name: string): Lines {
+
         return [`$${name} = $${src}->${name};`];
     }
 
     public renderRecRuleSetStopToken(): Lines {
+
         return [`_ctx->stop = _input->LT(-1);`];
     }
 
     public renderRecRuleSetPrevCtx(): Lines {
+
         return [
             "if (_parseListeners != nullptr) {",
             "    triggerExitRuleEvent();",
@@ -398,6 +454,148 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     }
 
     // Private helper methods for rendering different parts
+
+    public override renderImplicitTokenLabel(tokenName: string): string {
+
+        return `_t${tokenName}`;
+    }
+
+    public override renderImplicitRuleLabel(ruleName: string): string {
+
+        return `_r${ruleName}`;
+    }
+
+    public override renderImplicitSetLabel(id: string): string {
+
+        return `_tset${id}`;
+    }
+
+    public override renderListLabelName(label: string): string {
+
+        return `_${label}_list`;
+    }
+
+    public override escapeIfNeeded(identifier: string): string {
+
+        return this.reservedWords.has(identifier) ? this.escapeWord(identifier) : identifier;
+    }
+
+
+    public override getTargetStringLiteralFromString(s: string, quoted?: boolean): string {
+        if (quoted === undefined) {
+            quoted = true;
+        }
+
+        const sb: string[] = [];
+        if (quoted) {
+            sb.push('"');
+        }
+
+        for (let i = 0; i < s.length;) {
+            const c = s.codePointAt(i)!;
+            const escape = this.charValueEscapeMap.get(c);
+
+            if (escape) {
+                sb.push(`\\${escape}`);
+            } else if (c < 0x20 || c > 0x7F) {
+                sb.push(`\\u${c.toString(16).padStart(4, "0")}`);
+            } else {
+                sb.push(String.fromCodePoint(c));
+            }
+
+            i += c > 0xFFFF ? 2 : 1;
+        }
+
+        if (quoted) {
+            sb.push('"');
+        }
+
+        return sb.join("");
+    }
+
+    public override getLoopLabel(ast: GrammarASTWithOptions): string {
+
+        return `loop${ast.token?.tokenIndex ?? 0}`;
+    }
+
+    public override getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string): string {
+
+        return `${recognizerName}${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
+    }
+
+    public override getListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
+
+        return `${grammarName}Listener${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
+    }
+
+    public override getVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
+
+        return `${grammarName}Visitor${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
+    }
+
+    public override getBaseListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
+
+        return `${grammarName}BaseListener${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
+    }
+
+    public override getBaseVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
+
+        return `${grammarName}BaseVisitor${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
+    }
+
+    public override getSerializedATNSegmentLimit(): number {
+
+        return 2 ^ 16 - 1; // 64K per segment for C++
+    }
+
+    public override getTokenTypeAsTargetLabel(g: Grammar, ttype: number): string {
+        const name = g.getTokenName(ttype);
+        if (name && name.startsWith("'")) {
+
+            return name;
+        }
+
+        return String(ttype);
+    }
+
+    public override getTargetStringLiteralFromANTLRStringLiteral(literal: string, addQuotes: boolean,
+        escapeSpecial?: boolean): string {
+        escapeSpecial ??= true;
+
+        let s = literal;
+
+        // Remove quotes from ANTLR literal
+        if (s.startsWith("'") && s.endsWith("'")) {
+            s = s.slice(1, -1);
+        }
+
+        return this.getTargetStringLiteralFromString(s, addQuotes);
+    }
+
+    protected override renderFileHeader(file: OutputModelObjects.OutputFile): Lines {
+        const result: Lines = [];
+
+        // file.ANTLRVersion is set by the template engine, not in the TypeScript model
+        result.push(`// Generated from ${file.grammarFileName} by ANTLR`);
+
+        return result;
+    }
+    protected override renderActionChunks(chunks: OutputModelObjects.ActionChunk[]): string {
+        const lines: Lines = [];
+        for (const chunk of chunks) {
+            lines.push(...this.renderActionChunk(chunk));
+        }
+
+        return lines.join("");
+    }
+    protected override escapeWord(word: string): string {
+
+        return `cpp_${word}`;
+    }
+    protected override renderTypedContext(ctx: OutputModelObjects.StructDecl): string {
+
+        return ctx.provideCopyFrom ? `dynamic_cast<${ctx.name}*>(_localctx.get())` : `_localctx`;
+    }
 
     private renderParserHeader(parserFile: OutputModelObjects.ParserFile): string {
         const result: Lines = [
@@ -685,6 +883,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderListenerImplementation(listenerFile: OutputModelObjects.ListenerFile): string {
         // C++ listener typically doesn't need an implementation file for pure virtual methods
+
         return "";
     }
 
@@ -733,6 +932,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderBaseListenerImplementation(listenerFile: OutputModelObjects.ListenerFile): string {
         // C++ base listener implementation file (empty implementations already in header)
+
         return "";
     }
 
@@ -774,6 +974,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderVisitorImplementation(visitorFile: OutputModelObjects.VisitorFile): string {
         // C++ visitor typically doesn't need an implementation file for pure virtual methods
+
         return "";
     }
 
@@ -817,17 +1018,10 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderBaseVisitorImplementation(visitorFile: OutputModelObjects.VisitorFile): string {
         // C++ base visitor implementation file (empty implementations already in header)
+
         return "";
     }
 
-    protected override renderFileHeader(file: OutputModelObjects.OutputFile): Lines {
-        const result: Lines = [];
-
-        // file.ANTLRVersion is set by the template engine, not in the TypeScript model
-        result.push(`// Generated from ${file.grammarFileName} by ANTLR`);
-
-        return result;
-    }
 
     private renderRuleFunctionDeclaration(rule: OutputModelObjects.RuleFunction): Lines {
         const result: Lines = [];
@@ -861,6 +1055,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     // Render methods for various source operations
     private renderAddToLabelList(srcOp: OutputModelObjects.AddToLabelList): Lines {
+
         return [`${srcOp.label}.push_back(${srcOp.listName});`];
     }
 
@@ -871,19 +1066,23 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         } else {
             result.push(`${d.type} ${d.escapedName};`);
         }
+
         return result;
     }
 
     private renderCaptureNextToken(srcOp: OutputModelObjects.CaptureNextToken): Lines {
+
         return [`${srcOp.varName} = _input->LT(1);`];
     }
 
     private renderCaptureNextTokenType(srcOp: OutputModelObjects.CaptureNextTokenType): Lines {
+
         return [`${srcOp.varName} = _input->LA(1);`];
     }
 
     private renderCodeBlockForAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         srcOp: OutputModelObjects.CodeBlockForAlt): Lines {
+
         return this.renderCodeBlock(outputFile, recognizerName, srcOp);
     }
 
@@ -892,6 +1091,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         const result: Lines = [];
         result.push(`enterOuterAlt(_localctx, ${srcOp.alt.altNum});`);
         result.push(...this.renderCodeBlock(outputFile, recognizerName, srcOp));
+
         return result;
     }
 
@@ -930,27 +1130,33 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderContextRuleGetterDecl(srcOp: OutputModelObjects.ContextRuleGetterDecl): Lines {
         // signature is a boolean, not an object with a name property
+
         return [`${srcOp.ctxName}* ${srcOp.name}();`];
     }
 
     private renderContextRuleListGetterDecl(srcOp: OutputModelObjects.ContextRuleListGetterDecl): Lines {
+
         return [`std::vector<${srcOp.ctxName}*> ${srcOp.name}();`];
     }
 
     private renderContextTokenGetterDecl(recognizerName: string, srcOp: OutputModelObjects.ContextTokenGetterDecl): Lines {
+
         return [`antlr4::tree::TerminalNode* ${srcOp.name}();`];
     }
 
     private renderContextTokenListGetterDecl(srcOp: OutputModelObjects.ContextTokenListGetterDecl): Lines {
+
         return [`std::vector<antlr4::tree::TerminalNode*> ${srcOp.name}();`];
     }
 
     private renderContextTokenListIndexedGetterDecl(recognizerName: string,
         srcOp: OutputModelObjects.ContextTokenListIndexedGetterDecl): Lines {
+
         return [`antlr4::tree::TerminalNode* ${srcOp.name}(size_t i);`];
     }
 
     private renderContextRuleListIndexedGetterDecl(srcOp: OutputModelObjects.ContextRuleListIndexedGetterDecl): Lines {
+
         return [`${srcOp.ctxName}* ${srcOp.name}(size_t i);`];
     }
 
@@ -959,6 +1165,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(`catch (${this.renderActionChunks(srcOp.catchArg.chunks)}) {`);
         result.push(...this.formatLines(this.renderAction(srcOp.catchAction), 4));
         result.push("}");
+
         return result;
     }
 
@@ -973,6 +1180,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         result.push("}");
+
         return result;
     }
 
@@ -987,11 +1195,13 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         result.push("}");
+
         return result;
     }
 
     private renderLL1OptionalBlockSingleAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         srcOp: OutputModelObjects.LL1OptionalBlockSingleAlt): Lines {
+
         return this.renderLL1OptionalBlock(outputFile, recognizerName, srcOp);
     }
 
@@ -1007,6 +1217,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         result.push(`    setState(${srcOp.loopBackStateNumber});`);
         result.push("}");
+
         return result;
     }
 
@@ -1022,26 +1233,32 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         result.push(`    setState(${srcOp.loopBackStateNumber});`);
         result.push("} while (/* condition */);");
+
         return result;
     }
 
     private renderMatchToken(recognizerName: string, srcOp: OutputModelObjects.MatchToken): Lines {
+
         return [`match(${recognizerName}::${srcOp.name});`];
     }
 
     private renderMatchSet(srcOp: OutputModelObjects.MatchSet): Lines {
+
         return ["matchSet(/* set */);"];
     }
 
     private renderMatchNotSet(srcOp: OutputModelObjects.MatchNotSet): Lines {
+
         return ["matchNotSet(/* set */);"];
     }
 
     private renderRuleContextDecl(srcOp: OutputModelObjects.RuleContextDecl): Lines {
+
         return [`${srcOp.ctxName}* ${srcOp.name} = nullptr;`];
     }
 
     private renderRuleContextListDecl(srcOp: OutputModelObjects.RuleContextListDecl): Lines {
+
         return [`std::vector<${srcOp.ctxName}*> ${srcOp.name};`];
     }
 
@@ -1076,31 +1293,38 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         result.push("};");
+
         return result;
     }
 
     private renderTestSetInline(srcOp: OutputModelObjects.TestSetInline): Lines {
+
         return ["/* test set inline */"];
     }
 
     private renderTokenDecl(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
         srcOp: OutputModelObjects.TokenDecl): Lines {
+
         return [`antlr4::Token* ${srcOp.name} = nullptr;`];
     }
 
     private renderTokenTypeDecl(srcOp: OutputModelObjects.TokenTypeDecl): Lines {
+
         return [`int ${srcOp.name} = 0;`];
     }
 
     private renderTokenListDecl(srcOp: OutputModelObjects.TokenListDecl): Lines {
+
         return [`std::vector<antlr4::Token*> ${srcOp.name};`];
     }
 
     private renderThrowNoViableAlt(srcOp: OutputModelObjects.ThrowNoViableAlt): Lines {
+
         return ["throw antlr4::NoViableAltException(this);"];
     }
 
     private renderWildcard(srcOp: OutputModelObjects.Wildcard): Lines {
+
         return ["matchWildcard();"];
     }
 
@@ -1114,6 +1338,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         result.push("}");
+
         return result;
     }
 
@@ -1127,6 +1352,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         result.push("} while (/* condition */);");
+
         return result;
     }
 
@@ -1140,6 +1366,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         result.push("}");
+
         return result;
     }
 
@@ -1156,15 +1383,18 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderInvokeRule(srcOp: OutputModelObjects.InvokeRule): Lines {
         const args = srcOp.argExprsChunks ? this.renderActionChunks(srcOp.argExprsChunks) : "";
+
         return [`${srcOp.name}(${args});`];
     }
 
     private renderSemPred(srcOp: OutputModelObjects.SemPred): Lines {
+
         return [`if (!(${srcOp.predicate})) throw antlr4::FailedPredicateException(this, "${srcOp.predicate}");`];
     }
 
     private renderAction(srcOp: OutputModelObjects.Action | undefined): Lines {
         if (!srcOp) {
+
             return [];
         }
 
@@ -1180,155 +1410,51 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderActionChunk(chunk: OutputModelObjects.ActionChunk): Lines {
         if (chunk instanceof OutputModelObjects.ActionText) {
+
             return chunk.text || [];
         }
 
         // Handle other chunk types as needed
+
         return [];
     }
 
-    protected override renderActionChunks(chunks: OutputModelObjects.ActionChunk[]): string {
-        const lines: Lines = [];
-        for (const chunk of chunks) {
-            lines.push(...this.renderActionChunk(chunk));
-        }
-        return lines.join("");
-    }
 
     // Lexer command methods
     private renderLexerSkipCommand = (): Lines => {
+
         return ["skip();"];
     };
 
     private renderLexerMoreCommand = (): Lines => {
+
         return ["more();"];
     };
 
     private renderLexerPopModeCommand = (): Lines => {
+
         return ["popMode();"];
     };
 
     private renderLexerTypeCommand = (arg: string, grammar: Grammar): Lines => {
+
         return [`setType(${arg});`];
     };
 
     private renderLexerChannelCommand = (arg: string, grammar: Grammar): Lines => {
+
         return [`setChannel(${arg});`];
     };
 
     private renderLexerModeCommand = (arg: string, grammar: Grammar): Lines => {
+
         return [`setMode(${arg});`];
     };
 
     private renderLexerPushModeCommand = (arg: string, grammar: Grammar): Lines => {
+
         return [`pushMode(${arg});`];
     };
 
     // Additional required interface methods
-    public override renderImplicitTokenLabel(tokenName: string): string {
-        return `_t${tokenName}`;
-    }
-
-    public override renderImplicitRuleLabel(ruleName: string): string {
-        return `_r${ruleName}`;
-    }
-
-    public override renderImplicitSetLabel(id: string): string {
-        return `_tset${id}`;
-    }
-
-    public override renderListLabelName(label: string): string {
-        return `_${label}_list`;
-    }
-
-    public override escapeIfNeeded(identifier: string): string {
-        return this.reservedWords.has(identifier) ? `${identifier}_` : identifier;
-    }
-
-    public override getTargetStringLiteralFromString(s: string, quoted?: boolean): string {
-        if (quoted === undefined) {
-            quoted = true;
-        }
-
-        const sb: string[] = [];
-        if (quoted) {
-            sb.push('"');
-        }
-
-        for (let i = 0; i < s.length;) {
-            const c = s.codePointAt(i)!;
-            const escape = this.charValueEscapeMap.get(c);
-
-            if (escape) {
-                sb.push(`\\${escape}`);
-            } else if (c < 0x20 || c > 0x7F) {
-                sb.push(`\\u${c.toString(16).padStart(4, "0")}`);
-            } else {
-                sb.push(String.fromCodePoint(c));
-            }
-
-            i += c > 0xFFFF ? 2 : 1;
-        }
-
-        if (quoted) {
-            sb.push('"');
-        }
-
-        return sb.join("");
-    }
-
-    public override getLoopLabel(ast: GrammarASTWithOptions): string {
-        return `loop${ast.token?.tokenIndex ?? 0}`;
-    }
-
-    public override getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string): string {
-        return `${recognizerName}${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
-    public override getListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
-        return `${grammarName}Listener${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
-    public override getVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
-        return `${grammarName}Visitor${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
-    public override getBaseListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
-        return `${grammarName}BaseListener${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
-    public override getBaseVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
-        return `${grammarName}BaseVisitor${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
-    public override getSerializedATNSegmentLimit(): number {
-        return 2 ^ 16 - 1; // 64K per segment for C++
-    }
-
-    public override getTokenTypeAsTargetLabel(g: Grammar, ttype: number): string {
-        const name = g.getTokenName(ttype);
-        if (name && name.startsWith("'")) {
-            return name;
-        }
-
-        return String(ttype);
-    }
-
-    public override getTargetStringLiteralFromANTLRStringLiteral(literal: string, addQuotes: boolean,
-        escapeSpecial?: boolean): string {
-        escapeSpecial ??= true;
-
-        let s = literal;
-
-        // Remove quotes from ANTLR literal
-        if (s.startsWith("'") && s.endsWith("'")) {
-            s = s.slice(1, -1);
-        }
-
-        return this.getTargetStringLiteralFromString(s, addQuotes);
-    }
-
-    protected override renderTypedContext(ctx: OutputModelObjects.StructDecl): string {
-        return ctx.provideCopyFrom ? `dynamic_cast<${ctx.name}*>(_localctx.get())` : `_localctx`;
-    }
 }
