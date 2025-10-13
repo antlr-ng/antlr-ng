@@ -11,10 +11,9 @@ import { Lexer } from "./Lexer.js";
 import { OutputFile } from "./OutputFile.js";
 
 export class LexerFile extends OutputFile {
-    public genPackage?: string; // from -package cmd-line
-    public exportMacro?: string; // from -DexportMacro cmd-line
-    public genListener: boolean; // from -listener cmd-line
-    public genVisitor: boolean; // from -visitor cmd-line
+    public genPackage?: string;
+    public genListener: boolean;
+    public genVisitor: boolean;
 
     @ModelElement
     public lexer: Lexer;
@@ -27,9 +26,8 @@ export class LexerFile extends OutputFile {
 
         this.namedActions = this.buildNamedActions(factory.g);
         this.genPackage = options.package;
-        this.exportMacro = factory.g.getOptionString("exportMacro");
-        this.genListener = options.generateListener ?? true;
-        this.genVisitor = options.generateVisitor ?? false;
+        this.genListener = options.generateListener;
+        this.genVisitor = options.generateVisitor;
     }
 
     public override get parameterFields(): string[] {

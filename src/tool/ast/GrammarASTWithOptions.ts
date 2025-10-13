@@ -43,10 +43,7 @@ export abstract class GrammarASTWithOptions extends GrammarAST {
         } else {
             let v: string | null = value.getText();
             if (v && (v.startsWith("'") || v.startsWith("\""))) {
-                v = CharSupport.getStringFromGrammarStringLiteral(v, this.g, { line: 1, column: 0 });
-                if (v === null) {
-                    v = "";
-                }
+                v = CharSupport.getStringFromGrammarStringLiteral(v, this.g, { line: 1, column: 0 }) ?? "";
             }
 
             return v;

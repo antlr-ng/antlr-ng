@@ -821,10 +821,6 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
             const funcs: Lines = [];
             lexer.sempredFuncs.forEach((f) => {
-                /*result.push(`        case ${f.ruleIndex}: {`);
-                result.push(`            return this.${f.name}_sempred(localContext${lexer.modes.length === 0 ? "as " + f.ctxType : ""}, predIndex);`);
-                result.push(`        }`);
-                result.push("");*/
                 result.push(`        case ${f.ruleIndex}:`);
                 result.push(`            return this.${f.name}_sempred(localContext${lexer.modes.length === 0 ? "as " + f.ctxType : ""}, predIndex);`);
 

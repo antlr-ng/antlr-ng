@@ -126,6 +126,8 @@ export interface ITargetGeneratorCallables {
      *                       following: "LL", "SLL", "LL_EXACT_AMBIG_DETECTION".
      *                       If undefined, the default prediction mode of the parser will be used.
      * @param buildParseTree If true, the test will build a parse tree from the input string and print it.
+     *
+     * @returns The rendered test file as a string.
      */
     renderTestFile(grammarName: string, lexerName: string, parserName: string | undefined,
         parserStartRuleName: string | undefined, showDiagnosticErrors: boolean, traceATN: boolean, profile: boolean,
@@ -156,22 +158,34 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
     /** The extension to be used for generated files which contain type definitions (including the dot). */
     readonly declarationFileExtension?: string;
 
-    /** Reserved words of this language. */
-    readonly reservedWords: Set<string>;
-
     /** The rule context name is the rule followed by a suffix; e.g., r becomes rContext. */
     readonly contextNameSuffix: string;
 
+    /** The name of the rule context class used for generated lexer action functions. */
     readonly lexerRuleContext: string;
 
     readonly ruleContextNameSuffix: string;
 
+    /**
+     * Does this target want a base listener class to be generated? Some languages (e.g. TypeScript) support optional
+     * methods in interfaces, so a base listener class is not needed.
+     */
     readonly wantsBaseListener: boolean;
 
+    /**
+     * Does this target want a base visitor class to be generated? Some languages (e.g. TypeScript) support optional
+     * methods in interfaces, so a base visitor class is not needed.
+     */
     readonly wantsBaseVisitor: boolean;
 
+    /** Does this target support overloaded methods? */
     readonly supportsOverloadedMethods: boolean;
 
+    /**
+     * Can the serialized ATN represented as a sequence of integers instead of characters?
+     * This is usually more efficient for memory usage and speed, but the serialized ATN can
+     * become large for large grammars, which exceeds limits on array size in some target languages.
+     */
     readonly isATNSerializedAsInts: boolean;
 
     /**

@@ -5,10 +5,10 @@
 
 /* eslint-disable max-len, jsdoc/require-returns, jsdoc/require-param */
 
-import { CodeBlock } from "src/codegen/model/decl/CodeBlock.js";
-import * as OutputModelObjects from "src/codegen/model/index.js";
+import { CodeBlock } from "../codegen/model/decl/CodeBlock.js";
+import * as OutputModelObjects from "../codegen/model/index.js";
 import { GeneratorBase } from "../codegen/GeneratorBase.js";
-import type { ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
+import type { CodePoint, ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
 import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import type { Grammar } from "../tool/Grammar.js";
 import type { Rule } from "../tool/Rule.js";
@@ -27,13 +27,12 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     public override readonly declarationFileExtension = ".h";
     public readonly needsDeclarationFile = true;
     public readonly contextNameSuffix = "Context";
-    public readonly lexerRuleContext = "antlr4::ParserRuleContext";
+
+    public readonly lexerRuleContext = "antlr4::RuleContext";
 
     /** The rule context name is the rule followed by a suffix, e.g. r becomes rContext. */
     public readonly ruleContextNameSuffix = "Context";
 
-    public override readonly inlineTestSetWordSize = 64;
-    public override readonly isATNSerializedAsInts = true;
     public override readonly wantsBaseListener = true;
     public override readonly wantsBaseVisitor = true;
     public override readonly supportsOverloadedMethods = false;
@@ -186,7 +185,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
             }],
         ]);
 
-    public constructor() {
+    private escapeMap: Map<CodePoint, string>;
+
+    public constructor(protected defines?: Record<string, string>) {
         super();
 
         this.lexerCommandMap = new Map<string, () => Lines>([
@@ -201,59 +202,65 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
             ["mode", this.renderLexerModeCommand],
             ["pushMode", this.renderLexerPushModeCommand],
         ]);
+
+        this.escapeMap = new Map(GeneratorBase.defaultCharValueEscape);
+        this.escapeMap.set(0x07, "a");
+        this.escapeMap.set(0x08, "b");
+        this.escapeMap.set(0x0B, "v");
+        this.escapeMap.set(0x1B, "e");
+        this.escapeMap.set(0x3F, "?"); // To prevent trigraphs.
     }
 
     public renderParserFile(parserFile: OutputModelObjects.ParserFile, declaration: boolean): string {
-        // C++ requires both header (.h) and implementation (.cpp) files
         if (declaration) {
-            return this.renderParserHeader(parserFile);
+            return this.renderParserFileHeader(parserFile);
         } else {
-            return this.renderParserImplementation(parserFile);
+            return this.renderParserFileImplementation(parserFile);
         }
     }
 
     public renderLexerFile(lexerFile: OutputModelObjects.LexerFile, declaration: boolean): string {
         if (declaration) {
-            return this.renderLexerHeader(lexerFile);
+            return this.renderLexerFileHeader(lexerFile);
         } else {
-            return this.renderLexerImplementation(lexerFile);
+            return this.renderLexerFileImplementation(lexerFile);
         }
     }
 
     public renderBaseListenerFile(file: OutputModelObjects.ListenerFile, declaration: boolean): string {
         if (declaration) {
-            return this.renderBaseListenerHeader(file);
+            return this.renderBaseListenerFileHeader(file);
         } else {
-            return this.renderBaseListenerImplementation(file);
+            return this.renderBaseListenerFileImplementation(file);
         }
     }
 
     public renderListenerFile(listenerFile: OutputModelObjects.ListenerFile, declaration: boolean): string {
         if (declaration) {
-            return this.renderListenerHeader(listenerFile);
+            return this.renderListenerFileHeader(listenerFile);
         } else {
-            return this.renderListenerImplementation(listenerFile);
+            return this.renderListenerFileImplementation(listenerFile);
         }
     }
 
     public renderBaseVisitorFile(file: OutputModelObjects.VisitorFile, declaration: boolean): string {
         if (declaration) {
-            return this.renderBaseVisitorHeader(file);
+            return this.renderBaseVisitorFileHeader(file);
         } else {
-            return this.renderBaseVisitorImplementation(file);
+            return this.renderBaseVisitorFileImplementation(file);
         }
     }
 
     public renderVisitorFile(visitorFile: OutputModelObjects.VisitorFile, declaration: boolean): string {
         if (declaration) {
-            return this.renderVisitorHeader(visitorFile);
+            return this.renderVisitorFileHeader(visitorFile);
         } else {
-            return this.renderVisitorImplementation(visitorFile);
+            return this.renderVisitorFileImplementation(visitorFile);
         }
     }
 
     public renderLexerRuleContext(): Lines {
-        return ["antlr4::ParserRuleContext"];
+        return ["antlr4::RuleContext"];
     }
 
     public getRuleFunctionContextStructName(r: Rule): string {
@@ -417,6 +424,10 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return this.reservedWords.has(identifier) ? this.escapeWord(identifier) : identifier;
     }
 
+    public override get charValueEscapeMap(): Map<CodePoint, string> {
+        return this.escapeMap;
+    }
+
     public override getTargetStringLiteralFromString(s: string, quoted?: boolean): string {
         quoted ??= true;
 
@@ -427,7 +438,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         for (let i = 0; i < s.length;) {
             const c = s.codePointAt(i)!;
-            const escape = this.charValueEscapeMap.get(c);
+            const escape = this.escapeMap.get(c);
 
             if (escape) {
                 sb.push(`\\${escape}`);
@@ -451,26 +462,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return `loop${ast.token?.tokenIndex ?? 0}`;
     }
 
-    public override getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string): string {
-        return `${recognizerName}${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
-    public override getListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
-        return `${grammarName}Listener${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
-    public override getVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
-        return `${grammarName}Visitor${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
-    public override getBaseListenerFileName(forDeclarationFile: boolean, grammarName: string): string {
-        return `${grammarName}BaseListener${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
-    public override getBaseVisitorFileName(forDeclarationFile: boolean, grammarName: string): string {
-        return `${grammarName}BaseVisitor${forDeclarationFile ? this.declarationFileExtension : this.codeFileExtension}`;
-    }
-
     public override getSerializedATNSegmentLimit(): number {
         return 2 ^ 16 - 1; // 64K per segment for C++
     }
@@ -484,28 +475,10 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return String(ttype);
     }
 
-    public override getTargetStringLiteralFromANTLRStringLiteral(literal: string, addQuotes: boolean,
-        escapeSpecial?: boolean): string {
-        escapeSpecial ??= true;
-
-        let s = literal;
-
-        // Remove quotes from ANTLR literal
-        if (s.startsWith("'") && s.endsWith("'")) {
-            s = s.slice(1, -1);
-        }
-
-        return this.getTargetStringLiteralFromString(s, addQuotes);
-    }
-
     protected override renderFileHeader(file: OutputModelObjects.OutputFile): Lines {
-        const result: Lines = [];
-
-        // file.ANTLRVersion is set by the template engine, not in the TypeScript model
-        result.push(`// Generated from ${file.grammarFileName} by ANTLR`);
-
-        return result;
+        return [];
     }
+
     protected override renderActionChunks(chunks: OutputModelObjects.ActionChunk[]): string {
         const lines: Lines = [];
         for (const chunk of chunks) {
@@ -521,7 +494,13 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return ctx.provideCopyFrom ? `dynamic_cast<${ctx.name}*>(_localctx.get())` : `_localctx`;
     }
 
-    private renderParserHeader(parserFile: OutputModelObjects.ParserFile): string {
+    protected override shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(codePoint: number): boolean {
+        // In addition to the default escaped code points, also escape ? to prevent trigraphs.
+        // Ideally, we would escape ? with \?, but escaping as unicode \u003F works as well.
+        return (codePoint === 0x3F) || super.shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(codePoint);
+    }
+
+    private renderParserFileHeader(parserFile: OutputModelObjects.ParserFile): string {
         const result: Lines = [
             ...this.renderFileHeader(parserFile),
             "",
@@ -595,7 +574,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result.join("\n");
     }
 
-    private renderParserImplementation(parserFile: OutputModelObjects.ParserFile): string {
+    private renderParserFileImplementation(parserFile: OutputModelObjects.ParserFile): string {
         const result: Lines = [
             ...this.renderFileHeader(parserFile),
             "",
@@ -657,17 +636,18 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result.join("\n");
     }
 
-    private renderLexerHeader(lexerFile: OutputModelObjects.LexerFile): string {
-        const result: Lines = [
-            ...this.renderFileHeader(lexerFile),
-            "",
-            "#pragma once",
-            "",
-            "#include \"antlr4-runtime.h\"",
-            "",
-        ];
+    private renderLexerFileHeader(lexerFile: OutputModelObjects.LexerFile): string {
+        const result: Lines = this.renderFileHeader(lexerFile);
+        result.push("");
+        result.push(...this.renderAction(lexerFile.namedActions.get("header")));
 
-        const lexer = lexerFile.lexer;
+        result.push("#pragma once");
+        result.push(...this.renderAction(lexerFile.namedActions.get("preinclude")));
+        result.push("");
+        result.push(`#include "antlr4-runtime.h"`);
+        result.push(...this.renderAction(lexerFile.namedActions.get("postinclude")));
+        result.push("");
+
         const namespaceName = lexerFile.genPackage;
 
         if (namespaceName) {
@@ -675,100 +655,327 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
             result.push("");
         }
 
-        result.push(`class ${lexer.name} : public antlr4::Lexer {`);
-        result.push("public:");
-
-        // Token constants
-        result.push("    enum {");
-        result.push(...this.renderMap(lexer.tokens, 8, "${0} = ${1},"));
-        result.push("    };");
-        result.push("");
-
-        // Constructor
-        result.push(`    explicit ${lexer.name}(antlr4::CharStream *input);`);
-        result.push(`    ~${lexer.name}();`);
-        result.push("");
-
-        // Virtual methods
-        result.push("    std::string getGrammarFileName() const override;");
-        result.push("    const std::vector<std::string>& getRuleNames() const override;");
-        result.push("    const std::vector<std::string>& getChannelNames() const override;");
-        result.push("    const std::vector<std::string>& getModeNames() const override;");
-        result.push("    const std::vector<std::string>& getTokenNames() const override;");
-        result.push("    antlr4::dfa::Vocabulary& getVocabulary() const override;");
-        result.push("    const std::vector<uint16_t> getSerializedATN() const override;");
-        result.push("    const antlr4::atn::ATN& getATN() const override;");
-        result.push("");
-
-        result.push("private:");
-        result.push("    static std::vector<antlr4::dfa::DFA> _decisionToDFA;");
-        result.push("    static antlr4::atn::PredictionContextCache _sharedContextCache;");
-        result.push("    static std::vector<std::string> _ruleNames;");
-        result.push("    static std::vector<std::string> _channelNames;");
-        result.push("    static std::vector<std::string> _modeNames;");
-        result.push("    static std::vector<std::string> _tokenNames;");
-        result.push("    static std::vector<std::string> _literalNames;");
-        result.push("    static std::vector<std::string> _symbolicNames;");
-        result.push("    static antlr4::dfa::Vocabulary _vocabulary;");
-        result.push("    static antlr4::atn::ATN _atn;");
-        result.push("    static std::vector<uint16_t> _serializedATN;");
-        result.push("");
-
-        result.push("};");
+        result.push(...this.renderLexerHeader(lexerFile.lexer, lexerFile.namedActions, lexerFile.genPackage,
+            this.defines?.exportMacro));
 
         if (namespaceName) {
+            result.push(`} // namespace ${namespaceName}`);
             result.push("");
-            result.push(`}  // namespace ${namespaceName}`);
         }
 
         return result.join("\n");
     }
 
-    private renderLexerImplementation(lexerFile: OutputModelObjects.LexerFile): string {
-        const result: Lines = [
-            ...this.renderFileHeader(lexerFile),
-            "",
-            `#include "${lexerFile.lexer.name}.h"`,
-            "",
-        ];
+    private renderLexerFileImplementation(lexerFile: OutputModelObjects.LexerFile): string {
+        const result: Lines = this.renderFileHeader(lexerFile);
+        result.push("");
+        result.push(...this.renderAction(lexerFile.namedActions.get("header")));
+        result.push(...this.renderAction(lexerFile.namedActions.get("preinclude")));
+        result.push("");
+        result.push(`#include "${lexerFile.lexer.name}.h"`);
+        result.push("");
+        result.push(...this.renderAction(lexerFile.namedActions.get("postinclude")));
+        result.push("");
+        result.push("using namespace antlr4;");
+        result.push("");
 
-        const lexer = lexerFile.lexer;
-        const namespaceName = lexerFile.genPackage;
+        result.push(...this.renderLexer(lexerFile.lexer, lexerFile.namedActions, lexerFile.genPackage));
+
+        return result.join("\n");
+    }
+
+    private renderLexer(lexer: OutputModelObjects.Lexer, namedActions: Map<string, OutputModelObjects.Action>,
+        namespaceName?: string): Lines {
+
+        const result: Lines = [];
 
         if (namespaceName) {
             result.push(`using namespace ${namespaceName};`);
             result.push("");
         }
 
-        result.push("using namespace antlr4;");
-        result.push("");
+        result.push("namespace {", "");
 
-        // Static member initialization
-        result.push(`std::vector<dfa::DFA> ${lexer.name}::_decisionToDFA;`);
-        result.push(`atn::PredictionContextCache ${lexer.name}::_sharedContextCache;`);
-        result.push("");
+        const lexerName = this.toTitleCase(lexer.name);
+        result.push(`struct ${lexerName}StaticData final {`);
+        result.push(`  ${lexerName}StaticData(std::vector<std::string> ruleNames,`);
+        result.push(`                          std::vector<std::string> channelNames,`);
+        result.push(`                          std::vector<std::string> modeNames,`);
+        result.push(`                          std::vector<std::string> literalNames,`);
+        result.push(`                          std::vector<std::string> symbolicNames)`);
+        result.push(`      : ruleNames(std::move(ruleNames)), channelNames(std::move(channelNames)),`);
+        result.push(`        modeNames(std::move(modeNames)), literalNames(std::move(literalNames)),`);
+        result.push(`        symbolicNames(std::move(symbolicNames)),`);
+        result.push(`        vocabulary(this->literalNames, this->symbolicNames) {}`);
+        result.push(``);
+        result.push(`  ${lexerName}StaticData(const ${lexerName}StaticData&) = delete;`);
+        result.push(`  ${lexerName}StaticData(${lexerName}StaticData&&) = delete;`);
+        result.push(`  ${lexerName}StaticData& operator=(const ${lexerName}StaticData&) = delete;`);
+        result.push(`  ${lexerName}StaticData& operator=(${lexerName}StaticData&&) = delete;`);
+        result.push(``);
+        result.push(`  std::vector<antlr4::dfa::DFA> decisionToDFA;`);
+        result.push(`  antlr4::atn::PredictionContextCache sharedContextCache;`);
+        result.push(`  const std::vector<std::string> ruleNames;`);
+        result.push(`  const std::vector<std::string> channelNames;`);
+        result.push(`  const std::vector<std::string> modeNames;`);
+        result.push(`  const std::vector<std::string> literalNames;`);
+        result.push(`  const std::vector<std::string> symbolicNames;`);
+        result.push(`  const antlr4::dfa::Vocabulary vocabulary;`);
+        result.push(`  antlr4::atn::SerializedATNView serializedATN;`);
+        result.push(`  std::unique_ptr<antlr4::atn::ATN> atn;`);
+        result.push(`};`);
 
-        // Constructor
-        result.push(`${lexer.name}::${lexer.name}(CharStream *input) : Lexer(input) {`);
-        result.push("    _interpreter = new atn::LexerATNSimulator(this, _atn, _decisionToDFA, _sharedContextCache);");
+        const loweredGrammarName = lexer.grammarName.toLowerCase();
+        result.push(`::antlr4::internal::OnceFlag ${loweredGrammarName}LexerOnceFlag;`);
+        result.push(`#if ANTLR4_USE_THREAD_LOCAL_CACHE`);
+        result.push(`static thread_local`);
+        result.push(`#endif`);
+        result.push(`std::unique_ptr<${lexerName}StaticData> ${loweredGrammarName}LexerStaticData = nullptr;`);
+        result.push(``);
+        result.push(`void ${loweredGrammarName}LexerInitialize() {`);
+        result.push(`#if ANTLR4_USE_THREAD_LOCAL_CACHE`);
+        result.push(`  if (${loweredGrammarName}LexerStaticData != nullptr) {`);
+        result.push(`    return;`);
+        result.push(`  }`);
+        result.push(`#else`);
+        result.push(`  assert(${loweredGrammarName}LexerStaticData == nullptr);`);
+        result.push(`#endif`);
+        result.push(`  auto staticData = std::make_unique<${lexerName}StaticData>(`);
+        result.push(`    std::vector<std::string>{`);
+
+        result.push(...this.renderList(lexer.ruleNames, { wrap: 65, indent: 6, quote: `"` }));
+
+        result.push(`    },`);
+        result.push(`    std::vector<std::string>{`);
+        result.push(`      "DEFAULT_TOKEN_CHANNEL", "HIDDEN"`);
+        result.push(`    },`);
+
+        if (lexer.channelNames.length > 0) {
+            result.push(...this.renderList(lexer.channelNames, { wrap: 65, indent: 2, quote: `"` }));
+        }
+
+        result.push(`    std::vector<std::string>{`);
+        result.push(...this.renderList(lexer.modes, { wrap: 65, indent: 6, quote: `"` }));
+
+        result.push(`    },`);
+        result.push(`    std::vector<std::string>{`);
+        result.push(...this.renderList(lexer.literalNames, { wrap: 65, indent: 6, null: `""` }));
+
+        result.push(`    },`);
+        result.push(`    std::vector<std::string>{`);
+
+        result.push(...this.renderList(lexer.symbolicNames, { wrap: 65, indent: 6, null: `""` }));
+        result.push(`    }
+  );`);
+
+        result.push(...this.renderSerializedATN(lexer.atn));
+        result.push(`  ${loweredGrammarName}LexerStaticData = std::move(staticData);
+}
+
+}`);
+
+        const baseClass = lexer.superClass ? this.renderActionChunks([lexer.superClass]) : "antlr4::Lexer";
+        result.push(``);
+        result.push(`${lexerName}::${lexerName}(CharStream *input) : ${baseClass}(input) {`);
+        result.push(`  ${lexerName}::initialize();`);
+        result.push(`  _interpreter = new atn::LexerATNSimulator(this, *${loweredGrammarName}LexerStaticData->atn, ` +
+            `${loweredGrammarName}LexerStaticData->decisionToDFA, ` +
+            `${loweredGrammarName}LexerStaticData->sharedContextCache);`);
+        result.push(`}`);
+        result.push(``);
+        result.push(`${lexerName}::~${lexerName}() {`);
+        result.push(`  delete _interpreter;`);
+        result.push(`}`);
+        result.push(``);
+        result.push(`std::string ${lexerName}::getGrammarFileName() const {`);
+        result.push(`  return "${lexer.grammarFileName}";`);
+        result.push(`}`);
+        result.push(``);
+        result.push(`const std::vector<std::string>& ${lexerName}::getRuleNames() const {`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData->ruleNames;`);
+        result.push(`}`);
+        result.push(``);
+        result.push(`const std::vector<std::string>& ${lexerName}::getChannelNames() const {`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData->channelNames;`);
+        result.push(`}`);
+        result.push(``);
+        result.push(`const std::vector<std::string>& ${lexerName}::getModeNames() const {`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData->modeNames;`);
+        result.push(`}`);
+        result.push(``);
+        result.push(`const dfa::Vocabulary& ${lexerName}::getVocabulary() const {`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData->vocabulary;`);
+        result.push(`}`);
+        result.push(``);
+        result.push(`antlr4::atn::SerializedATNView ${lexerName}::getSerializedATN() const {`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData->serializedATN;`);
+        result.push(`}`);
+        result.push(``);
+        result.push(`const atn::ATN& ${lexerName}::getATN() const {`);
+        result.push(`  return *${loweredGrammarName}LexerStaticData->atn;`);
+        result.push(`}`);
+
+        result.push(...this.renderAction(namedActions.get("definitions")));
+
+        if (lexer.actionFuncs.size > 0) {
+            result.push(``);
+            result.push(`void ${lexer.name}::action(RuleContext *context, size_t ruleIndex, size_t actionIndex) {`);
+            result.push(`    switch (ruleIndex) {`);
+
+            lexer.actionFuncs.forEach((f) => {
+                result.push(`    case ${f.ruleIndex}: ${f.name}Action(antlrcpp::downCast<${f.ctxType} *>(context), ` +
+                    `actionIndex); break;`);
+            });
+
+            result.push(``);
+            result.push(`    default:`);
+            result.push(`      break;`);
+            result.push(`    }`);
+            result.push(`}`);
+        }
+
+        if (lexer.sempredFuncs.size > 0) {
+            result.push(``);
+            result.push(`bool ${lexer.name}::sempred(RuleContext *context, size_t ruleIndex, size_t predicateIndex) {`);
+            result.push(`    switch (ruleIndex) {`);
+
+            lexer.sempredFuncs.forEach((f) => {
+                result.push(`    case ${f.ruleIndex}: return ${f.name}Sempred(antlrcpp::downCast<${f.ctxType} *>` +
+                    `(context), predicateIndex);`);
+            });
+
+            result.push(``);
+            result.push(`    default:`);
+            result.push(`      break;`);
+            result.push(`    }`);
+            result.push(`    return true;`);
+            result.push(`}`);
+        }
+
+        for (const [_, func] of lexer.actionFuncs) {
+            result.push(...this.renderRuleActionFunction(func, lexer.grammarName));
+        }
+
+        for (const [_, func] of lexer.sempredFuncs) {
+            result.push(...this.renderRuleSempredFunction(func, lexer.name));
+        }
+
+        result.push(``);
+        result.push(`void ${lexer.name}::initialize() {`);
+        result.push(`#if ANTLR4_USE_THREAD_LOCAL_CACHE`);
+        result.push(`  ${lexer.name.toLowerCase()}LexerInitialize();`);
+        result.push(`#else`);
+        result.push(`  ::antlr4::internal::call_once(${loweredGrammarName}LexerOnceFlag, ` +
+            `${loweredGrammarName}LexerInitialize);`);
+        result.push(`#endif`);
+
         result.push("}");
-        result.push("");
 
-        // Destructor
-        result.push(`${lexer.name}::~${lexer.name}() {`);
-        result.push("    delete _interpreter;");
-        result.push("}");
-        result.push("");
-
-        result.push(`std::string ${lexer.name}::getGrammarFileName() const {`);
-        result.push(`    return "${lexerFile.grammarFileName}";`);
-        result.push("}");
-        result.push("");
-
-        return result.join("\n");
+        return result;
     }
 
-    private renderListenerHeader(listenerFile: OutputModelObjects.ListenerFile): string {
+    private renderLexerHeader(lexer: OutputModelObjects.Lexer, namedActions: Map<string, OutputModelObjects.Action>,
+        namespaceName?: string, exportMacro?: string): Lines {
+
+        const result: Lines = this.renderAction(namedActions.get("context"));
+
+        const baseClass = lexer.superClass ? this.renderActionChunks([lexer.superClass]) : "antlr4::Lexer";
+        result.push(`class ${exportMacro ?? ""} ${lexer.name} : public ${baseClass} {`);
+        result.push(`public:`);
+
+        const block: Lines = [];
+        if (lexer.tokens.size > 0) {
+            block.push(`enum {`);
+            block.push(...this.renderList(this.renderMap(lexer.tokens, 0, "${0} = ${1}"),
+                { wrap: 67, indent: 2, separator: ", " }));
+            block.push(`};`);
+
+            result.push(...this.formatLines(block, 2));
+        }
+
+        if (lexer.escapedChannels.size > 0) {
+            block.push(`enum {`);
+            block.push(...this.renderList(this.renderMap(lexer.escapedChannels, 0, "${0} = ${1}"),
+                { wrap: 67, indent: 2, separator: ", " }));
+            block.push(`};`);
+
+            result.push(...this.formatLines(block, 2));
+        }
+
+        if (lexer.escapedModeNames.length > 1) {
+            block.push(`enum {`);
+            const listedModes: string[] = [];
+            lexer.escapedModeNames.forEach((m, i) => {
+                listedModes.push(`  ${m} = ${i},`);
+            });
+            block.push(...this.renderList(listedModes, { wrap: 67, indent: 2, separator: "\n" }));
+            block.push(`};`);
+
+            result.push(...this.formatLines(block, 2));
+        }
+
+        result.push(`  explicit ${lexer.name}(antlr4::CharStream *input);`);
+        result.push(``);
+        result.push(`  ~${lexer.name}() override;`);
+        result.push(``);
+        result.push(...this.renderAction(namedActions.get("members")));
+        result.push(``);
+        result.push(`  std::string getGrammarFileName() const override;`);
+        result.push(``);
+        result.push(`  const std::vector<std::string>& getRuleNames() const override;`);
+        result.push(``);
+        result.push(`  const std::vector<std::string>& getChannelNames() const override;`);
+        result.push(``);
+        result.push(`  const std::vector<std::string>& getModeNames() const override;`);
+        result.push(``);
+        result.push(`  const antlr4::dfa::Vocabulary& getVocabulary() const override;`);
+        result.push(``);
+        result.push(`  antlr4::atn::SerializedATNView getSerializedATN() const override;`);
+        result.push(``);
+        result.push(`  const antlr4::atn::ATN& getATN() const override;`);
+        result.push(``);
+
+        if (lexer.actionFuncs.size > 0) {
+            result.push(`  void action(antlr4::RuleContext *context, size_t ruleIndex, size_t actionIndex) override;`);
+            result.push(``);
+        }
+
+        if (lexer.sempredFuncs.size > 0) {
+            result.push(`  bool sempred(antlr4::RuleContext *_localctx, size_t ruleIndex, size_t predicateIndex) override;`);
+            result.push(``);
+        }
+
+        result.push(`  // By default the static state used to implement the lexer is lazily initialized during the first`);
+        result.push(`  // call to the constructor. You can call this function if you wish to initialize the static state`);
+        result.push(`  // ahead of time.`);
+        result.push(`  static void initialize();`);
+        result.push(``);
+        result.push(`private:`);
+        result.push(...this.formatLines(this.renderAction(namedActions.get("declarations")), 4));
+        result.push(``);
+        result.push(`  // Individual action functions triggered by action() above.`);
+
+        if (lexer.actionFuncs.size > 0) {
+            lexer.actionFuncs.forEach((f) => {
+                result.push(`  void ${f.name}Action(antlr4::RuleContext *context, size_t actionIndex);`);
+            });
+        }
+
+        result.push(``);
+        result.push(`  // Individual semantic predicate functions triggered by sempred() above.`);
+
+        if (lexer.sempredFuncs.size > 0) {
+            lexer.sempredFuncs.forEach((f) => {
+                result.push(`  bool ${f.name}Sempred(antlr4::RuleContext *_localctx, size_t predicateIndex);`);
+            });
+        }
+
+        result.push(`};`);
+
+        return result;
+    }
+
+    private renderListenerFileHeader(listenerFile: OutputModelObjects.ListenerFile): string {
         const result: Lines = [
             ...this.renderFileHeader(listenerFile),
             "",
@@ -805,13 +1012,13 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result.join("\n");
     }
 
-    private renderListenerImplementation(listenerFile: OutputModelObjects.ListenerFile): string {
+    private renderListenerFileImplementation(listenerFile: OutputModelObjects.ListenerFile): string {
         // C++ listener typically doesn't need an implementation file for pure virtual methods
 
         return "";
     }
 
-    private renderBaseListenerHeader(listenerFile: OutputModelObjects.ListenerFile): string {
+    private renderBaseListenerFileHeader(listenerFile: OutputModelObjects.ListenerFile): string {
         const result: Lines = [
             ...this.renderFileHeader(listenerFile),
             "",
@@ -854,13 +1061,13 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result.join("\n");
     }
 
-    private renderBaseListenerImplementation(listenerFile: OutputModelObjects.ListenerFile): string {
+    private renderBaseListenerFileImplementation(listenerFile: OutputModelObjects.ListenerFile): string {
         // C++ base listener implementation file (empty implementations already in header)
 
         return "";
     }
 
-    private renderVisitorHeader(visitorFile: OutputModelObjects.VisitorFile): string {
+    private renderVisitorFileHeader(visitorFile: OutputModelObjects.VisitorFile): string {
         const result: Lines = [
             ...this.renderFileHeader(visitorFile),
             "",
@@ -896,13 +1103,13 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result.join("\n");
     }
 
-    private renderVisitorImplementation(visitorFile: OutputModelObjects.VisitorFile): string {
+    private renderVisitorFileImplementation(visitorFile: OutputModelObjects.VisitorFile): string {
         // C++ visitor typically doesn't need an implementation file for pure virtual methods
 
         return "";
     }
 
-    private renderBaseVisitorHeader(visitorFile: OutputModelObjects.VisitorFile): string {
+    private renderBaseVisitorFileHeader(visitorFile: OutputModelObjects.VisitorFile): string {
         const result: Lines = [
             ...this.renderFileHeader(visitorFile),
             "",
@@ -940,7 +1147,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result.join("\n");
     }
 
-    private renderBaseVisitorImplementation(visitorFile: OutputModelObjects.VisitorFile): string {
+    private renderBaseVisitorFileImplementation(visitorFile: OutputModelObjects.VisitorFile): string {
         // C++ base visitor implementation file (empty implementations already in header)
 
         return "";
@@ -976,7 +1183,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result;
     }
 
-    // Render methods for various source operations
     private renderAddToLabelList(srcOp: OutputModelObjects.AddToLabelList): Lines {
         return [`${srcOp.label}.push_back(${srcOp.listName});`];
     }
@@ -1311,6 +1517,67 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         // Handle other chunk types as needed
         return [];
+    }
+
+    private renderRuleActionFunction(r: OutputModelObjects.RuleActionFunction, grammarName: string): Lines {
+        const result: Lines = [];
+        result.push(``);
+        result.push(`void ${grammarName}::${r.name}Action(${r.ctxType} *context, size_t actionIndex) {`);
+        result.push(`  switch (actionIndex) {`);
+
+        for (const [index, action] of r.actions) {
+            result.push(`    case ${index}: ${this.renderAction(action).join(" ")} break;`);
+        }
+
+        result.push(``);
+        result.push(`  default:`);
+        result.push(`    break;`);
+        result.push(`  }`);
+        result.push(`}`);
+
+        return result;
+    }
+
+    private renderRuleSempredFunction(r: OutputModelObjects.RuleSempredFunction, recognizerName: string): Lines {
+        const result: Lines = [];
+
+        result.push(``);
+        result.push(`bool ${recognizerName}::${r.name}Sempred(${r.ctxType} *_localctx, size_t predicateIndex) {`);
+        result.push(`  switch (predicateIndex) {`);
+
+        for (const [index, action] of r.actions) {
+            result.push(`    case ${index}: return ${this.renderAction(action).join(" ")};`);
+        }
+
+        result.push(``);
+        result.push(`    default:`);
+        result.push(`      break;`);
+        result.push(`    }`);
+        result.push(`    return true;`);
+        result.push(`}`);
+        result.push(``);
+
+        return result;
+    }
+
+    private renderSerializedATN(model: OutputModelObjects.SerializedATN): Lines {
+        const result: Lines = [];
+
+        result.push(`  static const int32_t serializedATNSegment[] = {`);
+        result.push(...this.renderList(model.serialized, { wrap: 68, indent: 4, separator: "," }));
+        result.push(`  };`);
+        result.push(`staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));`);
+        result.push(``);
+        result.push(`  antlr4::atn::ATNDeserializer deserializer;`);
+        result.push(`  staticData->atn = deserializer.deserialize(staticData->serializedATN);`);
+        result.push(``);
+        result.push(`  const size_t count = staticData->atn->getNumberOfDecisions();`);
+        result.push(`  staticData->decisionToDFA.reserve(count);`);
+        result.push(`  for (size_t i = 0; i < count; i++) {`);
+        result.push(`    staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);`);
+        result.push(`  }`);
+
+        return result;
     }
 
     // Lexer command methods
