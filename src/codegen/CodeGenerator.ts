@@ -12,7 +12,6 @@ import { IssueCode } from "../tool/Issues.js";
 import { OutputModelController } from "./OutputModelController.js";
 import { ParserFactory } from "./ParserFactory.js";
 
-// Possible targets:
 import type { IGenerationOptions } from "../config/config.js";
 import { fileSystem } from "../tool-parameters.js";
 import type { ITargetGenerator } from "./ITargetGenerator.js";
@@ -235,59 +234,5 @@ export class CodeGenerator {
         if (this.g.atn === undefined) {
             throw new Error("ATN is undefined.");
         }
-    }
-
-    private walk(model: OutputModelObject, variables: IGenerationVariables): string {
-        const omo = model as IndexedObject<OutputModelObject>;
-        const generateMethod = "render" + omo.constructor.name;
-        const parameterFields = omo.parameterFields;
-
-        // Walk over all parameter fields of the model object and render sub elements.
-        const parameters: Array<string | Record<string, string> | string[] | undefined> = [];
-        for (const fieldName of parameterFields) {
-            const o = omo[fieldName];
-            if (o === undefined) {
-                parameters.push(undefined);
-            } else if (o instanceof OutputModelObject) { // Single model object?
-                const renderedOMO = this.walk(o, { ...variables });
-                parameters.push(renderedOMO);
-            } else if (o instanceof Set || o instanceof HashSet || o instanceof OrderedHashSet || Array.isArray(o)) {
-                // All set and array elements are model objects.
-                const list: string[] = [];
-                for (const nestedOmo of o) {
-                    if (!nestedOmo) {
-                        continue;
-                    }
-
-                    const renderedElement = this.walk(nestedOmo as OutputModelObject, variables);
-                    list.push(renderedElement);
-                }
-
-                parameters.push(list);
-            } else if (o instanceof Map) {
-                const nestedOmoMap = o as Map<string, OutputModelObject>;
-                const renderedRecord: Record<string, string> = {};
-                for (const [key, value] of nestedOmoMap) {
-                    const renderedElement = this.walk(value, variables);
-                    renderedRecord[key] = renderedElement;
-                }
-                parameters.push(renderedRecord);
-            }
-        }
-
-        return this.callGeneratorMethod(generateMethod as keyof ITargetGeneratorCallables, omo, variables,
-            ...parameters);
-    }
-
-    private callGeneratorMethod<K extends keyof ITargetGeneratorCallables>(methodName: K,
-        ...args: unknown[]): string {
-
-        const method = this.targetGenerator[methodName] as ((...args: unknown[]) => string) | undefined;
-
-        if (method === undefined) {
-            throw new Error(`Method ${methodName} is not defined on this target generator.`);
-        }
-
-        return method.apply(this.targetGenerator, args) as string;
     }
 }

@@ -1781,44 +1781,18 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return [`(${ctx}._${a.listName}.push(${this.renderLabelRef(a.label)}!));`];
     };
 
-    public readonly id = "generator.default.typescript";
     private renderTokenDecl(file: OutputModelObjects.OutputFile, recognizerName: string, t: OutputModelObjects.TokenDecl): Lines {
         return [`_${t.escapedName}: ${this.renderTokenLabelType(file)} | null = null;`];
     }
 
-    public readonly language = "TypeScript";
-    public readonly languageSpecifiers = ["typescript", "ts"];
     private renderTokenTypeDecl(t: OutputModelObjects.TokenTypeDecl): Lines {
         return [`let ${t.escapedName}: number;`];
     }
 
-    public readonly codeFileExtension = ".ts";
     private renderTokenListDecl(t: OutputModelObjects.TokenListDecl): Lines {
         return [`_${t.escapedName}: antlr.Token[] = [];`];
     }
 
-    /**
-     * https://github.com/microsoft/TypeScript/issues/2536
-     */
-    public readonly reservedWords = new Set([
-        // Resrved words:
-        "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "enum",
-        "export", "extends", "false", "finally", "for", "function", "if", "import", "in", "instanceof", "new", "null",
-        "return", "super", "switch", "this", "throw", "true", "try", "typeof", "var", "void", "while", "with",
-    private renderRuleContextDecl(r: OutputModelObjects.RuleContextDecl): Lines {
-        return [`_${r.escapedName}?: ${r.ctxName};`];
-    }
-
-        // Strict mode reserved words:
-        "as", "implements", "interface", "let", "package", "private", "protected", "public", "static", "yield",
-    private renderRuleContextListDecl(rdecl: OutputModelObjects.RuleContextListDecl): Lines {
-        return [`_${rdecl.escapedName}: ${rdecl.ctxName} [] = [];`];
-    }
-
-        // Contextual keywords:
-        "any", "boolean", "constructor", "declare", "get", "module", "require", "number", "set", "string", "symbol",
-        "type", "from", "of",
-    ]);
     private renderContextTokenGetterDecl(recognizerName: string, t: OutputModelObjects.ContextTokenGetterDecl): Lines {
         return [
             "",
@@ -1828,11 +1802,6 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         ];
     }
 
-    public renderParserFile(parserFile: ParserFile, variables: IGenerationVariables, parser: string,
-        namedActions?: Record<string, string>, contextSuperClass?: string): string {
-        const result: Array<string | undefined> = [
-            "import * as antlr from \"antlr4ng\";",
-            "import { Token } from \"antlr4ng\"; "
     private renderContextTokenListGetterDecl(t: OutputModelObjects.ContextTokenListGetterDecl): Lines {
         return [`public ${t.name} (): antlr.TerminalNode[];`];
     }
@@ -1862,8 +1831,6 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         ];
     }
 
-        if (parserFile.genListener) {
-            result.push(`import { ${parserFile.grammarName}Listener } from "./${parserFile.grammarName}Listener.js";`);
     private renderContextRuleListGetterDecl(r: OutputModelObjects.ContextRuleListGetterDecl): Lines {
         return [`public ${r.escapedName} (): ${r.ctxName}[];`];
     }
@@ -1903,89 +1870,89 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
         if (parserFile.genVisitor) {
             result.push(`import { ${parserFile.grammarName}Visitor } from "./${parserFile.grammarName}Visitor.js";`);
-        let interfaces = "";
-        if (struct.interfaces.length > 0) {
-            interfaces = " implements " + struct.interfaces.map((i) => {
-                return `, ${i}`; // TODO: it's not clear if that is even used, let alone what it should be.
-            }).join(", ");
-        }
-
-        result.push(`export class ${struct.escapedName} extends ${superClass}${interfaces} {`);
-
-        const decls = this.renderDecls(outputFile, struct.name, struct.attrs);
-        let startLogEntry: string | undefined = undefined;
-        let endLogEntry: string | undefined = undefined;
-
-        if (this.logRendering && decls.length > 0) {
-            startLogEntry = decls.shift();
-            endLogEntry = decls.pop();
-        }
-
-        if (startLogEntry) {
-            result.push(`    ${startLogEntry}`);
-        }
-
-        result.push(...decls.map((d) => {
-            return `    public ${d}`;
-        }));
-
-        if (endLogEntry) {
-            result.push(`    ${endLogEntry}`);
-        }
-
-        result.push("");
-
-        const block: Lines = [];
-        if (struct.ctorAttrs.length > 0) {
-            block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number<struct.ctorAttrs:{a |, <a.escapedName>: <a.type>}>) {`);
-            block.push(`    super(parent, invokingState);`);
-
-            struct.ctorAttrs.forEach((a) => {
-                block.push(`    this.${a.escapedName} = ${a.escapedName};`);
-            });
-
-            block.push(`}`);
-        } else {
-            block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {`);
-            block.push(`    super(parent, invokingState);`);
-            block.push(`}`);
-        }
-
-        block.push(...this.renderDecls(outputFile, recognizerName, struct.getters));
-
-        const parser = (outputFile as OutputModelObjects.ParserFile).parser;
-        block.push(`public override get ruleIndex(): number {`);
-        block.push(`    return ${parser.name}.RULE_${struct.derivedFromName};`);
-        block.push(`}`);
-
-        // Don't need copy unless we have subclasses.
-        if (struct.provideCopyFrom) {
-            block.push("");
-            block.push(`public override copyFrom(ctx: ${struct.name}): void {`);
-            block.push(`    super.copyFrom(ctx);`);
-
-            for (const a of struct.attrs) {
-                block.push(`    this.${a.escapedName} = ctx.${a.escapedName};`);
+            let interfaces = "";
+            if (struct.interfaces.length > 0) {
+                interfaces = " implements " + struct.interfaces.map((i) => {
+                    return `, ${i}`; // TODO: it's not clear if that is even used, let alone what it should be.
+                }).join(", ");
             }
-            block.push(`}`);
-        }
 
-        for (const method of struct.dispatchMethods) {
-            if (method instanceof OutputModelObjects.VisitorDispatchMethod) {
-                block.push(...this.renderVisitorDispatchMethod(parser.grammarName, struct));
-            } else if (method instanceof OutputModelObjects.ListenerDispatchMethod) {
-                block.push(...this.renderListenerDispatchMethod(parser.grammarName, struct, method));
+            result.push(`export class ${struct.escapedName} extends ${superClass}${interfaces} {`);
+
+            const decls = this.renderDecls(outputFile, struct.name, struct.attrs);
+            let startLogEntry: string | undefined = undefined;
+            let endLogEntry: string | undefined = undefined;
+
+            if (this.logRendering && decls.length > 0) {
+                startLogEntry = decls.shift();
+                endLogEntry = decls.pop();
             }
+
+            if (startLogEntry) {
+                result.push(`    ${startLogEntry}`);
+            }
+
+            result.push(...decls.map((d) => {
+                return `    public ${d}`;
+            }));
+
+            if (endLogEntry) {
+                result.push(`    ${endLogEntry}`);
+            }
+
+            result.push("");
+
+            const block: Lines = [];
+            if (struct.ctorAttrs.length > 0) {
+                block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number<struct.ctorAttrs:{a |, <a.escapedName>: <a.type>}>) {`);
+                block.push(`    super(parent, invokingState);`);
+
+                struct.ctorAttrs.forEach((a) => {
+                    block.push(`    this.${a.escapedName} = ${a.escapedName};`);
+                });
+
+                block.push(`}`);
+            } else {
+                block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {`);
+                block.push(`    super(parent, invokingState);`);
+                block.push(`}`);
+            }
+
+            block.push(...this.renderDecls(outputFile, recognizerName, struct.getters));
+
+            const parser = (outputFile as OutputModelObjects.ParserFile).parser;
+            block.push(`public override get ruleIndex(): number {`);
+            block.push(`    return ${parser.name}.RULE_${struct.derivedFromName};`);
+            block.push(`}`);
+
+            // Don't need copy unless we have subclasses.
+            if (struct.provideCopyFrom) {
+                block.push("");
+                block.push(`public override copyFrom(ctx: ${struct.name}): void {`);
+                block.push(`    super.copyFrom(ctx);`);
+
+                for (const a of struct.attrs) {
+                    block.push(`    this.${a.escapedName} = ctx.${a.escapedName};`);
+                }
+                block.push(`}`);
+            }
+
+            for (const method of struct.dispatchMethods) {
+                if (method instanceof OutputModelObjects.VisitorDispatchMethod) {
+                    block.push(...this.renderVisitorDispatchMethod(parser.grammarName, struct));
+                } else if (method instanceof OutputModelObjects.ListenerDispatchMethod) {
+                    block.push(...this.renderListenerDispatchMethod(parser.grammarName, struct, method));
+                }
+            }
+
+            result.push(...this.formatLines(block, 4));
+            result.push(`}`);
+
+            return this.endRendering("StructDecl", result);
         }
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`}`);
-
-        return this.endRendering("StructDecl", result);
-    }
 
     private renderAltLabelStructDecl(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        currentRule: OutputModelObjects.RuleFunction, struct: OutputModelObjects.AltLabelStructDecl): Lines {
+            currentRule: OutputModelObjects.RuleFunction, struct: OutputModelObjects.AltLabelStructDecl): Lines {
         const result: Lines = this.startRendering("AltLabelStructDecl");
 
         result.push(`export class ${struct.escapedName} extends ${this.toTitleCase(struct.parentRule)}Context {`);
