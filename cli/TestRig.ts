@@ -6,10 +6,6 @@
  */
 
 import * as nodeFs from "fs";
-import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-
-import * as nodeFs from "fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
