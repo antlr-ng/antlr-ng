@@ -121,9 +121,9 @@ export class CodeGenerator {
      * Does not change per target.
      */
     public writeVocabFile(): void {
-        const tokenVocabSerialization = this.getTokenVocabOutput();
         const fileName = this.getVocabFileName();
         if (fileName) {
+            const tokenVocabSerialization = this.getTokenVocabOutput();
             this.writeFile(tokenVocabSerialization, fileName);
         }
     }

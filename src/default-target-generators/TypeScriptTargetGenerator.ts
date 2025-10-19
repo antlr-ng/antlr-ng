@@ -14,7 +14,7 @@ import type { Grammar } from "../tool/Grammar.js";
 import type { Rule } from "../tool/Rule.js";
 
 /** The constructor type of OutputModelObject class. Used in the source op lookup map. */
-type OutputModelObjectConstructor = new (...args: unknown[]) => OutputModelObjects.OutputModelObject;
+export type OutputModelObjectConstructor = new (...args: unknown[]) => OutputModelObjects.OutputModelObject;
 
 export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetGenerator {
     public readonly id = "generator.default.typescript";
@@ -1577,7 +1577,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             return [];
         }
 
-        return [this.renderActionChunks(a.chunks)];
+        return this.renderActionChunks(a.chunks);
     }
 
     private renderSemPred(p: OutputModelObjects.SemPred): Lines {

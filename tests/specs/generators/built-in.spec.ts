@@ -8,71 +8,84 @@ import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 import { describe, it } from "vitest";
-import { toTreeSync } from "memfs/lib/print/index.js";
 
 import { defineConfig } from "../../../src/config/config.js";
-import { Tool } from "../../../src/Tool.js";
 
-import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
+import { toTreeSync } from "memfs/lib/print/index.js";
+import type { ITargetGenerator } from "../../../src/codegen/ITargetGenerator.js";
+import { CppTargetGenerator } from "../../../src/default-target-generators/CppTargetGenerator.js";
 import { Grammar } from "../../../src/index.js";
 import { fileSystem } from "../../../src/tool-parameters.js";
+import { LexerGrammar } from "../../../src/tool/LexerGrammar.js";
 
 describe.skip("Test built-in generators", () => {
+    const targetDir = "/Users/mike/Downloads/antlr/mysql/generated";
+
+    const generator: ITargetGenerator = new CppTargetGenerator({ exportMacro: "ANTLR4CPP_PUBLIC", });
+
+    const copyFile = async (name: string): Promise<void> => {
+        const generated = fileSystem.readFileSync(`/out/${name}`, "utf-8");
+        await writeFile(`${targetDir}/${name}`, generated);
+    };
+
+    const copyCodeFile = async (name: string) => {
+        await copyFile(`${name}${generator.codeFileExtension}`);
+        if (generator.needsDeclarationFile) {
+            const headerExt = generator.declarationFileExtension;
+            await copyFile(`${name}${headerExt}`);
+        }
+    };
 
     it("test TypeScript", async () => {
         const configuration = defineConfig({
-            grammarFiles: ["Psl.g4"],
+            grammarFiles: ["MySQLLexer.g4", "MySQLParser.g4"],
             outputDirectory: "/out",
             generationOptions: {
                 generateListener: true,
                 generateVisitor: true,
                 generateInterpreterData: true,
-                //generateDependencies: true,
+                generateDeclarationFile: true,
+                generateBaseListener: true,
+                generateBaseVisitor: true,
+                package: "antlr4",
             },
-            generators: [new TypeScriptTargetGenerator()],
+            generators: [generator],
         });
 
-        const grammarPath = fileURLToPath(new URL("../../grammars/Psl.g4", import.meta.url));
-        const grammarText = readFileSync(grammarPath, "utf8");
-        const parserGrammar = new Grammar(grammarText);
+        let grammarPath = fileURLToPath(new URL("../../grammars/MySQLLexer.g4", import.meta.url));
+        let grammarText = readFileSync(grammarPath, "utf8");
+        const lg = new LexerGrammar(grammarText);
+        lg.fileName = "MySQLLexer.g4";
+        lg.tool.process(lg, configuration, true);
 
-        const tool = new Tool();
-        parserGrammar.tool = tool;
-        parserGrammar.name = "Psl";
-        tool.process(parserGrammar, configuration, true);
+        grammarPath = fileURLToPath(new URL("../../grammars/MySQLParser.g4", import.meta.url));
+        grammarText = readFileSync(grammarPath, "utf8");
+        const g = new Grammar(grammarText);
+        g.fileName = "MySQLParser.g4";
+        g.tool.process(g, configuration, true);
 
         console.log(toTreeSync(fileSystem));
 
-        const targetDir = "/Users/mike/Downloads/antlr/mysql/generated";
+        await copyCodeFile("MySQLLexer");
+        await copyCodeFile("MySQLParser");
 
-        let generated = fileSystem.readFileSync("/out/PslLexer.tokens", "utf-8");
-        await writeFile(`${targetDir}/PslLexer.tokens`, generated);
+        if (configuration.generationOptions.generateListener) {
+            await copyCodeFile("MySQLParserListener");
+            await copyCodeFile("MySQLParserBaseListener");
+        }
 
-        generated = fileSystem.readFileSync("/out/PslLexer.ts", "utf-8");
-        await writeFile(`${targetDir}/PslLexer.ts`, generated);
+        if (configuration.generationOptions.generateVisitor) {
+            await copyCodeFile("MySQLParserVisitor");
+            await copyCodeFile("MySQLParserBaseVisitor");
+        }
 
-        generated = fileSystem.readFileSync("/out/PslParser.ts", "utf-8");
-        await writeFile(`${targetDir}/PslParser.ts`, generated);
+        if (configuration.generationOptions.generateInterpreterData) {
+            await copyFile("MySQLLexer.interp");
+            await copyFile("MySQLParser.interp");
+        }
 
-        generated = fileSystem.readFileSync("/out/PslListener.ts", "utf-8");
-        await writeFile(`${targetDir}/PslListener.ts`, generated);
-
-        generated = fileSystem.readFileSync("/out/PslVisitor.ts", "utf-8");
-        await writeFile(`${targetDir}/PslVisitor.ts`, generated);
-
-        /*generated = fileSystem.readFileSync("/out/PslBaseListener.ts", "utf-8");
-        await writeFile(`${targetDir}/PslParserBaseListener.ts`, generated);
-
-        generated = fileSystem.readFileSync("/out/PslBaseVisitor.ts", "utf-8");
-        await writeFile(`${targetDir}/PslParserBaseVisitor.ts`, generated);*/
-
-        generated = fileSystem.readFileSync("/out/Psl.tokens", "utf-8");
-        await writeFile(`${targetDir}/Psl.tokens`, generated);
-
-        generated = fileSystem.readFileSync("/out/PslLexer.interp", "utf-8");
-        await writeFile(`${targetDir}/PslLexer.interp`, generated);
-
-        generated = fileSystem.readFileSync("/out/Psl.interp", "utf-8");
-        await writeFile(`${targetDir}/Psl.interp`, generated);
+        // Tokens files.
+        await copyFile("MySQLLexer.tokens");
+        await copyFile("MySQLParser.tokens");
     });
 });

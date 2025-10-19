@@ -47,17 +47,17 @@ export interface IOutputModelFactory {
 
     alternative(alt: Alternative, outerMost: boolean): CodeBlockForAlt | undefined;
 
-    finishAlternative(blk: CodeBlockForAlt, ops: SrcOp[]): CodeBlockForAlt;
+    finishAlternative(blk: CodeBlockForAlt, ops: Array<SrcOp | null>): CodeBlockForAlt;
 
     epsilon(alt: Alternative, outerMost: boolean): CodeBlockForAlt | undefined;
 
     ruleRef(ID: GrammarAST, label: GrammarAST | null, args: GrammarAST | null): SrcOp[] | undefined;
 
-    tokenRef(ID: GrammarAST, label: GrammarAST | null, args: GrammarAST | null): SrcOp[] | undefined;
+    tokenRef(ID: GrammarAST, label: GrammarAST | null, args: GrammarAST | null): Array<SrcOp | null>;
 
-    stringRef(ID: GrammarAST, label: GrammarAST | null): SrcOp[] | undefined;
+    stringRef(ID: GrammarAST, label: GrammarAST | null): Array<SrcOp | null>;
 
-    set(setAST: GrammarAST, label: GrammarAST | null, invert: boolean): SrcOp[] | undefined;
+    set(setAST: GrammarAST, label: GrammarAST | null, invert: boolean): Array<SrcOp | null>;
 
     wildcard(ast: GrammarAST, labelAST: GrammarAST | null): SrcOp[] | undefined;
 

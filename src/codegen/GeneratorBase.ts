@@ -274,9 +274,7 @@ export abstract class GeneratorBase implements Partial<ITargetGenerator> {
 
         let line = "";
         for (let item of list) {
-            if (item === null && options.null !== undefined) {
-                item = options.null;
-            }
+            item ??= options.null ?? "null";
 
             let value;
 
@@ -546,19 +544,24 @@ export abstract class GeneratorBase implements Partial<ITargetGenerator> {
         return `\\u${v.toString(16).padStart(4, "0")}`;
     }
 
-    protected renderActionChunks(chunks?: OutputModelObjects.ActionChunk[]): string {
+    protected renderActionChunks(chunks?: OutputModelObjects.ActionChunk[]): Lines {
         const result: Lines = [];
 
         if (chunks) {
             for (const chunk of chunks) {
                 const methodName = `render${chunk.constructor.name}`;
                 const executor = this as IndexedObject<GeneratorBase>;
-                const method = executor[methodName] as (chunk: OutputModelObjects.ActionChunk) => Lines;
+                const method = executor[methodName] as ((chunk: OutputModelObjects.ActionChunk) => Lines) | undefined;
+
+                if (!method) {
+                    throw new Error(`No method ${methodName} found in ${this.constructor.name}`);
+                }
+
                 result.push(...method.call(executor, chunk) as Lines);
             }
         }
 
-        return result.join("");
+        return result;
     }
 
     /**

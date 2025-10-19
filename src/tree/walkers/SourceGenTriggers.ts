@@ -24,7 +24,7 @@ import { TreeParser } from "../TreeParser.js";
 
 interface IAltResults {
     altCodeBlock?: CodeBlockForAlt;
-    ops: SrcOp[];
+    ops: Array<SrcOp | null>;
 }
 
 export class SourceGenTriggers extends TreeParser {
@@ -182,7 +182,7 @@ export class SourceGenTriggers extends TreeParser {
 
                 result.altCodeBlock = this.controller!.epsilon(this.controller!.currentOuterMostAlt, outerMost);
             } else {
-                const elems = new Array<SrcOp>();
+                const elems = new Array<SrcOp | null>();
                 result.altCodeBlock = this.controller!.alternative(this.controller!.currentOuterMostAlt, outerMost);
                 result.altCodeBlock.ops = result.ops = elems;
                 this.controller!.currentBlock = result.altCodeBlock;
@@ -230,8 +230,8 @@ export class SourceGenTriggers extends TreeParser {
         return result;
     }
 
-    private element(): SrcOp[] {
-        let result: SrcOp[] = [];
+    private element(): Array<SrcOp | null> {
+        let result: Array<SrcOp | null> = [];
 
         try {
             switch (this.input.lookahead(1)) {
@@ -346,8 +346,8 @@ export class SourceGenTriggers extends TreeParser {
         return result;
     }
 
-    private labeledElement(): SrcOp[] {
-        let result: SrcOp[] = [];
+    private labeledElement(): Array<SrcOp | null> {
+        let result: Array<SrcOp | null> = [];
 
         try {
             const lookahead = this.input.lookahead(1);
@@ -571,8 +571,8 @@ export class SourceGenTriggers extends TreeParser {
         return result;
     }
 
-    private blockSet(label: GrammarAST | null, invert: boolean): SrcOp[] {
-        let result: SrcOp[] = [];
+    private blockSet(label: GrammarAST | null, invert: boolean): Array<SrcOp | null> {
+        let result: Array<SrcOp | null> = [];
 
         try {
             const set = this.match(this.input, ANTLRv4Lexer.SET)!;
@@ -613,8 +613,8 @@ export class SourceGenTriggers extends TreeParser {
         return result;
     }
 
-    private atom(label: GrammarAST | null, invert: boolean): SrcOp[] {
-        let result: SrcOp[] = [];
+    private atom(label: GrammarAST | null, invert: boolean): Array<SrcOp | null> {
+        let result: Array<SrcOp | null> = [];
 
         try {
             switch (this.input.lookahead(1)) {
@@ -813,8 +813,8 @@ export class SourceGenTriggers extends TreeParser {
         }
     }
 
-    private terminal(label: GrammarAST | null): SrcOp[] {
-        let result: SrcOp[] = [];
+    private terminal(label: GrammarAST | null): Array<SrcOp | null> {
+        let result: Array<SrcOp | null> = [];
 
         try {
             const lookahead = this.input.lookahead(1);
