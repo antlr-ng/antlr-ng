@@ -419,7 +419,7 @@ export class LexerATNFactory extends ParserATNFactory {
                 // Check if the command is a call command (i.e. expects an argument).
                 const temp = this.targetGenerator.lexerCallCommandMap.get(id.getText());
                 if (temp) {
-                    this.g.tool.errorManager.grammarError(IssueCode.MisingLexerCommandArgument, this.g.fileName,
+                    this.g.tool.errorManager.grammarError(IssueCode.MissingLexerCommandArgument, this.g.fileName,
                         id.token!, id.getText());
                 } else {
                     this.g.tool.errorManager.grammarError(IssueCode.InvalidLexerCommand, this.g.fileName, id.token!,

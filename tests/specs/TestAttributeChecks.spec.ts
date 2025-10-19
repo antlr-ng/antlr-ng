@@ -96,20 +96,20 @@ describe("TestAttributeChecks", () => {
         ["$ids", ""],
         ["$labs", ""],
 
-        ["$lab", "error(" + IssueCode.IsolatedRuleRef + "): A.g4:10:13: missing attribute access on rule reference lab in $lab\n"],
-        ["$q", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference q in $q\n"],
-        ["$q.y", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference q in $q.y\n"],
-        ["$q = 3", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference q in $q\n"],
-        ["$q = 3;", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference q in $q = 3;\n"],
-        ["$q.y = 3;", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference q in $q.y\n"],
-        ["$q = $blort;", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference q in $q = $blort;\n" +
-            "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:18: unknown attribute reference blort in $blort\n"],
-        ["$a.ick", "error(" + IssueCode.UnknownRuleAttribute + "): A.g4:10:15: unknown attribute ick for rule a in $a.ick\n"],
-        ["$a.ick = 3;", "error(" + IssueCode.UnknownRuleAttribute + "): A.g4:10:15: unknown attribute ick for rule a in $a.ick\n"],
-        ["$b.e", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference b in $b.e\n"], // cant see rule refs outside alts
-        ["$b.d", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference b in $b.d\n"],
-        ["$c.text", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference c in $c.text\n"],
-        ["$lab.d", "error(" + IssueCode.InvalidRuleParameterRef + "): A.g4:10:17: parameter d of rule b is not accessible in this scope: $lab.d\n"],
+        ["$lab", "error(" + IssueCode.IsolatedRuleRef + "): A.g4:11:13: missing attribute access on rule reference lab in $lab\n"],
+        ["$q", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference q in $q\n"],
+        ["$q.y", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference q in $q.y\n"],
+        ["$q = 3", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference q in $q\n"],
+        ["$q = 3;", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference q in $q = 3;\n"],
+        ["$q.y = 3;", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference q in $q.y\n"],
+        ["$q = $blort;", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference q in $q = $blort;\n" +
+            "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:18: unknown attribute reference blort in $blort\n"],
+        ["$a.ick", "error(" + IssueCode.UnknownRuleAttribute + "): A.g4:11:15: unknown attribute ick for rule a in $a.ick\n"],
+        ["$a.ick = 3;", "error(" + IssueCode.UnknownRuleAttribute + "): A.g4:11:15: unknown attribute ick for rule a in $a.ick\n"],
+        ["$b.e", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference b in $b.e\n"], // cant see rule refs outside alts
+        ["$b.d", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference b in $b.d\n"],
+        ["$c.text", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference c in $c.text\n"],
+        ["$lab.d", "error(" + IssueCode.InvalidRuleParameterRef + "): A.g4:11:17: parameter d of rule b is not accessible in this scope: $lab.d\n"],
     ];
 
     const dynMembersChecks = [
@@ -173,15 +173,15 @@ describe("TestAttributeChecks", () => {
     ];
 
     const dynFinallyChecks = [
-        ["$a", "error(" + IssueCode.IsolatedRuleRef + "): A.g4:10:13: missing attribute access on rule reference a in $a\n"],
-        ["$b", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference b in $b\n"],
-        ["$lab", "error(" + IssueCode.IsolatedRuleRef + "): A.g4:10:13: missing attribute access on rule reference lab in $lab\n"],
-        ["$b::f", "error(" + IssueCode.UnknownRuleAttribute + "): A.g4:10:16: unknown attribute f for rule b in $b::f\n"],
-        ["$S", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:10:13: unknown attribute reference S in $S\n"],
-        ["$S::i", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:10:13: reference to undefined rule S in non-local ref $S::i\n"],
-        ["$S::i=$S::i", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:10:13: reference to undefined rule S in non-local ref $S::i\n" +
-            "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:10:19: reference to undefined rule S in non-local ref $S::i\n"],
-        ["$a::z", "error(" + IssueCode.UnknownRuleAttribute + "): A.g4:10:16: unknown attribute z for rule a in $a::z\n"],
+        ["$a", "error(" + IssueCode.IsolatedRuleRef + "): A.g4:11:13: missing attribute access on rule reference a in $a\n"],
+        ["$b", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference b in $b\n"],
+        ["$lab", "error(" + IssueCode.IsolatedRuleRef + "): A.g4:11:13: missing attribute access on rule reference lab in $lab\n"],
+        ["$b::f", "error(" + IssueCode.UnknownRuleAttribute + "): A.g4:11:16: unknown attribute f for rule b in $b::f\n"],
+        ["$S", "error(" + IssueCode.UnknownSimpleAttribute + "): A.g4:11:13: unknown attribute reference S in $S\n"],
+        ["$S::i", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:11:13: reference to undefined rule S in non-local ref $S::i\n"],
+        ["$S::i=$S::i", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:11:13: reference to undefined rule S in non-local ref $S::i\n" +
+            "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:11:19: reference to undefined rule S in non-local ref $S::i\n"],
+        ["$a::z", "error(" + IssueCode.UnknownRuleAttribute + "): A.g4:11:16: unknown attribute z for rule a in $a::z\n"],
 
         ["$S::j", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:11:13: reference to undefined rule S in non-local ref $S::j\n"],
         ["$S::j = 3;", "error(" + IssueCode.UndefinedRuleInNonlocalRef + "): A.g4:11:13: reference to undefined rule S in non-local ref $S::j = 3;\n"],
