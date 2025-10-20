@@ -481,7 +481,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             `import fs from "node:fs";`,
             `import {`,
             `	CharStream,	CommonTokenStream, DiagnosticErrorListener, Lexer, ParseTreeListener, ParseTreeWalker,`,
-            `    ParserRuleContext, PredictionMode, TerminalNode, ErrorNode, PredictionContext`,
+            `    ParserRuleContext, PredictionMode, TerminalNode, ErrorNode, PredictionContext, ParserATNSimulator`,
             `} from 'antlr4ng';`,
             `import { ${lexerName} } from './${lexerName}.js';`
         ];
@@ -544,8 +544,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             }
 
             lines.push(`    parser.interpreter.predictionMode = PredictionMode.${predictionMode};`);
-            lines.push(`    parser.buildParseTree = ${buildParseTree};`);
-            lines.push(`    parser.interpreter.traceATNSimulator = ${traceATN};`);
+            lines.push(`    parser.buildParseTrees = ${buildParseTree};`);
+            lines.push(`    ParserATNSimulator.traceATNSimulator = ${traceATN};`);
             lines.push(`    PredictionContext.traceATNSimulator = ${traceATN};`);
 
             lines.push(`    const tree = parser.${parserStartRuleName}();`);
@@ -939,7 +939,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
         block[block.length - 1] += ` finally {`;
         if (currentRule.finallyAction) {
-            block.push(`    ${this.renderAction(currentRule.finallyAction)}`);
+            block.push(`    ${this.renderAction(currentRule.finallyAction)[0]}`);
         }
         block.push(`    this.exitRule();`);
         block.push(`}`);
@@ -1028,7 +1028,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         block.push(`} finally {`);
 
         if (currentRule.finallyAction) {
-            block.push(`    ${this.renderAction(currentRule.finallyAction)}`);
+            block.push(`    ${this.renderAction(currentRule.finallyAction)[0]}`);
         }
 
         block.push(`    this.unrollRecursionContexts(parentContext);`);
@@ -1577,7 +1577,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             return [];
         }
 
-        return this.renderActionChunks(a.chunks);
+        return [this.renderActionChunks(a.chunks).join("")];
     }
 
     private renderSemPred(p: OutputModelObjects.SemPred): Lines {
@@ -1586,7 +1586,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(`this.state = ${p.stateNumber};`);
 
         const chunks = this.renderActionChunks(p.chunks);
-        result.push(`if (!(${chunks})) {`);
+        result.push(`if (!(${chunks.join("")})) {`);
 
         const failChunks = this.renderActionChunks(p.failChunks);
         result.push(`    throw this.createFailedPredicateException` +
@@ -1599,8 +1599,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderExceptionClause(e: OutputModelObjects.ExceptionClause): Lines {
         const result: Lines = this.startRendering("ExceptionClause");
 
-        result.push(`} catch (<catchArg>) {`);
-        result.push(`    ${this.renderAction(e.catchAction)}`);
+        result.push(`} catch (${this.renderAction(e.catchArg)[0]}) {`);
+        result.push(`    ${this.renderAction(e.catchAction)[0]}`);
         result.push(`}`);
 
         return this.endRendering("ExceptionClause", result);
@@ -1793,6 +1793,14 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return [`_${t.escapedName}: antlr.Token[] = [];`];
     }
 
+    private renderRuleContextDecl(r: OutputModelObjects.RuleContextDecl): Lines {
+        return [`_${r.escapedName}?: ${r.ctxName};`];
+    }
+
+    private renderRuleContextListDecl(rdecl: OutputModelObjects.RuleContextListDecl): Lines {
+        return [`_${rdecl.escapedName}: ${rdecl.ctxName} [] = [];`];
+    }
+
     private renderContextTokenGetterDecl(recognizerName: string, t: OutputModelObjects.ContextTokenGetterDecl): Lines {
         return [
             "",
@@ -1803,15 +1811,15 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     }
 
     private renderContextTokenListGetterDecl(t: OutputModelObjects.ContextTokenListGetterDecl): Lines {
-        return [`public ${t.name} (): antlr.TerminalNode[];`];
+        return [`public ${t.name}(): antlr.TerminalNode[];`];
     }
 
     private renderContextTokenListIndexedGetterDecl(recognizerName: string,
         t: OutputModelObjects.ContextTokenListIndexedGetterDecl): Lines {
         const result: Lines = this.startRendering("ContextTokenListIndexedGetterDecl");
 
-        result.push(`public ${t.name} (i: number): antlr.TerminalNode | null;`);
-        result.push(`public ${t.name} (i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {`);
+        result.push(`public ${t.name}(i: number): antlr.TerminalNode | null;`);
+        result.push(`public ${t.name}(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {`);
         result.push(`    if (i === undefined) {`);
         result.push(`        return this.getTokens(${recognizerName}.${t.name});`);
         result.push(`    } else {`);
@@ -1825,14 +1833,14 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     private renderContextRuleGetterDecl(r: OutputModelObjects.ContextRuleGetterDecl): Lines {
         return [
             "",
-            `public ${r.name} (): ${r.ctxName}${r.optional ? "| null" : ""} {`,
+            `public ${r.name}(): ${r.ctxName}${r.optional ? "| null" : ""} {`,
             `    return this.getRuleContext(0, ${r.ctxName})${!r.optional ? "!" : ""};`,
             `}`
         ];
     }
 
     private renderContextRuleListGetterDecl(r: OutputModelObjects.ContextRuleListGetterDecl): Lines {
-        return [`public ${r.escapedName} (): ${r.ctxName}[];`];
+        return [`public ${r.escapedName}(): ${r.ctxName}[];`];
     }
 
     private renderContextRuleListIndexedGetterDecl(r: OutputModelObjects.ContextRuleListIndexedGetterDecl): Lines {
@@ -1862,97 +1870,82 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         struct: OutputModelObjects.StructDecl): Lines {
         const result: Lines = this.startRendering("StructDecl");
 
-        const contextSuperClass = (outputFile as OutputModelObjects.ParserFile).contextSuperClass;
-        let superClass = "antlr.ParserRuleContext";
-        if (contextSuperClass) {
-            superClass = this.renderActionChunks([contextSuperClass]);
+        result.push(``, `export class ${struct.escapedName} extends antlr.ParserRuleContext {`);
+
+        const decls = this.renderDecls(outputFile, struct.name, struct.attrs);
+        let startLogEntry: string | undefined = undefined;
+        let endLogEntry: string | undefined = undefined;
+
+        if (this.logRendering && decls.length > 0) {
+            startLogEntry = decls.shift();
+            endLogEntry = decls.pop();
         }
 
-        if (parserFile.genVisitor) {
-            result.push(`import { ${parserFile.grammarName}Visitor } from "./${parserFile.grammarName}Visitor.js";`);
-            let interfaces = "";
-            if (struct.interfaces.length > 0) {
-                interfaces = " implements " + struct.interfaces.map((i) => {
-                    return `, ${i}`; // TODO: it's not clear if that is even used, let alone what it should be.
-                }).join(", ");
-            }
+        if (startLogEntry) {
+            result.push(`    ${startLogEntry}`);
+        }
 
-            result.push(`export class ${struct.escapedName} extends ${superClass}${interfaces} {`);
+        result.push(...decls.map((d) => {
+            return `    public ${d}`;
+        }));
 
-            const decls = this.renderDecls(outputFile, struct.name, struct.attrs);
-            let startLogEntry: string | undefined = undefined;
-            let endLogEntry: string | undefined = undefined;
+        if (endLogEntry) {
+            result.push(`    ${endLogEntry}`);
+        }
 
-            if (this.logRendering && decls.length > 0) {
-                startLogEntry = decls.shift();
-                endLogEntry = decls.pop();
-            }
+        result.push("");
 
-            if (startLogEntry) {
-                result.push(`    ${startLogEntry}`);
-            }
+        const block: Lines = [];
+        if (struct.ctorAttrs.length > 0) {
+            block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number<struct.ctorAttrs:{a |, <a.escapedName>: <a.type>}>) {`);
+            block.push(`    super(parent, invokingState);`);
 
-            result.push(...decls.map((d) => {
-                return `    public ${d}`;
-            }));
+            struct.ctorAttrs.forEach((a) => {
+                block.push(`    this.${a.escapedName} = ${a.escapedName};`);
+            });
 
-            if (endLogEntry) {
-                result.push(`    ${endLogEntry}`);
-            }
-
-            result.push("");
-
-            const block: Lines = [];
-            if (struct.ctorAttrs.length > 0) {
-                block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number<struct.ctorAttrs:{a |, <a.escapedName>: <a.type>}>) {`);
-                block.push(`    super(parent, invokingState);`);
-
-                struct.ctorAttrs.forEach((a) => {
-                    block.push(`    this.${a.escapedName} = ${a.escapedName};`);
-                });
-
-                block.push(`}`);
-            } else {
-                block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {`);
-                block.push(`    super(parent, invokingState);`);
-                block.push(`}`);
-            }
-
-            block.push(...this.renderDecls(outputFile, recognizerName, struct.getters));
-
-            const parser = (outputFile as OutputModelObjects.ParserFile).parser;
-            block.push(`public override get ruleIndex(): number {`);
-            block.push(`    return ${parser.name}.RULE_${struct.derivedFromName};`);
             block.push(`}`);
-
-            // Don't need copy unless we have subclasses.
-            if (struct.provideCopyFrom) {
-                block.push("");
-                block.push(`public override copyFrom(ctx: ${struct.name}): void {`);
-                block.push(`    super.copyFrom(ctx);`);
-
-                for (const a of struct.attrs) {
-                    block.push(`    this.${a.escapedName} = ctx.${a.escapedName};`);
-                }
-                block.push(`}`);
-            }
-
-            for (const method of struct.dispatchMethods) {
-                if (method instanceof OutputModelObjects.VisitorDispatchMethod) {
-                    block.push(...this.renderVisitorDispatchMethod(parser.grammarName, struct));
-                } else if (method instanceof OutputModelObjects.ListenerDispatchMethod) {
-                    block.push(...this.renderListenerDispatchMethod(parser.grammarName, struct, method));
-                }
-            }
-
-            result.push(...this.formatLines(block, 4));
-            result.push(`}`);
-
-            return this.endRendering("StructDecl", result);
+        } else {
+            block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {`);
+            block.push(`    super(parent, invokingState);`);
+            block.push(`}`);
         }
+
+        block.push(...this.renderDecls(outputFile, recognizerName, struct.getters));
+
+        const parser = (outputFile as OutputModelObjects.ParserFile).parser;
+        block.push(`public override get ruleIndex(): number {`);
+        block.push(`    return ${parser.name}.RULE_${struct.derivedFromName};`);
+        block.push(`}`);
+
+        // Don't need copy unless we have subclasses.
+        if (struct.provideCopyFrom) {
+            block.push("");
+            block.push(`public override copyFrom(ctx: ${struct.name}): void {`);
+            block.push(`    super.copyFrom(ctx);`);
+
+            for (const a of struct.attrs) {
+                block.push(`    this.${a.escapedName} = ctx.${a.escapedName};`);
+            }
+            block.push(`}`);
+        }
+
+        for (const method of struct.dispatchMethods) {
+            if (method instanceof OutputModelObjects.VisitorDispatchMethod) {
+                block.push(...this.renderVisitorDispatchMethod(parser.grammarName, struct));
+            } else if (method instanceof OutputModelObjects.ListenerDispatchMethod) {
+                block.push(...this.renderListenerDispatchMethod(parser.grammarName, struct, method));
+            }
+        }
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`}`);
+
+        return this.endRendering("StructDecl", result);
+    }
 
     private renderAltLabelStructDecl(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-            currentRule: OutputModelObjects.RuleFunction, struct: OutputModelObjects.AltLabelStructDecl): Lines {
+        currentRule: OutputModelObjects.RuleFunction, struct: OutputModelObjects.AltLabelStructDecl): Lines {
         const result: Lines = this.startRendering("AltLabelStructDecl");
 
         result.push(`export class ${struct.escapedName} extends ${this.toTitleCase(struct.parentRule)}Context {`);
@@ -2078,12 +2071,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return [`this.channel = ${arg};`];
     };
 
-
-
     private renderLexerModeCommand = (arg: string, grammar: Grammar): Lines => {
         return [`this.mode = ${arg};`];
     };
+
     private renderLexerPushModeCommand = (arg: string, grammar: Grammar): Lines => {
         return [`this.pushMode(${arg});`];
     };
+
 }

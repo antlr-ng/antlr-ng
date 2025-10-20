@@ -11,7 +11,6 @@ import type { IToolMessageOptions } from "../config/config.js";
 import { Issue } from "./Issue.js";
 import { IssueCode, IssueSeverity } from "./Issues.js";
 import { ToolListener } from "./ToolListener.js";
-import { basename } from "../support/fs-helpers.js";
 
 /**
  * A class to take care of individual {@link Issue}s. It can notify registered listeners about incoming
@@ -52,12 +51,6 @@ export class ErrorManager {
     }
 
     public configure(formatOptions: IToolMessageOptions) {
-        this.errors = 0;
-        this.warnings = 0;
-        this.formatOptions = formatOptions;
-    }
-
-    public configure(longMessages?: boolean, warningsAreErrors?: boolean) {
         this.errors = 0;
         this.warnings = 0;
         this.formatOptions = formatOptions;
