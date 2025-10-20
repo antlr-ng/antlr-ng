@@ -15,8 +15,6 @@ import { defineConfig } from "../../../src/config/config.js";
 import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { DOTGenerator } from "../../../src/tool/DOTGenerator.js";
 import { Grammar, LexerGrammar } from "../../../src/tool/index.js";
-import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
-import { writeFileSync } from "node:fs";
 
 const tsGenerator = new TypeScriptTargetGenerator();
 
@@ -27,7 +25,7 @@ const parameters = defineConfig({
 });
 
 describe("General", () => {
-    it.only("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
+    it("Bug #33 Escaping issues with backslash in .dot file comparison", async () => {
         const sourcePath = fileURLToPath(new URL("data/abbLexer.g4", import.meta.url));
         const lexerGrammarText = await readFile(sourcePath, "utf8");
         const lexerGrammar = new LexerGrammar(lexerGrammarText);
