@@ -17,11 +17,15 @@ import { CppTargetGenerator } from "../../../src/default-target-generators/CppTa
 import { Grammar } from "../../../src/index.js";
 import { fileSystem } from "../../../src/tool-parameters.js";
 import { LexerGrammar } from "../../../src/tool/LexerGrammar.js";
+import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
 
-describe.skip("Test built-in generators", () => {
+describe("Test built-in generators", () => {
     const targetDir = "/Users/mike/Downloads/antlr/mysql/generated";
 
-    const generator: ITargetGenerator = new CppTargetGenerator({ exportMacro: "ANTLR4CPP_PUBLIC", });
+    const cppGenerator: ITargetGenerator = new CppTargetGenerator({ exportMacro: "ANTLR4CPP_PUBLIC", });
+    const tsGenerator: ITargetGenerator = new TypeScriptTargetGenerator();
+
+    const activeGenerator = cppGenerator;
 
     const copyFile = async (name: string): Promise<void> => {
         const generated = fileSystem.readFileSync(`/out/${name}`, "utf-8");
@@ -29,9 +33,9 @@ describe.skip("Test built-in generators", () => {
     };
 
     const copyCodeFile = async (name: string) => {
-        await copyFile(`${name}${generator.codeFileExtension}`);
-        if (generator.needsDeclarationFile) {
-            const headerExt = generator.declarationFileExtension;
+        await copyFile(`${name}${activeGenerator.codeFileExtension}`);
+        if (activeGenerator.needsDeclarationFile) {
+            const headerExt = activeGenerator.declarationFileExtension;
             await copyFile(`${name}${headerExt}`);
         }
     };
@@ -49,7 +53,7 @@ describe.skip("Test built-in generators", () => {
                 generateBaseVisitor: true,
                 package: "antlr4",
             },
-            generators: [generator],
+            generators: [activeGenerator],
         });
 
         let grammarPath = fileURLToPath(new URL("../../grammars/MySQLLexer.g4", import.meta.url));
