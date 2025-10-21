@@ -271,7 +271,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(`using namespace antlrcpp;`);
 
         const namespaceName = parserFile.genPackage;
-
         if (namespaceName) {
             result.push(`using namespace ${namespaceName};`, "");
             result.push("");
@@ -333,12 +332,78 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result.join("\n");
     }
 
-    public renderBaseListenerFile(file: OutputModelObjects.ListenerFile, declaration: boolean): string {
-        if (declaration) {
-            return this.renderBaseListenerFileHeader(file);
-        } else {
-            return this.renderBaseListenerFileImplementation(file);
+    public renderBaseListenerFile(listenerFile: OutputModelObjects.ListenerFile, header: boolean): string {
+        const result: Lines = this.renderFileHeader(listenerFile);
+        result.push(...this.renderAction(listenerFile.namedActions.get("header"), header), ``);
+
+        if (!header) {
+            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude"), header), ``);
+            result.push(`#include "${listenerFile.grammarName}BaseListener.h"`, ``);
+            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude"), header), ``);
+
+            const namespaceName = listenerFile.genPackage;
+            if (namespaceName) {
+                result.push(`using namespace ${namespaceName};`, "");
+            }
+
+            result.push(``);
+            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerdefinitions"), header));
+
+            return result.join("\n");
         }
+
+        result.push(`#pragma once`, ``);
+        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude"), header), ``);
+        result.push(`#include "antlr4-runtime.h"`);
+        result.push(`#include "${listenerFile.grammarName}Listener.h"`, ``);
+        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude"), header), ``);
+
+        const namespaceName = listenerFile.genPackage;
+        if (namespaceName) {
+            result.push(`namespace ${namespaceName} {`);
+        }
+
+        result.push(``);
+
+        result.push(`/**`);
+        result.push(` * This class provides an empty implementation of ${listenerFile.grammarName}Listener,`);
+        result.push(` * which can be extended to create a listener which only needs to handle a subset`);
+        result.push(` * of the available methods.`);
+        result.push(` */`);
+        result.push(`class ${this.defines?.exportMacro ?? ""} ${listenerFile.grammarName}BaseListener : public ` +
+            `${listenerFile.grammarName}Listener {`);
+        result.push(`public:`);
+
+        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerdeclarations"), header), ``);
+
+        for (const lname of listenerFile.listenerNames) {
+            const name = this.toTitleCase(lname);
+            const parserName = listenerFile.parserName;
+            result.push(`  virtual void enter${name}(${parserName}::${name}Context * /*ctx*/) override { }`);
+            result.push(`  virtual void exit${name}(${parserName}::${name}Context * /*ctx*/) override { }`);
+            result.push(``);
+        }
+
+        result.push(``);
+        result.push(`  virtual void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override { }`);
+        result.push(`  virtual void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override { }`);
+        result.push(`  virtual void visitTerminal(antlr4::tree::TerminalNode * /*node*/) override { }`);
+        result.push(`  virtual void visitErrorNode(antlr4::tree::ErrorNode * /*node*/) override { }`);
+        result.push(``);
+
+        if (listenerFile.namedActions.get("baselistenermembers")) {
+            result.push(`private:`);
+            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenermembers"), header), ``);
+        }
+
+        result.push(`};`);
+        result.push(``);
+
+        if (namespaceName) {
+            result.push(`}  // namespace ${namespaceName}`);
+        }
+
+        return result.join("\n");
     }
 
     public renderListenerFile(listenerFile: OutputModelObjects.ListenerFile, declaration: boolean): string {
@@ -1359,57 +1424,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderListenerFileImplementation(listenerFile: OutputModelObjects.ListenerFile): string {
         // C++ listener typically doesn't need an implementation file for pure virtual methods
-
-        return "";
-    }
-
-    private renderBaseListenerFileHeader(listenerFile: OutputModelObjects.ListenerFile): string {
-        const result: Lines = [
-            ...this.renderFileHeader(listenerFile),
-            "",
-            "#pragma once",
-            "",
-            "#include \"antlr4-runtime.h\"",
-            `#include "${listenerFile.grammarName}Listener.h"`,
-            "",
-        ];
-
-        const namespaceName = listenerFile.genPackage;
-        if (namespaceName) {
-            result.push(`namespace ${namespaceName} {`);
-            result.push("");
-        }
-
-        result.push(`class ${listenerFile.grammarName}BaseListener : public ${listenerFile.grammarName}Listener {`);
-        result.push("public:");
-        result.push("");
-
-        for (const lname of listenerFile.listenerNames) {
-            result.push(`    virtual void enter${this.toTitleCase(lname)}(${listenerFile.parserName}::` +
-                `${this.toTitleCase(lname)}Context * /*ctx*/) override { }`);
-            result.push(`    virtual void exit${this.toTitleCase(lname)}(${listenerFile.parserName}::` +
-                `${this.toTitleCase(lname)}Context * /*ctx*/) override { }`);
-            result.push("");
-        }
-
-        result.push("    virtual void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override { }");
-        result.push("    virtual void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override { }");
-        result.push("    virtual void visitTerminal(antlr4::tree::TerminalNode * /*node*/) override { }");
-        result.push("    virtual void visitErrorNode(antlr4::tree::ErrorNode * /*node*/) override { }");
-        result.push("");
-
-        result.push("};");
-
-        if (namespaceName) {
-            result.push("");
-            result.push(`}  // namespace ${namespaceName}`);
-        }
-
-        return result.join("\n");
-    }
-
-    private renderBaseListenerFileImplementation(listenerFile: OutputModelObjects.ListenerFile): string {
-        // C++ base listener implementation file (empty implementations already in header)
 
         return "";
     }
