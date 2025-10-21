@@ -11,34 +11,34 @@ Target generators implement the `ITargetGenerator` interface and extend `Generat
 ### TypeScriptTargetGenerator.ts
 
 The TypeScript target generator produces TypeScript code from ANTLR4 grammars. It generates:
+
 - Parser files (.ts)
 - Lexer files (.ts)
 - Listener interfaces (.ts)
 - Visitor interfaces (.ts)
 
 TypeScript features:
+
 - Uses ES6+ syntax
 - Supports optional methods in interfaces (no base listener/visitor needed)
 - Generates type-safe code with proper TypeScript types
 
+> Note: The TypeScript target generator has already been optimized for TypeScript best practices and does not strictly follow the old ANTLR4 ST4 templates.
+
 ### CppTargetGenerator.ts
 
-The C++ target generator produces C++ code from ANTLR grammars. It generates:
+The C++ target generator produces C++ code from ANTLR4 grammars. It generates:
+
 - Parser header and implementation files (.h, .cpp)
 - Lexer header and implementation files (.h, .cpp)
-- Listener interface and base class (.h)
-- Visitor interface and base class (.h)
+- (Base)Listener interface and base class (.h)
+- (Base)Visitor interface and base class (.h)
 
-C++ features:
-- Generates both header (.h) and implementation (.cpp) files
-- Uses smart pointers (`std::shared_ptr`) for memory management
-- Supports namespaces
-- Generates base listener and visitor classes
-- Compatible with ANTLR4 C++ runtime
+The generated code is compatible with the current C++ ANTLR4 runtime.
 
 ## Template Files
 
-The generators are TypeScript implementations based on the StringTemplate4 files located in `templates/codegen/`. Once all languages are done these templatest will be removed.
+The generators are TypeScript implementations based on the StringTemplate4 files located in `templates/codegen/`. Once all languages are done these templates will be removed.
 
 ## Creating a New Target Generator
 
@@ -74,15 +74,18 @@ The generators process output model objects (OMOs) which represent semantic elem
 - `StructDecl` - Rule context classes
 - `SrcOp` - Various source operations (match, invoke, etc.)
 
+The structure of the generators closely follows the old ANTLR4 ST4 templates for easier migration. A naming scheme is used to map OMO types (and hence string template names) to render method names. For example, the `ParserFile` OMO is rendered by the `renderParserFile` method.
+
 ### Source Operations
 
 The `srcOpMap` in each generator maps output model object types to render methods. This allows clean separation of concerns and easy addition of new operations.
 
 ### Code Generation Flow
 
-1. antlr-ng parses the grammar file
-2. The output model controller creates output model objects
-3. The target generator walks the model and renders code
-4. The rendered code is written to output files
+1. antlr-ng parses the grammar file(s) and creates a parse tree.
+2. The parse tree is converted to an AST and processed to create output model objects. There are several phases involved in this process (grammar import, semantic phase, left recursion removal etc.).
+3. The generated output model is passed to the code generator, which in turn invokes the target generator(s).
+4. A target generator walks the model and renders code.
+5. The rendered code is written to output files.
 
 ## Notes
