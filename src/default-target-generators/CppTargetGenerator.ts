@@ -704,59 +704,75 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         parserStartRuleName: string | undefined, showDiagnosticErrors: boolean, traceATN: boolean, profile: boolean,
         showDFA: boolean, useListener: boolean, useVisitor: boolean, predictionMode: string, buildParseTree: boolean,
     ): string {
-        // C++ test file generation
-        const lines: Lines = [
-            `#include <iostream>`,
-            `#include <fstream>`,
-            `#include "antlr4-runtime.h"`,
-            `#include "${lexerName}.h"`
-        ];
+        const result: Lines = [];
 
-        if (parserName) {
-            lines.push(`#include "${parserName}.h"`);
+        result.push(`#include <iostream>`, ``);
+        result.push(`#include "antlr4-runtime.h"`);
+        result.push(`#include "<lexerName>.h"`);
 
-            if (useListener) {
-                lines.push(`#include "${grammarName}Listener.h"`);
-            }
+        result.push(`<if(parserName)>`);
+        result.push(`#include "<parserName>.h"`);
+        result.push(`<endif>`);
 
-            if (useVisitor) {
-                lines.push(`#include "${grammarName}Visitor.h"`);
-            }
+        result.push(``);
+        result.push(`using namespace antlr4;`, ``);
+
+        if (parserName !== undefined) {
+            result.push(`class TreeShapeListener : public tree::ParseTreeListener {`);
+            result.push(`public:`);
+            result.push(`  void visitTerminal(tree::TerminalNode *) override {}`);
+            result.push(`  void visitErrorNode(tree::ErrorNode *) override {}`);
+            result.push(`  void exitEveryRule(ParserRuleContext *) override {}`);
+            result.push(`  void enterEveryRule(ParserRuleContext *ctx) override {`);
+            result.push(`    for (auto child : ctx->children) {`);
+            result.push(`      tree::ParseTree *parent = child->parent;`);
+            result.push(`      ParserRuleContext *rule = dynamic_cast<ParserRuleContext *>(parent);`);
+            result.push(`      if (rule != ctx) {`);
+            result.push(`        throw "Invalid parse tree shape detected.";`);
+            result.push(`      }`);
+            result.push(`    }`);
+            result.push(`  }`);
+            result.push(`};`);
         }
 
-        lines.push(
-            ``,
-            `using namespace antlr4;`,
-            ``,
-            `int main(int argc, const char* argv[]) {`,
-            `    std::ifstream stream;`,
-            `    stream.open(argv[1]);`,
-            `    ANTLRInputStream input(stream);`,
-            `    ${lexerName} lexer(&input);`,
-            `    CommonTokenStream tokens(&lexer);`,
-        );
+        result.push(``);
+        result.push(`int main(int argc, const char* argv[]) {`);
+        result.push(`  ANTLRFileStream input;`);
+        result.push(`  input.loadFromFile(argv[1]);`);
+        result.push(`  ${lexerName} lexer(&input);`);
+        result.push(`  CommonTokenStream tokens(&lexer);`);
 
-        if (parserName) {
-            lines.push(
-                `    ${parserName} parser(&tokens);`,
-                `    tree::ParseTree *tree = parser.${parserStartRuleName}();`,
-                `    std::cout << tree->toStringTree(&parser) << std::endl;`,
-            );
+        if (parserName !== undefined) {
+            result.push(`  ${parserName} parser(&tokens);`);
+            result.push(`  parser.getInterpreter<atn::ParserATNSimulator>()->setPredictionMode(antlr4::atn::` +
+                `PredictionMode::${predictionMode});`);
+            if (!buildParseTree) {
+                result.push(`  parser.setBuildParseTree(false);`);
+            }
+
+            if (showDiagnosticErrors) {
+                result.push(`  DiagnosticErrorListener errorListener;`);
+                result.push(`  parser.addErrorListener(&errorListener);`);
+            }
+
+            result.push(`  tree::ParseTree *tree = parser.${parserStartRuleName}();`);
+            result.push(`  TreeShapeListener listener;`);
+            result.push(`  tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);`);
         } else {
-            lines.push(
-                `    tokens.fill();`,
-                `    for (auto token : tokens.getTokens()) {`,
-                `        std::cout << token->toString() << std::endl;`,
-                `    }`,
-            );
+            result.push(`  tokens.fill();`);
+            result.push(`  for (auto token : tokens.getTokens())`);
+            result.push(`    std::cout << token->toString() << std::endl;`);
+
+            if (showDFA) {
+                result.push(`  std::cout << lexer.getInterpreter<atn::LexerATNSimulator>()->getDFA(` +
+                    `Lexer::DEFAULT_MODE).toLexerString();`);
+            }
         }
 
-        lines.push(
-            `    return 0;`,
-            `}`,
-        );
+        result.push(`  return 0;`);
+        result.push(`}`);
 
-        return lines.join("\n");
+        return result.join("\n");
     }
 
     // Private helper methods for rendering different parts
