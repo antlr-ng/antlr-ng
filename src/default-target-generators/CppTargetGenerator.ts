@@ -332,33 +332,33 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result.join("\n");
     }
 
-    public renderBaseListenerFile(listenerFile: OutputModelObjects.ListenerFile, header: boolean): string {
+    public renderBaseListenerFile(listenerFile: OutputModelObjects.ListenerFile, declaration: boolean): string {
         const result: Lines = this.renderFileHeader(listenerFile);
-        result.push(...this.renderAction(listenerFile.namedActions.get("header"), header), ``);
+        result.push(...this.renderAction(listenerFile.namedActions.get("header"), declaration), ``);
 
-        if (!header) {
-            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude"), header), ``);
+        const namespaceName = listenerFile.genPackage;
+        if (!declaration) {
+            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude"), declaration), ``);
             result.push(`#include "${listenerFile.grammarName}BaseListener.h"`, ``);
-            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude"), header), ``);
+            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude"), declaration)
+                , ``);
 
-            const namespaceName = listenerFile.genPackage;
             if (namespaceName) {
                 result.push(`using namespace ${namespaceName};`, "");
             }
 
             result.push(``);
-            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerdefinitions"), header));
+            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerdefinitions"), declaration));
 
             return result.join("\n");
         }
 
         result.push(`#pragma once`, ``);
-        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude"), header), ``);
+        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude"), declaration), ``);
         result.push(`#include "antlr4-runtime.h"`);
         result.push(`#include "${listenerFile.grammarName}Listener.h"`, ``);
-        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude"), header), ``);
+        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude"), declaration), ``);
 
-        const namespaceName = listenerFile.genPackage;
         if (namespaceName) {
             result.push(`namespace ${namespaceName} {`);
         }
@@ -374,7 +374,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
             `${listenerFile.grammarName}Listener {`);
         result.push(`public:`);
 
-        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerdeclarations"), header), ``);
+        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerdeclarations"), declaration), ``);
 
         for (const lname of listenerFile.listenerNames) {
             const name = this.toTitleCase(lname);
@@ -393,7 +393,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         if (listenerFile.namedActions.get("baselistenermembers")) {
             result.push(`private:`);
-            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenermembers"), header), ``);
+            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenermembers"), declaration), ``);
         }
 
         result.push(`};`);
@@ -414,12 +414,72 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
     }
 
-    public renderBaseVisitorFile(file: OutputModelObjects.VisitorFile, declaration: boolean): string {
-        if (declaration) {
-            return this.renderBaseVisitorFileHeader(file);
-        } else {
-            return this.renderBaseVisitorFileImplementation(file);
+    public renderBaseVisitorFile(visitorFile: OutputModelObjects.VisitorFile, declaration: boolean): string {
+        const result: Lines = this.renderFileHeader(visitorFile);
+        result.push(...this.renderAction(visitorFile.namedActions.get("header"), declaration), ``);
+
+        const namespaceName = visitorFile.genPackage;
+        if (!declaration) {
+            result.push(``);
+            result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpreinclude"), declaration));
+            result.push(`#include "${visitorFile.grammarName}BaseVisitor.h"`, ``);
+
+            result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpostinclude"), declaration), ``);
+
+            if (namespaceName) {
+                result.push(`using namespace ${namespaceName};`, "");
+            }
+
+            result.push(...this.renderAction(visitorFile.namedActions.get("basevisitordefinitions"), declaration), ``);
         }
+
+        result.push(`#pragma once`);
+        result.push(``);
+        result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpreinclude"), declaration), ``);
+        result.push(`#include "antlr4-runtime.h"`);
+        result.push(`#include "${visitorFile.grammarName}Visitor.h"`);
+        result.push(``);
+        result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpostinclude"), declaration), ``);
+
+        if (namespaceName) {
+            result.push(`namespace ${namespaceName} {`);
+        }
+
+        result.push(``);
+        result.push(`/**`);
+        result.push(` * This class provides an empty implementation of ${visitorFile.grammarName}Visitor, which ` +
+            `can be`);
+        result.push(` * extended to create a visitor which only needs to handle a subset of the available methods.`);
+        result.push(` */`);
+        result.push(`class ${this.defines?.exportMacro ?? ""} ${visitorFile.grammarName}BaseVisitor : public ` +
+            `${visitorFile.grammarName}Visitor {`);
+        result.push(`public:`);
+        result.push(...this.renderAction(visitorFile.namedActions.get("basevisitordeclarations"), declaration), ``);
+
+        for (const lname of visitorFile.visitorNames) {
+            const name = this.toTitleCase(lname);
+            const parserName = visitorFile.parserName;
+            result.push(`  virtual std::any visit${name}(${parserName}::${name}Context *ctx) override {`);
+            result.push(`    return visitChildren(ctx);`);
+            result.push(`  }`);
+            result.push(``);
+        }
+
+        result.push(``);
+
+        if (visitorFile.namedActions.get("basevisitormembers")) {
+            result.push(`private:`);
+            result.push(...this.renderAction(visitorFile.namedActions.get("basevisitormembers"), declaration));
+        }
+
+        result.push(`};`);
+        result.push(``);
+
+        if (namespaceName) {
+            result.push(`}  // namespace ${visitorFile.genPackage}`);
+        }
+
+        return result.join("\n");
     }
 
     public renderVisitorFile(visitorFile: OutputModelObjects.VisitorFile, declaration: boolean): string {
@@ -1467,51 +1527,6 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private renderVisitorFileImplementation(visitorFile: OutputModelObjects.VisitorFile): string {
         // C++ visitor typically doesn't need an implementation file for pure virtual methods
-
-        return "";
-    }
-
-    private renderBaseVisitorFileHeader(visitorFile: OutputModelObjects.VisitorFile): string {
-        const result: Lines = [
-            ...this.renderFileHeader(visitorFile),
-            "",
-            "#pragma once",
-            "",
-            "#include \"antlr4-runtime.h\"",
-            `#include "${visitorFile.grammarName}Visitor.h"`,
-            "",
-        ];
-
-        const namespaceName = visitorFile.genPackage;
-        if (namespaceName) {
-            result.push(`namespace ${namespaceName} {`);
-            result.push("");
-        }
-
-        result.push(`class ${visitorFile.grammarName}BaseVisitor : public ${visitorFile.grammarName}Visitor {`);
-        result.push("public:");
-        result.push("");
-
-        for (const lname of visitorFile.visitorNames) {
-            result.push(`    virtual std::any visit${this.toTitleCase(lname)}(${visitorFile.parserName}::` +
-                `${this.toTitleCase(lname)}Context *ctx) override {`);
-            result.push("        return visitChildren(ctx);");
-            result.push("    }");
-            result.push("");
-        }
-
-        result.push("};");
-
-        if (namespaceName) {
-            result.push("");
-            result.push(`}  // namespace ${namespaceName}`);
-        }
-
-        return result.join("\n");
-    }
-
-    private renderBaseVisitorFileImplementation(visitorFile: OutputModelObjects.VisitorFile): string {
-        // C++ base visitor implementation file (empty implementations already in header)
 
         return "";
     }
