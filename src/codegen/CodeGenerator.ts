@@ -12,7 +12,6 @@ import { IssueCode } from "../tool/Issues.js";
 import { OutputModelController } from "./OutputModelController.js";
 import { ParserFactory } from "./ParserFactory.js";
 
-// Possible targets:
 import type { IGenerationOptions } from "../config/config.js";
 import { fileSystem } from "../tool-parameters.js";
 import type { ITargetGenerator } from "./ITargetGenerator.js";
@@ -121,9 +120,9 @@ export class CodeGenerator {
      * Does not change per target.
      */
     public writeVocabFile(): void {
-        const tokenVocabSerialization = this.getTokenVocabOutput();
         const fileName = this.getVocabFileName();
         if (fileName) {
+            const tokenVocabSerialization = this.getTokenVocabOutput();
             this.writeFile(tokenVocabSerialization, fileName);
         }
     }

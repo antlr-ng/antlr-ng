@@ -31,7 +31,6 @@
             "stopOnEntry": false,
             "smartStep": true,
             "console": "integratedTerminal",
-            "preLaunchTask": "tsc: watch",
             "trace": false
         },
         {
@@ -50,7 +49,6 @@
             "stopOnEntry": false,
             "smartStep": true,
             "console": "integratedTerminal",
-            "preLaunchTask": "tsc: watch",
             "trace": false
         },
         {
@@ -73,7 +71,6 @@
             "stopOnEntry": false,
             "smartStep": true,
             "console": "integratedTerminal",
-            "preLaunchTask": "tsc: watch",
             "trace": false,
         },
         {
@@ -94,7 +91,6 @@
             "stopOnEntry": false,
             "smartStep": true,
             "console": "integratedTerminal",
-            "preLaunchTask": "tsc: watch",
             "trace": false
         },
         {
@@ -117,7 +113,6 @@
             "stopOnEntry": false,
             "smartStep": true,
             "console": "integratedTerminal",
-            "preLaunchTask": "tsc: watch",
             "trace": false
         },
         {
@@ -134,7 +129,6 @@
             "stopOnEntry": false,
             "smartStep": true,
             "console": "integratedTerminal",
-            "preLaunchTask": "tsc: watch",
             "trace": false
         },
         {
@@ -154,12 +148,12 @@
                 "**/node_modules/**"
             ],
             "console": "integratedTerminal",
-            "smartStep": true
+            "smartStep": true,
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug Buil-in Test File",
+            "name": "Debug Built-in Test File",
             "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
             "args": [
                 "run",
@@ -173,7 +167,7 @@
                 "**/node_modules/**"
             ],
             "console": "integratedTerminal",
-            "smartStep": true
+            "smartStep": true,
         }
     ]
 }

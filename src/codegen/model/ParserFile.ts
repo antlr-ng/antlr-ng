@@ -14,7 +14,6 @@ import { Parser } from "./Parser.js";
 
 export class ParserFile extends OutputFile {
     public genPackage?: string;
-    public exportMacro?: string;
     public genListener: boolean;
     public genVisitor: boolean;
 
@@ -34,11 +33,10 @@ export class ParserFile extends OutputFile {
         const g = factory.g;
         this.namedActions = this.buildNamedActions(g);
         this.genPackage = options.package;
-        this.exportMacro = g.getOptionString("exportMacro");
 
         // Need the below members in the ST for Python, C++.
-        this.genListener = options.generateListener ?? false;
-        this.genVisitor = options.generateVisitor ?? false;
+        this.genListener = options.generateListener;
+        this.genVisitor = options.generateVisitor;
         this.grammarName = g.name;
 
         if (g.getOptionString("contextSuperClass")) {

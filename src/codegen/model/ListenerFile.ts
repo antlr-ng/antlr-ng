@@ -17,7 +17,6 @@ export class ListenerFile extends OutputFile {
     // These fields are used in some code generation templates:
 
     public accessLevel?: string;
-    public exportMacro?: string;
     public grammarName: string;
     public parserName: string;
 
@@ -65,7 +64,6 @@ export class ListenerFile extends OutputFile {
         }
 
         this.accessLevel = g.getOptionString("accessLevel");
-        this.exportMacro = g.getOptionString("exportMacro");
     }
 
     public override get parameterFields(): string[] {

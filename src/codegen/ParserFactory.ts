@@ -107,13 +107,13 @@ export class ParserFactory implements IOutputModelFactory {
         return new CodeBlockForAlt(this);
     }
 
-    public finishAlternative(blk: CodeBlockForAlt, ops: SrcOp[] | undefined): CodeBlockForAlt {
+    public finishAlternative(blk: CodeBlockForAlt, ops?: Array<SrcOp | null>): CodeBlockForAlt {
         blk.ops = ops ?? [];
 
         return blk;
     }
 
-    public stringRef(id: GrammarAST, label: GrammarAST | null): SrcOp[] | undefined {
+    public stringRef(id: GrammarAST, label: GrammarAST | null): Array<SrcOp | null> {
         return this.tokenRef(id, label, null);
     }
 
@@ -142,7 +142,7 @@ export class ParserFactory implements IOutputModelFactory {
         return this.controller.currentRuleFunction;
     }
 
-    public tokenRef(id: GrammarAST, labelAST: GrammarAST | null, args: GrammarAST | null): SrcOp[] {
+    public tokenRef(id: GrammarAST, labelAST: GrammarAST | null, args: GrammarAST | null): Array<SrcOp | null> {
         const matchOp = new MatchToken(this, id as TerminalAST);
 
         if (labelAST) {
@@ -166,7 +166,7 @@ export class ParserFactory implements IOutputModelFactory {
 
         const listLabelOp = this.getAddToListOpIfListLabelPresent(matchOp, labelAST);
 
-        return [matchOp, listLabelOp!];
+        return [matchOp, listLabelOp];
     }
 
     public getTokenLabelDecl(label: string): Decl {

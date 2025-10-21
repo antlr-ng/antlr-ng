@@ -73,6 +73,7 @@
         "generate-testp4": "npm run generate-parser -- -o ./tests/generated ./tests/grammars/Psl.g4",
         "generate-testp5": "npm run generate-parser -- -o ./tests/generated ./tests/grammars/expr.g4",
         "generate-parser": "antlr-ng -Dlanguage=TypeScript --exact-output-dir",
+        "generate-mysql": "antlr-ng -Dlanguage=Cpp -DexportMacro=ANTLR4CPP_PUBLIC -p antlr4 --exact-output-dir -l -v -o /Users/mike/Downloads/antlr/mysql/generated/old  ./tests/grammars/MySQLLexer.g4 ./tests/grammars/MySQLParser.g4",
         "generate-unicode-data": "tsx ./build/generate-unicode-data.ts",
         "generate-version-file": "tsx ./build/generate-version-file.ts",
         "generate-docs": "typedoc --options typedoc.json",

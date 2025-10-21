@@ -26,6 +26,9 @@ export class ErrorManager {
     private listeners = new Array<ToolListener>();
     private formatOptions: IToolMessageOptions;
 
+    private longMessages = false;
+    private warningsAreErrors = false;
+
     /**
      * Track separately so if someone adds a listener, it's the only one instead of it and the default stderr listener.
      */

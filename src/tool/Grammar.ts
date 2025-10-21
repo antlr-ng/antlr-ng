@@ -251,6 +251,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
             }
 
             this.ast = root;
+            this.name = (this.ast.children[0]).getText()!;
             this.tokenStream = root.tokenStream;
             this.originalTokenStream = this.tokenStream;
 

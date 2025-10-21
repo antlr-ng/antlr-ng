@@ -32,6 +32,9 @@ export interface IRenderCollectionOptions {
 
     /** The string to use for the final shape of the elements. */
     template?: string;
+
+    /** If set, the `null` value is rendered with the given value, otherwise as the literal "null". */
+    null?: string;
 }
 
 /**
@@ -58,8 +61,6 @@ export abstract class GeneratorBase implements Partial<ITargetGenerator> {
         ["\\".codePointAt(0)!, "\\\\"],
     ]);
 
-    public abstract readonly reservedWords: Set<string>;
-
     /** For debugging: when set to true includes start and end markers for each part. */
     public logRendering = false;
 
@@ -82,11 +83,11 @@ export abstract class GeneratorBase implements Partial<ITargetGenerator> {
 
     public readonly declarationFileExtension?: string;
 
+    protected abstract readonly reservedWords: Set<string>;
+
     /**
-     * Returns the default escape map for the target language. This is used to escape characters in strings.
+     * @returns the escape map for the target language. This is used to escape characters in strings.
      * Subclasses can override this method to provide additional or different escape sequences.
-     *
-     * @returns The default escape map for the target language.
      */
     public get charValueEscapeMap(): Map<CodePoint, string> {
         return GeneratorBase.defaultCharValueEscape;
@@ -128,6 +129,7 @@ export abstract class GeneratorBase implements Partial<ITargetGenerator> {
             const c = s.codePointAt(i)!;
             const escaped = (c <= Character.MAX_VALUE) ? this.charValueEscapeMap.get(Number(c)) : undefined;
             if (c !== 0x27 && escaped) { // Don't escape single quotes in strings for Java.
+                // XXX: remove any special handling for a particular language here.
                 result += escaped;
             } else if (this.shouldUseUnicodeEscapeForCodePointInDoubleQuotedString(c)) {
                 result += this.createUnicodeEscapedCodePoint(i);
@@ -265,13 +267,15 @@ export abstract class GeneratorBase implements Partial<ITargetGenerator> {
      *
      * @returns A list of strings, each representing a line of the formatted list.
      */
-    public renderList<T>(list: Iterable<T>, options: IRenderCollectionOptions): Lines {
+    public renderList(list: Iterable<string | number | null>, options: IRenderCollectionOptions): Lines {
         const result = [];
         const quote = options.quote ?? "";
         const separator = options.separator ?? ", ";
 
         let line = "";
-        for (const item of list) {
+        for (let item of list) {
+            item ??= options.null ?? "null";
+
             let value;
 
             if (options.template) {
@@ -335,6 +339,17 @@ export abstract class GeneratorBase implements Partial<ITargetGenerator> {
      */
     public toTitleCase(str: string): string {
         return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    /**
+     * Converts the first character of the given string to lowercase.
+     *
+     * @param str The string to convert.
+     *
+     * @returns The converted string with the first character in lowercase.
+     */
+    public toLowerCase(str: string): string {
+        return str.charAt(0).toLowerCase() + str.slice(1);
     }
 
     /**
@@ -529,19 +544,24 @@ export abstract class GeneratorBase implements Partial<ITargetGenerator> {
         return `\\u${v.toString(16).padStart(4, "0")}`;
     }
 
-    protected renderActionChunks(chunks?: OutputModelObjects.ActionChunk[]): string {
+    protected renderActionChunks(chunks?: OutputModelObjects.ActionChunk[]): Lines {
         const result: Lines = [];
 
         if (chunks) {
             for (const chunk of chunks) {
                 const methodName = `render${chunk.constructor.name}`;
                 const executor = this as IndexedObject<GeneratorBase>;
-                const method = executor[methodName] as (chunk: OutputModelObjects.ActionChunk) => Lines;
+                const method = executor[methodName] as ((chunk: OutputModelObjects.ActionChunk) => Lines) | undefined;
+
+                if (!method) {
+                    throw new Error(`No method ${methodName} found in ${this.constructor.name}`);
+                }
+
                 result.push(...method.call(executor, chunk) as Lines);
             }
         }
 
-        return result.join("");
+        return result;
     }
 
     /**

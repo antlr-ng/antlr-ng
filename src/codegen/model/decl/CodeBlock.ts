@@ -17,7 +17,7 @@ export class CodeBlock extends SrcOp {
     public preamble: SrcOp[] = [];
 
     @ModelElement
-    public ops: SrcOp[] = [];
+    public ops: Array<SrcOp | null> = [];
 
     /** Add local var decl */
     public addLocalDecl(d: Decl): void {
@@ -29,7 +29,7 @@ export class CodeBlock extends SrcOp {
         this.preamble.push(op);
     }
 
-    public addOp(op: SrcOp): void {
+    public addOp(op: SrcOp | null): void {
         this.ops.push(op);
     }
 

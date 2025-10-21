@@ -11,7 +11,6 @@ import { Rule } from "../../../tool/Rule.js";
 import { IOutputModelFactory } from "../../IOutputModelFactory.js";
 import { DispatchMethod } from "../DispatchMethod.js";
 import { ListenerDispatchMethod } from "../ListenerDispatchMethod.js";
-import { OutputModelObject } from "../OutputModelObject.js";
 import { VisitorDispatchMethod } from "../VisitorDispatchMethod.js";
 import { AttributeDecl } from "./AttributeDecl.js";
 import { ContextGetterDecl } from "./ContextGetterDecl.js";
@@ -52,13 +51,7 @@ export class StructDecl extends Decl {
     @ModelElement
     public ctorAttrs: AttributeDecl[] = [];
 
-    @ModelElement
-    public interfaces: OutputModelObject[] = [];
-
-    @ModelElement
-    public extensionMembers: OutputModelObject[] = [];
-
-    // Used to generate method signatures in Go target interfaces
+    /** Used to generate method signatures in Go target interfaces */
     @ModelElement
     public signatures = new OrderedHashSet<Decl>();
 
@@ -76,8 +69,8 @@ export class StructDecl extends Decl {
         this.provideCopyFrom = r.hasAltSpecificContexts();
 
         const options = factory.g.tool.toolConfiguration.generationOptions;
-        this.generateListener = options.generateListener ?? true;
-        this.generateVisitor = options.generateVisitor ?? false;
+        this.generateListener = options.generateListener;
+        this.generateVisitor = options.generateVisitor;
 
         this.addDispatchMethods(r);
     }
@@ -131,15 +124,6 @@ export class StructDecl extends Decl {
         for (const a of attrList) {
             this.addDecl(a);
         }
-
-    }
-
-    public implementInterface(value: OutputModelObject): void {
-        this.interfaces.push(value);
-    }
-
-    public addExtensionMember(member: OutputModelObject): void {
-        this.extensionMembers.push(member);
     }
 
     public isEmpty(): boolean {

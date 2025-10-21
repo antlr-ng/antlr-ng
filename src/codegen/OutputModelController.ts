@@ -303,7 +303,7 @@ export class OutputModelController {
         return this.factory.alternative(alt, outerMost)!;
     }
 
-    public finishAlternative(blk: CodeBlockForAlt, ops: SrcOp[], outerMost: boolean): CodeBlockForAlt {
+    public finishAlternative(blk: CodeBlockForAlt, ops: Array<SrcOp | null>, outerMost: boolean): CodeBlockForAlt {
         return this.factory.finishAlternative(blk, ops);
     }
 
@@ -311,17 +311,17 @@ export class OutputModelController {
         return this.factory.ruleRef(id, label, args)!;
     }
 
-    public tokenRef(id: GrammarAST, label: GrammarAST | null, args: GrammarAST | null): SrcOp[] {
-        return this.factory.tokenRef(id, label, args)!;
+    public tokenRef(id: GrammarAST, label: GrammarAST | null, args: GrammarAST | null): Array<SrcOp | null> {
+        return this.factory.tokenRef(id, label, args);
     }
 
-    public stringRef(id: GrammarAST, label: GrammarAST | null): SrcOp[] {
-        return this.factory.stringRef(id, label)!;
+    public stringRef(id: GrammarAST, label: GrammarAST | null): Array<SrcOp | null> {
+        return this.factory.stringRef(id, label);
     }
 
     /** (A|B|C) possibly with ebnfRoot and label. */
-    public set(setAST: GrammarAST, labelAST: GrammarAST | null, invert: boolean): SrcOp[] {
-        return this.factory.set(setAST, labelAST, invert)!;
+    public set(setAST: GrammarAST, labelAST: GrammarAST | null, invert: boolean): Array<SrcOp | null> {
+        return this.factory.set(setAST, labelAST, invert);
     }
 
     public epsilon(alt: Alternative, outerMost: boolean): CodeBlockForAlt {

@@ -59,14 +59,14 @@ export class CodeGenPipeline {
                     this.codeGenerator.writeListener(listener, false);
                 }
 
-                if (this.options.generateDeclarationFile) {
-                    const baseListener = this.codeGenerator.generateBaseListener(this.options, true);
-                    if (this.g.tool.errorManager.errors === errorCount) {
-                        this.codeGenerator.writeBaseListener(baseListener, true);
-                    }
-                }
-
                 if (this.options.generateBaseListener) {
+                    if (this.options.generateDeclarationFile) {
+                        const baseListener = this.codeGenerator.generateBaseListener(this.options, true);
+                        if (this.g.tool.errorManager.errors === errorCount) {
+                            this.codeGenerator.writeBaseListener(baseListener, true);
+                        }
+                    }
+
                     const baseListener = this.codeGenerator.generateBaseListener(this.options, false);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.codeGenerator.writeBaseListener(baseListener, false);
@@ -87,14 +87,14 @@ export class CodeGenPipeline {
                     this.codeGenerator.writeVisitor(visitor, false);
                 }
 
-                if (this.options.generateDeclarationFile) {
-                    const baseVisitor = this.codeGenerator.generateBaseVisitor(this.options, true);
-                    if (this.g.tool.errorManager.errors === errorCount) {
-                        this.codeGenerator.writeBaseVisitor(baseVisitor, true);
-                    }
-                }
-
                 if (this.options.generateBaseVisitor) {
+                    if (this.options.generateDeclarationFile) {
+                        const baseVisitor = this.codeGenerator.generateBaseVisitor(this.options, true);
+                        if (this.g.tool.errorManager.errors === errorCount) {
+                            this.codeGenerator.writeBaseVisitor(baseVisitor, true);
+                        }
+                    }
+
                     const baseVisitor = this.codeGenerator.generateBaseVisitor(this.options, false);
                     if (this.g.tool.errorManager.errors === errorCount) {
                         this.codeGenerator.writeBaseVisitor(baseVisitor, false);
