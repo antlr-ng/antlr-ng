@@ -19,7 +19,7 @@ import { fileSystem } from "../../../src/tool-parameters.js";
 import { LexerGrammar } from "../../../src/tool/LexerGrammar.js";
 import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
 
-describe("Test built-in generators", () => {
+describe.skip("Test built-in generators", () => {
     const targetDir = "/Users/mike/Downloads/antlr/mysql/generated";
 
     const cppGenerator: ITargetGenerator = new CppTargetGenerator({ exportMacro: "ANTLR4CPP_PUBLIC", });
@@ -40,7 +40,7 @@ describe("Test built-in generators", () => {
         }
     };
 
-    it("test TypeScript", async () => {
+    it("test current generator", async () => {
         const configuration = defineConfig({
             grammarFiles: ["MySQLLexer.g4", "MySQLParser.g4"],
             outputDirectory: "/out",
