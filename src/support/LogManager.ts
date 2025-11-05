@@ -38,9 +38,7 @@ export class LogManager {
     }
 
     public save(filename?: string): string {
-        if (!filename) {
-            filename = `./antlrng-${Date.now()}.log`;
-        }
+        filename ??= `./antlr-ng-${Date.now()}.log`;
 
         fileSystem.writeFileSync(filename, this.toString());
 

@@ -4,6 +4,7 @@
         "antlr",
         "antlr-ng",
         "Appendable",
+        "Bitfield",
         "Charsets",
         "Cloneable",
         "clonedeep",
@@ -22,6 +23,7 @@
         "subclassing",
         "subfolders",
         "Unmappable",
+        "unnnn",
         "whitespaces",
         "ᬠᬣᬦᬪᬫᬬᬭ"
     ],
@@ -124,6 +126,7 @@
         "stype",
         "testrig",
         "testsuite",
+        "tset",
         "ttype",
         "unpredicated",
         "uxxxx",

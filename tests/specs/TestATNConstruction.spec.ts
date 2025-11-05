@@ -9,7 +9,6 @@ import { ATNState } from "antlr4ng";
 
 import { ATNPrinter } from "../../src/automata/ATNPrinter.js";
 import { LexerATNFactory } from "../../src/automata/LexerATNFactory.js";
-import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
 import { defineConfig } from "../../src/config/config.js";
 import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { ANTLRv4Parser } from "../../src/generated/ANTLRv4Parser.js";
@@ -52,8 +51,7 @@ describe("TestATNConstruction", () => {
             return;
         }
 
-        const codeGenerator = new CodeGenerator("TypeScript", tsGenerator);
-        const f = new LexerATNFactory(g, codeGenerator);
+        const f = new LexerATNFactory(g, tsGenerator);
         const nfa = f.createATN();
         const startState = nfa.modeNameToStartState.get(modeName);
         const serializer = new ATNPrinter(g, startState!);

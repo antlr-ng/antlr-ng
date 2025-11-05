@@ -18,7 +18,7 @@ import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
 import { ClassFactory } from "../ClassFactory.js";
 
-import { type SupportedLanguage } from "../codegen/CodeGenerator.js";
+import type { SupportedLanguage } from "../codegen/CodeGenerator.js";
 import { Constants } from "../Constants.js";
 
 import { CharSupport } from "../misc/CharSupport.js";
@@ -42,11 +42,11 @@ import type { AttributeDict } from "./AttributeDict.js";
 import type { GrammarParserInterpreter } from "./GrammarParserInterpreter.js";
 import type { IAttribute } from "./IAttribute.js";
 import type { IAttributeResolver } from "./IAttributeResolver.js";
-import { Issue } from "./Issue.js";
+import type { Issue } from "./Issue.js";
 import { IssueCode } from "./Issues.js";
 import type { LexerGrammar } from "./LexerGrammar.js";
 import type { Rule } from "./Rule.js";
-import { ToolListener } from "./ToolListener.js";
+import type { ToolListener } from "./ToolListener.js";
 
 export class Grammar implements IGrammar, IAttributeResolver {
     /**

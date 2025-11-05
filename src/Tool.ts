@@ -421,7 +421,7 @@ export class Tool implements ITool {
     }
 
     /**
-     * This method is used by all code generators that create output files. If the specificed outputDir is not present
+     * This method is used by all code generators that create output files. If the specified outputDir is not present
      * it will be created (recursively).
      *
      * If the output path is relative, it will be resolved relative to the current working directory.

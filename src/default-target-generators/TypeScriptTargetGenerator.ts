@@ -3,32 +3,25 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-/* eslint-disable max-len, jsdoc/require-returns, jsdoc/require-param */
-
+import { GeneratorBase, type NamedActions } from "../codegen/GeneratorBase.js";
+import type { Lines } from "../codegen/ITargetGenerator.js";
 import * as OutputModelObjects from "../codegen/model/index.js";
-import { GeneratorBase } from "../codegen/GeneratorBase.js";
-import type { ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
+import type { IGenerationOptions } from "../config/config.js";
 import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
 import type { OptionalBlockAST } from "../tool/ast/OptionalBlockAST.js";
-import type { Grammar } from "../tool/Grammar.js";
-import type { Rule } from "../tool/Rule.js";
 
 /** The constructor type of OutputModelObject class. Used in the source op lookup map. */
 export type OutputModelObjectConstructor = new (...args: unknown[]) => OutputModelObjects.OutputModelObject;
 
-export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetGenerator {
-    public readonly id = "generator.default.typescript";
+export class TypeScriptTargetGenerator extends GeneratorBase {
+    public override readonly id = "generator.default.typescript";
     public readonly version = "1.0.0";
 
     public readonly language = "TypeScript";
     public readonly languageSpecifiers = ["typescript", "ts"];
 
     public readonly codeFileExtension = ".ts";
-    public readonly contextNameSuffix = "Context";
-    public readonly lexerRuleContext = "antlr.ParserRuleContext";
-
-    /** The rule context name is the rule followed by a suffix, e.g. r becomes rContext. */
-    public readonly ruleContextNameSuffix = "Context";
+    public override readonly lexerRuleContext = "antlr.ParserRuleContext";
 
     public override readonly inlineTestSetWordSize = 32;
 
@@ -36,7 +29,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
      * https://github.com/microsoft/TypeScript/issues/2536
      */
     public override readonly reservedWords = new Set([
-        // Resrved words:
+        // Reserved words:
         "break", "case", "catch", "class", "const", "continue", "debugger", "default", "delete", "do", "else", "enum",
         "export", "extends", "false", "finally", "for", "function", "if", "import", "in", "instanceof", "new", "null",
         "return", "super", "switch", "this", "throw", "true", "try", "typeof", "var", "void", "while", "with",
@@ -49,152 +42,14 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         "type", "from", "of",
     ]);
 
-    public readonly lexerCommandMap: Map<string, () => Lines>;
-    public readonly lexerCallCommandMap: Map<string, (arg: string, grammar: Grammar) => Lines>;
+    public renderParserFile = (parserFile: OutputModelObjects.ParserFile, declaration: boolean,
+        options: IGenerationOptions): string => {
+        this.invariants.recognizerName = parserFile.parser.name;
+        this.invariants.grammarName = parserFile.parser.grammarName;
+        this.invariants.grammarFileName = parserFile.parser.grammarFileName;
+        this.invariants.tokenLabelType = parserFile.TokenLabelType ?? "Token";
+        this.invariants.declaration = declaration;
 
-    /**
-     * Code blocks are at the heart of code generation. This map allows easy lookup of the correct render method for a
-     * specific output model code object, named a `SrcOp`. Source ops are code snippets that are put together
-     * to form the final code.
-     */
-    private readonly srcOpMap = new Map<OutputModelObjectConstructor,
-        (outputFile: OutputModelObjects.OutputFile, recognizerName: string, srcOp: OutputModelObjects.SrcOp) => Lines>([
-            [OutputModelObjects.AddToLabelList, (outputFile, recognizerName, srcOp) => {
-                return this.renderAddToLabelList(srcOp as OutputModelObjects.AddToLabelList);
-            }],
-            [OutputModelObjects.AttributeDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderAttributeDecl(srcOp as OutputModelObjects.AttributeDecl);
-            }],
-            [OutputModelObjects.CaptureNextToken, (outputFile, recognizerName, srcOp) => {
-                return this.renderCaptureNextToken(srcOp as OutputModelObjects.CaptureNextToken);
-            }],
-            [OutputModelObjects.CaptureNextTokenType, (outputFile, recognizerName, srcOp) => {
-                return this.renderCaptureNextTokenType(srcOp as OutputModelObjects.CaptureNextTokenType);
-            }],
-            [OutputModelObjects.CodeBlockForAlt, (outputFile, recognizerName, srcOp) => {
-                return this.renderCodeBlockForAlt(outputFile, recognizerName, srcOp as OutputModelObjects.CodeBlockForAlt);
-            }],
-            [OutputModelObjects.CodeBlockForOuterMostAlt, (outputFile, recognizerName, srcOp) => {
-                return this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, srcOp as OutputModelObjects.CodeBlockForOuterMostAlt);
-            }],
-            [OutputModelObjects.ContextRuleGetterDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderContextRuleGetterDecl(srcOp as OutputModelObjects.ContextRuleGetterDecl);
-            }],
-            [OutputModelObjects.ContextRuleListGetterDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderContextRuleListGetterDecl(srcOp as OutputModelObjects.ContextRuleListGetterDecl);
-            }],
-            [OutputModelObjects.ContextTokenGetterDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderContextTokenGetterDecl(recognizerName, srcOp as OutputModelObjects.ContextTokenGetterDecl);
-            }],
-            [OutputModelObjects.ContextTokenListGetterDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderContextTokenListGetterDecl(srcOp as OutputModelObjects.ContextTokenListGetterDecl);
-            }],
-            [OutputModelObjects.ContextTokenListIndexedGetterDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderContextTokenListIndexedGetterDecl(recognizerName, srcOp as OutputModelObjects.ContextTokenListIndexedGetterDecl);
-            }],
-            [OutputModelObjects.ExceptionClause, (outputFile, recognizerName, srcOp) => {
-                return this.renderExceptionClause(srcOp as OutputModelObjects.ExceptionClause);
-            }],
-            [OutputModelObjects.LL1AltBlock, (outputFile, recognizerName, srcOp) => {
-                return this.renderLL1AltBlock(outputFile, recognizerName, srcOp as OutputModelObjects.LL1AltBlock);
-            }],
-            [OutputModelObjects.LL1OptionalBlock, (outputFile, recognizerName, srcOp) => {
-                return this.renderLL1OptionalBlock(outputFile, recognizerName,
-                    srcOp as OutputModelObjects.LL1OptionalBlock);
-            }],
-            [OutputModelObjects.LL1OptionalBlockSingleAlt, (outputFile, recognizerName, srcOp) => {
-                return this.renderLL1OptionalBlockSingleAlt(outputFile, recognizerName,
-                    srcOp as OutputModelObjects.LL1OptionalBlockSingleAlt);
-            }],
-            [OutputModelObjects.LL1StarBlockSingleAlt, (outputFile, recognizerName, srcOp) => {
-                return this.renderLL1StarBlockSingleAlt(outputFile, recognizerName,
-                    srcOp as OutputModelObjects.LL1StarBlockSingleAlt);
-            }],
-            [OutputModelObjects.LL1PlusBlockSingleAlt, (outputFile, recognizerName, srcOp) => {
-                return this.renderLL1PlusBlockSingleAlt(outputFile, recognizerName,
-                    srcOp as OutputModelObjects.LL1PlusBlockSingleAlt);
-            }],
-            [OutputModelObjects.MatchToken, (outputFile, recognizerName, srcOp) => {
-                return this.renderMatchToken(recognizerName, srcOp as OutputModelObjects.MatchToken);
-            }],
-            [OutputModelObjects.MatchSet, (outputFile, recognizerName, srcOp) => {
-                return this.renderMatchSet(srcOp as OutputModelObjects.MatchSet);
-            }],
-            [OutputModelObjects.MatchNotSet, (outputFile, recognizerName, srcOp) => {
-                return this.renderMatchNotSet(srcOp as OutputModelObjects.MatchNotSet);
-            }],
-            [OutputModelObjects.RuleContextDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderRuleContextDecl(srcOp as OutputModelObjects.RuleContextDecl);
-            }],
-            [OutputModelObjects.RuleContextListDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderRuleContextListDecl(srcOp as OutputModelObjects.RuleContextListDecl);
-            }],
-            [OutputModelObjects.StructDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderStructDecl(outputFile, recognizerName, srcOp as OutputModelObjects.StructDecl);
-            }],
-            [OutputModelObjects.TestSetInline, (outputFile, recognizerName, srcOp) => {
-                return this.renderTestSetInline(srcOp as OutputModelObjects.TestSetInline);
-            }],
-            [OutputModelObjects.TokenDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderTokenDecl(outputFile, recognizerName, srcOp as OutputModelObjects.TokenDecl);
-            }],
-            [OutputModelObjects.TokenTypeDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderTokenTypeDecl(srcOp as OutputModelObjects.TokenTypeDecl);
-            }],
-            [OutputModelObjects.TokenListDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderTokenListDecl(srcOp as OutputModelObjects.TokenListDecl);
-            }],
-            [OutputModelObjects.ThrowNoViableAlt, (outputFile, recognizerName, srcOp) => {
-                return this.renderThrowNoViableAlt(srcOp as OutputModelObjects.ThrowNoViableAlt);
-            }],
-            [OutputModelObjects.Wildcard, (outputFile, recognizerName, srcOp) => {
-                return this.renderWildcard(srcOp as OutputModelObjects.Wildcard);
-            }],
-            [OutputModelObjects.ContextRuleListIndexedGetterDecl, (outputFile, recognizerName, srcOp) => {
-                return this.renderContextRuleListIndexedGetterDecl(
-                    srcOp as OutputModelObjects.ContextRuleListIndexedGetterDecl);
-            }],
-            [OutputModelObjects.StarBlock, (outputFile, recognizerName, srcOp) => {
-                return this.renderStarBlock(outputFile, recognizerName, srcOp as OutputModelObjects.StarBlock);
-            }],
-            [OutputModelObjects.PlusBlock, (outputFile, recognizerName, srcOp) => {
-                return this.renderPlusBlock(outputFile, recognizerName, srcOp as OutputModelObjects.PlusBlock);
-            }],
-            [OutputModelObjects.OptionalBlock, (outputFile, recognizerName, srcOp) => {
-                return this.renderOptionalBlock(outputFile, recognizerName, srcOp as OutputModelObjects.OptionalBlock);
-            }],
-            [OutputModelObjects.AltBlock, (outputFile, recognizerName, srcOp) => {
-                return this.renderAltBlock(outputFile, recognizerName, srcOp as OutputModelObjects.AltBlock);
-            }],
-            [OutputModelObjects.InvokeRule, (outputFile, recognizerName, srcOp) => {
-                return this.renderInvokeRule(srcOp as OutputModelObjects.InvokeRule);
-            }],
-            [OutputModelObjects.SemPred, (outputFile, recognizerName, srcOp) => {
-                return this.renderSemPred(srcOp as OutputModelObjects.SemPred);
-            }],
-            [OutputModelObjects.Action, (outputFile, recognizerName, srcOp) => {
-                return this.renderAction(srcOp as OutputModelObjects.Action);
-            }],
-        ]);
-
-    public constructor() {
-        super();
-
-        this.lexerCommandMap = new Map<string, () => Lines>([
-            ["skip", this.renderLexerSkipCommand],
-            ["more", this.renderLexerMoreCommand],
-            ["popMode", this.renderLexerPopModeCommand],
-        ]);
-
-        this.lexerCallCommandMap = new Map<string, (arg: string, grammar: Grammar) => Lines>([
-            ["type", this.renderLexerTypeCommand],
-            ["channel", this.renderLexerChannelCommand],
-            ["mode", this.renderLexerModeCommand],
-            ["pushMode", this.renderLexerPushModeCommand],
-        ]);
-    }
-
-    public renderParserFile(parserFile: OutputModelObjects.ParserFile): string {
         const result: Lines = [
             ...this.renderFileHeader(parserFile),
             "",
@@ -203,11 +58,11 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             "",
         ];
 
-        if (parserFile.genListener) {
+        if (options.generateListener) {
             result.push(`import { ${parserFile.grammarName}Listener } from "./${parserFile.grammarName}Listener.js";`);
         }
 
-        if (parserFile.genVisitor) {
+        if (options.generateVisitor) {
             result.push(`import { ${parserFile.grammarName}Visitor } from "./${parserFile.grammarName}Visitor.js";`);
         }
 
@@ -223,9 +78,16 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(...this.renderParser(parserFile));
 
         return result.join("\n");
-    }
+    };
 
-    public renderLexerFile(lexerFile: OutputModelObjects.LexerFile): string {
+    public renderLexerFile = (lexerFile: OutputModelObjects.LexerFile, declaration: boolean,
+        options: IGenerationOptions): string => {
+        this.invariants.recognizerName = lexerFile.lexer.name;
+        this.invariants.grammarName = lexerFile.lexer.grammarName;
+        this.invariants.grammarFileName = lexerFile.lexer.grammarFileName;
+        this.invariants.tokenLabelType = lexerFile.TokenLabelType ?? "Token";
+        this.invariants.declaration = declaration;
+
         const result: Lines = this.renderFileHeader(lexerFile);
         result.push("");
         result.push(`import * as antlr from "antlr4ng";`);
@@ -236,13 +98,21 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(...this.renderLexer(lexerFile.lexer, lexerFile.namedActions));
 
         return result.join("\n");
-    }
+    };
 
-    public renderBaseListenerFile(file: OutputModelObjects.ListenerFile, declaration: boolean): string {
+    public renderBaseListenerFile = (file: OutputModelObjects.ListenerFile, declaration: boolean,
+        options: IGenerationOptions): string => {
         return "";
-    }
+    };
 
-    public renderListenerFile(listenerFile: OutputModelObjects.ListenerFile): string {
+    public renderListenerFile = (listenerFile: OutputModelObjects.ListenerFile, declaration: boolean,
+        options: IGenerationOptions): string => {
+        this.invariants.recognizerName = listenerFile.parserName;
+        this.invariants.grammarName = listenerFile.grammarName;
+        this.invariants.grammarFileName = listenerFile.grammarFileName;
+        this.invariants.tokenLabelType = listenerFile.TokenLabelType ?? "Token";
+        this.invariants.declaration = declaration;
+
         const result: Lines = [
             ...this.renderFileHeader(listenerFile),
             "",
@@ -276,7 +146,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             block.push("/**");
             if (listenerFile.listenerLabelRuleNames.has(lname)) {
                 block.push(` * Enter a parse tree produced by the \`${lname}\``);
-                block.push(` * labeled alternative in \`${listenerFile.parserName}.${listenerFile.listenerLabelRuleNames.get(lname)}\`.`);
+                block.push(` * labeled alternative in \`${listenerFile.parserName}.` +
+                    `${listenerFile.listenerLabelRuleNames.get(lname)}\`.`);
             } else {
                 block.push(` * Enter a parse tree produced by \`${listenerFile.parserName}.${lname}\`.`);
             }
@@ -290,7 +161,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             block.push("/**");
             if (listenerFile.listenerLabelRuleNames.has(lname)) {
                 block.push(` * Exit a parse tree produced by the \`${lname}\``);
-                block.push(` * labeled alternative in \`${listenerFile.parserName}.${listenerFile.listenerLabelRuleNames.get(lname)}\`.`);
+                block.push(` * labeled alternative in \`${listenerFile.parserName}.` +
+                    `${listenerFile.listenerLabelRuleNames.get(lname)}\`.`);
             } else {
                 block.push(` * Exit a parse tree produced by \`${listenerFile.parserName}.${lname}\`.`);
             }
@@ -299,20 +171,20 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
             block.push(`exit${this.toTitleCase(lname)}?: ` +
                 `(ctx: ${this.toTitleCase(lname)}Context) => void;`);
+        }
 
-            block.push(
-                "",
-                "visitTerminal(node: TerminalNode): void {}",
-                "visitErrorNode(node: ErrorNode): void {}",
-                "enterEveryRule(node: ParserRuleContext): void {}",
-                "exitEveryRule(node: ParserRuleContext): void {}",
-            );
+        block.push(
+            "",
+            "visitTerminal(node: TerminalNode): void {}",
+            "visitErrorNode(node: ErrorNode): void {}",
+            "enterEveryRule(node: ParserRuleContext): void {}",
+            "exitEveryRule(node: ParserRuleContext): void {}",
+        );
 
-            const afterListener = listenerFile.namedActions.get("afterListener");
-            if (afterListener) {
-                result.push("");
-                result.push(...this.renderAction(afterListener));
-            }
+        const afterListener = listenerFile.namedActions.get("afterListener");
+        if (afterListener) {
+            block.push("");
+            block.push(...this.renderAction(afterListener));
         }
 
         result.push(...this.formatLines(block, 4));
@@ -320,13 +192,21 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push("");
 
         return result.join("\n");
-    }
+    };
 
-    public renderBaseVisitorFile(file: OutputModelObjects.VisitorFile, declaration: boolean): string {
+    public renderBaseVisitorFile = (file: OutputModelObjects.VisitorFile, declaration: boolean,
+        options: IGenerationOptions): string => {
         return "";
-    }
+    };
 
-    public renderVisitorFile(visitorFile: OutputModelObjects.VisitorFile, declaration: boolean): string {
+    public renderVisitorFile = (visitorFile: OutputModelObjects.VisitorFile, declaration: boolean,
+        options: IGenerationOptions): string => {
+        this.invariants.recognizerName = visitorFile.parserName;
+        this.invariants.grammarName = visitorFile.grammarName;
+        this.invariants.grammarFileName = visitorFile.grammarFileName;
+        this.invariants.tokenLabelType = visitorFile.TokenLabelType ?? "Token";
+        this.invariants.declaration = declaration;
+
         const result: Lines = [
             ...this.renderFileHeader(visitorFile),
             "",
@@ -361,14 +241,16 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(` * @param <Result> The return type of the visit operation. Use \`void\` for`);
         result.push(` * operations with no return type.`);
         result.push(` */`);
-        result.push(`export class ${visitorFile.grammarName}Visitor<Result> extends AbstractParseTreeVisitor<Result> {`);
+        result.push(`export class ${visitorFile.grammarName}Visitor<Result> extends AbstractParseTreeVisitor` +
+            `<Result> {`);
 
         for (const lname of visitorFile.visitorNames) {
             result.push("");
             result.push("    /**");
             if (visitorFile.visitorLabelRuleNames.has(lname)) {
                 result.push(`     * Visit a parse tree produced by the \`${lname}\``);
-                result.push(`     * labeled alternative in \`${visitorFile.parserName}.${visitorFile.visitorLabelRuleNames.get(lname)}\`.`);
+                result.push(`     * labeled alternative in \`${visitorFile.parserName}.` +
+                    `${visitorFile.visitorLabelRuleNames.get(lname)}\`.`);
             } else {
                 result.push(`     * Visit a parse tree produced by \`${visitorFile.parserName}.${lname}\`.`);
             }
@@ -387,41 +269,29 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push("");
 
         return result.join("\n");
-    }
+    };
 
-    public renderLexerRuleContext(): Lines {
-        return ["antlr.ParserRuleContext"];
-    }
-
-    public getRuleFunctionContextStructName(r: Rule): string {
-        if (r.g.isLexer()) {
-            return this.renderLexerRuleContext().join("");
-        }
-
-        return this.toTitleCase(r.name) + this.ruleContextNameSuffix;
-    }
-
-    public renderRecRuleReplaceContext(ctxName: string): Lines {
+    public renderRecRuleReplaceContext = (ctxName: string): Lines => {
         return [
             `localContext = new ${ctxName}Context(localContext);`,
             "this.context = localContext;",
             "previousContext = localContext;"
         ];
-    }
+    };
 
-    public renderRecRuleAltPredicate(ruleName: string, opPrec: number): Lines {
+    public renderRecRuleAltPredicate = (ruleName: string, opPrec: number): Lines => {
         return [`this.precpred(this.context, ${opPrec})`];
     };
 
-    public renderRecRuleSetReturnAction(src: string, name: string): Lines {
+    public renderRecRuleSetReturnAction = (src: string, name: string): Lines => {
         return [`$${name} = $${src}.${name};`];
     };
 
-    public renderRecRuleSetStopToken(): Lines {
+    public renderRecRuleSetStopToken = (): Lines => {
         return [`this.context!.stop = this.tokenStream.LT(-1);`];
     };
 
-    public renderRecRuleSetPrevCtx(): Lines {
+    public renderRecRuleSetPrevCtx = (): Lines => {
         return [
             "if (this.parseListeners != null) {",
             "    this.triggerExitRuleEvent();",
@@ -429,10 +299,10 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             "",
             "previousContext = localContext;",
         ];
-    }
+    };
 
-    public renderRecRuleLabeledAltStartAction(parserName: string, ruleName: string, currentAltLabel: string,
-        label: string | undefined, isListLabel: boolean): Lines {
+    public renderRecRuleLabeledAltStartAction = (parserName: string, ruleName: string, currentAltLabel: string,
+        label: string | undefined, isListLabel: boolean): Lines => {
 
         const altLabelClass = this.toTitleCase(currentAltLabel);
         const ruleNameClass = this.toTitleCase(ruleName);
@@ -452,10 +322,10 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push(`this.pushNewRecursionContext(localContext, _startState, ${parserName}.RULE_${ruleName});`);
 
         return result;
-    }
+    };
 
-    public renderRecRuleAltStartAction(parserName: string, ruleName: string, ctxName: string, label: string | undefined,
-        isListLabel: boolean): Lines {
+    public renderRecRuleAltStartAction = (parserName: string, ruleName: string, ctxName: string,
+        label: string | undefined, isListLabel: boolean): Lines => {
 
         const contextClass = this.toTitleCase(ctxName);
         const result: Lines = [`localContext = new ${contextClass}Context(parentContext, parentState);`];
@@ -472,11 +342,11 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
         return result;
     }
-
-    public renderTestFile(grammarName: string, lexerName: string, parserName: string | undefined,
+        ;
+    public renderTestFile = (grammarName: string, lexerName: string, parserName: string | undefined,
         parserStartRuleName: string | undefined, showDiagnosticErrors: boolean, traceATN: boolean, profile: boolean,
         showDFA: boolean, useListener: boolean, useVisitor: boolean, predictionMode: string, buildParseTree: boolean,
-    ): string {
+    ): string => {
         const lines: Lines = [
             `import fs from "node:fs";`,
             `import {`,
@@ -576,11 +446,1080 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         lines.push("}");
 
         return lines.join("\n");
-    }
+    };
 
-    protected override renderTypedContext(ctx: OutputModelObjects.StructDecl): string {
+    protected override renderTypedContext = (ctx: OutputModelObjects.StructDecl): string => {
         return ctx.provideCopyFrom ? `(localContext as ${ctx.name})` : `localContext`;
-    }
+    };
+
+    protected override renderCodeBlockForOuterMostAlt = (
+        currentOuterMostAltCodeBlock: OutputModelObjects.CodeBlockForOuterMostAlt): Lines => {
+        const result: Lines = this.startRendering("CodeBlockForOuterMostAlt");
+
+        if (currentOuterMostAltCodeBlock.altLabel) {
+            result.push(`localContext = new ${this.toTitleCase(currentOuterMostAltCodeBlock.altLabel)}` +
+                `Context(localContext);`);
+        }
+
+        result.push(`this.enterOuterAlt(localContext, ${currentOuterMostAltCodeBlock.alt.altNum});`);
+        result.push(...this.renderCodeBlockForAlt(currentOuterMostAltCodeBlock));
+
+        return this.endRendering("CodeBlockForOuterMostAlt", result);
+    };
+
+    protected override renderLL1AltBlock = (choice: OutputModelObjects.LL1AltBlock): Lines => {
+        const result: Lines = this.startRendering("LL1AltBlock");
+
+        result.push(`this.state = ${choice.stateNumber};`);
+        result.push(`this.errorHandler.sync(this);`);
+
+        if (choice.label) {
+            result.push(`${this.renderLabelRef(choice.label)} = this.tokenStream.LT(1);`);
+        }
+
+        result.push(...this.renderSourceOps(choice.preamble));
+
+        result.push(`switch (this.tokenStream.LA(1)) {`);
+
+        const block: Lines = [];
+        for (let i = 0; i < choice.alts.length; ++i) {
+            const tokens = choice.altLook[i];
+            block.push(...this.renderCases(tokens));
+            block[block.length - 1] += " {";
+
+            const alt = choice.alts[i] as OutputModelObjects.CodeBlockForAlt | undefined;
+            if (alt) {
+                if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                    block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(alt),
+                        4));
+                } else {
+                    block.push(...this.formatLines(this.renderCodeBlockForAlt(alt), 4));
+                }
+            }
+
+            block.push(`    break;`);
+            block.push(`}`);
+        }
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`    default:`);
+        result.push(...this.formatLines(this.renderThrowNoViableAlt(choice.error), 8));
+
+        result.push(`}`);
+        result.push("");
+
+        return this.endRendering("LL1AltBlock", result);
+    };
+
+    protected override renderLL1OptionalBlock = (choice: OutputModelObjects.LL1OptionalBlock): Lines => {
+        const result: Lines = this.startRendering("LL1OptionalBlock");
+
+        result.push(`this.state = ${choice.stateNumber};`);
+        result.push(`this.errorHandler.sync(this);`);
+        result.push(`switch (this.tokenStream.LA(1)) {`);
+
+        const block: Lines = [];
+        for (let i = 0; i < choice.altLook.length; ++i) {
+            const tokens = choice.altLook[i];
+            block.push(...this.formatLines(this.renderCases(tokens), 4));
+            block[block.length - 1] += " {";
+
+            const alt = choice.alts[i] as OutputModelObjects.CodeBlockForAlt | undefined;
+            if (alt) {
+                if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                    block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(alt),
+                        4));
+                } else {
+                    block.push(...this.formatLines(this.renderCodeBlockForAlt(alt), 4));
+                }
+            }
+
+            block.push(`    break;`);
+            block.push(`}`);
+        }
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`    default:`);
+        result.push(`        break;`);
+        result.push(`}`);
+
+        return this.endRendering("LL1OptionalBlock", result);
+    };
+
+    protected override renderLL1OptionalBlockSingleAlt = (
+        choice: OutputModelObjects.LL1OptionalBlockSingleAlt): Lines => {
+        const result: Lines = this.startRendering("LL1OptionalBlockSingleAlt");
+
+        result.push(`this.state = ${choice.stateNumber};`);
+        result.push(`this.errorHandler.sync(this);`);
+        result.push(...this.renderSourceOps(choice.preamble));
+
+        result.push(`if (${this.renderSourceOps([choice.expr]).join("")}) {`);
+        choice.alts.forEach((alt, index) => {
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                result.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(alt),
+                    4));
+            } else {
+                result.push(...this.formatLines(this.renderCodeBlockForAlt(alt), 4));
+            }
+        });
+        result.push(`}`);
+        result.push("");
+
+        return this.endRendering("LL1OptionalBlockSingleAlt", result);
+    };
+
+    protected override renderLL1StarBlockSingleAlt = (choice: OutputModelObjects.LL1StarBlockSingleAlt): Lines => {
+        const result: Lines = this.startRendering("LL1StarBlockSingleAlt");
+
+        result.push(`this.state = ${choice.stateNumber};`);
+        result.push(`this.errorHandler.sync(this);`);
+
+        result.push(...this.renderSourceOps(choice.preamble));
+
+        const srcOps = choice.loopExpr ? [choice.loopExpr] : undefined;
+        result.push(`while (${this.renderSourceOps(srcOps).join("")}) {`);
+
+        choice.alts.forEach((alt) => {
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                result.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(alt),
+                    4));
+            } else {
+                result.push(...this.formatLines(this.renderCodeBlockForAlt(alt), 4));
+            }
+        });
+
+        result.push(`    this.state = ${choice.loopBackStateNumber};`);
+        result.push(`    this.errorHandler.sync(this);`);
+        result.push(...this.formatLines(this.renderSourceOps(choice.iteration), 4));
+        result.push(`}`);
+
+        return this.endRendering("LL1StarBlockSingleAlt", result);
+    };
+
+    protected override renderLL1PlusBlockSingleAlt = (choice: OutputModelObjects.LL1PlusBlockSingleAlt): Lines => {
+        const result: Lines = this.startRendering("LL1PlusBlockSingleAlt");
+
+        result.push(`this.state = ${choice.blockStartStateNumber};`);
+        result.push(`this.errorHandler.sync(this);`);
+
+        result.push(...this.renderSourceOps(choice.preamble));
+
+        result.push(`do {`);
+
+        choice.alts.forEach((alt) => {
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                result.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(alt),
+                    4));
+            } else {
+                result.push(...this.formatLines(this.renderCodeBlockForAlt(alt), 4));
+            }
+        });
+
+        result.push(`    this.state = ${choice.stateNumber};`); // Loop back/exit decision.
+        result.push(`    this.errorHandler.sync(this);`);
+        result.push(...this.formatLines(this.renderSourceOps(choice.iteration), 4));
+
+        const srcOps = choice.loopExpr ? [choice.loopExpr] : undefined;
+        result.push(`} while (${this.renderSourceOps(srcOps).join("")});`);
+
+        return this.endRendering("LL1PlusBlockSingleAlt", result);
+    };
+
+    protected override renderInvokeRule = (r: OutputModelObjects.InvokeRule): Lines => {
+        const result: Lines = this.startRendering("InvokeRule");
+
+        result.push(`this.state = ${r.stateNumber};`);
+
+        let labels = "";
+        if (r.labels.length > 0) {
+            for (const l of r.labels) {
+                labels += `${this.renderLabelRef(l)} = `;
+            }
+        }
+
+        let args = "";
+        const ast = r.ast as GrammarASTWithOptions | undefined;
+        const precedence = ast?.getOptionString("p");
+        if (precedence) {
+            args += precedence;
+
+            if (r.argExprsChunks) {
+                args += ", " + this.renderActionChunks(r.argExprsChunks);
+            }
+        }
+
+        result.push(`${labels}this.${r.escapedName}(${args});`);
+
+        return this.endRendering("InvokeRule", result);
+    };
+
+    protected override renderMatchToken = (m: OutputModelObjects.MatchToken): Lines => {
+        const result: Lines = this.startRendering("MatchToken");
+
+        result.push(`this.state = ${m.stateNumber};`);
+
+        let line = "";
+        if (m.labels.length > 0) {
+            for (const l of m.labels) {
+                line += `${this.renderLabelRef(l)} = `;
+            }
+        }
+
+        result.push(`${line}this.match(${this.invariants.recognizerName}.${m.name});`);
+
+        return this.endRendering("MatchToken", result);
+    };
+
+    protected override renderMatchSet = (m: OutputModelObjects.MatchSet): Lines => {
+        return this.renderCommonSetStuff(m, false);
+    };
+
+    protected override renderMatchNotSet = (m: OutputModelObjects.MatchNotSet): Lines => {
+        return this.renderCommonSetStuff(m, true);
+    };
+
+    protected override renderThrowNoViableAlt = (t: OutputModelObjects.ThrowNoViableAlt): Lines => {
+        return ["throw new antlr.NoViableAltException(this);"];
+    };
+
+    protected override renderTestSetInline = (s: OutputModelObjects.TestSetInline): Lines => {
+        const result: Lines = [];
+
+        s.bitsets.forEach((bits, index) => {
+            const or = index > 0 ? " || " : "";
+
+            const rest = bits.tokens.length > 2 ? bits.tokens.slice(2) : [];
+            if (rest.length > 0) {
+                result.push(or + this.renderBitsetBitfieldComparison(s, bits));
+            } else {
+                result.push(or + this.renderBitsetInlineComparison(s, bits));
+            }
+        });
+
+        return result;
+    };
+
+    protected override renderWildcard = (w: OutputModelObjects.Wildcard): Lines => {
+        const result: Lines = this.startRendering("Wildcard");
+
+        result.push(`this.state = ${w.stateNumber};`);
+
+        let labels = "";
+        if (w.labels.length > 0) {
+            for (const l of w.labels) {
+                labels += `${this.renderLabelRef(l)} = `;
+            }
+        }
+        result.push(`${labels}this.matchWildcard();`);
+
+        return this.endRendering("Wildcard", result);
+    };
+
+    protected override renderAction = (a?: OutputModelObjects.Action): Lines => {
+        if (!a) {
+            return [];
+        }
+
+        return [this.renderActionChunks(a.chunks).join("")];
+    };
+
+    protected override renderExceptionClause = (e: OutputModelObjects.ExceptionClause): Lines => {
+        const result: Lines = this.startRendering("ExceptionClause");
+
+        result.push(`} catch (${this.renderAction(e.catchArg)[0]}) {`);
+        result.push(`    ${this.renderAction(e.catchAction)[0]}`);
+        result.push(`}`);
+
+        return this.endRendering("ExceptionClause", result);
+    };
+
+    protected override renderLabelRef = (t: OutputModelObjects.LabelRef): Lines => {
+        const ctx = this.renderContext(t);
+
+        return [`${ctx}._${t.escapedName}`];
+    };
+
+    protected override renderContextTokenGetterDecl = (t: OutputModelObjects.ContextTokenGetterDecl): Lines => {
+        return [
+            "",
+            `public ${t.escapedName}(): antlr.TerminalNode${t.optional ? " | null" : ""} {`,
+            `    return this.getToken(${this.invariants.recognizerName}.${t.name}, 0)${t.optional ? "" : "!"};`,
+            `}`,
+        ];
+    };
+
+    protected override renderContextTokenListGetterDecl = (t: OutputModelObjects.ContextTokenListGetterDecl): Lines => {
+        return [`public ${t.name}(): antlr.TerminalNode[];`];
+    };
+
+    protected override renderContextTokenListIndexedGetterDecl = (
+        t: OutputModelObjects.ContextTokenListIndexedGetterDecl): Lines => {
+        const result: Lines = this.startRendering("ContextTokenListIndexedGetterDecl");
+
+        result.push(`public ${t.name}(i: number): antlr.TerminalNode | null;`);
+        result.push(`public ${t.name}(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {`);
+        result.push(`    if (i === undefined) {`);
+        result.push(`        return this.getTokens(${this.invariants.recognizerName}.${t.name});`);
+        result.push(`    } else {`);
+        result.push(`        return this.getToken(${this.invariants.recognizerName}.${t.name}, i);`);
+        result.push(`    }`);
+        result.push(`}`);
+
+        return this.endRendering("ContextTokenListIndexedGetterDecl", result);
+    };
+
+    protected override renderContextRuleGetterDecl = (r: OutputModelObjects.ContextRuleGetterDecl): Lines => {
+        return [
+            "",
+            `public ${r.name}(): ${r.ctxName}${r.optional ? "| null" : ""} {`,
+            `    return this.getRuleContext(0, ${r.ctxName})${!r.optional ? "!" : ""};`,
+            `}`
+        ];
+    };
+
+    protected override renderCaptureNextToken = (d: OutputModelObjects.CaptureNextToken): Lines => {
+        return [`${d.varName} = this.tokenStream.LT(1);`];
+    };
+
+    protected override renderCaptureNextTokenType = (d: OutputModelObjects.CaptureNextTokenType): Lines => {
+        return [`${d.varName} = this.tokenStream.LA(1);`];
+    };
+
+    protected override renderStructDecl = (struct: OutputModelObjects.StructDecl): Lines => {
+        const result: Lines = this.startRendering("StructDecl");
+
+        result.push(``, `export class ${struct.escapedName} extends antlr.ParserRuleContext {`);
+
+        const decls = this.renderDecls(struct.attrs);
+        let startLogEntry: string | undefined = undefined;
+        let endLogEntry: string | undefined = undefined;
+
+        if (this.logRendering && decls.length > 0) {
+            startLogEntry = decls.shift();
+            endLogEntry = decls.pop();
+        }
+
+        if (startLogEntry) {
+            result.push(`    ${startLogEntry}`);
+        }
+
+        result.push(...decls.map((d) => {
+            return `    public ${d}`;
+        }));
+
+        if (endLogEntry) {
+            result.push(`    ${endLogEntry}`);
+        }
+
+        result.push("");
+
+        const block: Lines = [];
+        if (struct.ctorAttrs.length > 0) {
+            const attrs = struct.ctorAttrs.map((a) => {
+                return `ctx.${a.escapedName}: ${a.type}`;
+            }).join(", ");
+            block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number` +
+                `${attrs.length > 0 ? ", " + attrs : ""}) {`);
+            block.push(`    super(parent, invokingState);`);
+
+            struct.ctorAttrs.forEach((a) => {
+                block.push(`    this.${a.escapedName} = ${a.escapedName};`);
+            });
+
+            block.push(`}`);
+        } else {
+            block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {`);
+            block.push(`    super(parent, invokingState);`);
+            block.push(`}`);
+        }
+
+        block.push(...this.renderDecls(struct.getters));
+
+        block.push(`public override get ruleIndex(): number {`);
+        block.push(`    return ${this.invariants.recognizerName}.RULE_${struct.derivedFromName};`);
+        block.push(`}`);
+
+        // Don't need copy unless we have subclasses.
+        if (struct.provideCopyFrom) {
+            block.push("");
+            block.push(`public override copyFrom(ctx: ${struct.name}): void {`);
+            block.push(`    super.copyFrom(ctx);`);
+
+            for (const a of struct.attrs) {
+                block.push(`    this.${a.escapedName} = ctx.${a.escapedName};`);
+            }
+            block.push(`}`);
+        }
+
+        block.push(...this.renderDispatchMethods(struct));
+        result.push(...this.formatLines(block, 4));
+        result.push(`}`);
+
+        return this.endRendering("StructDecl", result);
+    };
+
+    protected override renderAddToLabelList = (a: OutputModelObjects.AddToLabelList): Lines => {
+        const ctx = this.renderContext(a.label);
+
+        return [`(${ctx}._${a.listName}.push(${this.renderLabelRef(a.label)}!));`];
+    };
+
+    protected override renderAttributeDecl = (d: OutputModelObjects.AttributeDecl): Lines => {
+        const result: Lines = [];
+
+        if (d.initValue !== undefined) {
+            result.push(`${d.escapedName} = ${d.initValue}`);
+        } else {
+            result.push(`${d.escapedName}: ${d.type}`);
+        }
+
+        return result;
+    };
+
+    protected override renderLexerSkipCommand = (): Lines => {
+        return ["this.skip();"];
+    };
+
+    protected override renderLexerMoreCommand = (): Lines => {
+        return ["this.more();"];
+    };
+
+    protected override renderLexerPopModeCommand = (): Lines => {
+        return ["this.popMode();"];
+    };
+
+    protected override renderLexerTypeCommand = (arg: string): Lines => {
+        return [`this.type = ${arg};`];
+    };
+
+    protected override renderLexerChannelCommand = (arg: string): Lines => {
+        return [`this.channel = ${arg};`];
+    };
+
+    protected override renderLexerModeCommand = (arg: string): Lines => {
+        return [`this.mode = ${arg};`];
+    };
+
+    protected override renderLexerPushModeCommand = (arg: string): Lines => {
+        return [`this.pushMode(${arg});`];
+    };
+
+    protected override renderTokenDecl = (t: OutputModelObjects.TokenDecl): Lines => {
+        return [`_${t.escapedName}: ${this.invariants.tokenLabelType} | null = null;`];
+    };
+
+    protected override renderTokenTypeDecl = (t: OutputModelObjects.TokenTypeDecl): Lines => {
+        return [`let ${t.escapedName}: number;`];
+    };
+
+    protected override renderTokenListDecl = (t: OutputModelObjects.TokenListDecl): Lines => {
+        return [`_${t.escapedName}: antlr.Token[] = [];`];
+    };
+
+    protected override renderRuleContextDecl = (r: OutputModelObjects.RuleContextDecl): Lines => {
+        return [`_${r.escapedName}?: ${r.ctxName};`];
+    };
+
+    protected override renderRuleContextListDecl = (ruleDecl: OutputModelObjects.RuleContextListDecl): Lines => {
+        return [`_${ruleDecl.escapedName}: ${ruleDecl.ctxName} [] = [];`];
+    };
+
+    protected override renderContextRuleListGetterDecl = (r: OutputModelObjects.ContextRuleListGetterDecl): Lines => {
+        return [`public ${r.escapedName}(): ${r.ctxName}[];`];
+    };
+
+    protected override renderContextRuleListIndexedGetterDecl = (
+        r: OutputModelObjects.ContextRuleListIndexedGetterDecl): Lines => {
+        const result: Lines = this.startRendering("ContextRuleListIndexedGetterDecl");
+
+        result.push(`public ${r.escapedName}(i: number): ${r.ctxName} | null;`);
+        result.push(`public ${r.escapedName}(i?: number): ${r.ctxName}[] | ${r.ctxName} | null {`);
+        result.push(`    if (i === undefined) {`);
+        result.push(`        return this.getRuleContexts(${r.ctxName});`);
+        result.push(`    }`);
+        result.push(``);
+        result.push(`    return this.getRuleContext(i, ${r.ctxName});`);
+        result.push(`}`);
+
+        return this.endRendering("ContextRuleListIndexedGetterDecl", result);
+    };
+
+    /**
+     * Renders the decision block for multiple alternatives. It starts by rendering some management code
+     * and then renders the switch statement with the alternatives (as case branches).
+     *
+     * @param choice The choice to render.
+     *
+     * @returns The rendered lines of code.
+     */
+    protected override renderAltBlock = (choice: OutputModelObjects.AltBlock): Lines => {
+        const result: Lines = this.startRendering("AltBlock");
+
+        result.push(`this.state = ${choice.stateNumber};`);
+        result.push(`this.errorHandler.sync(this);`);
+
+        if (choice.label) {
+            result.push(`${this.renderLabelRef(choice.label)} = this.tokenStream.LT(1);`);
+        }
+
+        result.push(...this.renderSourceOps(choice.preamble));
+        result.push(`switch (this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, this.context) ) {`);
+
+        const block: Lines = [];
+        choice.alts.forEach((alt, index) => {
+            // Alt numbers are 1-based, so we add 1 to the index.
+            block.push(`case ${index + 1}: {`);
+
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(alt),
+                    4));
+            } else {
+                block.push(...this.formatLines(this.renderCodeBlockForAlt(alt), 4));
+            }
+            block.push(`    break;`);
+            block.push(`}`);
+        });
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`}`);
+        result.push("");
+
+        return this.endRendering("AltBlock", result);
+    };
+
+    protected override renderOptionalBlock = (choice: OutputModelObjects.OptionalBlock): Lines => {
+        const result: Lines = this.startRendering("OptionalBlock");
+
+        result.push(`this.state = ${choice.stateNumber};`);
+        result.push(`this.errorHandler.sync(this);`);
+        result.push(`switch (this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, this.context) ) {`);
+
+        const block: Lines = [];
+        const blockAST = choice.ast as OptionalBlockAST;
+        choice.alts.forEach((alt, index) => {
+            // Alt numbers are 1-based, so we add 1 to the index.
+            block.push(`case ${index + 1}${!blockAST.greedy ? " + 1" : ""}: {`);
+
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(alt),
+                    4));
+            } else {
+                block.push(...this.formatLines(this.renderCodeBlockForAlt(alt), 4));
+            }
+            block.push(`    break;`);
+            block.push(`}`);
+        });
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`}`);
+
+        return this.endRendering("OptionalBlock", result);
+    };
+
+    protected override renderStarBlock = (choice: OutputModelObjects.StarBlock): Lines => {
+        const result: Lines = this.startRendering("StarBlock");
+
+        const blockAST = choice.ast as OptionalBlockAST;
+        result.push(`this.state = ${choice.stateNumber};`);
+        result.push(`this.errorHandler.sync(this);`);
+        result.push(`alternative = this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, ` +
+            `this.context);`);
+        result.push(`while (alternative !== ${choice.exitAlt} && alternative !== antlr.ATN.INVALID_ALT_NUMBER) {`);
+
+        const block: Lines = [];
+        block.push(`if (alternative === 1${!blockAST.greedy ? " + 1" : ""}) {`);
+        block.push(...this.formatLines(this.renderSourceOps(choice.iteration), 4));
+
+        choice.alts.forEach((alt) => {
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(alt),
+                    4));
+            } else {
+                block.push(...this.formatLines(this.renderCodeBlockForAlt(alt), 4));
+            }
+        });
+
+        block.push(`}`);
+        block.push(`this.state = ${choice.loopBackStateNumber};`);
+        block.push(`this.errorHandler.sync(this);`);
+        block.push(`alternative = this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, ` +
+            `this.context);`);
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`}`);
+
+        return this.endRendering("StarBlock", result);
+    };
+
+    protected override renderPlusBlock = (choice: OutputModelObjects.PlusBlock): Lines => {
+        const result: Lines = this.startRendering("PlusBlock");
+
+        const blockAST = choice.ast as OptionalBlockAST;
+        result.push(`this.state = ${choice.blockStartStateNumber};`); //  Alt block decision.
+        result.push(`this.errorHandler.sync(this);`);
+        result.push(`alternative = 1${!blockAST.greedy ? " + 1" : ""};`);
+        result.push(`do {`);
+
+        const switchBlock: Lines = [];
+        switchBlock.push(`switch (alternative) {`);
+        const caseBlock: Lines = [];
+
+        for (let i = 0; i < choice.alts.length; ++i) {
+            const alt = choice.alts[i];
+
+            // Alt numbers are 1-based, so we add 1 to the index.
+            caseBlock.push(`case ${i + 1}${!blockAST.greedy ? " + 1" : ""}: {`);
+
+            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
+                caseBlock.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(alt),
+                    4));
+            } else {
+                caseBlock.push(...this.formatLines(this.renderCodeBlockForAlt(alt), 4));
+            }
+            caseBlock.push(`    break;`);
+            caseBlock.push(`}`);
+        }
+
+        caseBlock.push("");
+        caseBlock.push(`default: {`);
+        caseBlock.push(...this.formatLines(this.renderThrowNoViableAlt(choice.error), 4));
+        caseBlock.push(`}`);
+
+        switchBlock.push(...this.formatLines(caseBlock, 4));
+        switchBlock.push(`}`);
+        switchBlock.push("");
+
+        switchBlock.push(`this.state = ${choice.loopBackStateNumber};`); // Loopback/exit decision.
+        switchBlock.push(`this.errorHandler.sync(this);`);
+        switchBlock.push(`alternative = this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, ` +
+            `this.context);`);
+
+        result.push(...this.formatLines(switchBlock, 4));
+        result.push(`} while (alternative !== ${choice.exitAlt} && alternative !== antlr.ATN.INVALID_ALT_NUMBER);`);
+
+        return this.endRendering("PlusBlock", result);
+    };
+
+    protected override renderSemPred = (p: OutputModelObjects.SemPred): Lines => {
+        const result: Lines = this.startRendering("SemPred");
+
+        result.push(`this.state = ${p.stateNumber};`);
+
+        const chunks = this.renderActionChunks(p.chunks);
+        result.push(`if (!(${chunks.join("")})) {`);
+
+        const failChunks = this.renderActionChunks(p.failChunks);
+        result.push(`    throw this.createFailedPredicateException` +
+            `(${p.predicate}, ${failChunks.length > 0 ? failChunks : (p.msg ? p.msg : "")});`);
+        result.push(`}`);
+
+        return this.endRendering("SemPred", result);
+    };
+
+    protected override renderArgRef = (a: OutputModelObjects.ArgRef): Lines => {
+        return [`localContext?.${a.escapedName}!`];
+    };
+
+    protected override renderListLabelRef = (t: OutputModelObjects.ListLabelRef): Lines => {
+        const ctx = this.renderContext(t);
+        const name = this.renderListLabelName(t.escapedName);
+
+        return [`${ctx}?._${name}`];
+    };
+
+    protected override renderLocalRef = (a: OutputModelObjects.LocalRef): Lines => {
+        return [`localContext.${a.escapedName}`];
+    };
+
+    protected override renderNonLocalAttrRef = (s: OutputModelObjects.NonLocalAttrRef): Lines => {
+        return [`(this.getInvokingContext(${s.ruleIndex}) as ` +
+            `${this.toTitleCase(s.ruleName)}Context).${s.escapedName}`];
+    };
+
+    protected override renderQRetValueRef = (a: OutputModelObjects.QRetValueRef): Lines => {
+        const ctx = this.renderContext(a);
+
+        return [`${ctx}._${a.dict}!.${a.escapedName}`];
+    };
+
+    protected override renderRetValueRef = (a: OutputModelObjects.RetValueRef): Lines => {
+        return [`localContext.${a.escapedName}`];
+    };
+
+    protected override renderRulePropertyRef = (r: OutputModelObjects.RulePropertyRef): Lines => {
+        const ctx = this.renderContext(r);
+
+        return [`(${ctx}._${r.label}!.start)`];
+    };
+
+    protected override renderRulePropertyRefCtx = (r: OutputModelObjects.RulePropertyRefCtx): Lines => {
+        const ctx = this.renderContext(r);
+
+        return [`(${ctx}._${r.label}`];
+    };
+
+    protected override renderRulePropertyRefParser = (r: OutputModelObjects.RulePropertyRefParser): Lines => {
+        return ["this"];
+    };
+
+    protected override renderRulePropertyRefStart = (r: OutputModelObjects.RulePropertyRefStart): Lines => {
+        const ctx = this.renderContext(r);
+
+        return [`(${ctx}._${r.label}!.start)`];
+    };
+
+    protected override renderRulePropertyRefStop = (r: OutputModelObjects.RulePropertyRefStop): Lines => {
+        const ctx = this.renderContext(r);
+
+        return [`(${ctx}._${r.label}!.stop)`];
+    };
+
+    protected override renderRulePropertyRefText = (r: OutputModelObjects.RulePropertyRefText): Lines => {
+        const ctx = this.renderContext(r);
+
+        return [`(${ctx}._${r.label} != null ? this.tokenStream.getTextFromRange(${ctx}._${r.label}.start, ` +
+            `${ctx}._${r.label}.stop) : '')`];
+    };
+
+    protected override renderSetAttr = (s: OutputModelObjects.SetAttr): Lines => {
+        const ctx = this.renderContext(s);
+        const rhsChunks = s.rhsChunks.map((c) => {
+            return this.renderActionChunks([c]);
+        }).join("");
+
+        return [`(${ctx}!._${s.escapedName} = ${rhsChunks})`];
+    };
+
+    protected override renderSetNonLocalAttr = (s: OutputModelObjects.SetNonLocalAttr): Lines => {
+        const rhsChunks = s.rhsChunks.map((c) => {
+            return this.renderActionChunks([c]);
+        }).join("");
+
+        return [`(this.getInvokingContext(${s.ruleIndex}) as ${this.toTitleCase(s.ruleName)}Context).` +
+            `${s.escapedName} = ${rhsChunks};`];
+    };
+
+    protected override renderThisRulePropertyRefCtx = (r: OutputModelObjects.ThisRulePropertyRefCtx): Lines => {
+        return ["localContext"];
+    };
+
+    protected override renderThisRulePropertyRefParser = (r: OutputModelObjects.ThisRulePropertyRefParser): Lines => {
+        return ["this"];
+    };
+
+    protected override renderThisRulePropertyRefStart = (r: OutputModelObjects.ThisRulePropertyRefStart): Lines => {
+        return ["localContext.start"];
+    };
+
+    protected override renderThisRulePropertyRefStop = (r: OutputModelObjects.ThisRulePropertyRefStop): Lines => {
+        return ["localContext.stop"];
+    };
+
+    protected override renderThisRulePropertyRefText = (r: OutputModelObjects.ThisRulePropertyRefText): Lines => {
+        return ["this.tokenStream.getTextFromRange(localContext.start, this.tokenStream.LT(-1))"];
+    };
+
+    protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
+        const ctx = this.renderContext(t);
+
+        return [`${ctx}._${t.label}?.channel ?? 0`];
+    };
+
+    protected override renderTokenPropertyRefIndex = (t: OutputModelObjects.TokenPropertyRefIndex): Lines => {
+        const ctx = this.renderContext(t);
+
+        return [`(${ctx}._${t.label}?.tokenIndex ?? 0)`];
+    };
+
+    protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
+        const ctx = this.renderContext(t);
+
+        return [`Number(${ctx}._${t.label}?.text ?? '0')`];
+    };
+
+    protected override renderTokenPropertyRefLine = (t: OutputModelObjects.TokenPropertyRefLine): Lines => {
+        const ctx = this.renderContext(t);
+
+        return [`(${ctx}._${t.label}?.line ?? 0)`];
+    };
+
+    protected override renderTokenPropertyRefPos = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
+        const ctx = this.renderContext(t);
+
+        return [`(${ctx}._${t.label}?.column ?? 0)`];
+    };
+
+    protected override renderTokenPropertyRefText = (t: OutputModelObjects.TokenPropertyRefText): Lines => {
+        const ctx = this.renderContext(t);
+
+        return [`(${ctx}._${t.label}?.text ?? '')`];
+    };
+
+    protected override renderTokenPropertyRefType = (t: OutputModelObjects.TokenPropertyRefType): Lines => {
+        const ctx = this.renderContext(t);
+
+        return [`(${ctx}._${t.label}?.type ?? 0)`];
+    };
+
+    protected override renderTokenRef = (t: OutputModelObjects.TokenRef): Lines => {
+        const ctx = this.renderContext(t);
+
+        return [`${ctx}?._${t.escapedName}!`];
+    };
+
+    protected override renderActionText = (t: OutputModelObjects.ActionText): Lines => {
+        return t.text ?? [""];
+    };
+
+    protected override renderListenerDispatchMethod = (struct: OutputModelObjects.StructDecl,
+        method: OutputModelObjects.ListenerDispatchMethod): Lines => {
+        const derivedFromName = this.toTitleCase(struct.derivedFromName);
+        const enterExit = method.isEnter ? "enter" : "exit";
+
+        return [
+            "",
+            `public override ${enterExit}Rule(listener: ${this.invariants.grammarName}Listener): void {`,
+            `    listener.${enterExit}${derivedFromName}?.(this);`,
+            `}`,
+        ];
+    };
+
+    protected override renderVisitorDispatchMethod = (struct: OutputModelObjects.StructDecl): Lines => {
+        const derivedFromName = this.toTitleCase(struct.derivedFromName);
+
+        return [
+            "",
+            `public override accept<Result>(visitor: ${this.invariants.grammarName}Visitor<Result>): Result | null {`,
+            `    if (visitor.visit${derivedFromName}) {`,
+            `        return visitor.visit${derivedFromName}(this);`,
+            `    } else {`,
+            `        return visitor.visitChildren(this);`,
+            `    }`,
+            `}`
+        ];
+    };
+
+    protected override renderSerializedATN = (model: OutputModelObjects.SerializedATN): Lines => {
+        const className = this.invariants.recognizerName;
+
+        const result: Lines = [
+            "public static readonly _serializedATN: number[] = [",
+            ...this.renderList(model.serialized, { wrap: 63, indent: 4, separator: "," }),
+            "];",
+            "",
+            "private static __ATN: antlr.ATN;",
+            "public static get _ATN(): antlr.ATN {",
+            `    if (!${className}.__ATN) {`,
+            `        ${className}.__ATN = new antlr.ATNDeserializer().deserialize(${className}._serializedATN);`,
+            "    }",
+            "",
+            `    return ${className}.__ATN;`,
+            "}"
+        ];
+
+        return result;
+    };
+
+    protected override renderAltLabelStructDecl = (currentRule: OutputModelObjects.RuleFunction,
+        struct: OutputModelObjects.AltLabelStructDecl): Lines => {
+        const result: Lines = this.startRendering("AltLabelStructDecl");
+
+        result.push(`export class ${struct.escapedName} extends ${this.toTitleCase(struct.parentRule)}Context {`);
+
+        const block = this.renderDecls(struct.attrs);
+        block.push(`public constructor(ctx: ${this.toTitleCase(currentRule.name)}Context) {`);
+
+        const attrs = currentRule.ruleCtx.ctorAttrs.map((a) => {
+            return `ctx.${a.escapedName}`;
+        }).join(", ");
+        block.push(`    super(ctx.parent, ctx.invokingState${attrs.length > 0 ? ", " + attrs : ""});`);
+        block.push(`    super.copyFrom(ctx);`);
+        block.push(`}`);
+
+        block.push(...this.renderDecls(struct.getters));
+
+        block.push(...this.renderDispatchMethods(struct));
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`}`);
+
+        return this.endRendering("AltLabelStructDecl", result);
+    };
+
+    /**
+     * This generates a private method since the predIndex is generated, making an overriding implementation
+     * impossible to maintain.
+     *
+     * @param r The rule sempred function information.
+     *
+     * @returns The lines comprising the sempred function.
+     */
+    protected override renderRuleSempredFunction = (r: OutputModelObjects.RuleSempredFunction): Lines => {
+        const result: Lines = this.startRendering("ruleSempredFunction");
+
+        result.push(`private ${r.name}_sempred(localContext: ${r.ctxType}, predIndex: number): boolean {`);
+        result.push(`    switch (predIndex) {`);
+
+        for (const [index, action] of r.actions) {
+            result.push(`        case ${index}: {`);
+
+            const actionText = this.renderAction(action).join("");
+
+            // No line breaks between `return` and the action.
+            result.push(`            return ${actionText.trimStart()};`);
+            result.push(`        }`);
+            result.push("");
+        }
+        result.push(`        default:`);
+        result.push(`    }`);
+        result.push("");
+        result.push(`    return true;`);
+        result.push(`}`);
+        result.push("");
+
+        return this.endRendering("ruleSempredFunction", result);
+    };
+
+    protected override renderRuleFunction = (namedActions: NamedActions,
+        currentRule: OutputModelObjects.RuleFunction): Lines => {
+        const result = this.startRendering("ruleFunction");
+
+        const modifiers = currentRule.modifiers.length > 0 ? currentRule.modifiers.join(" ") : undefined;
+
+        const args = currentRule.args?.map((a) => {
+            return `${a.escapedName}: ${a.type}`;
+        });
+
+        const ctorArgs = currentRule.args?.map((a) => {
+            return a.escapedName;
+        });
+
+        result.push(`${modifiers ?? "public"} ${currentRule.escapedName}(${args ? args.join(", ") : ""}): ` +
+            `${currentRule.ctxType} {`);
+
+        const block: Lines = [];
+        block.push(`let localContext = new ${currentRule.ctxType}(this.context, this.state` +
+            `${ctorArgs ? ", " + ctorArgs.join(", ") : ""});`);
+        block.push(`this.enterRule(localContext, ${currentRule.startState}, ${this.invariants.recognizerName}.` +
+            `RULE_${currentRule.name});`);
+        block.push(...this.renderAction(currentRule.namedActions?.get("init")));
+
+        for (const decl of currentRule.locals) {
+            block.push(...this.renderTokenTypeDecl(decl));
+        }
+
+        block.push("");
+        block.push(`try {`);
+        if (currentRule.hasLookaheadBlock) {
+            block.push(`    let alternative: number;`);
+        }
+
+        block.push(...this.formatLines(this.renderSourceOps(currentRule.code), 4));
+        block.push(...this.formatLines(this.renderSourceOps(currentRule.postamble), 4));
+        block.push(...this.formatLines(this.renderAction(namedActions.get("after")), 4));
+
+        if (currentRule.exceptions && currentRule.exceptions.length > 0) {
+            currentRule.exceptions.forEach((e) => {
+                block.push(...this.renderExceptionClause(e));
+            });
+        } else {
+            block.push(`} catch (re) {`);
+            block.push(`    if (re instanceof antlr.RecognitionException) {`);
+            block.push(`        this.errorHandler.reportError(this, re);`);
+            block.push(`        this.errorHandler.recover(this, re);`);
+            block.push(`    } else {`);
+            block.push(`        throw re;`);
+            block.push(`    }`);
+            block.push(`}`);
+        }
+
+        block[block.length - 1] += ` finally {`;
+        if (currentRule.finallyAction) {
+            block.push(`    ${this.renderAction(currentRule.finallyAction)[0]}`);
+        }
+        block.push(`    this.exitRule();`);
+        block.push(`}`);
+        block.push("");
+        block.push(`return localContext;`);
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`}`);
+        result.push("");
+
+        return this.endRendering("ruleFunction", result);
+    };
+
+    protected override renderLeftRecursiveRuleFunction = (namedActions: NamedActions,
+        currentRule: OutputModelObjects.LeftRecursiveRuleFunction): Lines => {
+        const result: Lines = this.startRendering("leftRecursiveRuleFunction");
+
+        const modifiers = currentRule.modifiers.length > 0 ? currentRule.modifiers.join(" ") : "public";
+        const args = currentRule.args?.map((a) => {
+            return a.escapedName;
+        });
+        const argList = args?.join(", ") ?? "";
+
+        result.push(`${modifiers} ${currentRule.escapedName}(${argList}): ${currentRule.ctxType};`);
+        result.push(`${modifiers} ${currentRule.escapedName}(${argList}${args ? ", " : ""}_p: number): ` +
+            `${currentRule.ctxType};`);
+        result.push(`${modifiers} ${currentRule.escapedName}(${argList}${args ? ", " : ""}_p?: number): ` +
+            `${currentRule.ctxType} {`);
+
+        const block: Lines = [];
+        block.push(`if (_p === undefined) {`);
+        block.push(`    _p = 0;`);
+        block.push(`}`);
+
+        block.push(``);
+        block.push(`let parentContext = this.context;`);
+        block.push(`let parentState = this.state;`);
+        block.push(`let localContext = new ${currentRule.ctxType}(this.context, parentState${argList});`);
+        block.push(`let previousContext = localContext;`);
+        block.push(`let _startState = ${currentRule.startState};`);
+        block.push(`this.enterRecursionRule(localContext, ${currentRule.startState}, ` +
+            `${this.invariants.recognizerName}.RULE_${currentRule.name}, _p);`);
+
+        block.push(...this.renderAction(currentRule.namedActions?.get("init")));
+
+        for (const decl of currentRule.locals) {
+            block.push(...this.renderTokenTypeDecl(decl));
+        }
+
+        block.push(`try {`);
+
+        if (currentRule.hasLookaheadBlock) {
+            block.push(`    let alternative: number;`);
+        }
+
+        block.push(...this.formatLines(this.renderSourceOps(currentRule.code), 4));
+
+        block.push(...this.formatLines(this.renderSourceOps(currentRule.postamble), 4));
+        block.push(...this.formatLines(this.renderAction(namedActions.get("after")), 4));
+
+        block.push(`} catch (re) {`);
+        block.push(`    if (re instanceof antlr.RecognitionException) {`);
+        block.push(`        this.errorHandler.reportError(this, re);`);
+        block.push(`        this.errorHandler.recover(this, re);`);
+        block.push(`    } else {`);
+        block.push(`        throw re;`);
+        block.push(`    }`);
+        block.push(`} finally {`);
+
+        if (currentRule.finallyAction) {
+            block.push(`    ${this.renderAction(currentRule.finallyAction)[0]}`);
+        }
+
+        block.push(`    this.unrollRecursionContexts(parentContext);`);
+        block.push(`}`);
+        block.push("");
+        block.push(`return localContext;`);
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`}`);
+
+        return this.endRendering("leftRecursiveRuleFunction", result);
+    };
 
     private renderParser(parserFile: OutputModelObjects.ParserFile): Lines {
         const parser = parserFile.parser;
@@ -638,9 +1577,9 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
             block.push("");
             parser.funcs.forEach((f) => {
                 if (f instanceof OutputModelObjects.LeftRecursiveRuleFunction) {
-                    block.push(...this.renderLeftRecursiveRuleFunction(parserFile, f));
+                    block.push(...this.renderLeftRecursiveRuleFunction(parserFile.namedActions, f));
                 } else {
-                    block.push(...this.renderRuleFunction(parserFile, f));
+                    block.push(...this.renderRuleFunction(parserFile.namedActions, f));
                 }
             });
         }
@@ -672,7 +1611,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         }
 
         block.push("");
-        block.push(...this.renderSerializedATN(parser.atn, parser.name));
+        block.push(...this.renderSerializedATN(parser.atn));
 
         block.push("");
         block.push(`private static readonly vocabulary = new antlr.Vocabulary(${parser.name}.literalNames, ` +
@@ -689,12 +1628,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         result.push("");
 
         parser.funcs.forEach((currentRule) => {
-            result.push(...this.renderStructDecl(parserFile, parser.name, currentRule.ruleCtx));
+            result.push(...this.renderStructDecl(currentRule.ruleCtx));
 
             if (currentRule.altLabelCtxs && currentRule.altLabelCtxs.size > 0) {
                 result.push("");
                 currentRule.altLabelCtxs.forEach((ctx) => {
-                    result.push(...this.renderAltLabelStructDecl(parserFile, parser.name, currentRule, ctx));
+                    result.push(...this.renderAltLabelStructDecl(currentRule, ctx));
                 });
             }
         });
@@ -753,7 +1692,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         block.push(`}`);
         block.push("");
 
-        block.push(`public get grammarFileName(): string { return "${lexer.grammarFileName}"}`);
+        block.push(`public get grammarFileName(): string { return "${lexer.grammarFileName}"; }`, ``);
         block.push(`public get literalNames(): (string | null)[] { return ${lexer.name}.literalNames; }`);
         block.push(`public get symbolicNames(): (string | null)[] { return ${lexer.name}.symbolicNames; }`);
         block.push(`public get ruleNames(): string[] { return ${lexer.name}.ruleNames; }`);
@@ -766,7 +1705,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         block.push("");
 
         block.push(...this.renderActionHandlers(lexer));
-        block.push(...this.renderSerializedATN(lexer.atn, lexer.name));
+        block.push(...this.renderSerializedATN(lexer.atn));
         block.push("");
         block.push(`private static readonly vocabulary = new antlr.Vocabulary(${lexer.name}.literalNames, ` +
             `${lexer.name}.symbolicNames, []);`);
@@ -775,7 +1714,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         block.push(`    return ${lexer.name}.vocabulary;`);
         block.push(`}`);
         block.push("");
-        block.push(`private static readonly decisionsToDFA = ${lexer.name}._ATN.decisionToState.map((ds: antlr.DecisionState,`);
+        block.push(`private static readonly decisionsToDFA = ${lexer.name}._ATN.decisionToState.map((ds: ` +
+            `antlr.DecisionState,`);
         block.push(`    index: number) => { return new antlr.DFA(ds, index); })`);
         block.push(`;`);
 
@@ -816,13 +1756,15 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         }
 
         if (lexer.sempredFuncs.size > 0) {
-            result.push(`public override sempred(localContext: antlr.ParserRuleContext | null, ruleIndex: number, predIndex: number): boolean {`);
+            result.push(`public override sempred(localContext: antlr.ParserRuleContext | null, ruleIndex: number, ` +
+                `predIndex: number): boolean {`);
             result.push(`    switch (ruleIndex) {`);
 
             const funcs: Lines = [];
             lexer.sempredFuncs.forEach((f) => {
                 result.push(`        case ${f.ruleIndex}:`);
-                result.push(`            return this.${f.name}_sempred(localContext${lexer.modes.length === 0 ? "as " + f.ctxType : ""}, predIndex);`);
+                result.push(`            return this.${f.name}_sempred(localContext` +
+                    `${lexer.modes.length === 0 ? "as " + f.ctxType : ""}, predIndex);`);
 
                 funcs.push(...this.renderRuleSempredFunction(f));
             });
@@ -858,580 +1800,13 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
     }
 
     /**
-     * This generates a private method since the predIndex is generated, making an overriding implementation
-     * impossible to maintain.
-     */
-    private renderRuleSempredFunction(r: OutputModelObjects.RuleSempredFunction): Lines {
-        const result: Lines = this.startRendering("ruleSempredFunction");
-
-        result.push(`private ${r.name}_sempred(localContext: ${r.ctxType}, predIndex: number): boolean {`);
-        result.push(`    switch (predIndex) {`);
-
-        for (const [index, action] of r.actions) {
-            result.push(`        case ${index}: {`);
-
-            const actionText = this.renderAction(action).join("");
-
-            // No line breaks between `return` and the action.
-            result.push(`            return ${actionText.trimStart()};`);
-            result.push(`        }`);
-            result.push("");
-        }
-        result.push(`        default:`);
-        result.push(`    }`);
-        result.push("");
-        result.push(`    return true;`);
-        result.push(`}`);
-        result.push("");
-
-        return this.endRendering("ruleSempredFunction", result);
-    }
-
-    private renderRuleFunction(parserFile: OutputModelObjects.ParserFile, currentRule: OutputModelObjects.RuleFunction): Lines {
-        const parser = parserFile.parser;
-        const result = this.startRendering("ruleFunction");
-
-        const modifiers = currentRule.modifiers.length > 0 ? currentRule.modifiers.join(" ") : undefined;
-
-        const args = currentRule.args?.map((a) => {
-            return `${a.escapedName}: ${a.type}`;
-        });
-
-        const ctorArgs = currentRule.args?.map((a) => {
-            return a.escapedName;
-        });
-
-        result.push(`${modifiers ?? "public"} ${currentRule.escapedName}(${args ? args.join(", ") : ""}): ${currentRule.ctxType} {`);
-
-        const block: Lines = [];
-        block.push(`let localContext = new ${currentRule.ctxType}(this.context, this.state${ctorArgs ? ", " + ctorArgs.join(", ") : ""});`);
-        block.push(`this.enterRule(localContext, ${currentRule.startState}, ${parser.name}.RULE_${currentRule.name});`);
-        block.push(...this.renderAction(currentRule.namedActions?.get("init")));
-
-        for (const decl of currentRule.locals) {
-            block.push(...this.renderTokenTypeDecl(decl));
-        }
-
-        block.push("");
-        block.push(`try {`);
-        if (currentRule.hasLookaheadBlock) {
-            block.push(`    let alternative: number;`);
-        }
-
-        block.push(...this.formatLines(this.renderSourceOps(parserFile, parser.name, currentRule.code), 4));
-        block.push(...this.formatLines(this.renderSourceOps(parserFile, parser.name, currentRule.postamble), 4));
-        block.push(...this.formatLines(this.renderAction(parserFile.namedActions.get("after")), 4));
-
-        if (currentRule.exceptions && currentRule.exceptions.length > 0) {
-            currentRule.exceptions.forEach((e) => {
-                block.push(...this.renderExceptionClause(e));
-            });
-        } else {
-            block.push(`} catch (re) {`);
-            block.push(`    if (re instanceof antlr.RecognitionException) {`);
-            block.push(`        this.errorHandler.reportError(this, re);`);
-            block.push(`        this.errorHandler.recover(this, re);`);
-            block.push(`    } else {`);
-            block.push(`        throw re;`);
-            block.push(`    }`);
-            block.push(`}`);
-        }
-
-        block[block.length - 1] += ` finally {`;
-        if (currentRule.finallyAction) {
-            block.push(`    ${this.renderAction(currentRule.finallyAction)[0]}`);
-        }
-        block.push(`    this.exitRule();`);
-        block.push(`}`);
-        block.push("");
-        block.push(`return localContext;`);
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`}`);
-        result.push("");
-
-        return this.endRendering("ruleFunction", result);
-    }
-
-    private renderSourceOps(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        srcOps?: Array<OutputModelObjects.SrcOp | null>): Lines {
-        const result: Lines = this.startRendering("SourceOps");
-
-        srcOps?.forEach((srcOp) => {
-            if (srcOp) {
-                const method = this.srcOpMap.get(srcOp.constructor as OutputModelObjectConstructor);
-                if (method) {
-                    result.push(...method(outputFile, recognizerName, srcOp));
-                } else {
-                    throw new Error(`Unhandled source op type: ${srcOp.constructor.name}`);
-                }
-            }
-        });
-
-        return this.endRendering("SourceOps", result);
-    }
-
-    private renderLeftRecursiveRuleFunction(parserFile: OutputModelObjects.ParserFile,
-        currentRule: OutputModelObjects.LeftRecursiveRuleFunction): Lines {
-        const result: Lines = this.startRendering("leftRecursiveRuleFunction");
-
-        const modifiers = currentRule.modifiers.length > 0 ? currentRule.modifiers.join(" ") : "public";
-        const args = currentRule.args?.map((a) => {
-            return a.escapedName;
-        });
-        const argList = args?.join(", ") ?? "";
-
-        result.push(`${modifiers} ${currentRule.escapedName}(${argList}): ${currentRule.ctxType};`);
-        result.push(`${modifiers} ${currentRule.escapedName}(${argList}${args ? ", " : ""}_p: number): ${currentRule.ctxType};`);
-        result.push(`${modifiers} ${currentRule.escapedName}(${argList}${args ? ", " : ""}_p?: number): ${currentRule.ctxType} {`);
-
-        const block: Lines = [];
-        block.push(`if (_p === undefined) {`);
-        block.push(`    _p = 0;`);
-        block.push(`}`);
-
-        block.push(``);
-        block.push(`let parentContext = this.context;`);
-        block.push(`let parentState = this.state;`);
-        block.push(`let localContext = new ${currentRule.ctxType}(this.context, parentState${argList});`);
-        block.push(`let previousContext = localContext;`);
-        block.push(`let _startState = ${currentRule.startState};`);
-        block.push(`this.enterRecursionRule(localContext, ${currentRule.startState}, ${parserFile.parser.name}.` +
-            `RULE_${currentRule.name}, _p);`);
-
-        block.push(...this.renderAction(currentRule.namedActions?.get("init")));
-
-        for (const decl of currentRule.locals) {
-            block.push(...this.renderTokenTypeDecl(decl));
-        }
-
-        block.push(`try {`);
-
-        if (currentRule.hasLookaheadBlock) {
-            block.push(`    let alternative: number;`);
-        }
-
-        block.push(...this.formatLines(this.renderSourceOps(parserFile, parserFile.parser.name,
-            currentRule.code), 4));
-
-        block.push(...this.formatLines(this.renderSourceOps(parserFile, parserFile.parser.name,
-            currentRule.postamble), 4));
-        block.push(...this.formatLines(this.renderAction(parserFile.namedActions.get("after")), 4));
-
-        block.push(`} catch (re) {`);
-        block.push(`    if (re instanceof antlr.RecognitionException) {`);
-        block.push(`        this.errorHandler.reportError(this, re);`);
-        block.push(`        this.errorHandler.recover(this, re);`);
-        block.push(`    } else {`);
-        block.push(`        throw re;`);
-        block.push(`    }`);
-        block.push(`} finally {`);
-
-        if (currentRule.finallyAction) {
-            block.push(`    ${this.renderAction(currentRule.finallyAction)[0]}`);
-        }
-
-        block.push(`    this.unrollRecursionContexts(parentContext);`);
-        block.push(`}`);
-        block.push("");
-        block.push(`return localContext;`);
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`}`);
-
-        return this.endRendering("leftRecursiveRuleFunction", result);
-    }
-
-    private renderCodeBlockForOuterMostAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        currentOuterMostAltCodeBlock: OutputModelObjects.CodeBlockForOuterMostAlt): Lines {
-        const result: Lines = this.startRendering("CodeBlockForOuterMostAlt");
-
-        if (currentOuterMostAltCodeBlock.altLabel) {
-            result.push(`localContext = new ${this.toTitleCase(currentOuterMostAltCodeBlock.altLabel)}Context(localContext);`);
-        }
-
-        result.push(`this.enterOuterAlt(localContext, ${currentOuterMostAltCodeBlock.alt.altNum});`);
-        result.push(...this.renderCodeBlockForAlt(outputFile, recognizerName, currentOuterMostAltCodeBlock));
-
-        return this.endRendering("CodeBlockForOuterMostAlt", result);
-    }
-
-    private renderCodeBlockForAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        currentAltCodeBlock: OutputModelObjects.CodeBlockForAlt): Lines {
-        const result: Lines = this.startRendering("CodeBlockForAlt");
-
-        if (currentAltCodeBlock.locals.size === 0 && currentAltCodeBlock.preamble.length === 0
-            && currentAltCodeBlock.ops.length === 0) {
-            result.push("// tslint:disable-next-line:no-empty");
-        }
-
-        result.push(...this.renderDecls(outputFile, recognizerName, currentAltCodeBlock.locals));
-        result.push(...this.renderSourceOps(outputFile, recognizerName, currentAltCodeBlock.preamble));
-        result.push(...this.renderSourceOps(outputFile, recognizerName, currentAltCodeBlock.ops));
-
-        return this.endRendering("CodeBlockForAlt", result);
-    }
-
-    private renderDecls(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        decls: Iterable<OutputModelObjects.Decl>): Lines {
-        const result: Lines = this.startRendering("Decls");
-
-        for (const decl of decls) {
-            const method = this.srcOpMap.get(decl.constructor as OutputModelObjectConstructor);
-            if (method) {
-                result.push(...method(outputFile, recognizerName, decl));
-            } else {
-                throw new Error(`Unhandled source op type: ${decl.constructor.name}`);
-            }
-        }
-
-        return this.endRendering("Decls", result);
-    }
-
-    private renderLL1AltBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        choice: OutputModelObjects.LL1AltBlock): Lines {
-        const result: Lines = this.startRendering("LL1AltBlock");
-
-        result.push(`this.state = ${choice.stateNumber};`);
-        result.push(`this.errorHandler.sync(this);`);
-
-        if (choice.label) {
-            result.push(`${this.renderLabelRef(choice.label)} = this.tokenStream.LT(1);`);
-        }
-
-        result.push(...this.renderSourceOps(outputFile, recognizerName, choice.preamble));
-
-        result.push(`switch (this.tokenStream.LA(1)) {`);
-
-        const block: Lines = [];
-        for (let i = 0; i < choice.alts.length; ++i) {
-            const tokens = choice.altLook[i];
-            block.push(...this.renderCases(recognizerName, tokens));
-            block[block.length - 1] += " {";
-
-            const alt = choice.alts[i] as OutputModelObjects.CodeBlockForAlt | undefined;
-            if (alt) {
-                if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
-                    block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
-                        4));
-                } else {
-                    block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
-                }
-            }
-
-            block.push(`    break;`);
-            block.push(`}`);
-        }
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`    default:`);
-        result.push(...this.formatLines(this.renderThrowNoViableAlt(choice.error), 8));
-
-        result.push(`}`);
-        result.push("");
-
-        return this.endRendering("LL1AltBlock", result);
-    }
-
-    private renderLL1OptionalBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        choice: OutputModelObjects.LL1OptionalBlock): Lines {
-        const result: Lines = this.startRendering("LL1OptionalBlock");
-
-        result.push(`this.state = ${choice.stateNumber};`);
-        result.push(`this.errorHandler.sync(this);`);
-        result.push(`switch (this.tokenStream.LA(1)) {`);
-
-        const block: Lines = [];
-        for (let i = 0; i < choice.altLook.length; ++i) {
-            const tokens = choice.altLook[i];
-            block.push(...this.formatLines(this.renderCases(recognizerName, tokens), 4));
-            block[block.length - 1] += " {";
-
-            const alt = choice.alts[i] as OutputModelObjects.CodeBlockForAlt | undefined;
-            if (alt) {
-                if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
-                    block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
-                        4));
-                } else {
-                    block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
-                }
-            }
-
-            block.push(`    break;`);
-            block.push(`}`);
-        }
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`    default:`);
-        result.push(`        break;`);
-        result.push(`}`);
-
-        return this.endRendering("LL1OptionalBlock", result);
-    }
-
-    private renderLL1OptionalBlockSingleAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        choice: OutputModelObjects.LL1OptionalBlockSingleAlt): Lines {
-        const result: Lines = this.startRendering("LL1OptionalBlockSingleAlt");
-
-        result.push(`this.state = ${choice.stateNumber};`);
-        result.push(`this.errorHandler.sync(this);`);
-        result.push(...this.renderSourceOps(outputFile, recognizerName, choice.preamble));
-
-        result.push(`if (${this.renderSourceOps(outputFile, recognizerName, [choice.expr]).join("")}) {`);
-        choice.alts.forEach((alt, index) => {
-            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
-                result.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
-                    4));
-            } else {
-                result.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
-            }
-        });
-        result.push(`}`);
-        result.push("");
-
-        return this.endRendering("LL1OptionalBlockSingleAlt", result);
-    }
-
-    private renderLL1StarBlockSingleAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        choice: OutputModelObjects.LL1StarBlockSingleAlt): Lines {
-        const result: Lines = this.startRendering("LL1StarBlockSingleAlt");
-
-        result.push(`this.state = ${choice.stateNumber};`);
-        result.push(`this.errorHandler.sync(this);`);
-
-        result.push(...this.renderSourceOps(outputFile, recognizerName, choice.preamble));
-
-        const srcOps = choice.loopExpr ? [choice.loopExpr] : undefined;
-        result.push(`while (${this.renderSourceOps(outputFile, recognizerName, srcOps).join("")}) {`);
-
-        choice.alts.forEach((alt) => {
-            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
-                result.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
-                    4));
-            } else {
-                result.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
-            }
-        });
-
-        result.push(`    this.state = ${choice.loopBackStateNumber};`);
-        result.push(`    this.errorHandler.sync(this);`);
-        result.push(...this.formatLines(this.renderSourceOps(outputFile, recognizerName, choice.iteration), 4));
-        result.push(`}`);
-
-        return this.endRendering("LL1StarBlockSingleAlt", result);
-    }
-
-    private renderLL1PlusBlockSingleAlt(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        choice: OutputModelObjects.LL1PlusBlockSingleAlt): Lines {
-        const result: Lines = this.startRendering("LL1PlusBlockSingleAlt");
-
-        result.push(`this.state = ${choice.blockStartStateNumber};`);
-        result.push(`this.errorHandler.sync(this);`);
-
-        result.push(...this.renderSourceOps(outputFile, recognizerName, choice.preamble));
-
-        result.push(`do {`);
-
-        choice.alts.forEach((alt) => {
-            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
-                result.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
-                    4));
-            } else {
-                result.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
-            }
-        });
-
-        result.push(`    this.state = ${choice.stateNumber};`); // Loop back/exit decision.
-        result.push(`    this.errorHandler.sync(this);`);
-        result.push(...this.formatLines(this.renderSourceOps(outputFile, recognizerName, choice.iteration), 4));
-
-        const srcOps = choice.loopExpr ? [choice.loopExpr] : undefined;
-        result.push(`} while (${this.renderSourceOps(outputFile, recognizerName, srcOps).join("")});`);
-
-        return this.endRendering("LL1PlusBlockSingleAlt", result);
-    }
-
-    /**
-     * Renders the decision block for multiple alternatives. It starts by rendering some management code
-     * and then renders the switch statement with the alternatives (as case branches).
+     * Produces smaller bytecode only when `bits` contains more than two items.
      *
-     * @param outputFile The current output file (lexer, parser etc.).
-     * @param recognizerName The name of the recognizer (parser or lexer).
-     * @param choice The choice to render.
+     * @param s The set to test against.
+     * @param bits The bits used to test the set.
      *
-     * @returns The rendered lines of code.
+     * @returns The string expression for the test.
      */
-    private renderAltBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        choice: OutputModelObjects.AltBlock): Lines {
-        const result: Lines = this.startRendering("AltBlock");
-
-        result.push(`this.state = ${choice.stateNumber};`);
-        result.push(`this.errorHandler.sync(this);`);
-
-        if (choice.label) {
-            result.push(`${this.renderLabelRef(choice.label)} = this.tokenStream.LT(1);`);
-        }
-
-        result.push(...this.renderSourceOps(outputFile, recognizerName, choice.preamble));
-        result.push(`switch (this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, this.context) ) {`);
-
-        const block: Lines = [];
-        choice.alts.forEach((alt, index) => {
-            // Alt numbers are 1-based, so we add 1 to the index.
-            block.push(`case ${index + 1}: {`);
-
-            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
-                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
-                    4));
-            } else {
-                block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
-            }
-            block.push(`    break;`);
-            block.push(`}`);
-        });
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`}`);
-        result.push("");
-
-        return this.endRendering("AltBlock", result);
-    }
-
-    private renderOptionalBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        choice: OutputModelObjects.OptionalBlock): Lines {
-        const result: Lines = this.startRendering("OptionalBlock");
-
-        result.push(`this.state = ${choice.stateNumber};`);
-        result.push(`this.errorHandler.sync(this);`);
-        result.push(`switch (this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, this.context) ) {`);
-
-        const block: Lines = [];
-        const blockAST = choice.ast as OptionalBlockAST;
-        choice.alts.forEach((alt, index) => {
-            // Alt numbers are 1-based, so we add 1 to the index.
-            block.push(`case ${index + 1}${!blockAST.greedy ? " + 1" : ""}: {`);
-
-            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
-                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
-                    4));
-            } else {
-                block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
-            }
-            block.push(`    break;`);
-            block.push(`}`);
-        });
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`}`);
-
-        return this.endRendering("OptionalBlock", result);
-    }
-
-    private renderStarBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        choice: OutputModelObjects.StarBlock): Lines {
-        const result: Lines = this.startRendering("StarBlock");
-
-        const blockAST = choice.ast as OptionalBlockAST;
-        result.push(`this.state = ${choice.stateNumber};`);
-        result.push(`this.errorHandler.sync(this);`);
-        result.push(`alternative = this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, this.context);`);
-        result.push(`while (alternative !== ${choice.exitAlt} && alternative !== antlr.ATN.INVALID_ALT_NUMBER) {`);
-
-        const block: Lines = [];
-        block.push(`if (alternative === 1${!blockAST.greedy ? " + 1" : ""}) {`);
-        block.push(...this.formatLines(this.renderSourceOps(outputFile, recognizerName, choice.iteration), 4));
-
-        choice.alts.forEach((alt) => {
-            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
-                block.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
-                    4));
-            } else {
-                block.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
-            }
-        });
-
-        block.push(`}`);
-        block.push(`this.state = ${choice.loopBackStateNumber};`);
-        block.push(`this.errorHandler.sync(this);`);
-        block.push(`alternative = this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, this.context);`);
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`}`);
-
-        return this.endRendering("StarBlock", result);
-    }
-
-    private renderPlusBlock(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        choice: OutputModelObjects.PlusBlock): Lines {
-        const result: Lines = this.startRendering("PlusBlock");
-
-        const blockAST = choice.ast as OptionalBlockAST;
-        result.push(`this.state = ${choice.blockStartStateNumber};`); //  Alt block decision.
-        result.push(`this.errorHandler.sync(this);`);
-        result.push(`alternative = 1${!blockAST.greedy ? " + 1" : ""};`);
-        result.push(`do {`);
-
-        const switchBlock: Lines = [];
-        switchBlock.push(`switch (alternative) {`);
-        const caseBlock: Lines = [];
-
-        for (let i = 0; i < choice.alts.length; ++i) {
-            const alt = choice.alts[i];
-
-            // Alt numbers are 1-based, so we add 1 to the index.
-            caseBlock.push(`case ${i + 1}${!blockAST.greedy ? " + 1" : ""}: {`);
-
-            if (alt instanceof OutputModelObjects.CodeBlockForOuterMostAlt) {
-                caseBlock.push(...this.formatLines(this.renderCodeBlockForOuterMostAlt(outputFile, recognizerName, alt),
-                    4));
-            } else {
-                caseBlock.push(...this.formatLines(this.renderCodeBlockForAlt(outputFile, recognizerName, alt), 4));
-            }
-            caseBlock.push(`    break;`);
-            caseBlock.push(`}`);
-        }
-
-        caseBlock.push("");
-        caseBlock.push(`default: {`);
-        caseBlock.push(...this.formatLines(this.renderThrowNoViableAlt(choice.error), 4));
-        caseBlock.push(`}`);
-
-        switchBlock.push(...this.formatLines(caseBlock, 4));
-        switchBlock.push(`}`);
-        switchBlock.push("");
-
-        switchBlock.push(`this.state = ${choice.loopBackStateNumber};`); // Loopback/exit decision.
-        switchBlock.push(`this.errorHandler.sync(this);`);
-        switchBlock.push(`alternative = this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, this.context);`);
-
-        result.push(...this.formatLines(switchBlock, 4));
-        result.push(`} while (alternative !== ${choice.exitAlt} && alternative !== antlr.ATN.INVALID_ALT_NUMBER);`);
-
-        return this.endRendering("PlusBlock", result);
-    }
-
-    private renderThrowNoViableAlt(t: OutputModelObjects.ThrowNoViableAlt): Lines {
-        return ["throw new antlr.NoViableAltException(this);"];
-    }
-
-    private renderTestSetInline(s: OutputModelObjects.TestSetInline): Lines {
-        const result: Lines = [];
-
-        s.bitsets.forEach((bits, index) => {
-            const or = index > 0 ? " || " : "";
-
-            const rest = bits.tokens.length > 2 ? bits.tokens.slice(2) : [];
-            if (rest.length > 0) {
-                result.push(or + this.renderBitsetBitfieldComparison(s, bits));
-            } else {
-                result.push(or + this.renderBitsetInlineComparison(s, bits));
-            }
-        });
-
-        return result;
-    }
-
-    /** Produces smaller bytecode only when `bits.ttypes` contains more than two items. */
     private renderBitsetBitfieldComparison(s: OutputModelObjects.TestSetInline,
         bits: OutputModelObjects.Bitset): string {
         return `(${this.renderTestShiftInRange(this.renderOffsetShiftVar(s.varName, bits.shift))}` +
@@ -1448,71 +1823,18 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
         return offset > 0 ? `(${shiftAmount} - ${offset})` : shiftAmount;
     }
 
-    /** Javascript language spec - shift operators are 32 bits long max. */
     private renderTestShiftInRange(shiftAmount: string): string {
         return `((${shiftAmount}) & ~0x1F) === 0`;
     }
 
-    private renderCases(recognizerName: string, tokens: OutputModelObjects.ITokenInfo[]): Lines {
+    private renderCases(tokens: OutputModelObjects.ITokenInfo[]): Lines {
         const result: Lines = this.startRendering("Cases");
 
         for (const t of tokens) {
-            result.push(`case ${recognizerName}.${t.name}:`);
+            result.push(`case ${this.invariants.recognizerName}.${t.name}:`);
         }
 
         return this.endRendering("Cases", result);
-    }
-
-    private renderInvokeRule(r: OutputModelObjects.InvokeRule): Lines {
-        const result: Lines = this.startRendering("InvokeRule");
-
-        result.push(`this.state = ${r.stateNumber};`);
-
-        let labels = "";
-        if (r.labels.length > 0) {
-            for (const l of r.labels) {
-                labels += `${this.renderLabelRef(l)} = `;
-            }
-        }
-
-        let args = "";
-        const ast = r.ast as GrammarASTWithOptions | undefined;
-        const precedence = ast?.getOptionString("p");
-        if (precedence) {
-            args += precedence;
-
-            if (r.argExprsChunks) {
-                args += ", " + this.renderActionChunks(r.argExprsChunks);
-            }
-        }
-
-        result.push(`${labels}this.${r.escapedName}(${args});`);
-
-        return this.endRendering("InvokeRule", result);
-    }
-
-    private renderMatchToken(parserName: string, m: OutputModelObjects.MatchToken): Lines {
-        const result: Lines = this.startRendering("MatchToken");
-
-        result.push(`this.state = ${m.stateNumber};`);
-
-        let line = "";
-        if (m.labels.length > 0) {
-            for (const l of m.labels) {
-                line += `${this.renderLabelRef(l)} = `;
-            }
-        }
-        result.push(`${line}this.match(${parserName}.${m.name});`);
-
-        return this.endRendering("MatchToken", result);
-    }
-
-    private renderMatchSet(m: OutputModelObjects.MatchSet): Lines {
-        return this.renderCommonSetStuff(m, false);
-    }
-
-    private renderMatchNotSet(m: OutputModelObjects.MatchNotSet): Lines {
-        return this.renderCommonSetStuff(m, true);
     }
 
     private renderCommonSetStuff(m: OutputModelObjects.MatchSet, invert: boolean): Lines {
@@ -1555,528 +1877,5 @@ export class TypeScriptTargetGenerator extends GeneratorBase implements ITargetG
 
         return this.endRendering("CommonSetStuff", result);
     }
-
-    private renderWildcard(w: OutputModelObjects.Wildcard): Lines {
-        const result: Lines = this.startRendering("Wildcard");
-
-        result.push(`this.state = ${w.stateNumber};`);
-
-        let lables = "";
-        if (w.labels.length > 0) {
-            for (const l of w.labels) {
-                lables += `${this.renderLabelRef(l)} = `;
-            }
-        }
-        result.push(`${lables}this.matchWildcard();`);
-
-        return this.endRendering("Wildcard", result);
-    }
-
-    private renderAction(a?: OutputModelObjects.Action): Lines {
-        if (!a) {
-            return [];
-        }
-
-        return [this.renderActionChunks(a.chunks).join("")];
-    }
-
-    private renderSemPred(p: OutputModelObjects.SemPred): Lines {
-        const result: Lines = this.startRendering("SemPred");
-
-        result.push(`this.state = ${p.stateNumber};`);
-
-        const chunks = this.renderActionChunks(p.chunks);
-        result.push(`if (!(${chunks.join("")})) {`);
-
-        const failChunks = this.renderActionChunks(p.failChunks);
-        result.push(`    throw this.createFailedPredicateException` +
-            `(${p.predicate}, ${failChunks.length > 0 ? failChunks : (p.msg ? p.msg : "")});`);
-        result.push(`}`);
-
-        return this.endRendering("SemPred", result);
-    }
-
-    private renderExceptionClause(e: OutputModelObjects.ExceptionClause): Lines {
-        const result: Lines = this.startRendering("ExceptionClause");
-
-        result.push(`} catch (${this.renderAction(e.catchArg)[0]}) {`);
-        result.push(`    ${this.renderAction(e.catchAction)[0]}`);
-        result.push(`}`);
-
-        return this.endRendering("ExceptionClause", result);
-    }
-
-    private renderActionText(t: OutputModelObjects.ActionText): Lines {
-        return t.text ?? [];
-    }
-
-    private renderArgRef(a: OutputModelObjects.ArgRef): Lines {
-        return [`localContext?.${a.escapedName}!`];
-    }
-
-    private renderLabelRef(t: OutputModelObjects.LabelRef): string {
-        const ctx = this.renderContext(t);
-
-        return `${ctx}._${t.escapedName}`;
-    }
-
-    private renderListLabelRef(t: OutputModelObjects.ListLabelRef): Lines {
-        const ctx = this.renderContext(t);
-        const name = this.renderListLabelName(t.escapedName);
-
-        return [`${ctx}?._${name}`];
-    }
-
-    private renderLocalRef(a: OutputModelObjects.LocalRef): Lines {
-        return [`localContext.${a.escapedName}`];
-    }
-
-    private renderNonLocalAttrRef(s: OutputModelObjects.NonLocalAttrRef): Lines {
-        return [`(this.getInvokingContext(${s.ruleIndex}) as ` +
-            `${this.toTitleCase(s.ruleName)}Context).${s.escapedName}`];
-    }
-
-    private renderQRetValueRef(a: OutputModelObjects.QRetValueRef): Lines {
-        const ctx = this.renderContext(a);
-
-        return [`${ctx}._${a.dict}!.${a.escapedName}`];
-    }
-
-    private renderRetValueRef(a: OutputModelObjects.RetValueRef): Lines {
-        return [`localContext.${a.escapedName}`];
-    }
-
-    private renderRulePropertyRef(r: OutputModelObjects.RulePropertyRef): Lines {
-        const ctx = this.renderContext(r);
-
-        return [`(${ctx}._${r.label}!.start)`];
-    }
-
-    private renderRulePropertyRefCtx(r: OutputModelObjects.RulePropertyRefCtx): Lines {
-        const ctx = this.renderContext(r);
-
-        return [`(${ctx}._${r.label}`];
-    }
-
-    private renderRulePropertyRefParser(r: OutputModelObjects.RulePropertyRefParser): Lines {
-        return ["this"];
-    }
-
-    private renderRulePropertyRefStart(r: OutputModelObjects.RulePropertyRefStart): Lines {
-        const ctx = this.renderContext(r);
-
-        return [`(${ctx}._${r.label}!.start)`];
-    }
-
-    private renderRulePropertyRefStop(r: OutputModelObjects.RulePropertyRefStop): Lines {
-        const ctx = this.renderContext(r);
-
-        return [`(${ctx}._${r.label}!.stop)`];
-    }
-
-    private renderRulePropertyRefText(r: OutputModelObjects.RulePropertyRefText): Lines {
-        const ctx = this.renderContext(r);
-
-        return [`(${ctx}._${r.label} != null ? this.tokenStream.getTextFromRange(${ctx}._${r.label}.start, ` +
-            `${ctx}._${r.label}.stop) : '')`];
-    }
-
-    private renderSetAttr(s: OutputModelObjects.SetAttr): Lines {
-        const ctx = this.renderContext(s);
-        const rhsChunks = s.rhsChunks.map((c) => {
-            return this.renderActionChunks([c]);
-        }).join("");
-
-        return [`(${ctx}!._${s.escapedName} = ${rhsChunks})`];
-    }
-
-    private renderSetNonLocalAttr(s: OutputModelObjects.SetNonLocalAttr): Lines {
-        const rhsChunks = s.rhsChunks.map((c) => {
-            return this.renderActionChunks([c]);
-        }).join("");
-
-        return [`(this.getInvokingContext(${s.ruleIndex}) as ${this.toTitleCase(s.ruleName)}Context).` +
-            `${s.escapedName} = ${rhsChunks};`];
-    }
-
-    private renderThisRulePropertyRefCtx(r: OutputModelObjects.ThisRulePropertyRefCtx): Lines {
-        return ["localContext"];
-    }
-
-    private renderThisRulePropertyRefParser(r: OutputModelObjects.ThisRulePropertyRefParser): Lines {
-        return ["this"];
-    }
-
-    private renderThisRulePropertyRefStart(r: OutputModelObjects.ThisRulePropertyRefStart): Lines {
-        return ["loclalContext.start"];
-    }
-
-    private renderThisRulePropertyRefStop(r: OutputModelObjects.ThisRulePropertyRefStop): Lines {
-        return ["localContext.stop"];
-    }
-
-    private renderThisRulePropertyRefText(r: OutputModelObjects.ThisRulePropertyRefText): Lines {
-        return ["this.tokenStream.getTextFromRange(localContext.start, this.tokenStream.LT(-1))"];
-    }
-
-    private renderTokenLabelType(file: OutputModelObjects.OutputFile): Lines { return [file.TokenLabelType ?? "Token"]; }
-
-    private renderTokenPropertyRefChannel(t: OutputModelObjects.TokenPropertyRefPos): Lines {
-        const ctx = this.renderContext(t);
-
-        return [`${ctx}._${t.label}?.channel ?? 0`];
-    }
-
-    private renderTokenPropertyRefIndex(t: OutputModelObjects.TokenPropertyRefIndex): Lines {
-        const ctx = this.renderContext(t);
-
-        return [`(${ctx}._${t.label}?.tokenIndex ?? 0)`];
-    }
-
-    private renderTokenPropertyRefInt(t: OutputModelObjects.TokenPropertyRefInt): Lines {
-        const ctx = this.renderContext(t);
-
-        return [`Number(${ctx}._${t.label}?.text ?? '0')`];
-    }
-
-    private renderTokenPropertyRefLine(t: OutputModelObjects.TokenPropertyRefLine): Lines {
-        const ctx = this.renderContext(t);
-
-        return [`(${ctx}._${t.label}?.line ?? 0)`];
-    }
-
-    private renderTokenPropertyRefPos(t: OutputModelObjects.TokenPropertyRefPos): Lines {
-        const ctx = this.renderContext(t);
-
-        return [`(${ctx}._${t.label}?.column ?? 0)`];
-
-    }
-
-    private renderTokenPropertyRefText(t: OutputModelObjects.TokenPropertyRefText): Lines {
-        const ctx = this.renderContext(t);
-
-        return [`(${ctx}._${t.label}?.text ?? '')`];
-    }
-
-    private renderTokenPropertyRefType(t: OutputModelObjects.TokenPropertyRefType): Lines {
-        const ctx = this.renderContext(t);
-
-        return [`(${ctx}._${t.label}?.type ?? 0)`];
-    }
-
-    /** How to translate $tokenLabel */
-    private renderTokenRef(t: OutputModelObjects.TokenRef): Lines {
-        const ctx = this.renderContext(t);
-
-        return [`${ctx}?._${t.escapedName}!`];
-    }
-
-    private renderInputSymbolType(file: OutputModelObjects.LexerFile): Lines {
-        return [file.inputSymbolType ?? "Token"];
-    }
-
-    private renderAddToLabelList = (a: OutputModelObjects.AddToLabelList): Lines => {
-        const ctx = this.renderContext(a.label);
-
-        return [`(${ctx}._${a.listName}.push(${this.renderLabelRef(a.label)}!));`];
-    };
-
-    private renderTokenDecl(file: OutputModelObjects.OutputFile, recognizerName: string, t: OutputModelObjects.TokenDecl): Lines {
-        return [`_${t.escapedName}: ${this.renderTokenLabelType(file)} | null = null;`];
-    }
-
-    private renderTokenTypeDecl(t: OutputModelObjects.TokenTypeDecl): Lines {
-        return [`let ${t.escapedName}: number;`];
-    }
-
-    private renderTokenListDecl(t: OutputModelObjects.TokenListDecl): Lines {
-        return [`_${t.escapedName}: antlr.Token[] = [];`];
-    }
-
-    private renderRuleContextDecl(r: OutputModelObjects.RuleContextDecl): Lines {
-        return [`_${r.escapedName}?: ${r.ctxName};`];
-    }
-
-    private renderRuleContextListDecl(rdecl: OutputModelObjects.RuleContextListDecl): Lines {
-        return [`_${rdecl.escapedName}: ${rdecl.ctxName} [] = [];`];
-    }
-
-    private renderContextTokenGetterDecl(recognizerName: string, t: OutputModelObjects.ContextTokenGetterDecl): Lines {
-        return [
-            "",
-            `public ${t.escapedName}(): antlr.TerminalNode${t.optional ? " | null" : ""} {`,
-            `    return this.getToken(${recognizerName}.${t.name}, 0)${t.optional ? "" : "!"};`,
-            `}`,
-        ];
-    }
-
-    private renderContextTokenListGetterDecl(t: OutputModelObjects.ContextTokenListGetterDecl): Lines {
-        return [`public ${t.name}(): antlr.TerminalNode[];`];
-    }
-
-    private renderContextTokenListIndexedGetterDecl(recognizerName: string,
-        t: OutputModelObjects.ContextTokenListIndexedGetterDecl): Lines {
-        const result: Lines = this.startRendering("ContextTokenListIndexedGetterDecl");
-
-        result.push(`public ${t.name}(i: number): antlr.TerminalNode | null;`);
-        result.push(`public ${t.name}(i?: number): antlr.TerminalNode | null | antlr.TerminalNode[] {`);
-        result.push(`    if (i === undefined) {`);
-        result.push(`        return this.getTokens(${recognizerName}.${t.name});`);
-        result.push(`    } else {`);
-        result.push(`        return this.getToken(${recognizerName}.${t.name}, i);`);
-        result.push(`    }`);
-        result.push(`}`);
-
-        return this.endRendering("ContextTokenListIndexedGetterDecl", result);
-    }
-
-    private renderContextRuleGetterDecl(r: OutputModelObjects.ContextRuleGetterDecl): Lines {
-        return [
-            "",
-            `public ${r.name}(): ${r.ctxName}${r.optional ? "| null" : ""} {`,
-            `    return this.getRuleContext(0, ${r.ctxName})${!r.optional ? "!" : ""};`,
-            `}`
-        ];
-    }
-
-    private renderContextRuleListGetterDecl(r: OutputModelObjects.ContextRuleListGetterDecl): Lines {
-        return [`public ${r.escapedName}(): ${r.ctxName}[];`];
-    }
-
-    private renderContextRuleListIndexedGetterDecl(r: OutputModelObjects.ContextRuleListIndexedGetterDecl): Lines {
-        const result: Lines = this.startRendering("ContextRuleListIndexedGetterDecl");
-
-        result.push(`public ${r.escapedName}(i: number): ${r.ctxName} | null;`);
-        result.push(`public ${r.escapedName}(i?: number): ${r.ctxName}[] | ${r.ctxName} | null {`);
-        result.push(`    if (i === undefined) {`);
-        result.push(`        return this.getRuleContexts(${r.ctxName});`);
-        result.push(`    }`);
-        result.push(``);
-        result.push(`    return this.getRuleContext(i, ${r.ctxName});`);
-        result.push(`}`);
-
-        return this.endRendering("ContextRuleListIndexedGetterDecl", result);
-    }
-
-    private renderCaptureNextToken(d: OutputModelObjects.CaptureNextToken): Lines {
-        return [`${d.varName} = this.tokenStream.LT(1);`];
-    }
-
-    private renderCaptureNextTokenType(d: OutputModelObjects.CaptureNextTokenType): Lines {
-        return [`${d.varName} = this.tokenStream.LA(1);`];
-    }
-
-    private renderStructDecl(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        struct: OutputModelObjects.StructDecl): Lines {
-        const result: Lines = this.startRendering("StructDecl");
-
-        result.push(``, `export class ${struct.escapedName} extends antlr.ParserRuleContext {`);
-
-        const decls = this.renderDecls(outputFile, struct.name, struct.attrs);
-        let startLogEntry: string | undefined = undefined;
-        let endLogEntry: string | undefined = undefined;
-
-        if (this.logRendering && decls.length > 0) {
-            startLogEntry = decls.shift();
-            endLogEntry = decls.pop();
-        }
-
-        if (startLogEntry) {
-            result.push(`    ${startLogEntry}`);
-        }
-
-        result.push(...decls.map((d) => {
-            return `    public ${d}`;
-        }));
-
-        if (endLogEntry) {
-            result.push(`    ${endLogEntry}`);
-        }
-
-        result.push("");
-
-        const block: Lines = [];
-        if (struct.ctorAttrs.length > 0) {
-            block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number<struct.ctorAttrs:{a |, <a.escapedName>: <a.type>}>) {`);
-            block.push(`    super(parent, invokingState);`);
-
-            struct.ctorAttrs.forEach((a) => {
-                block.push(`    this.${a.escapedName} = ${a.escapedName};`);
-            });
-
-            block.push(`}`);
-        } else {
-            block.push(`public constructor(parent: antlr.ParserRuleContext | null, invokingState: number) {`);
-            block.push(`    super(parent, invokingState);`);
-            block.push(`}`);
-        }
-
-        block.push(...this.renderDecls(outputFile, recognizerName, struct.getters));
-
-        const parser = (outputFile as OutputModelObjects.ParserFile).parser;
-        block.push(`public override get ruleIndex(): number {`);
-        block.push(`    return ${parser.name}.RULE_${struct.derivedFromName};`);
-        block.push(`}`);
-
-        // Don't need copy unless we have subclasses.
-        if (struct.provideCopyFrom) {
-            block.push("");
-            block.push(`public override copyFrom(ctx: ${struct.name}): void {`);
-            block.push(`    super.copyFrom(ctx);`);
-
-            for (const a of struct.attrs) {
-                block.push(`    this.${a.escapedName} = ctx.${a.escapedName};`);
-            }
-            block.push(`}`);
-        }
-
-        for (const method of struct.dispatchMethods) {
-            if (method instanceof OutputModelObjects.VisitorDispatchMethod) {
-                block.push(...this.renderVisitorDispatchMethod(parser.grammarName, struct));
-            } else if (method instanceof OutputModelObjects.ListenerDispatchMethod) {
-                block.push(...this.renderListenerDispatchMethod(parser.grammarName, struct, method));
-            }
-        }
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`}`);
-
-        return this.endRendering("StructDecl", result);
-    }
-
-    private renderAltLabelStructDecl(outputFile: OutputModelObjects.OutputFile, recognizerName: string,
-        currentRule: OutputModelObjects.RuleFunction, struct: OutputModelObjects.AltLabelStructDecl): Lines {
-        const result: Lines = this.startRendering("AltLabelStructDecl");
-
-        result.push(`export class ${struct.escapedName} extends ${this.toTitleCase(struct.parentRule)}Context {`);
-
-        const block: Lines = [];
-
-        for (const attr of struct.attrs) {
-            const method = this.srcOpMap.get(attr.constructor as OutputModelObjectConstructor);
-            let lines: Lines;
-            if (method) {
-                lines = method(outputFile, recognizerName, attr);
-            } else {
-                throw new Error(`Unhandled source op type: ${attr.constructor.name}`);
-            }
-
-            lines.forEach((line) => {
-                block.push(`public ${line}`);
-            });
-        }
-
-        block.push(`public constructor(ctx: ${this.toTitleCase(currentRule.name)}Context) {`);
-
-        const attrs = currentRule.ruleCtx.ctorAttrs.map((a) => {
-            return `ctx.${a.escapedName}`;
-        }).join(", ");
-        block.push(`    super(ctx.parent, ctx.invokingState${attrs});`);
-        block.push(`    super.copyFrom(ctx);`);
-        block.push(`}`);
-
-        block.push(...this.renderDecls(outputFile, recognizerName, struct.getters));
-
-        const parser = (outputFile as OutputModelObjects.ParserFile).parser;
-        for (const method of struct.dispatchMethods) {
-            if (method instanceof OutputModelObjects.VisitorDispatchMethod) {
-                block.push(...this.renderVisitorDispatchMethod(parser.grammarName, struct));
-            } else if (method instanceof OutputModelObjects.ListenerDispatchMethod) {
-                block.push(...this.renderListenerDispatchMethod(parser.grammarName, struct, method));
-            }
-        }
-
-        result.push(...this.formatLines(block, 4));
-        result.push(`}`);
-
-        return this.endRendering("AltLabelStructDecl", result);
-    }
-
-    private renderListenerDispatchMethod(grammarName: string, struct: OutputModelObjects.StructDecl,
-        method: OutputModelObjects.ListenerDispatchMethod): Lines {
-        const derivedFromName = this.toTitleCase(struct.derivedFromName);
-        const enterExit = method.isEnter ? "enter" : "exit";
-
-        return [
-            "",
-            `public override ${enterExit}Rule(listener: ${grammarName}Listener): void {`,
-            `    listener.${enterExit}${derivedFromName}?.(this);`,
-            `}`,
-        ];
-    }
-
-    private renderVisitorDispatchMethod(grammarName: string, struct: OutputModelObjects.StructDecl): Lines {
-        const derivedFromName = this.toTitleCase(struct.derivedFromName);
-
-        return [
-            "",
-            `public override accept<Result>(visitor: ${grammarName}Visitor<Result>): Result | null {`,
-            `    if (visitor.visit${derivedFromName}) {`,
-            `        return visitor.visit${derivedFromName}(this);`,
-            `    } else {`,
-            `        return visitor.visitChildren(this);`,
-            `    }`,
-            `}`
-        ];
-    }
-
-    private renderAttributeDecl(d: OutputModelObjects.AttributeDecl): Lines {
-        const result: Lines = [];
-
-        if (d.initValue !== undefined) {
-            result.push(`${d.escapedName} = ${d.initValue}`);
-        } else {
-            result.push(`${d.escapedName}: ${d.type}`);
-        }
-
-        return result;
-    }
-
-    private renderSerializedATN(model: OutputModelObjects.SerializedATN, className: string): Lines {
-        const result: Lines = [
-            "public static readonly _serializedATN: number[] = [",
-            ...this.renderList(model.serialized, { wrap: 63, indent: 4, separator: "," }),
-            "];",
-            "",
-            "private static __ATN: antlr.ATN;",
-            "public static get _ATN(): antlr.ATN {",
-            `    if (!${className}.__ATN) {`,
-            `        ${className}.__ATN = new antlr.ATNDeserializer().deserialize(${className}._serializedATN);`,
-            "    }",
-            "",
-            `    return ${className}.__ATN;`,
-            "}"
-        ];
-
-        return result;
-    }
-
-    private renderLexerSkipCommand = (): Lines => {
-        return ["this.skip();"];
-    };
-
-    private renderLexerMoreCommand = (): Lines => {
-        return ["this.more();"];
-    };
-
-    private renderLexerPopModeCommand = (): Lines => {
-        return ["this.popMode();"];
-    };
-
-    private renderLexerTypeCommand = (arg: string, grammar: Grammar): Lines => {
-        return [`this.type = ${arg};`];
-    };
-
-    private renderLexerChannelCommand = (arg: string, grammar: Grammar): Lines => {
-        return [`this.channel = ${arg};`];
-    };
-
-    private renderLexerModeCommand = (arg: string, grammar: Grammar): Lines => {
-        return [`this.mode = ${arg};`];
-    };
-
-    private renderLexerPushModeCommand = (arg: string, grammar: Grammar): Lines => {
-        return [`this.pushMode(${arg});`];
-    };
 
 }

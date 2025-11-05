@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 
 import { existsSync, symlinkSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
+import { homedir } from "node:os";
 
 import {
     ATN, ATNDeserializer, ATNSerializer, CharStream, CommonTokenStream, escapeWhitespace, Lexer, LexerATNSimulator,
@@ -93,7 +94,8 @@ export const xpathTestGrammar =
     "WS  :   [ \\t]+ -> skip ; // toss out whitespace\n"
     ;
 
-const tsGenerator = new TypeScriptTargetGenerator();
+const tsGenerator = new TypeScriptTargetGenerator(false);
+tsGenerator.setUp();
 
 /**
  * This class generates test parsers/lexers in the virtual filesystem, but executes them on the physical file system,
@@ -101,6 +103,20 @@ const tsGenerator = new TypeScriptTargetGenerator();
  * The class takes care to keep physical and virtual file systems in sync.
  */
 export class ToolTestUtils {
+    public static expandTilde(filepath: string): string {
+        const home = homedir();
+
+        if (filepath.charCodeAt(0) === 126 /* ~ */) {
+            if (filepath.charCodeAt(1) === 43 /* + */) {
+                return join(process.cwd(), filepath.slice(2));
+            }
+
+            return home ? join(home, filepath.slice(1)) : filepath;
+        }
+
+        return filepath;
+    };
+
     public static async execLexer(grammarFileName: string, grammarStr: string, lexerName: string, input: string,
         workingDir: string): Promise<ErrorQueue> {
         const runOptions = this.createOptionsForToolTests(grammarFileName, grammarStr, undefined, lexerName, false,

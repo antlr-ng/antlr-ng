@@ -18,10 +18,7 @@ export const ModelElement = <T, This>(target: undefined, context: ClassFieldDeco
             [modelElementSymbol]?: Set<string | symbol>;
         };
 
-        if (!constructor[modelElementSymbol]) {
-            constructor[modelElementSymbol] = new Set();
-        }
-
+        constructor[modelElementSymbol] ??= new Set();
         constructor[modelElementSymbol].add(context.name);
     });
 };

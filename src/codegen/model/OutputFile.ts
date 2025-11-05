@@ -13,7 +13,6 @@ export abstract class OutputFile extends OutputModelObject {
     public readonly fileName: string;
     public readonly grammarFileName: string;
     public readonly TokenLabelType?: string;
-    public readonly inputSymbolType?: string;
 
     public constructor(factory: IOutputModelFactory, fileName: string) {
         super(factory);
@@ -23,7 +22,6 @@ export abstract class OutputFile extends OutputModelObject {
         const g = factory.g;
         this.grammarFileName = g.fileName.replace("\\", "/");
         this.TokenLabelType = g.getOptionString("TokenLabelType");
-        this.inputSymbolType = this.TokenLabelType;
     }
 
     public buildNamedActions(g: Grammar, filter?: (ast: ActionAST) => boolean): Map<string, Action> {

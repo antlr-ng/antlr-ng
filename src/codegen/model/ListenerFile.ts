@@ -14,8 +14,6 @@ import { OutputFile } from "./OutputFile.js";
  *  These are the rules specific events triggered by a parse tree visitor.
  */
 export class ListenerFile extends OutputFile {
-    // These fields are used in some code generation templates:
-
     public accessLevel?: string;
     public grammarName: string;
     public parserName: string;
@@ -35,7 +33,7 @@ export class ListenerFile extends OutputFile {
     @ModelElement
     public namedActions: Map<string, Action>;
 
-    public constructor(factory: IOutputModelFactory, fileName: string, public genPackage?: string) {
+    public constructor(factory: IOutputModelFactory, fileName: string) {
         super(factory, fileName);
 
         const g = factory.g;

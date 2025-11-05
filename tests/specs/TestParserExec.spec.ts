@@ -18,6 +18,7 @@ import { Grammar } from "../../src/tool/index.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
 
 const tsGenerator = new TypeScriptTargetGenerator();
+tsGenerator.setUp();
 
 /**
  * Test parser execution.

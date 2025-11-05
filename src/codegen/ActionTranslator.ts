@@ -158,7 +158,6 @@ export class ActionTranslator implements IActionSplitterListener {
                 default: {
                     break;
                 }
-
             }
         }
 

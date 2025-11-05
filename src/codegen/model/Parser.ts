@@ -4,10 +4,10 @@
  */
 
 import { ModelElement } from "../../misc/ModelElement.js";
-import { IOutputModelFactory } from "../IOutputModelFactory.js";
-import { ParserFile } from "./ParserFile.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
+import type { ParserFile } from "./ParserFile.js";
 import { Recognizer } from "./Recognizer.js";
-import { RuleFunction } from "./RuleFunction.js";
+import type { RuleFunction } from "./RuleFunction.js";
 
 export class Parser extends Recognizer {
     public file: ParserFile;

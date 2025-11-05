@@ -5,10 +5,10 @@
 
 import { CommonToken, Token } from "antlr4ng";
 
-import { CommonTree } from "./CommonTree.js";
+import type { CommonTree } from "./CommonTree.js";
 import { TreePattern } from "./TreePattern.js";
 import { TreePatternLexer } from "./TreePatternLexer.js";
-import { TreeWizard } from "./TreeWizard.js";
+import type { TreeWizard } from "./TreeWizard.js";
 import { WildcardTreePattern } from "./WildcardTreePattern.js";
 
 export class TreePatternParser {

@@ -8,13 +8,13 @@
 import type { IAlternative } from "../types.js";
 import type { IAttribute } from "./IAttribute.js";
 import type { IAttributeResolver } from "./IAttributeResolver.js";
-import { LabelElementPair } from "./LabelElementPair.js";
+import type { LabelElementPair } from "./LabelElementPair.js";
 import { LabelType } from "./LabelType.js";
-import { Rule } from "./Rule.js";
-import { ActionAST } from "./ast/ActionAST.js";
-import { AltAST } from "./ast/AltAST.js";
-import { GrammarAST } from "./ast/GrammarAST.js";
-import { TerminalAST } from "./ast/TerminalAST.js";
+import type { Rule } from "./Rule.js";
+import type { ActionAST } from "./ast/ActionAST.js";
+import type { AltAST } from "./ast/AltAST.js";
+import type { GrammarAST } from "./ast/GrammarAST.js";
+import type { TerminalAST } from "./ast/TerminalAST.js";
 
 /** An outermost alternative for a rule.  We don't track inner alternatives. */
 export class Alternative implements IAttributeResolver, IAlternative {

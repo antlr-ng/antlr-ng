@@ -83,7 +83,7 @@ export interface IToolConfiguration {
     /** Use the ATN simulator for all predictions. (default: false) */
     forceAtn: boolean,
 
-    /** Dump lots of logging info to antlrng-{timestamp}.log. (default: false) */
+    /** Dump lots of logging info to antlr-ng-{timestamp}.log. (default: false) */
     log: boolean,
 
     /** This field defines the configuration of output generators. */

@@ -3,24 +3,46 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import type { IGenerationOptions } from "../config/config.js";
 import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { Grammar } from "../tool/Grammar.js";
 import type { Rule } from "../tool/Rule.js";
-import type { IGrammar } from "../types.js";
 import type { LexerFile } from "./model/LexerFile.js";
 import type { ListenerFile } from "./model/ListenerFile.js";
 import type { ParserFile } from "./model/ParserFile.js";
 import type { VisitorFile } from "./model/VisitorFile.js";
 
-/** Represets a single code point in Unicode. */
+/** Represents a single code point in Unicode. */
 export type CodePoint = number;
 
 export type Lines = Array<string | undefined>;
 
 /**
- * This interface contains all callable members of the target generator, which generate code.
- * They all take an output model object (aka OMO) as first argument. The generator will use the information in
- * the model object to generate the target code.
+ * Data a generator can fill in when any of the top-level render functions is called. It's then available in all
+ * rendering functions, without the need to pass it around.
+ */
+export interface ISharedInvariants {
+    /** The name of the recognizer (parser or lexer) which is currently being generated. */
+    recognizerName: string;
+
+    /** The name of the grammar which is currently being generated. */
+    grammarName: string;
+
+    /** The file name of the grammar which is currently being generated. */
+    grammarFileName: string;
+
+    /** The type used for token labels in the target language. */
+    tokenLabelType: string;
+
+    /** If true, we are generating a declaration file (e.g. a header file). */
+    declaration: boolean;
+
+    [stringKey: string]: string | boolean | undefined;
+}
+
+/**
+ * This interface contains all methods of the target generator, which can be called to render specific
+ * output model objects.
  */
 export interface ITargetGeneratorCallables {
     /**
@@ -28,72 +50,78 @@ export interface ITargetGeneratorCallables {
      *
      * @param file The model object for details.
      * @param declaration If true, render the declaration file for the parser file.
+     * @param options Details for code generation.
      *
      * @returns The generated code as a string.
      */
-    renderParserFile(file: ParserFile, declaration: boolean): string;
+    renderParserFile(file: ParserFile, declaration: boolean, options: IGenerationOptions): string;
 
     /**
      * Renders a `LexerFile` output model.
      *
      * @param file The model object for details.
      * @param declaration If true, render the declaration file for the lexer file.
+     * @param options Details for code generation.
      *
      * @returns The generated code as a string.
      */
-    renderLexerFile(file: LexerFile, declaration: boolean): string;
+    renderLexerFile(file: LexerFile, declaration: boolean, options: IGenerationOptions): string;
 
     /**
      * Renders a `ListenerFile` output model.
      *
      * @param file The model object for details.
      * @param declaration If true, render the declaration file for the listener file.
+     * @param options Details for code generation.
      *
      * @returns The generated code as a string.
      */
-    renderListenerFile(file: ListenerFile, declaration: boolean): string;
+    renderListenerFile(file: ListenerFile, declaration: boolean, options: IGenerationOptions): string;
 
     /**
      * Renders a base version of a `ListenerFile` output model. This base class implements all methods of the listener
      * interface as empty methods. This is useful for the user to create a custom listener class by extending
      * this base class and overriding only the methods of interest.
      *
-     * Languages that support optional methods (e.g. TypeSricpt) don't need such a base class. Custom listeners can
+     * Languages that support optional methods (e.g. TypeScript) don't need such a base class. Custom listeners can
      * simply implement the interface and override only the methods of interest. The code generator has to insert
      * code to test if the method is implemented or not.
      *
      * @param file The model object for details.
      * @param declaration If true, render the declaration file for the base listener file.
+     * @param options Details for code generation.
      *
      * @returns The generated code as a string.
      */
-    renderBaseListenerFile(file: ListenerFile, declaration: boolean): string;
+    renderBaseListenerFile(file: ListenerFile, declaration: boolean, options: IGenerationOptions): string;
 
     /**
-     * Renders a `VistiorFile` output model.
+     * Renders a `VisitorFile` output model.
      *
      * @param file The model object for details.
      * @param declaration If true, render the declaration file for the visitor file.
+     * @param options Details for code generation.
      *
      * @returns The generated code as a string.
      */
-    renderVisitorFile(file: VisitorFile, declaration: boolean): string;
+    renderVisitorFile(file: VisitorFile, declaration: boolean, options: IGenerationOptions): string;
 
     /**
      * Renders a base version of a `VisitorFile` output model. This base class implements all methods of the visitor
-     * interface as empty methods. This is useful for the user to create a custom vistitors class by extending
+     * interface as empty methods. This is useful for the user to create a custom visitors class by extending
      * this base class and overriding only the methods of interest.
      *
-     * Languages that support optional methods (e.g. TypeSricpt) don't need such a base class. Custom listeners can
+     * Languages that support optional methods (e.g. TypeScript) don't need such a base class. Custom listeners can
      * simply implement the interface and override only the methods of interest. The code generator has to insert
      * code to test if the method is implemented or not.
      *
      * @param file The model object for details.
      * @param declaration If true, render the declaration file for the base visitor file.
+     * @param options Details for code generation.
      *
      * @returns The generated code as a string.
      */
-    renderBaseVisitorFile(file: VisitorFile, declaration: boolean): string;
+    renderBaseVisitorFile(file: VisitorFile, declaration: boolean, options: IGenerationOptions): string;
 
     /**
      * Should be same for all refs to same token like ctx.ID within single rule function for literals like 'while',
@@ -158,12 +186,10 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
     /** The extension to be used for generated files which contain type definitions (including the dot). */
     readonly declarationFileExtension?: string;
 
-    /** The rule context name is the rule followed by a suffix; e.g., r becomes rContext. */
-    readonly contextNameSuffix: string;
-
     /** The name of the rule context class used for generated lexer action functions. */
     readonly lexerRuleContext: string;
 
+    /** The rule context name is the rule followed by a suffix, e.g. r becomes rContext. */
     readonly ruleContextNameSuffix: string;
 
     /**
@@ -194,46 +220,35 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
      */
     readonly inlineTestSetWordSize: number;
 
-    /** Maps lexer commands to methods which render that command. */
-    readonly lexerCommandMap: Map<string, () => Lines>;
+    /**
+     * Used to initialize the generator. This is called once before any generation takes place.
+     * This method *cannot* be called from the constructor, as it needs to create lookup maps
+     * that use the `this` reference. Classes which override this method *must* call `super.setUp()` first.
+     */
+    setUp(): void;
+
+    /** Part of the left-recursive-rule pre-rendering. */
+    renderRecRuleReplaceContext(ctxName: string): Lines;
+
+    renderRecRuleAltPredicate(ruleName: string, opPrec: number): Lines;
+    renderRecRuleSetReturnAction(src: string, name: string): Lines;
+    renderRecRuleSetStopToken(): Lines;
+
+    renderRecRuleSetPrevCtx(): Lines;
+
+    renderRecRuleLabeledAltStartAction(parserName: string, ruleName: string, currentAltLabel: string,
+        label: string | undefined, isListLabel: boolean): Lines;
+
+    renderRecRuleAltStartAction(parserName: string, ruleName: string, ctxName: string, label: string | undefined,
+        isListLabel: boolean): Lines;
+
+    /** @returns the render method for the given command and argument combination. */
+    getLexerCommandRenderer(commandName: string, arg?: string): ((arg: string) => Lines) | (() => Lines) | undefined;
 
     /**
-     * Maps lexer call commands to methods which render that command. The first argument is the command argument, the
-     * second is the grammar object.
+     * @returns the name of the runtime class used in the rule struct definition (default: `RuleContext` for a lexer
+     * and `<name><ruleContextNameSuffix>` for a parser, where <name> is written in title case).
      */
-    readonly lexerCallCommandMap: Map<string, (arg: string, grammar: IGrammar) => Lines>;
-
-    /** Part of the left-recursive-rule pre-rendering. */
-    renderRecRuleReplaceContext(ctxName: string): Lines;
-
-    renderRecRuleAltPredicate(ruleName: string, opPrec: number): Lines;
-    renderRecRuleSetReturnAction(src: string, name: string): Lines;
-    renderRecRuleSetStopToken(): Lines;
-
-    renderRecRuleSetPrevCtx(): Lines;
-
-    renderRecRuleLabeledAltStartAction(parserName: string, ruleName: string, currentAltLabel: string,
-        label: string | undefined, isListLabel: boolean): Lines;
-
-    renderRecRuleAltStartAction(parserName: string, ruleName: string, ctxName: string, label: string | undefined,
-        isListLabel: boolean): Lines;
-
-    /** Part of the left-recursive-rule pre-rendering. */
-    renderRecRuleReplaceContext(ctxName: string): Lines;
-
-    renderRecRuleAltPredicate(ruleName: string, opPrec: number): Lines;
-    renderRecRuleSetReturnAction(src: string, name: string): Lines;
-    renderRecRuleSetStopToken(): Lines;
-
-    renderRecRuleSetPrevCtx(): Lines;
-
-    renderRecRuleLabeledAltStartAction(parserName: string, ruleName: string, currentAltLabel: string,
-        label: string | undefined, isListLabel: boolean): Lines;
-
-    renderRecRuleAltStartAction(parserName: string, ruleName: string, ctxName: string, label: string | undefined,
-        isListLabel: boolean): Lines;
-
-    /** @returns the full name for a rule function. */
     getRuleFunctionContextStructName(r: Rule): string;
 
     /**
@@ -265,7 +280,7 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
      *
      * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
      *        it will be for a code file (e.g. TParser.java).
-     * @param grammarName The name of the grammar, which determinse the base name of the listener.
+     * @param grammarName The name of the grammar, which determines the base name of the listener.
      *
      * @returns The file name for the listener, such as TListener.java or TListener.ts.
      */
@@ -276,7 +291,7 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
      *
      * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
      *        it will be for a code file (e.g. TParser.java).
-     * @param grammarName The name of the grammar, which determinse the base name of the listener.
+     * @param grammarName The name of the grammar, which determines the base name of the listener.
      *
      * @returns The file name for the visitor, such as TVisitor.java or TVisitor.ts.
      */
@@ -288,19 +303,19 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
      *
      * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
      *        it will be for a code file (e.g. TParser.java).
-     * @param grammarName The name of the grammar, which determinse the base name of the listener.
+     * @param grammarName The name of the grammar, which determines the base name of the listener.
      *
      * @returns The file name for the base listener, such as TBaseListener.java or TBaseListener.ts.
      */
     getBaseListenerFileName(forDeclarationFile: boolean, grammarName: string): string;
 
     /**
-     * A given grammar T, return a blank vistor implementation such as TBaseListener.java, if we're using the
+     * A given grammar T, return a blank visitor implementation such as TBaseListener.java, if we're using the
      * Java target.
      *
      * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
      *        it will be for a code file (e.g. TParser.java).
-     * @param grammarName The name of the grammar, which determinse the base name of the listener.
+     * @param grammarName The name of the grammar, which determines the base name of the listener.
      *
      * @returns The file name for the base visitor, such as TBaseVisitor.java or TBaseVisitor.ts.
      */
@@ -363,7 +378,7 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
     getTargetStringLiteralFromANTLRStringLiteral(literal: string, addQuotes: boolean,
         escapeSpecial?: boolean): string;
 
-    /** Allows to transform a token identifier to a different string (e.g. to avoid keyword collissions). */
+    /** Allows to transform a token identifier to a different string (e.g. to avoid keyword collisions). */
     tokenNameTransformer?: (name: string) => string;
 
     /** Allows to alter a grammar text before it is processed by antlr-ng. */

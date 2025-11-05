@@ -11,10 +11,13 @@ import { describe, expect, it } from "vitest";
 import { ToolTestUtils } from "../ToolTestUtils.js";
 import { Grammar } from "../../src/tool/index.js";
 import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
-import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { defineConfig } from "../../src/config/config.js";
 
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
+
 const tsGenerator = new TypeScriptTargetGenerator();
+tsGenerator.setUp();
+
 const testParameters = defineConfig({
     grammarFiles: [],
     outputDirectory: "",

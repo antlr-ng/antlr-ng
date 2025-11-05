@@ -60,28 +60,6 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
         this.atn = new ATN(atnType, maxTokenType);
     }
 
-    /**
-     * `(BLOCK (ALT .))` or `(BLOCK (ALT 'a') (ALT .))`.
-     */
-    private static blockHasWildcardAlt(block: GrammarAST): boolean {
-        for (const alt of block.children) {
-            if (!(alt instanceof AltAST)) {
-                continue;
-            }
-
-            const altAST = alt;
-            if (altAST.children.length === 1 || (altAST.children.length === 2
-                && altAST.children[0].getType() === ANTLRv4Parser.ELEMENT_OPTIONS)) {
-                const e = altAST.children[altAST.children.length - 1];
-                if (e.getType() === ANTLRv4Parser.WILDCARD) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     public createATN(): ATN {
         this.doCreateATN(Array.from(this.g.rules.values()));
 
@@ -467,6 +445,28 @@ export class ParserATNFactory implements IParserATNFactory, IATNFactory {
                 this.rule(r.ast, r.name, h);
             }
         }
+    }
+
+    /**
+     * `(BLOCK (ALT .))` or `(BLOCK (ALT 'a') (ALT .))`.
+     */
+    private static blockHasWildcardAlt(block: GrammarAST): boolean {
+        for (const alt of block.children) {
+            if (!(alt instanceof AltAST)) {
+                continue;
+            }
+
+            const altAST = alt;
+            if (altAST.children.length === 1 || (altAST.children.length === 2
+                && altAST.children[0].getType() === ANTLRv4Parser.ELEMENT_OPTIONS)) {
+                const e = altAST.children[altAST.children.length - 1];
+                if (e.getType() === ANTLRv4Parser.WILDCARD) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private addFollowLink(ruleIndex: number, right: ATNState): void {

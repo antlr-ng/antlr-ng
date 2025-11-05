@@ -4,7 +4,7 @@
  */
 
 import { OutputModelObject } from "../OutputModelObject.js";
-import { StructDecl } from "../decl/StructDecl.js";
+import type { StructDecl } from "../decl/StructDecl.js";
 
 export class ActionChunk extends OutputModelObject {
 

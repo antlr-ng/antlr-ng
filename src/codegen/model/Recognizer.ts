@@ -4,13 +4,13 @@
  */
 
 import { ModelElement } from "../../misc/ModelElement.js";
-import { Rule } from "../../tool/Rule.js";
-import { CodeGenerator } from "../CodeGenerator.js";
-import { IOutputModelFactory } from "../IOutputModelFactory.js";
-import { ActionChunk } from "./chunk/ActionChunk.js";
+import type { Rule } from "../../tool/Rule.js";
+import type { CodeGenerator } from "../CodeGenerator.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
+import type { ActionChunk } from "./chunk/ActionChunk.js";
 import { ActionText } from "./chunk/ActionText.js";
 import { OutputModelObject } from "./OutputModelObject.js";
-import { RuleSempredFunction } from "./RuleSempredFunction.js";
+import type { RuleSempredFunction } from "./RuleSempredFunction.js";
 import { SerializedATN } from "./SerializedATN.js";
 import { SerializedJavaATN } from "./SerializedJavaATN.js";
 

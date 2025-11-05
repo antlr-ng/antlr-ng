@@ -17,6 +17,7 @@ import { DOTGenerator } from "../../../src/tool/DOTGenerator.js";
 import { Grammar, LexerGrammar } from "../../../src/tool/index.js";
 
 const tsGenerator = new TypeScriptTargetGenerator();
+tsGenerator.setUp();
 
 const parameters = defineConfig({
     grammarFiles: [],

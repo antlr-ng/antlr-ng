@@ -45,9 +45,9 @@ export class CodeGenerator {
         this.ensureAtnExists();
         declaration ??= false;
 
-        const model = this.createController(options.atn).buildLexerOutputModel(declaration, options);
+        const model = this.createController(options.atn).buildLexerOutputModel(declaration);
 
-        return this.targetGenerator.renderLexerFile(model, declaration);
+        return this.targetGenerator.renderLexerFile(model, declaration, options);
     }
 
     public generateParser(options: IGenerationOptions, declaration?: boolean): string {
@@ -56,43 +56,43 @@ export class CodeGenerator {
 
         const model = this.createController().buildParserOutputModel(declaration, options);
 
-        return this.targetGenerator.renderParserFile(model, declaration);
+        return this.targetGenerator.renderParserFile(model, declaration, options);
     }
 
     public generateListener(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;
 
-        const model = this.createController().buildListenerOutputModel(declaration, options);
+        const model = this.createController().buildListenerOutputModel(declaration);
 
-        return this.targetGenerator.renderListenerFile(model, declaration);
+        return this.targetGenerator.renderListenerFile(model, declaration, options);
     }
 
     public generateBaseListener(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;
 
-        const model = this.createController().buildBaseListenerOutputModel(declaration, options.package);
+        const model = this.createController().buildBaseListenerOutputModel(declaration);
 
-        return this.targetGenerator.renderBaseListenerFile(model, declaration);
+        return this.targetGenerator.renderBaseListenerFile(model, declaration, options);
     }
 
     public generateVisitor(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;
 
-        const model = this.createController().buildVisitorOutputModel(declaration, options);
+        const model = this.createController().buildVisitorOutputModel(declaration);
 
-        return this.targetGenerator.renderVisitorFile(model, declaration);
+        return this.targetGenerator.renderVisitorFile(model, declaration, options);
     }
 
     public generateBaseVisitor(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;
 
-        const model = this.createController().buildBaseVisitorOutputModel(declaration, options);
+        const model = this.createController().buildBaseVisitorOutputModel(declaration);
 
-        return this.targetGenerator.renderBaseVisitorFile(model, declaration);
+        return this.targetGenerator.renderBaseVisitorFile(model, declaration, options);
     }
 
     public writeRecognizer(generatedText: string, header: boolean): void {

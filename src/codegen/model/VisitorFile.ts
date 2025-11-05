@@ -3,14 +3,12 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import type { IGenerationOptions } from "../../config/config.js";
 import { ModelElement } from "../../misc/ModelElement.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { OutputFile } from "./OutputFile.js";
 
 export class VisitorFile extends OutputFile {
-    public genPackage?: string;
     public accessLevel?: string;
     public exportMacro?: string;
     public grammarName: string;
@@ -31,7 +29,7 @@ export class VisitorFile extends OutputFile {
     @ModelElement
     public namedActions: Map<string, Action>;
 
-    public constructor(factory: IOutputModelFactory, fileName: string, options: IGenerationOptions) {
+    public constructor(factory: IOutputModelFactory, fileName: string) {
         super(factory, fileName);
 
         const g = factory.g;
@@ -59,7 +57,6 @@ export class VisitorFile extends OutputFile {
             this.header = new Action(factory, ast);
         }
 
-        this.genPackage = options.package;
         this.accessLevel = g.getOptionString("accessLevel");
         this.exportMacro = g.getOptionString("exportMacro");
     }

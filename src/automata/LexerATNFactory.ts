@@ -13,7 +13,7 @@ import {
 } from "antlr4ng";
 
 import { Constants } from "../Constants.js";
-import type { ITargetGenerator } from "../codegen/ITargetGenerator.js";
+import type { ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import { EscapeSequenceParsing, ResultType } from "../misc/EscapeSequenceParsing.js";
@@ -397,10 +397,10 @@ export class LexerATNFactory extends ParserATNFactory {
         // Fall back to standard action generation for the command.
         const callCommand = arg !== undefined;
         if (callCommand) {
-            const method = this.targetGenerator.lexerCallCommandMap.get(id.getText());
+            const method = this.targetGenerator.getLexerCommandRenderer(id.getText(), arg.getText());
             if (!method) {
                 // Check if the command just doesn't expect parameters (i.e. is not a call command).
-                const temp = this.targetGenerator.lexerCommandMap.get(id.getText());
+                const temp = this.targetGenerator.getLexerCommandRenderer(id.getText());
                 if (temp) {
                     this.g.tool.errorManager.grammarError(IssueCode.UnwantedLexerCommandArgument, this.g.fileName,
                         id.token!, id.getText());
@@ -412,12 +412,12 @@ export class LexerATNFactory extends ParserATNFactory {
                 return this.epsilon(id);
             }
 
-            return this.action(method(arg.getText(), arg.g).join("\n"));
+            return this.action(method(arg.getText()).join("\n"));
         } else {
-            const method = this.targetGenerator.lexerCommandMap.get(id.getText());
+            const method = this.targetGenerator.getLexerCommandRenderer(id.getText()) as (() => Lines) | undefined;
             if (!method) {
                 // Check if the command is a call command (i.e. expects an argument).
-                const temp = this.targetGenerator.lexerCallCommandMap.get(id.getText());
+                const temp = this.targetGenerator.getLexerCommandRenderer(id.getText(), "");
                 if (temp) {
                     this.g.tool.errorManager.grammarError(IssueCode.MissingLexerCommandArgument, this.g.fileName,
                         id.token!, id.getText());

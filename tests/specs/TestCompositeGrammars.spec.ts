@@ -13,7 +13,6 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 
 import { defineConfig } from "../../src/config/config.js";
-import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { generateRandomFilename } from "../../src/support/fs-helpers.js";
 import { convertMapToString } from "../../src/support/helpers.js";
 import { fileSystem } from "../../src/tool-parameters.js";
@@ -23,7 +22,10 @@ import { IssueCode } from "../../src/tool/Issues.js";
 import { ErrorQueue } from "../support/ErrorQueue.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
 
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
+
 const tsGenerator = new TypeScriptTargetGenerator();
+tsGenerator.setUp();
 
 describe("TestCompositeGrammars", () => {
     const sort = <K extends string, V extends number>(data: Map<K, V>): Map<K, V> => {

@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { CommonTree } from "./CommonTree.js";
+import type { CommonTree } from "./CommonTree.js";
 import type { TreeVisitorAction } from "./TreeVisitorAction.js";
 
 /**

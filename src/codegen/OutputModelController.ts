@@ -84,9 +84,9 @@ export class OutputModelController {
         return file;
     }
 
-    public buildLexerOutputModel(header: boolean, options: IGenerationOptions): LexerFile {
+    public buildLexerOutputModel(header: boolean): LexerFile {
         const gen = this.factory.getGenerator()!;
-        const file = this.lexerFile(gen.getRecognizerFileName(header), options);
+        const file = this.lexerFile(gen.getRecognizerFileName(header));
         file.lexer = this.lexer(file);
 
         const g = this.factory.g;
@@ -97,28 +97,28 @@ export class OutputModelController {
         return file;
     }
 
-    public buildListenerOutputModel(header: boolean, options: IGenerationOptions): ListenerFile {
+    public buildListenerOutputModel(header: boolean): ListenerFile {
         const gen = this.factory.getGenerator()!;
 
-        return new ListenerFile(this.factory, gen.getListenerFileName(header), options.package);
+        return new ListenerFile(this.factory, gen.getListenerFileName(header),);
     }
 
-    public buildBaseListenerOutputModel(header: boolean, genPackage?: string): BaseListenerFile {
+    public buildBaseListenerOutputModel(header: boolean): BaseListenerFile {
         const gen = this.factory.getGenerator()!;
 
-        return new BaseListenerFile(this.factory, gen.getBaseListenerFileName(header), genPackage);
+        return new BaseListenerFile(this.factory, gen.getBaseListenerFileName(header));
     }
 
-    public buildVisitorOutputModel(header: boolean, options: IGenerationOptions): VisitorFile {
+    public buildVisitorOutputModel(header: boolean): VisitorFile {
         const gen = this.factory.getGenerator()!;
 
-        return new VisitorFile(this.factory, gen.getVisitorFileName(header), options);
+        return new VisitorFile(this.factory, gen.getVisitorFileName(header));
     }
 
-    public buildBaseVisitorOutputModel(header: boolean, options: IGenerationOptions): BaseVisitorFile {
+    public buildBaseVisitorOutputModel(header: boolean): BaseVisitorFile {
         const gen = this.factory.getGenerator()!;
 
-        return new BaseVisitorFile(this.factory, gen.getBaseVisitorFileName(header), options);
+        return new BaseVisitorFile(this.factory, gen.getBaseVisitorFileName(header));
     }
 
     public parserFile(fileName: string, options: IGenerationOptions): ParserFile {
@@ -129,8 +129,8 @@ export class OutputModelController {
         return this.factory.parser(file)!;
     }
 
-    public lexerFile(fileName: string, options: IGenerationOptions): LexerFile {
-        return new LexerFile(this.factory, fileName, options);
+    public lexerFile(fileName: string): LexerFile {
+        return new LexerFile(this.factory, fileName);
     }
 
     public lexer(file: LexerFile): Lexer {

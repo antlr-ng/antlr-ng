@@ -7,9 +7,9 @@ import { HashSet, OrderedHashSet } from "antlr4ng";
 
 import { ModelElement } from "../../../misc/ModelElement.js";
 import type { IAttribute } from "../../../tool/IAttribute.js";
-import { Rule } from "../../../tool/Rule.js";
-import { IOutputModelFactory } from "../../IOutputModelFactory.js";
-import { DispatchMethod } from "../DispatchMethod.js";
+import type { Rule } from "../../../tool/Rule.js";
+import type { IOutputModelFactory } from "../../IOutputModelFactory.js";
+import type { DispatchMethod } from "../DispatchMethod.js";
 import { ListenerDispatchMethod } from "../ListenerDispatchMethod.js";
 import { VisitorDispatchMethod } from "../VisitorDispatchMethod.js";
 import { AttributeDecl } from "./AttributeDecl.js";

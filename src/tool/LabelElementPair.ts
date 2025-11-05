@@ -11,11 +11,11 @@ import { LabelType } from "./LabelType.js";
 import { GrammarAST } from "./ast/GrammarAST.js";
 
 export class LabelElementPair {
-    private static readonly tokenTypeForTokens = new BitSet();
-
     public label: GrammarAST;
     public element: GrammarAST;
     public type: LabelType;
+
+    private static readonly tokenTypeForTokens = new BitSet();
 
     public constructor(g: Grammar, label: GrammarAST, element: GrammarAST, labelOp: number) {
         this.label = label;

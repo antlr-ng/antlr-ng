@@ -8,17 +8,17 @@ import { type IComparable } from "antlr4ng";
 import { MurmurHash } from "../support/MurmurHash.js";
 import type { IRule } from "../types.js";
 import { Alternative } from "./Alternative.js";
-import { AttributeDict } from "./AttributeDict.js";
+import type { AttributeDict } from "./AttributeDict.js";
 import { Grammar } from "./Grammar.js";
-import { IAttribute } from "./IAttribute.js";
-import { IAttributeResolver } from "./IAttributeResolver.js";
-import { LabelElementPair } from "./LabelElementPair.js";
+import type { IAttribute } from "./IAttribute.js";
+import type { IAttributeResolver } from "./IAttributeResolver.js";
+import type { LabelElementPair } from "./LabelElementPair.js";
 import { LabelType } from "./LabelType.js";
-import { ActionAST } from "./ast/ActionAST.js";
-import { AltAST } from "./ast/AltAST.js";
-import { GrammarAST } from "./ast/GrammarAST.js";
-import { PredAST } from "./ast/PredAST.js";
-import { RuleAST } from "./ast/RuleAST.js";
+import type { ActionAST } from "./ast/ActionAST.js";
+import type { AltAST } from "./ast/AltAST.js";
+import type { GrammarAST } from "./ast/GrammarAST.js";
+import type { PredAST } from "./ast/PredAST.js";
+import type { RuleAST } from "./ast/RuleAST.js";
 
 export class Rule implements IAttributeResolver, IComparable, IRule {
     public static readonly validLexerCommands = new Set<string>([

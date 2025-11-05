@@ -7,7 +7,7 @@
 
 import { Token } from "antlr4ng";
 
-import { CommonTree } from "./CommonTree.js";
+import type { CommonTree } from "./CommonTree.js";
 import type { TreePattern } from "./TreePattern.js";
 import { TreePatternLexer } from "./TreePatternLexer.js";
 import { TreePatternParser } from "./TreePatternParser.js";
