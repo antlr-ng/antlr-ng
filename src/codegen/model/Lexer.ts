@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { LexerGrammar } from "../../tool/LexerGrammar.js";
 import { Rule } from "../../tool/Rule.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
@@ -18,7 +17,6 @@ export class Lexer extends Recognizer {
     public readonly modes: string[];
     public readonly escapedModeNames: string[] = [];
 
-    @ModelElement
     public actionFuncs = new Map<Rule, RuleActionFunction>();
 
     public constructor(factory: IOutputModelFactory, file: LexerFile) {
@@ -39,7 +37,4 @@ export class Lexer extends Recognizer {
         }
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "actionFuncs"];
-    }
 }

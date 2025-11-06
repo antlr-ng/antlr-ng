@@ -5,7 +5,6 @@
 
 import { HashSet, OrderedHashSet } from "antlr4ng";
 
-import { ModelElement } from "../../../misc/ModelElement.js";
 import type { IAttribute } from "../../../tool/IAttribute.js";
 import type { Rule } from "../../../tool/Rule.js";
 import type { IOutputModelFactory } from "../../IOutputModelFactory.js";
@@ -39,20 +38,15 @@ export class StructDecl extends Decl {
     public readonly ruleContextListDecls = new OrderedHashSet<Decl>();
     public readonly attributeDecls = new HashSet<Decl>();
 
-    @ModelElement
     public dispatchMethods: DispatchMethod[] = [];
 
-    @ModelElement
     public attrs = new OrderedHashSet<Decl>();
 
-    @ModelElement
     public getters = new OrderedHashSet<Decl>();
 
-    @ModelElement
     public ctorAttrs: AttributeDecl[] = [];
 
     /** Used to generate method signatures in Go target interfaces */
-    @ModelElement
     public signatures = new OrderedHashSet<Decl>();
 
     protected readonly generateListener: boolean;
@@ -130,9 +124,4 @@ export class StructDecl extends Decl {
         return this.attrs.size === 0;
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "dispatchMethods", "attrs", "getters", "ctorAttrs",
-            "interfaces", "extensionMembers", "signatures", "tokenDecls", "tokenTypeDecls",
-            "tokenListDecls", "ruleContextDecls", "ruleContextListDecls", "attributeDecls"];
-    }
 }

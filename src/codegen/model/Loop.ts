@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { IQuantifierAST } from "../../tool/ast/IQuantifierAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Choice } from "./Choice.js";
@@ -15,7 +14,6 @@ export class Loop extends Choice {
     public loopBackStateNumber: number;
     public readonly exitAlt: number;
 
-    @ModelElement
     public iteration: SrcOp[] = [];
 
     public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: IQuantifierAST, alts: CodeBlockForAlt[]) {
@@ -29,7 +27,4 @@ export class Loop extends Choice {
         this.iteration.push(op);
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "iteration"];
-    }
 }

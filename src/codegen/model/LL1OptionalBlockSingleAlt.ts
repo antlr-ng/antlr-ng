@@ -5,7 +5,6 @@
 
 import { DecisionState } from "antlr4ng";
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
@@ -14,10 +13,8 @@ import { SrcOp } from "./SrcOp.js";
 
 /** `(A B C)?` */
 export class LL1OptionalBlockSingleAlt extends LL1Choice {
-    @ModelElement
     public expr: SrcOp | null;
 
-    @ModelElement
     public followExpr: SrcOp[]; // Might not work in templates if size > 1.
 
     public constructor(factory: IOutputModelFactory, blkAST: GrammarAST, alts: CodeBlockForAlt[]) {
@@ -37,7 +34,4 @@ export class LL1OptionalBlockSingleAlt extends LL1Choice {
         this.followExpr = factory.getLL1Test(followLook, blkAST)!;
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "expr", "followExpr"];
-    }
 }

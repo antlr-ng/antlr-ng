@@ -5,7 +5,6 @@
 
 import { IntervalSet } from "antlr4ng";
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
@@ -19,10 +18,8 @@ export abstract class LL1Loop extends Choice {
     public blockStartStateNumber: number;
     public loopBackStateNumber: number;
 
-    @ModelElement
     public loopExpr: SrcOp | null;
 
-    @ModelElement
     public iteration: SrcOp[] = [];
 
     public constructor(factory: IOutputModelFactory,
@@ -45,7 +42,4 @@ export abstract class LL1Loop extends Choice {
         return expr;
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "loopExpr", "iteration"];
-    }
 }

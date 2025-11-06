@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { Rule } from "../../tool/Rule.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
@@ -16,7 +15,6 @@ export class RuleActionFunction extends OutputModelObject {
     public readonly ruleIndex: number;
 
     /** Map actionIndex to Action */
-    @ModelElement
     public readonly actions = new Map<number, Action>();
 
     public constructor(factory: IOutputModelFactory, r: Rule, ctxType: string) {
@@ -27,7 +25,4 @@ export class RuleActionFunction extends OutputModelObject {
         this.ctxType = ctxType;
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "actions"];
-    }
 }

@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { OutputFile } from "./OutputFile.js";
@@ -23,10 +22,8 @@ export class VisitorFile extends OutputFile {
      */
     public visitorLabelRuleNames = new Map<string, string>();
 
-    @ModelElement
     public header: Action;
 
-    @ModelElement
     public namedActions: Map<string, Action>;
 
     public constructor(factory: IOutputModelFactory, fileName: string) {
@@ -61,7 +58,4 @@ export class VisitorFile extends OutputFile {
         this.exportMacro = g.getOptionString("exportMacro");
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "header", "namedActions"];
-    }
 }

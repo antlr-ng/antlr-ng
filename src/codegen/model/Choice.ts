@@ -5,7 +5,6 @@
 
 import { IntervalSet } from "antlr4ng";
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
@@ -30,10 +29,7 @@ export abstract class Choice extends RuleElement {
     public decision = -1;
     public label?: Decl;
 
-    @ModelElement
     public alts: CodeBlockForAlt[] = [];
-
-    @ModelElement
     public preamble: SrcOp[] = [];
 
     public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[]) {
@@ -83,7 +79,4 @@ export abstract class Choice extends RuleElement {
         return new ThrowNoViableAlt(factory, blkAST);
     }
 
-    public override get parameterFields(): string[] {
-        return ["alts", "preamble"];
-    }
 }

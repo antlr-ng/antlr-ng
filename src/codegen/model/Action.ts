@@ -7,7 +7,6 @@ import { CommonToken } from "antlr4ng";
 
 import { ANTLRv4Parser } from "../../generated/ANTLRv4Parser.js";
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { ActionTranslator } from "../ActionTranslator.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
@@ -18,8 +17,6 @@ import { StructDecl } from "./decl/StructDecl.js";
 import { RuleElement } from "./RuleElement.js";
 
 export class Action extends RuleElement {
-
-    @ModelElement
     public chunks: ActionChunk[] = [];
 
     public constructor(factory: IOutputModelFactory, ast?: ActionAST);
@@ -55,9 +52,5 @@ export class Action extends RuleElement {
         }
 
         return this;
-    }
-
-    public override get parameterFields(): string[] {
-        return ["chunks"];
     }
 }

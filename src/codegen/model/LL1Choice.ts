@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Choice } from "./Choice.js";
@@ -15,7 +14,6 @@ export abstract class LL1Choice extends Choice {
     /** Token names for each alt 0..n-1 */
     public altLook: ITokenInfo[][];
 
-    @ModelElement
     public error: ThrowNoViableAlt;
 
     public constructor(factory: IOutputModelFactory, blkAST: GrammarAST,
@@ -23,7 +21,4 @@ export abstract class LL1Choice extends Choice {
         super(factory, blkAST, alts);
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "error"];
-    }
 }

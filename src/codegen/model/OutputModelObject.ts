@@ -14,8 +14,4 @@ export abstract class OutputModelObject {
         this.factory = factory;
         this.ast = ast;
     }
-
-    public get parameterFields(): string[] {
-        return [];
-    }
 }

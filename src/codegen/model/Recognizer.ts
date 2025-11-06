@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import type { Rule } from "../../tool/Rule.js";
 import type { CodeGenerator } from "../CodeGenerator.js";
 import type { IOutputModelFactory } from "../IOutputModelFactory.js";
@@ -34,13 +33,10 @@ export abstract class Recognizer extends OutputModelObject {
     public ruleNames: Set<string>;
     public rules: Rule[];
 
-    @ModelElement
     public superClass?: ActionChunk;
 
-    @ModelElement
     public atn: SerializedATN;
 
-    @ModelElement
     public sempredFuncs = new Map<Rule, RuleSempredFunction>();
 
     public constructor(factory: IOutputModelFactory) {
@@ -115,9 +111,5 @@ export abstract class Recognizer extends OutputModelObject {
         } else {
             return gen.targetGenerator.getTargetStringLiteralFromString(tokenName, true);
         }
-    }
-
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "superClass", "atn", "sempredFuncs"];
     }
 }

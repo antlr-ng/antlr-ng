@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import type { IOutputModelFactory } from "../IOutputModelFactory.js";
 import type { ParserFile } from "./ParserFile.js";
 import { Recognizer } from "./Recognizer.js";
@@ -12,7 +11,6 @@ import type { RuleFunction } from "./RuleFunction.js";
 export class Parser extends Recognizer {
     public file: ParserFile;
 
-    @ModelElement
     public funcs = new Array<RuleFunction>();
 
     public constructor(factory: IOutputModelFactory, file: ParserFile) {
@@ -20,7 +18,4 @@ export class Parser extends Recognizer {
         this.file = file; // who contains us?
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "funcs"];
-    }
 }

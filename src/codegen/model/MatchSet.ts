@@ -5,7 +5,6 @@
 
 import { SetTransition } from "antlr4ng";
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
@@ -14,10 +13,8 @@ import { MatchToken } from "./MatchToken.js";
 import { TestSetInline } from "./TestSetInline.js";
 
 export class MatchSet extends MatchToken {
-    @ModelElement
     public expr: TestSetInline;
 
-    @ModelElement
     public capture: CaptureNextTokenType;
 
     public constructor(factory: IOutputModelFactory, ast: GrammarAST) {
@@ -33,7 +30,4 @@ export class MatchSet extends MatchToken {
         this.capture = new CaptureNextTokenType(factory, this.expr.varName);
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "expr", "capture"];
-    }
 }

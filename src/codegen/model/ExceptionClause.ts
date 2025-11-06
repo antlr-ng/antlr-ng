@@ -3,17 +3,14 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { SrcOp } from "./SrcOp.js";
 
 export class ExceptionClause extends SrcOp {
-    @ModelElement
     public catchArg: Action;
 
-    @ModelElement
     public catchAction: Action;
 
     public constructor(factory: IOutputModelFactory,
@@ -23,9 +20,5 @@ export class ExceptionClause extends SrcOp {
 
         this.catchArg = new Action(factory, catchArg);
         this.catchAction = new Action(factory, catchAction);
-    }
-
-    public override get parameterFields(): string[] {
-        return ["catchArg", "catchAction"];
     }
 }

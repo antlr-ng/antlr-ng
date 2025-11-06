@@ -13,7 +13,6 @@ import { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
 import type { CommonTree } from "../../tree/CommonTree.js";
 
 import { FrequencySet } from "../../misc/FrequencySet.js";
-import { ModelElement } from "../../misc/ModelElement.js";
 import { IssueCode } from "../../tool/Issues.js";
 import { Rule } from "../../tool/Rule.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
@@ -51,31 +50,22 @@ export class RuleFunction extends OutputModelObject {
     public readonly altToContext: AltLabelStructDecl[];
     public hasLookaheadBlock: boolean;
 
-    @ModelElement
     public code: SrcOp[];
 
-    @ModelElement
     public readonly locals = new OrderedHashSet<TokenTypeDecl>(); // TODO: move into ctx?
 
-    @ModelElement
     public args?: AttributeDecl[];
 
-    @ModelElement
     public ruleCtx: StructDecl;
 
-    @ModelElement
     public altLabelCtxs?: Map<string, AltLabelStructDecl>;
 
-    @ModelElement
     public namedActions: Map<string, Action> | undefined;
 
-    @ModelElement
     public finallyAction: Action | undefined;
 
-    @ModelElement
     public exceptions: ExceptionClause[] | undefined;
 
-    @ModelElement
     public postamble: SrcOp[] | undefined;
 
     public constructor(factory: IOutputModelFactory, r: Rule) {
@@ -356,8 +346,4 @@ export class RuleFunction extends OutputModelObject {
         return a;
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "code", "locals", "args", "ruleCtx", "altLabelCtxs", "namedActions",
-            "finallyAction", "exceptions", "postamble"];
-    }
 }

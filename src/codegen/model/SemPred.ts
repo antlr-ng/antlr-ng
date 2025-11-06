@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { ActionTranslator } from "../ActionTranslator.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
@@ -28,7 +27,6 @@ export class SemPred extends Action {
      *
      * `{pred}?<fail={"Java literal"}>`
      */
-    @ModelElement
     public failChunks?: ActionChunk[];
 
     public constructor(factory: IOutputModelFactory, ast: ActionAST) {
@@ -56,7 +54,4 @@ export class SemPred extends Action {
         }
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "failChunks"];
-    }
 }

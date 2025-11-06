@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { OrderedHashMap } from "../../misc/OrderedHashMap.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
@@ -27,10 +26,8 @@ export class ListenerFile extends OutputFile {
      */
     public listenerLabelRuleNames = new OrderedHashMap<string, string>();
 
-    @ModelElement
     public header?: Action;
 
-    @ModelElement
     public namedActions: Map<string, Action>;
 
     public constructor(factory: IOutputModelFactory, fileName: string) {
@@ -64,7 +61,4 @@ export class ListenerFile extends OutputFile {
         this.accessLevel = g.getOptionString("accessLevel");
     }
 
-    public override get parameterFields(): string[] {
-        return ["header", "namedActions"];
-    }
 }

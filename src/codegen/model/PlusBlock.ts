@@ -5,7 +5,6 @@
 
 import { PlusBlockStartState } from "antlr4ng";
 
-import { ModelElement } from "../../misc/ModelElement.js";
 import { BlockAST } from "../../tool/ast/BlockAST.js";
 import type { IQuantifierAST } from "../../tool/ast/IQuantifierAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
@@ -14,7 +13,6 @@ import { Loop } from "./Loop.js";
 import { ThrowNoViableAlt } from "./ThrowNoViableAlt.js";
 
 export class PlusBlock extends Loop {
-    @ModelElement
     public error: ThrowNoViableAlt;
 
     public constructor(factory: IOutputModelFactory, plusRoot: IQuantifierAST, alts: CodeBlockForAlt[]) {
@@ -31,7 +29,4 @@ export class PlusBlock extends Loop {
         this.decision = loop.decision;
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "error"];
-    }
 }

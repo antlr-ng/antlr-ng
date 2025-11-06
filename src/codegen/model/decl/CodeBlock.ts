@@ -5,18 +5,14 @@
 
 /* eslint-disable jsdoc/require-param */
 
-import { ModelElement } from "../../../misc/ModelElement.js";
 import { SrcOp } from "../SrcOp.js";
 import { type Decl } from "./Decl.js";
 
 export class CodeBlock extends SrcOp {
-    @ModelElement
     public locals = new Set<Decl>();
 
-    @ModelElement
     public preamble: SrcOp[] = [];
 
-    @ModelElement
     public ops: Array<SrcOp | null> = [];
 
     /** Add local var decl */
@@ -41,7 +37,4 @@ export class CodeBlock extends SrcOp {
         this.ops.push(...ops);
     }
 
-    public override get parameterFields(): string[] {
-        return [...super.parameterFields, "locals", "preamble", "ops"];
-    }
 }
