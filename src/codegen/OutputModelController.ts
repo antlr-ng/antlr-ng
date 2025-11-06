@@ -224,8 +224,9 @@ export class OutputModelController {
         opAltStarBlock.addIterationOp(setPrevCtxAction);
 
         // Insert code in front of each op alt to create specialized ctx if there was an alt label.
+        const altInfos = Array.from(r.recOpAlts.values());
         for (let i = 0; i < opAltsCode.length; i++) {
-            const altInfo = r.recOpAlts.getElement(i)!;
+            const altInfo = altInfos[i];
 
             if (altInfo.altLabel !== undefined) {
                 code = targetGenerator.renderRecRuleLabeledAltStartAction(

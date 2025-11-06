@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { OrderedHashMap } from "../../misc/OrderedHashMap.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { OutputFile } from "./OutputFile.js";
@@ -24,7 +23,7 @@ export class ListenerFile extends OutputFile {
      * For listener contexts created for a labeled outer alternative, maps from a listener context name to the name
      * of the rule which defines the context.
      */
-    public listenerLabelRuleNames = new OrderedHashMap<string, string>();
+    public listenerLabelRuleNames = new Map<string, string>();
 
     public header?: Action;
 

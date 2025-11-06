@@ -15,7 +15,6 @@ import { Tool } from "../Tool.js";
 import type { SupportedLanguage } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
-import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { DictType } from "../misc/types.js";
 import { ScopeParser } from "../parse/ScopeParser.js";
 import { ToolANTLRParser } from "../parse/ToolANTLRParser.js";
@@ -154,7 +153,7 @@ export class LeftRecursiveRuleTransformer {
                 (r.ast.children[0] as GrammarAST).token!, r.name);
         }
 
-        r.recOpAlts = new OrderedHashMap<number, ILeftRecursiveRuleAltInfo>();
+        r.recOpAlts = new Map<number, ILeftRecursiveRuleAltInfo>();
         leftRecursiveRuleWalker.binaryAlts.forEach((value, key) => {
             r.recOpAlts.set(key, value);
         });
@@ -215,7 +214,7 @@ export class LeftRecursiveRuleTransformer {
 
             return ruleAST;
         } catch (e) {
-            this.g.tool.errorManager.toolError(IssueCode.InternalError, e, ruleStart,
+            this.g.tool.errorManager.toolError(IssueCode.InternalError, e as Error, ruleStart,
                 "error parsing rule created during left-recursion detection: " + ruleText);
         }
 
@@ -235,8 +234,9 @@ export class LeftRecursiveRuleTransformer {
             altInfo.originalAltAST!.leftRecursiveAltInfo = altInfo;
         }
 
-        for (let i = 0; i < r.recOpAlts.size; i++) {
-            const altInfo = r.recOpAlts.getElement(i)!;
+        const altInfos = Array.from(r.recOpAlts.values());
+        for (let i = 0; i < altInfos.length; i++) {
+            const altInfo = altInfos[i];
             altInfo.altAST = opsBlk.children[i] as AltAST;
             altInfo.altAST.leftRecursiveAltInfo = altInfo;
             altInfo.originalAltAST!.leftRecursiveAltInfo = altInfo;

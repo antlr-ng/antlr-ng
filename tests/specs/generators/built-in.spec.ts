@@ -26,7 +26,7 @@ describe("Test built-in generators", () => {
     const tsGenerator: ITargetGenerator = new TypeScriptTargetGenerator(false);
     tsGenerator.setUp();
 
-    const activeGenerator = tsGenerator;
+    const activeGenerator = cppGenerator;
 
     const targetDir = resolve(ToolTestUtils.expandTilde("~/antlr-ng-test-generation/mysql"), activeGenerator.language);
 

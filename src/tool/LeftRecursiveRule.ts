@@ -4,7 +4,6 @@
  */
 
 import { ILeftRecursiveRuleAltInfo } from "../analysis/ILeftRecursiveRuleAltInfo.js";
-import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { Grammar } from "./Grammar.js";
 import { Rule } from "./Rule.js";
 import { AltAST } from "./ast/AltAST.js";
@@ -16,7 +15,7 @@ export class LeftRecursiveRule extends Rule {
     public leftRecursiveRuleRefLabels = new Array<[GrammarAST, string | undefined]>();
 
     public recPrimaryAlts: ILeftRecursiveRuleAltInfo[];
-    public recOpAlts: OrderedHashMap<number, ILeftRecursiveRuleAltInfo>;
+    public recOpAlts: Map<number, ILeftRecursiveRuleAltInfo>;
 
     private originalAST: RuleAST;
 
@@ -43,15 +42,15 @@ export class LeftRecursiveRule extends Rule {
             if (altInfo.altLabel === undefined) {
                 alts.push(altInfo.originalAltAST!);
             }
-
         }
-        for (let i = 0; i < this.recOpAlts.size; i++) {
-            const altInfo = this.recOpAlts.getElement(i)!;
+
+        for (const altInfo of this.recOpAlts.values()) {
             if (altInfo.altLabel === undefined) {
                 alts.push(altInfo.originalAltAST!);
             }
 
         }
+
         if (alts.length === 0) {
             return null;
         }
@@ -126,8 +125,7 @@ export class LeftRecursiveRule extends Rule {
             }
         }
 
-        for (let i = 0; i < this.recOpAlts.size; i++) {
-            const altInfo = this.recOpAlts.getElement(i)!;
+        for (const altInfo of this.recOpAlts.values()) {
             if (altInfo.altLabel !== undefined) {
                 let pairs = labels.get(altInfo.altLabel);
                 if (!pairs) {

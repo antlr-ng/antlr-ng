@@ -12,9 +12,9 @@ import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { type SupportedLanguage } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
-import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { dupTree } from "../support/helpers.js";
 import { IssueCode } from "../tool/Issues.js";
+import type { ActionAST } from "../tool/ast/ActionAST.js";
 import { AltAST } from "../tool/ast/AltAST.js";
 import { GrammarAST } from "../tool/ast/GrammarAST.js";
 import { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
@@ -22,7 +22,6 @@ import { RuleRefAST } from "../tool/ast/RuleRefAST.js";
 import { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
 import { LeftRecursiveRuleWalker } from "../tree/walkers/LeftRecursiveRuleWalker.js";
 import { ILeftRecursiveRuleAltInfo } from "./ILeftRecursiveRuleAltInfo.js";
-import type { ActionAST } from "../tool/ast/ActionAST.js";
 
 enum Associativity {
     Left = "left",
@@ -242,7 +241,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         lines.push("        )");
         lines.push("        (");
 
-        const opPrecRuleAlts = new OrderedHashMap<number, ILeftRecursiveRuleAltInfo>();
+        const opPrecRuleAlts = new Map<number, ILeftRecursiveRuleAltInfo>();
         this.binaryAlts.forEach((value, key) => {
             opPrecRuleAlts.set(key, value);
         });

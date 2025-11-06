@@ -1405,7 +1405,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
             `RULE_${currentRule.name});`);
         block.push(...this.renderAction(currentRule.namedActions?.get("init")));
 
-        for (const decl of currentRule.locals) {
+        for (const [_, decl] of currentRule.locals) {
             block.push(...this.renderTokenTypeDecl(decl));
         }
 
@@ -1482,7 +1482,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
 
         block.push(...this.renderAction(currentRule.namedActions?.get("init")));
 
-        for (const decl of currentRule.locals) {
+        for (const [_, decl] of currentRule.locals) {
             block.push(...this.renderTokenTypeDecl(decl));
         }
 

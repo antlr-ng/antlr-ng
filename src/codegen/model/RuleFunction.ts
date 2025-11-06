@@ -5,7 +5,7 @@
 
 /* eslint-disable jsdoc/require-param, jsdoc/require-returns */
 
-import { ATNState, IntervalSet, OrderedHashSet, RecognitionException } from "antlr4ng";
+import { ATNState, IntervalSet, RecognitionException } from "antlr4ng";
 
 import { ANTLRv4Lexer } from "../../generated/ANTLRv4Lexer.js";
 import { CommonTreeNodeStream } from "../../tree/CommonTreeNodeStream.js";
@@ -52,7 +52,7 @@ export class RuleFunction extends OutputModelObject {
 
     public code: SrcOp[];
 
-    public readonly locals = new OrderedHashSet<TokenTypeDecl>(); // TODO: move into ctx?
+    public readonly locals = new Map<string, TokenTypeDecl>();
 
     public args?: AttributeDecl[];
 
@@ -257,8 +257,10 @@ export class RuleFunction extends OutputModelObject {
 
     /** Add local var decl */
     public addLocalDecl(d: TokenTypeDecl): void {
-        this.locals.add(d);
-        d.isLocal = true;
+        if (!this.locals.has(d.name)) {
+            this.locals.set(d.name, d);
+            d.isLocal = true;
+        }
     }
 
     /** Add decl to struct ctx for rule or alt if labeled. */
