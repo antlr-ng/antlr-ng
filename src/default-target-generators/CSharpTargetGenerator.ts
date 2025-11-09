@@ -147,7 +147,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         if (!declaration) {
             result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude")), ``);
-            result.push(`#include "${listenerFile.grammarName}BaseListener.h"`, ``);
+            result.push(`using ${listenerFile.grammarName}BaseListener.h"`, ``);
             result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude"))
                 , ``);
 
@@ -161,10 +161,10 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             return result.join("\n");
         }
 
-        result.push(`#pragma once`, ``);
+        result.push(``, ``);
         result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude")), ``);
-        result.push(`#include "antlr4-runtime.h"`);
-        result.push(`#include "${listenerFile.grammarName}Listener.h"`, ``);
+        result.push(`using antlr4-runtime.h"`);
+        result.push(`using ${listenerFile.grammarName}Listener.h"`, ``);
         result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude")), ``);
 
         if (options.package) {
@@ -178,7 +178,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(` * which can be extended to create a listener which only needs to handle a subset`);
         result.push(` * of the available methods.`);
         result.push(` */`);
-        result.push(`class ${this.defines?.exportMacro ?? ""} ${listenerFile.grammarName}BaseListener : public ` +
+        result.push(`public partial class ${listenerFile.grammarName}BaseListener : ` +
             `${listenerFile.grammarName}Listener {`);
         result.push(`public:`);
 
@@ -227,7 +227,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         if (!declaration) {
             result.push(``);
             result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpreinclude")));
-            result.push(`#include "${visitorFile.grammarName}BaseVisitor.h"`, ``);
+            result.push(`using ${visitorFile.grammarName}BaseVisitor.h"`, ``);
 
             result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpostinclude")), ``);
 
@@ -240,11 +240,11 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             return result.join("\n");
         }
 
-        result.push(`#pragma once`);
+        result.push(``);
         result.push(``);
         result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpreinclude")), ``);
-        result.push(`#include "antlr4-runtime.h"`);
-        result.push(`#include "${visitorFile.grammarName}Visitor.h"`);
+        result.push(`using antlr4-runtime.h"`);
+        result.push(`using ${visitorFile.grammarName}Visitor.h"`);
         result.push(``);
         result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpostinclude")), ``);
 
@@ -258,7 +258,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `can be`);
         result.push(` * extended to create a visitor which only needs to handle a subset of the available methods.`);
         result.push(` */`);
-        result.push(`class ${this.defines?.exportMacro ?? ""} ${visitorFile.grammarName}BaseVisitor : public ` +
+        result.push(`public partial class ${visitorFile.grammarName}BaseVisitor : ` +
             `${visitorFile.grammarName}Visitor {`);
         result.push(`public:`);
         result.push(...this.renderAction(visitorFile.namedActions.get("basevisitordeclarations")), ``);
@@ -302,7 +302,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         if (!declaration) {
             result.push(``);
             result.push(...this.renderAction(listenerFile.namedActions.get("listenerpreinclude")));
-            result.push(`#include "${listenerFile.grammarName}Listener.h"`, ``);
+            result.push(`using ${listenerFile.grammarName}Listener.h"`, ``);
 
             result.push(...this.renderAction(listenerFile.namedActions.get("listenerpostinclude")), ``);
 
@@ -315,12 +315,12 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             return result.join("\n");
         }
 
-        result.push(`#pragma once`, ``);
+        result.push(``, ``);
 
         result.push(...this.renderAction(listenerFile.namedActions.get("listenerpreinclude")), ``);
 
-        result.push(`#include "antlr4-runtime.h"`);
-        result.push(`#include "${listenerFile.parserName}.h"`, ``);
+        result.push(`using antlr4-runtime.h"`);
+        result.push(`using ${listenerFile.parserName}.h"`, ``);
 
         result.push(...this.renderAction(listenerFile.namedActions.get("listenerpostinclude")), ``);
 
@@ -335,7 +335,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `${listenerFile.parserName}.`);
         result.push(` */`);
 
-        result.push(`class ${this.defines?.exportMacro ?? ""} ${listenerFile.grammarName}Listener : public ` +
+        result.push(`public partial class ${listenerFile.grammarName}Listener : ` +
             `tree::ParseTreeListener {`);
         result.push(`public:`);
 
@@ -376,7 +376,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         if (!declaration) {
             result.push(``);
             result.push(...this.renderAction(visitorFile.namedActions.get("visitorpreinclude")));
-            result.push(`#include "${visitorFile.grammarName}Visitor.h"`, ``);
+            result.push(`using ${visitorFile.grammarName}Visitor.h"`, ``);
 
             result.push(...this.renderAction(visitorFile.namedActions.get("visitorpostinclude")), ``);
 
@@ -388,12 +388,12 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
             return result.join("\n");
         } else {
-            result.push(`#pragma once`, ``);
+            result.push(``, ``);
 
             result.push(...this.renderAction(visitorFile.namedActions.get("visitorpreinclude")), ``);
 
-            result.push(`#include "antlr4-runtime.h"`);
-            result.push(`#include "${visitorFile.parserName}.h"`, ``);
+            result.push(`using antlr4-runtime.h"`);
+            result.push(`using ${visitorFile.parserName}.h"`, ``);
 
             result.push(...this.renderAction(visitorFile.namedActions.get("visitorpostinclude")), ``);
 
@@ -408,7 +408,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             result.push(` * produced by ${visitorFile.parserName}.`);
             result.push(` */`);
 
-            result.push(`class ${this.defines?.exportMacro ?? ""} ${visitorFile.grammarName}Visitor : public ` +
+            result.push(`public partial class ${visitorFile.grammarName}Visitor : ` +
                 `tree::AbstractParseTreeVisitor {`);
             result.push(`public:`);
 
@@ -466,11 +466,11 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     };
 
     public renderRecRuleSetReturnAction = (src: string, name: string): Lines => {
-        return [`$${name} = $${src}->${name};`];
+        return [`$${name} = $${src}.${name};`];
     };
 
     public renderRecRuleSetStopToken = (): Lines => {
-        return [`_ctx->stop = _input->LT(-1);`];
+        return [`_ctx.stop = _input.LT(-1);`];
     };
 
     public renderRecRuleSetPrevCtx = (): Lines => {
@@ -492,9 +492,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         if (label !== undefined) {
             if (isListLabel) {
-                result.push(`newContext->${label}.push_back(previousContext);`);
+                result.push(`newContext.${label}.push_back(previousContext);`);
             } else {
-                result.push(`newContext->${label} = previousContext;`);
+                result.push(`newContext.${label} = previousContext;`);
             }
         }
 
@@ -512,9 +512,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         if (label !== undefined) {
             if (isListLabel) {
-                result.push(`_localctx->${label}.push_back(previousContext);`);
+                result.push(`_localctx.${label}.push_back(previousContext);`);
             } else {
-                result.push(`_localctx->${label} = previousContext;`);
+                result.push(`_localctx.${label} = previousContext;`);
             }
         }
 
@@ -530,25 +530,25 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = [];
 
         result.push(`#include <iostream>`, ``);
-        result.push(`#include "antlr4-runtime.h"`);
-        result.push(`#include "<lexerName>.h"`);
+        result.push(`using antlr4-runtime.h"`);
+        result.push(`using <lexerName>.h"`);
 
         result.push(`<if(parserName)>`);
-        result.push(`#include "<parserName>.h"`);
+        result.push(`using <parserName>.h"`);
         result.push(`<endif>`);
 
         result.push(``);
-        result.push(`using namespace antlr4;`, ``);
+        result.push(``, ``);
 
         if (parserName !== undefined) {
-            result.push(`class TreeShapeListener : public tree::ParseTreeListener {`);
+            result.push(`class TreeShapeListener : tree::ParseTreeListener {`);
             result.push(`public:`);
             result.push(`  void visitTerminal(tree::TerminalNode *) override {}`);
             result.push(`  void visitErrorNode(tree::ErrorNode *) override {}`);
             result.push(`  void exitEveryRule(ParserRuleContext *) override {}`);
             result.push(`  void enterEveryRule(ParserRuleContext *ctx) override {`);
-            result.push(`    for (auto child : ctx->children) {`);
-            result.push(`      tree::ParseTree *parent = child->parent;`);
+            result.push(`    for (auto child : ctx.children) {`);
+            result.push(`      tree::ParseTree *parent = child.parent;`);
             result.push(`      ParserRuleContext *rule = dynamic_cast<ParserRuleContext *>(parent);`);
             result.push(`      if (rule != ctx) {`);
             result.push(`        throw "Invalid parse tree shape detected.";`);
@@ -567,7 +567,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         if (parserName !== undefined) {
             result.push(`  ${parserName} parser(&tokens);`);
-            result.push(`  parser.getInterpreter<atn::ParserATNSimulator>()->setPredictionMode(atn::` +
+            result.push(`  parser.getInterpreter<atn::ParserATNSimulator>().setPredictionMode(atn::` +
                 `PredictionMode::${predictionMode});`);
             if (!buildParseTree) {
                 result.push(`  parser.setBuildParseTree(false);`);
@@ -584,10 +584,10 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         } else {
             result.push(`  tokens.fill();`);
             result.push(`  for (auto token : tokens.getTokens())`);
-            result.push(`    std::cout << token->toString() << std::endl;`);
+            result.push(`    std::cout << token.toString() << std::endl;`);
 
             if (showDFA) {
-                result.push(`  std::cout << lexer.getInterpreter<atn::LexerATNSimulator>()->getDFA(` +
+                result.push(`  std::cout << lexer.getInterpreter<atn::LexerATNSimulator>().getDFA(` +
                     `Lexer::DEFAULT_MODE).toLexerString();`);
             }
         }
@@ -732,7 +732,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`  try {`);
 
         if (currentRule.hasLookaheadBlock) {
-            result.push(`    size_t alt;`);
+            result.push(`    int alt;`);
         }
 
         block.length = 0;
@@ -752,9 +752,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             }
         } else {
             result.push(`  catch (RecognitionException &e) {`);
-            result.push(`    _errHandler->reportError(this, e);`);
-            result.push(`    _localctx->exception = std::current_exception();`);
-            result.push(`    _errHandler->recover(this, _localctx->exception);`);
+            result.push(`    _errHandler.reportError(this, e);`);
+            result.push(`    _localctx.exception = std::current_exception();`);
+            result.push(`    _errHandler.recover(this, _localctx.exception);`);
             result.push(`  }`);
         }
 
@@ -803,12 +803,12 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`${this.invariants.recognizerName}::${currentRule.ctxType}* ${this.invariants.recognizerName}::` +
             `${currentRule.escapedName}(int precedence${ruleCallArgs ?? ""}) {`);
         result.push(`  ParserRuleContext *parentContext = _ctx;`);
-        result.push(`  size_t parentState = getState();`);
+        result.push(`  int parentState = getState();`);
         result.push(`  ${this.invariants.recognizerName}::${currentRule.ctxType} *_localctx = ` +
             `_tracker.createInstance<${currentRule.ctxType}>(_ctx, parentState${ruleCallArgs ?? ""});`);
         result.push(`  ${this.invariants.recognizerName}::${currentRule.ctxType} *previousContext = _localctx;`);
         result.push(`  (void)previousContext; // Silence compiler, in case the context is not used by generated code.`);
-        result.push(`  size_t startState = ${currentRule.startState};`);
+        result.push(`  int startState = ${currentRule.startState};`);
         result.push(`  enterRecursionRule(_localctx, ${currentRule.startState}, ${this.invariants.recognizerName}::` +
             `Rule${this.toTitleCase(currentRule.name)}, precedence);`);
         result.push(``);
@@ -838,7 +838,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`  try {`);
 
         if (currentRule.hasLookaheadBlock) {
-            result.push(`    size_t alt;`);
+            result.push(`    int alt;`);
         }
 
         block.length = 0;
@@ -850,9 +850,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push("", ...this.formatLines(block, 4));
         result.push(`  }`);
         result.push(`  catch (RecognitionException &e) {`);
-        result.push(`    _errHandler->reportError(this, e);`);
-        result.push(`    _localctx->exception = std::current_exception();`);
-        result.push(`    _errHandler->recover(this, _localctx->exception);`);
+        result.push(`    _errHandler.reportError(this, e);`);
+        result.push(`    _localctx.exception = std::current_exception();`);
+        result.push(`    _errHandler.recover(this, _localctx.exception);`);
         result.push(`  }`);
         result.push(`  return _localctx;`);
         result.push(`}`);
@@ -881,9 +881,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`std::any ${this.invariants.recognizerName}::${struct.escapedName}::accept(tree::` +
             `ParseTreeVisitor *visitor) {`);
         result.push(`  if (auto parserVisitor = dynamic_cast<${this.invariants.grammarName}Visitor*>(visitor))`);
-        result.push(`    return parserVisitor->visit${derivedFromName}(this);`);
+        result.push(`    return parserVisitor.visit${derivedFromName}(this);`);
         result.push(`  else`);
-        result.push(`    return visitor->visitChildren(this);`);
+        result.push(`    return visitor.visitChildren(this);`);
         result.push(`}`, ``);
 
         return result;
@@ -906,8 +906,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`void ${this.invariants.recognizerName}::${struct.escapedName}::${enterExit}Rule(tree::` +
             `ParseTreeListener *listener) {`);
         result.push(`  auto parserListener = dynamic_cast<${this.invariants.grammarName}Listener *>(listener);`);
-        result.push(`  if (parserListener != nullptr)`);
-        result.push(`    parserListener->${enterExit}${derivedFromName}(this);`);
+        result.push(`  if (parserListener != null)`);
+        result.push(`    parserListener.${enterExit}${derivedFromName}(this);`);
         result.push(`}`, ``);
 
         return result;
@@ -922,11 +922,11 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     };
 
     protected override renderCaptureNextToken = (d: OutputModelObjects.CaptureNextToken): Lines => {
-        return [`${d.varName} = _input->LT(1);`];
+        return [`${d.varName} = _input.LT(1);`];
     };
 
     protected override renderCaptureNextTokenType = (srcOp: OutputModelObjects.CaptureNextTokenType): Lines => {
-        return [`${srcOp.varName} = _input->LA(1);`];
+        return [`${srcOp.varName} = _input.LA(1);`];
     };
 
     protected override renderCodeBlockForAlt = (currentAltCodeBlock: OutputModelObjects.CodeBlockForAlt): Lines => {
@@ -1026,13 +1026,13 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result = this.startRendering("ContextTokenListIndexedGetterDecl");
 
         if (this.invariants.declaration) {
-            result.push(`tree::TerminalNode* ${t.escapedName}(size_t i);`);
+            result.push(`tree::TerminalNode* ${t.escapedName}(int i);`);
 
             return this.endRendering("ContextTokenListIndexedGetterDecl", result);
         }
 
         result.push(`tree::TerminalNode* ${this.invariants.recognizerName}::${t.ctx.name}::` +
-            `${t.escapedName}(size_t i) {`);
+            `${t.escapedName}(int i) {`);
         result.push(`  return getToken(${this.invariants.recognizerName}::${t.escapedName}, i);`);
         result.push(`}`, ``);
 
@@ -1044,13 +1044,13 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result = this.startRendering("ContextRuleListIndexedGetterDecl");
 
         if (this.invariants.declaration) {
-            result.push(`${r.ctxName}* ${r.escapedName}(size_t i);`);
+            result.push(`${r.ctxName}* ${r.escapedName}(int i);`);
 
             return this.endRendering("ContextRuleListIndexedGetterDecl", result);
         }
 
         result.push(`${this.invariants.recognizerName}::${r.ctxName}* ${this.invariants.recognizerName}::` +
-            `${r.ctx.name}::${r.escapedName}(size_t i) {`);
+            `${r.ctx.name}::${r.escapedName}(int i) {`);
         result.push(`  return getRuleContext<${this.invariants.recognizerName}::${r.ctxName}>(i);`);
         result.push(`}`, ``);
 
@@ -1071,15 +1071,15 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result = this.startRendering("LL1AltBlock");
 
         result.push(`setState(${choice.stateNumber});`);
-        result.push(`_errHandler->sync(this);`);
+        result.push(`_errHandler.sync(this);`);
 
         if (choice.label) {
             result.push(`LL1AltBlock(choice, preamble, alts, error) ${this.renderLabelref(choice.label)} = ` +
-                `_input->LT(1);`);
+                `_input.LT(1);`);
         }
 
         result.push(...this.renderSourceOps(choice.preamble));
-        result.push(`switch (_input->LA(1)) {`);
+        result.push(`switch (_input.LA(1)) {`);
 
         const block: Lines = [];
         for (let i = 0; i < choice.alts.length; ++i) {
@@ -1115,8 +1115,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = [];
         result.push(`setState(${choice.stateNumber});`);
 
-        result.push(`_errHandler->sync(this);`);
-        result.push(`switch (_input->LA(1)) {`);
+        result.push(`_errHandler.sync(this);`);
+        result.push(`switch (_input.LA(1)) {`);
 
         const block: Lines = [];
         for (let i = 0; i < choice.altLook.length; ++i) {
@@ -1150,7 +1150,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = this.startRendering("LL1OptionalBlockSingleAlt");
 
         result.push(`setState(${choice.stateNumber});`);
-        result.push(`_errHandler->sync(this);`, ``);
+        result.push(`_errHandler.sync(this);`, ``);
         result.push(...this.renderSourceOps(choice.preamble));
 
         result.push(`if (${this.renderSourceOps([choice.expr]).join("")}) {`);
@@ -1171,7 +1171,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = this.startRendering("LL1StarBlockSingleAlt");
 
         result.push(`setState(${choice.stateNumber});`);
-        result.push(`_errHandler->sync(this);`);
+        result.push(`_errHandler.sync(this);`);
 
         result.push(...this.renderSourceOps(choice.preamble));
 
@@ -1194,7 +1194,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         });
 
         result.push(`  setState(${choice.loopBackStateNumber});`);
-        result.push(`  _errHandler->sync(this);`);
+        result.push(`  _errHandler.sync(this);`);
         result.push(...this.formatLines(this.renderSourceOps(choice.iteration), 2));
         result.push(`}`);
 
@@ -1205,7 +1205,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = this.startRendering("LL1PlusBlockSingleAlt");
 
         result.push(`setState(${choice.blockStartStateNumber});`); // Alt left block decision.
-        result.push(`_errHandler->sync(this);`);
+        result.push(`_errHandler.sync(this);`);
 
         result.push(...this.renderSourceOps(choice.preamble));
 
@@ -1220,7 +1220,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         });
 
         result.push(`    setState(${choice.stateNumber});`); // Loop back/exit decision.
-        result.push(`    _errHandler->sync(this);`);
+        result.push(`    _errHandler.sync(this);`);
         result.push(...this.formatLines(this.renderSourceOps(choice.iteration), 2));
 
         const srcOps = choice.loopExpr ? [choice.loopExpr] : undefined;
@@ -1255,7 +1255,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
     protected override renderRuleContextDecl = (srcOp: OutputModelObjects.RuleContextDecl): Lines => {
         if (this.invariants.declaration) {
-            return [`${this.invariants.recognizerName}::${srcOp.ctxName} *${srcOp.escapedName} = nullptr;`];
+            return [`${this.invariants.recognizerName}::${srcOp.ctxName} *${srcOp.escapedName} = null;`];
         }
 
         return [];
@@ -1279,7 +1279,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
                 ? this.invariants.contextSuperClass
                 : "ParserRuleContext";
 
-            result.push(`class ${this.defines?.exportMacro ?? ""} ${struct.escapedName} : public ` +
+            result.push(`public partial class ${struct.escapedName} : ` +
                 `${contextSuperClass} {`);
             result.push(`public:`);
 
@@ -1290,10 +1290,10 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             }).join(", ");
 
             if (ctorAttrs.length > 0) {
-                result.push(`  ${struct.escapedName}(ParserRuleContext *parent, size_t invokingState);`);
+                result.push(`  ${struct.escapedName}(ParserRuleContext *parent, int invokingState);`);
             }
 
-            result.push(`  ${struct.escapedName}(ParserRuleContext *parent, size_t ` +
+            result.push(`  ${struct.escapedName}(ParserRuleContext *parent, int ` +
                 `invokingState${ctorAttrs.length > 0 ? ", " + ctorAttrs : ""});`);
 
             if (struct.provideCopyFrom) {
@@ -1302,7 +1302,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
                 result.push(`  using ParserRuleContext::copyFrom;`, ``);
             }
 
-            result.push(`  virtual size_t getRuleIndex() const override;`);
+            result.push(`  virtual int getRuleIndex() const override;`);
             result.push(...this.formatLines(this.renderDecls(struct.getters), 2));
             result.push(``);
             result.push(...this.formatLines(this.renderDispatchMethods(struct), 2));
@@ -1323,23 +1323,23 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
                 attrs.push(this.renderAttributeDecl(a).join(" "));
             }
             result.push(`${this.invariants.recognizerName}::${struct.escapedName}::${struct.escapedName}` +
-                `(ParserRuleContext *parent, size_t invokingState${attrs.join(", ")})`);
+                `(ParserRuleContext *parent, int invokingState${attrs.join(", ")})`);
         } else {
             result.push(`${this.invariants.recognizerName}::${struct.escapedName}::${struct.escapedName}(` +
-                `ParserRuleContext *parent, size_t invokingState)`);
+                `ParserRuleContext *parent, int invokingState)`);
         }
 
         result.push(`  : ${contextSuperClass}(parent, invokingState) {`);
 
         struct.ctorAttrs.forEach((a) => {
-            result.push(`  this->${a.escapedName} = ${a.escapedName};`);
+            result.push(`  this.${a.escapedName} = ${a.escapedName};`);
         });
 
         result.push(`}`, ``);
 
         result.push(...this.renderDecls(struct.getters));
 
-        result.push(``, `size_t ${this.invariants.recognizerName}::${struct.escapedName}::getRuleIndex() const {`);
+        result.push(``, `int ${this.invariants.recognizerName}::${struct.escapedName}::getRuleIndex() const {`);
         result.push(`  return ${this.invariants.recognizerName}::Rule${this.toTitleCase(struct.derivedFromName)};`);
         result.push(`}`, ``);
 
@@ -1349,7 +1349,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             result.push(`  ${contextSuperClass}::copyFrom(ctx);`);
 
             struct.ctorAttrs.forEach((a) => {
-                result.push(`  this->${a.escapedName} = ctx->${a.escapedName};`);
+                result.push(`  this.${a.escapedName} = ctx.${a.escapedName};`);
             });
 
             result.push(`}`);
@@ -1365,7 +1365,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result = this.startRendering("AltLabelStructDecl");
 
         if (this.invariants.declaration) {
-            result.push(``, `class ${this.defines?.exportMacro ?? ""} ${struct.escapedName} : public ` +
+            result.push(``, `public partial class ${struct.escapedName} : ` +
                 this.toTitleCase(currentRule.name) + `Context {`);
             result.push(`public:`);
             result.push(`  ${struct.escapedName}(${this.toTitleCase(currentRule.name)}Context *ctx);`);
@@ -1419,7 +1419,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
     protected override renderTokenDecl = (t: OutputModelObjects.TokenDecl): Lines => {
         if (this.invariants.declaration) {
-            return [`${this.invariants.tokenLabelType} *${t.escapedName} = nullptr;`];
+            return [`${this.invariants.tokenLabelType} *${t.escapedName} = null;`];
         }
 
         return [];
@@ -1430,7 +1430,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             return [];
         }
 
-        return [`size_t ${srcOp.escapedName} = 0;`];
+        return [`int ${srcOp.escapedName} = 0;`];
     };
 
     protected override renderTokenListDecl = (t: OutputModelObjects.TokenListDecl): Lines => {
@@ -1466,8 +1466,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const blockAST = choice.ast as OptionalBlockAST;
         result.push(`setState(${choice.stateNumber});`);
-        result.push(`_errHandler->sync(this);`);
-        result.push(`alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ${choice.decision}, ` +
+        result.push(`_errHandler.sync(this);`);
+        result.push(`alt = getInterpreter<atn::ParserATNSimulator>().adaptivePredict(_input, ${choice.decision}, ` +
             `_ctx);`);
         result.push(`while (alt != ${choice.exitAlt} && alt != atn::ATN::INVALID_ALT_NUMBER) {`);
 
@@ -1485,8 +1485,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         block.push(`}`);
         block.push(`setState(${choice.loopBackStateNumber});`);
-        block.push(`_errHandler->sync(this);`);
-        block.push(`alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ${choice.decision}, ` +
+        block.push(`_errHandler.sync(this);`);
+        block.push(`alt = getInterpreter<atn::ParserATNSimulator>().adaptivePredict(_input, ${choice.decision}, ` +
             `_ctx);`);
 
         result.push(...this.formatLines(block, 2));
@@ -1500,7 +1500,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const blockAST = choice.ast as OptionalBlockAST;
         result.push(`setState(${choice.blockStartStateNumber});`); //  Alt block decision.
-        result.push(`_errHandler->sync(this);`);
+        result.push(`_errHandler.sync(this);`);
         result.push(`alt = 1${!blockAST.greedy ? " + 1" : ""};`);
         result.push(`do {`);
 
@@ -1534,8 +1534,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         switchBlock.push(`}`);
 
         switchBlock.push(`setState(${choice.loopBackStateNumber});`); // Loopback/exit decision.
-        switchBlock.push(`_errHandler->sync(this);`);
-        switchBlock.push(`alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ` +
+        switchBlock.push(`_errHandler.sync(this);`);
+        switchBlock.push(`alt = getInterpreter<atn::ParserATNSimulator>().adaptivePredict(_input, ` +
             `${choice.decision}, _ctx);`);
 
         result.push(...this.formatLines(switchBlock, 4));
@@ -1548,8 +1548,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = this.startRendering("OptionalBlock");
 
         result.push(`setState(${choice.stateNumber});`);
-        result.push(`_errHandler->sync(this);`, ``);
-        result.push(`switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ${choice.decision}, ` +
+        result.push(`_errHandler.sync(this);`, ``);
+        result.push(`switch (getInterpreter<atn::ParserATNSimulator>().adaptivePredict(_input, ${choice.decision}, ` +
             `_ctx)) {`);
 
         const block: Lines = [];
@@ -1577,14 +1577,14 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = this.startRendering("AltBlock");
 
         result.push(`setState(${choice.stateNumber});`);
-        result.push(`_errHandler->sync(this);`);
+        result.push(`_errHandler.sync(this);`);
 
         if (choice.label) {
-            result.push(`${this.renderLabelref(choice.label)} = _input->LT(1);`);
+            result.push(`${this.renderLabelref(choice.label)} = _input.LT(1);`);
         }
 
         result.push(...this.renderSourceOps(choice.preamble));
-        result.push(`switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ` +
+        result.push(`switch (getInterpreter<atn::ParserATNSimulator>().adaptivePredict(_input, ` +
             `${choice.decision}, _ctx)) {`);
 
         const block: Lines = [];
@@ -1663,7 +1663,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected renderRuleActionFunction(r: OutputModelObjects.RuleActionFunction): Lines {
         const result = this.startRendering("RuleActionFunction");
 
-        result.push(`void ${this.invariants.grammarName}::${r.name}Action(${r.ctxType} *context, size_t ` +
+        result.push(`void ${this.invariants.grammarName}::${r.name}Action(${r.ctxType} *context, int ` +
             `actionIndex) {`);
         result.push(`  switch (actionIndex) {`);
 
@@ -1684,12 +1684,12 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result = this.startRendering("RuleSempredFunction");
 
         if (this.invariants.declaration) {
-            result.push(`bool ${r.name}Sempred(${r.ctxType} *_localctx, size_t predicateIndex);`);
+            result.push(`bool ${r.name}Sempred(${r.ctxType} *_localctx, int predicateIndex);`);
 
             return this.endRendering("RuleSempredFunction", result);
         }
 
-        result.push(`bool ${this.invariants.recognizerName}::${r.name}Sempred(${r.ctxType} *_localctx, size_t ` +
+        result.push(`bool ${this.invariants.recognizerName}::${r.name}Sempred(${r.ctxType} *_localctx, int ` +
             `predicateIndex) {`);
         result.push(`  switch (predicateIndex) {`);
 
@@ -1713,16 +1713,16 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`  static const int32_t serializedATNSegment[] = {`);
         result.push(...this.renderList(model.serialized, { wrap: 68, indent: 4, separator: "," }));
         result.push(`  };`);
-        result.push(`  staticData->serializedATN = atn::SerializedATNView(serializedATNSegment, ` +
+        result.push(`  staticData.serializedATN = atn::SerializedATNView(serializedATNSegment, ` +
             `sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));`);
         result.push(``);
         result.push(`  atn::ATNDeserializer deserializer;`);
-        result.push(`  staticData->atn = deserializer.deserialize(staticData->serializedATN);`);
+        result.push(`  staticData.atn = deserializer.deserialize(staticData.serializedATN);`);
         result.push(``);
-        result.push(`  const size_t count = staticData->atn->getNumberOfDecisions();`);
-        result.push(`  staticData->decisionToDFA.reserve(count);`);
-        result.push(`  for (size_t i = 0; i < count; i++) {`);
-        result.push(`    staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);`);
+        result.push(`  const int count = staticData.atn.getNumberOfDecisions();`);
+        result.push(`  staticData.decisionToDFA.reserve(count);`);
+        result.push(`  for (int i = 0; i < count; i++) {`);
+        result.push(`    staticData.decisionToDFA.emplace_back(staticData.atn.getDecisionState(i), i);`);
         result.push(`  }`);
 
         return this.endRendering("SerializedATN", result);
@@ -1748,7 +1748,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
      * @returns Lines representing the labelref.
      */
     protected override renderLabelRef = (t: OutputModelObjects.LabelRef): Lines => {
-        const result = [this.renderContext(t) + `->${t.escapedName}`];
+        const result = [this.renderContext(t) + `.${t.escapedName}`];
 
         return result;
     };
@@ -1764,7 +1764,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected renderLabelref(t: OutputModelObjects.Decl): Lines {
         let line = "";
         if (!t.isLocal) {
-            line = `downCast<${t.ctx.name} *>(_localctx)->`;
+            line = `downCast<${t.ctx.name} *>(_localctx).`;
         }
 
         return [line + t.escapedName];
@@ -1814,7 +1814,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             return [];
         }
 
-        return [`_localctx->${t.escapedName}`];
+        return [`_localctx.${t.escapedName}`];
     };
 
     protected override renderListLabelRef = (t: OutputModelObjects.ListLabelRef): Lines => {
@@ -1825,7 +1825,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const ctx = this.renderContext(t);
         const name = this.renderListLabelName(t.escapedName);
 
-        return [`${ctx}?->${name}`];
+        return [`${ctx}?.${name}`];
     };
 
     protected override renderLocalRef = (a: OutputModelObjects.LocalRef): Lines => {
@@ -1833,7 +1833,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             return [];
         }
 
-        return [`_localctx->${a.escapedName}`];
+        return [`_localctx.${a.escapedName}`];
     };
 
     protected override renderNonLocalAttrRef = (s: OutputModelObjects.NonLocalAttrRef): Lines => {
@@ -1852,7 +1852,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(a);
 
-        return [`${ctx}->${a.dict}!->${a.escapedName}`];
+        return [`${ctx}.${a.dict}!.${a.escapedName}`];
     };
 
     protected override renderRetValueRef = (t: OutputModelObjects.RetValueRef): Lines => {
@@ -1860,7 +1860,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             return [];
         }
 
-        return [`_localctx->${t.escapedName}`];
+        return [`_localctx.${t.escapedName}`];
     };
 
     protected override renderRulePropertyRef = (t: OutputModelObjects.RulePropertyRef): Lines => {
@@ -1870,7 +1870,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? (${ctx}->${t.label}->start) : nullptr)`];
+        return [`(${ctx}.${t.label} != null ? (${ctx}.${t.label}.start) : null)`];
     };
 
     protected override renderRulePropertyRefCtx = (t: OutputModelObjects.RulePropertyRefCtx): Lines => {
@@ -1880,7 +1880,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`${ctx}->${t.label}`];
+        return [`${ctx}.${t.label}`];
     };
 
     protected override renderRulePropertyRefParser = (t: OutputModelObjects.RulePropertyRefParser): Lines => {
@@ -1898,7 +1898,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? (${ctx}->${t.label}->start) : nullptr)`];
+        return [`(${ctx}.${t.label} != null ? (${ctx}.${t.label}.start) : null)`];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
@@ -1908,7 +1908,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? (${ctx}->${t.label}->stop) : nullptr)`];
+        return [`(${ctx}.${t.label} != null ? (${ctx}.${t.label}.stop) : null)`];
     };
 
     protected override renderRulePropertyRefText = (t: OutputModelObjects.RulePropertyRefText): Lines => {
@@ -1918,8 +1918,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? _input->getText(${ctx}->${t.label}->start, ` +
-            `${ctx}->${t.label}->stop) : nullptr)`];
+        return [`(${ctx}.${t.label} != null ? _input.getText(${ctx}.${t.label}.start, ` +
+            `${ctx}.${t.label}.stop) : null)`];
     };
 
     protected override renderSetAttr = (t: OutputModelObjects.SetAttr): Lines => {
@@ -1929,7 +1929,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`${ctx}-><s.escapedName> = <rhsChunks>;`];
+        return [`${ctx}.<s.escapedName> = <rhsChunks>;`];
     };
 
     protected override renderSetNonLocalAttr = (t: OutputModelObjects.SetNonLocalAttr): Lines => {
@@ -1954,11 +1954,11 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     };
 
     protected override renderThisRulePropertyRefStart = (t: OutputModelObjects.ThisRulePropertyRefStart): Lines => {
-        return [`_localctx->start`];
+        return [`_localctx.start`];
     };
 
     protected override renderThisRulePropertyRefStop = (t: OutputModelObjects.ThisRulePropertyRefStop): Lines => {
-        return [`_localctx->stop`];
+        return [`_localctx.stop`];
     };
 
     protected override renderThisRulePropertyRefText = (t: OutputModelObjects.ThisRulePropertyRefText): Lines => {
@@ -1966,7 +1966,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             return [];
         }
 
-        return [`_input->getText(_localctx->start, _input->LT(-1))`];
+        return [`_input.getText(_localctx.start, _input.LT(-1))`];
     };
 
     protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
@@ -1976,7 +1976,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getChannel() : 0)`];
+        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getChannel() : 0)`];
     };
 
     protected override renderTokenPropertyRefIndex = (t: OutputModelObjects.TokenPropertyRefIndex): Lines => {
@@ -1986,7 +1986,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getTokenIndex() : 0)`];
+        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getTokenIndex() : 0)`];
     };
 
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
@@ -1996,7 +1996,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? std::stoi(${ctx}->${t.label}->getText()) : 0)`];
+        return [`(${ctx}.${t.label} != null ? std::stoi(${ctx}.${t.label}.getText()) : 0)`];
     };
 
     protected override renderTokenPropertyRefLine = (t: OutputModelObjects.TokenPropertyRefLine): Lines => {
@@ -2006,7 +2006,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getLine() : 0)`];
+        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getLine() : 0)`];
     };
 
     protected override renderTokenPropertyRefPos = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
@@ -2016,7 +2016,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getCharPositionInLine() : 0)`];
+        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getCharPositionInLine() : 0)`];
     };
 
     protected override renderTokenPropertyRefText = (t: OutputModelObjects.TokenPropertyRefText): Lines => {
@@ -2026,7 +2026,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getText() : "")`];
+        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getText() : "")`];
     };
 
     protected override renderTokenPropertyRefType = (t: OutputModelObjects.TokenPropertyRefType): Lines => {
@@ -2036,7 +2036,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getType() : 0)`];
+        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getType() : 0)`];
     };
 
     protected override renderTokenRef = (t: OutputModelObjects.TokenRef): Lines => {
@@ -2046,7 +2046,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const ctx = this.renderContext(t);
 
-        return [`${ctx}-><t.escapedName>`];
+        return [`${ctx}.<t.escapedName>`];
     };
 
     private renderParser(parserFile: OutputModelObjects.ParserFile,
@@ -2067,7 +2067,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`                        List<string> symbolicNames)`);
         result.push(`      : ruleNames(std::move(ruleNames)), literalNames(std::move(literalNames)),`);
         result.push(`        symbolicNames(std::move(symbolicNames)),`);
-        result.push(`        vocabulary(this->literalNames, this->symbolicNames) {}`);
+        result.push(`        vocabulary(this.literalNames, this.symbolicNames) {}`);
         result.push(``);
         result.push(`  ${parserName}StaticData(const ${parserName}StaticData&) = delete;`);
         result.push(`  ${parserName}StaticData(${parserName}StaticData&&) = delete;`);
@@ -2089,16 +2089,16 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`#if ANTLR4_USE_THREAD_LOCAL_CACHE`);
         result.push(`static thread_local`);
         result.push(`#endif`);
-        result.push(`std::unique_ptr<${parserName}StaticData> ${loweredGrammarName}ParserStaticData = nullptr;`);
+        result.push(`std::unique_ptr<${parserName}StaticData> ${loweredGrammarName}ParserStaticData = null;`);
         result.push(``);
 
         result.push(`void ${loweredGrammarName}ParserInitialize() {`);
         result.push(`#if ANTLR4_USE_THREAD_LOCAL_CACHE`);
-        result.push(`  if (${loweredGrammarName}ParserStaticData != nullptr) {`);
+        result.push(`  if (${loweredGrammarName}ParserStaticData != null) {`);
         result.push(`    return;`);
         result.push(`  }`);
         result.push(`#else`);
-        result.push(`  assert(${loweredGrammarName}ParserStaticData == nullptr);`);
+        result.push(`  assert(${loweredGrammarName}ParserStaticData == null);`);
         result.push(`#endif`);
         result.push(`  auto staticData = std::make_unique<${parserName}StaticData>(`);
         result.push(`    List<string>{`);
@@ -2131,35 +2131,35 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`${recognizerName}::${recognizerName}(TokenStream *input, ` +
             `const atn::ParserATNSimulatorOptions &options) : ${baseClass}(input) {`);
         result.push(`  ${recognizerName}::initialize();`);
-        result.push(`  _interpreter = new atn::ParserATNSimulator(this, *${loweredGrammarName}ParserStaticData->atn, ` +
-            `${loweredGrammarName}ParserStaticData->decisionToDFA, ${loweredGrammarName}ParserStaticData->` +
+        result.push(`  _interpreter = new atn::ParserATNSimulator(this, *${loweredGrammarName}ParserStaticData.atn, ` +
+            `${loweredGrammarName}ParserStaticData.decisionToDFA, ${loweredGrammarName}ParserStaticData.` +
             `sharedContextCache, options);`);
         result.push(`}`, "");
         result.push(`${recognizerName}::~${recognizerName}() {`);
         result.push(`  delete _interpreter;`);
         result.push(`}`, "");
         result.push(`const atn::ATN& ${recognizerName}::getATN() const {`);
-        result.push(`  return *${loweredGrammarName}ParserStaticData->atn;`);
+        result.push(`  return *${loweredGrammarName}ParserStaticData.atn;`);
         result.push(`}`, "");
         result.push(`string ${recognizerName}::getGrammarFileName() const {`);
         result.push(`  return "${parser.grammarFileName}";`);
         result.push(`}`, "");
         result.push(`const List<string>& ${recognizerName}::getRuleNames() const {`);
-        result.push(`  return ${loweredGrammarName}ParserStaticData->ruleNames;`);
+        result.push(`  return ${loweredGrammarName}ParserStaticData.ruleNames;`);
         result.push(`}`, "");
         result.push(`const dfa::Vocabulary& ${recognizerName}::getVocabulary() const {`);
-        result.push(`  return ${loweredGrammarName}ParserStaticData->vocabulary;`);
+        result.push(`  return ${loweredGrammarName}ParserStaticData.vocabulary;`);
         result.push(`}`, "");
         result.push(`atn::SerializedATNView ${recognizerName}::getSerializedATN() const {`);
-        result.push(`  return ${loweredGrammarName}ParserStaticData->serializedATN;`);
+        result.push(`  return ${loweredGrammarName}ParserStaticData.serializedATN;`);
         result.push(`}`, "");
 
         result.push(...this.renderAction(namedActions.get("definitions")), "");
         result.push(...this.renderRuleFunctions(parserFile.namedActions, parser.funcs));
 
         if (parser.sempredFuncs.size > 0) {
-            result.push(`bool ${recognizerName}::sempred(RuleContext *context, size_t ruleIndex, ` +
-                `size_t predicateIndex) {`);
+            result.push(`bool ${recognizerName}::sempred(RuleContext *context, int ruleIndex, ` +
+                `int predicateIndex) {`);
             result.push(`  switch (ruleIndex) {`);
 
             parser.sempredFuncs.values().forEach((f) => {
@@ -2197,7 +2197,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const superClass = parser.superClass ? this.renderActionChunks([parser.superClass]) : "Parser";
 
         result.push(...this.renderAction(namedActions.get("context")), ``);
-        result.push(`class ${this.defines?.exportMacro ?? ""} ${parser.name} : public ${superClass} {`);
+        result.push(`public partial class ${parser.name} : ${superClass} {`);
         result.push(`public:`);
 
         if (parser.tokens.size > 0) {
@@ -2248,13 +2248,13 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(...this.renderRuleFunctions(namedActions, parser.funcs));
 
         if (parser.sempredFuncs.size > 0) {
-            result.push(`  bool sempred(RuleContext *_localctx, size_t ruleIndex, size_t predicateIndex) ` +
+            result.push(`  bool sempred(RuleContext *_localctx, int ruleIndex, int predicateIndex) ` +
                 `override;`);
             result.push(``);
 
             if (parser.sempredFuncs.size > 0) {
                 parser.sempredFuncs.forEach((f) => {
-                    result.push(`  bool ${f.name}Sempred(${f.ctxType} *_localctx, size_t predicateIndex);`);
+                    result.push(`  bool ${f.name}Sempred(${f.ctxType} *_localctx, int predicateIndex);`);
                 });
             }
         }
@@ -2296,7 +2296,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`      : ruleNames(std::move(ruleNames)), channelNames(std::move(channelNames)),`);
         result.push(`        modeNames(std::move(modeNames)), literalNames(std::move(literalNames)),`);
         result.push(`        symbolicNames(std::move(symbolicNames)),`);
-        result.push(`        vocabulary(this->literalNames, this->symbolicNames) {}`);
+        result.push(`        vocabulary(this.literalNames, this.symbolicNames) {}`);
         result.push(``);
         result.push(`  ${lexerName}StaticData(const ${lexerName}StaticData&) = delete;`);
         result.push(`  ${lexerName}StaticData(${lexerName}StaticData&&) = delete;`);
@@ -2320,15 +2320,15 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`#if ANTLR4_USE_THREAD_LOCAL_CACHE`);
         result.push(`static thread_local`);
         result.push(`#endif`);
-        result.push(`std::unique_ptr<${lexerName}StaticData> ${loweredGrammarName}LexerStaticData = nullptr;`);
+        result.push(`std::unique_ptr<${lexerName}StaticData> ${loweredGrammarName}LexerStaticData = null;`);
         result.push(``);
         result.push(`void ${loweredGrammarName}LexerInitialize() {`);
         result.push(`#if ANTLR4_USE_THREAD_LOCAL_CACHE`);
-        result.push(`  if (${loweredGrammarName}LexerStaticData != nullptr) {`);
+        result.push(`  if (${loweredGrammarName}LexerStaticData != null) {`);
         result.push(`    return;`);
         result.push(`  }`);
         result.push(`#else`);
-        result.push(`  assert(${loweredGrammarName}LexerStaticData == nullptr);`);
+        result.push(`  assert(${loweredGrammarName}LexerStaticData == null);`);
         result.push(`#endif`);
         result.push(`  auto staticData = std::make_unique<${lexerName}StaticData>(`);
         result.push(`    List<string>{`);
@@ -2367,9 +2367,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(``);
         result.push(`${lexerName}::${lexerName}(CharStream *input) : ${baseClass}(input) {`);
         result.push(`  ${lexerName}::initialize();`);
-        result.push(`  _interpreter = new atn::LexerATNSimulator(this, *${loweredGrammarName}LexerStaticData->atn, ` +
-            `${loweredGrammarName}LexerStaticData->decisionToDFA, ` +
-            `${loweredGrammarName}LexerStaticData->sharedContextCache);`);
+        result.push(`  _interpreter = new atn::LexerATNSimulator(this, *${loweredGrammarName}LexerStaticData.atn, ` +
+            `${loweredGrammarName}LexerStaticData.decisionToDFA, ` +
+            `${loweredGrammarName}LexerStaticData.sharedContextCache);`);
         result.push(`}`, "");
         result.push(`${lexerName}::~${lexerName}() {`);
         result.push(`  delete _interpreter;`);
@@ -2378,29 +2378,29 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`  return "${lexer.grammarFileName}";`);
         result.push(`}`, "");
         result.push(`const List<string>& ${lexerName}::getRuleNames() const {`);
-        result.push(`  return ${loweredGrammarName}LexerStaticData->ruleNames;`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData.ruleNames;`);
         result.push(`}`, "");
         result.push(`const List<string>& ${lexerName}::getChannelNames() const {`);
-        result.push(`  return ${loweredGrammarName}LexerStaticData->channelNames;`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData.channelNames;`);
         result.push(`}`, "");
         result.push(`const List<string>& ${lexerName}::getModeNames() const {`);
-        result.push(`  return ${loweredGrammarName}LexerStaticData->modeNames;`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData.modeNames;`);
         result.push(`}`, "");
         result.push(`const dfa::Vocabulary& ${lexerName}::getVocabulary() const {`);
-        result.push(`  return ${loweredGrammarName}LexerStaticData->vocabulary;`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData.vocabulary;`);
         result.push(`}`, "");
         result.push(`atn::SerializedATNView ${lexerName}::getSerializedATN() const {`);
-        result.push(`  return ${loweredGrammarName}LexerStaticData->serializedATN;`);
+        result.push(`  return ${loweredGrammarName}LexerStaticData.serializedATN;`);
         result.push(`}`, "");
         result.push(`const atn::ATN& ${lexerName}::getATN() const {`);
-        result.push(`  return *${loweredGrammarName}LexerStaticData->atn;`);
+        result.push(`  return *${loweredGrammarName}LexerStaticData.atn;`);
         result.push(`}`);
 
         result.push(...this.renderAction(namedActions.get("definitions")));
 
         if (lexer.actionFuncs.size > 0) {
             result.push(``, ``);
-            result.push(`void ${lexer.name}::action(RuleContext *context, size_t ruleIndex, size_t actionIndex) {`);
+            result.push(`void ${lexer.name}::action(RuleContext *context, int ruleIndex, int actionIndex) {`);
             result.push(`    switch (ruleIndex) {`);
 
             lexer.actionFuncs.forEach((f) => {
@@ -2417,7 +2417,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         if (lexer.sempredFuncs.size > 0) {
             result.push(``);
-            result.push(`bool ${lexer.name}::sempred(RuleContext *context, size_t ruleIndex, size_t predicateIndex) {`);
+            result.push(`bool ${lexer.name}::sempred(RuleContext *context, int ruleIndex, int predicateIndex) {`);
             result.push(`    switch (ruleIndex) {`);
 
             lexer.sempredFuncs.forEach((f) => {
@@ -2466,7 +2466,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = this.renderAction(namedActions.get("context"));
 
         const baseClass = lexer.superClass ? this.renderActionChunks([lexer.superClass]) : "Lexer";
-        result.push(`class ${this.defines?.exportMacro ?? ""} ${lexer.name} : public ${baseClass} {`);
+        result.push(`public partial class ${lexer.name} : ${baseClass} {`);
         result.push(`public:`);
 
         const block: Lines = [];
@@ -2522,12 +2522,12 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(``);
 
         if (lexer.actionFuncs.size > 0) {
-            result.push(`  void action(RuleContext *context, size_t ruleIndex, size_t actionIndex) override;`);
+            result.push(`  void action(RuleContext *context, int ruleIndex, int actionIndex) override;`);
             result.push(``);
         }
 
         if (lexer.sempredFuncs.size > 0) {
-            result.push(`  bool sempred(RuleContext *_localctx, size_t ruleIndex, size_t predicateIndex) ` +
+            result.push(`  bool sempred(RuleContext *_localctx, int ruleIndex, int predicateIndex) ` +
                 `override;`, ``);
         }
 
@@ -2545,7 +2545,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         if (lexer.actionFuncs.size > 0) {
             lexer.actionFuncs.forEach((f) => {
-                result.push(`  void ${f.name}Action(RuleContext *context, size_t actionIndex);`);
+                result.push(`  void ${f.name}Action(RuleContext *context, int actionIndex);`);
             });
         }
 
@@ -2554,7 +2554,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         if (lexer.sempredFuncs.size > 0) {
             lexer.sempredFuncs.forEach((f) => {
-                result.push(`  bool ${f.name}Sempred(RuleContext *_localctx, size_t predicateIndex);`);
+                result.push(`  bool ${f.name}Sempred(RuleContext *_localctx, int predicateIndex);`);
             });
         }
 
@@ -2607,7 +2607,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             for (const l of m.labels) {
                 labels += `${this.renderLabelref(l)} = `;
             }
-            result.push(`${labels}_input->LT(1);`);
+            result.push(`${labels}_input.LT(1);`);
         }
 
         if (m.capture instanceof OutputModelObjects.CaptureNextTokenType) {
@@ -2629,10 +2629,10 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
                 labels += `${this.renderLabelref(l)} = `;
             }
         }
-        result.push(`    ${labels}_errHandler->recoverInline(this);`);
+        result.push(`    ${labels}_errHandler.recoverInline(this);`);
 
         result.push(`}`, `else {`);
-        result.push(`  _errHandler->reportMatch(this);`);
+        result.push(`  _errHandler.reportMatch(this);`);
         result.push(`  consume();`);
         result.push(`}`);
 
