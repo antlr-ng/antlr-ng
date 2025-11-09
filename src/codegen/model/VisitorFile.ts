@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { IOutputModelFactory } from "../IOutputModelFactory.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { OutputFile } from "./OutputFile.js";
 
@@ -29,14 +29,13 @@ export class VisitorFile extends OutputFile {
     public constructor(factory: IOutputModelFactory, fileName: string) {
         super(factory, fileName);
 
-        const g = factory.g;
-        this.namedActions = this.buildNamedActions(g, (ast) => {
+        this.namedActions = this.buildNamedActions((ast) => {
             return ast.getScope() === null;
         });
 
-        this.parserName = g.getRecognizerName();
-        this.grammarName = g.name;
-        for (const r of g.rules.values()) {
+        this.parserName = factory.grammar.getRecognizerName();
+        this.grammarName = factory.grammar.name;
+        for (const r of factory.grammar.rules.values()) {
             const labels = r.getAltLabels();
             if (labels !== null) {
                 for (const [key] of labels) {
@@ -49,13 +48,13 @@ export class VisitorFile extends OutputFile {
             }
         }
 
-        const ast = g.namedActions.get("header");
+        const ast = factory.grammar.namedActions.get("header");
         if (ast?.getScope() == null) {
             this.header = new Action(factory, ast);
         }
 
-        this.accessLevel = g.getOptionString("accessLevel");
-        this.exportMacro = g.getOptionString("exportMacro");
+        this.accessLevel = factory.grammar.getOptionString("accessLevel");
+        this.exportMacro = factory.grammar.getOptionString("exportMacro");
     }
 
 }

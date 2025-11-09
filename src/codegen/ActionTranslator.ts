@@ -77,20 +77,16 @@ export class ActionTranslator implements IActionSplitterListener {
 
     private readonly gen: CodeGenerator;
     private readonly targetGenerator: ITargetGenerator;
-    private readonly node: ActionAST;
     private rf?: RuleFunction;
     private readonly chunks = new Array<ActionChunk>();
-    private readonly factory: IOutputModelFactory;
     private nodeContext: StructDecl;
 
-    public constructor(factory: IOutputModelFactory, node: ActionAST) {
-        this.factory = factory;
-        this.node = node;
+    public constructor(private readonly factory: IOutputModelFactory, private readonly node: ActionAST) {
         this.gen = factory.getGenerator()!;
         this.targetGenerator = this.gen.targetGenerator;
     }
 
-    public static translateAction(factory: IOutputModelFactory, rf: RuleFunction | null,
+    public static translateAction(factory: IOutputModelFactory, rf: RuleFunction | undefined,
         tokenWithinAction: Token | null, node: ActionAST): ActionChunk[] {
         let action = tokenWithinAction!.text!;
         if (action.startsWith("{")) {
@@ -104,12 +100,12 @@ export class ActionTranslator implements IActionSplitterListener {
         return ActionTranslator.translateActionChunk(factory, rf, action, node, tokenWithinAction!);
     }
 
-    public static translateActionChunk(factory: IOutputModelFactory, rf: RuleFunction | null, action: string,
-        node: ActionAST, refToken?: Token): ActionChunk[] {
+    public static translateActionChunk(factory: IOutputModelFactory, rf: RuleFunction | undefined,
+        action: string, node: ActionAST, refToken?: Token): ActionChunk[] {
         const translator = new ActionTranslator(factory, node);
         translator.rf = rf ?? undefined;
 
-        factory.g.tool.logInfo({ component: "action-translator", msg: "translate " + action });
+        factory.grammar.tool.logInfo({ component: "action-translator", msg: "translate " + action });
         const altLabel = node.getAltLabel();
         if (rf) {
             translator.nodeContext = rf.ruleCtx;
@@ -128,7 +124,7 @@ export class ActionTranslator implements IActionSplitterListener {
     }
 
     public attr(_expr: string, x: Token): void {
-        this.gen.g?.tool.logInfo({ component: "action-translator", msg: "attr " + x.text });
+        this.factory.grammar.tool.logInfo({ component: "action-translator", msg: "attr " + x.text });
         const a = this.node.resolver.resolveToAttribute(x.text!, this.node);
         const name = x.text!;
         const escapedName = this.targetGenerator.escapeIfNeeded(name);
@@ -188,7 +184,7 @@ export class ActionTranslator implements IActionSplitterListener {
             return;
         }
 
-        const r = this.factory.g.getRule(name);
+        const r = this.factory.grammar.getRule(name);
         if (r !== null) {
             const ruleLabel = this.getRuleLabel(name);
 
@@ -198,7 +194,7 @@ export class ActionTranslator implements IActionSplitterListener {
     }
 
     public qualifiedAttr(expr: string, x: Token, y: Token): void {
-        this.gen.g?.tool.logInfo({ component: "action-translator", msg: "q-attr " + x.text! + "." + y.text! });
+        this.factory.grammar.tool.logInfo({ component: "action-translator", msg: "q-attr " + x.text! + "." + y.text! });
         if (this.node.resolver.resolveToAttribute(x.text!, this.node) !== null) {
             // Must be a member access to a predefined attribute like $ctx.foo.
             this.attr(expr, x);
@@ -210,8 +206,8 @@ export class ActionTranslator implements IActionSplitterListener {
         const a = this.node.resolver.resolveToAttribute(x.text!, y.text!, this.node);
         if (a === null) {
             // Added in response to https://github.com/antlr/antlr4/issues/1211.
-            this.gen.g!.tool.errorManager.grammarError(IssueCode.UnknownSimpleAttribute,
-                this.gen.g!.fileName, x, x.text, "rule");
+            this.factory.grammar.tool.errorManager.grammarError(IssueCode.UnknownSimpleAttribute,
+                this.factory.grammar.fileName, x, x.text, "rule");
 
             return;
         }
@@ -246,26 +242,34 @@ export class ActionTranslator implements IActionSplitterListener {
     }
 
     public setAttr(_expr: string, x: Token, rhs: Token): void {
-        this.gen.g?.tool.logInfo({ component: "action-translator", msg: "setAttr " + x.text + " " + rhs.text });
-        const rhsChunks = ActionTranslator.translateActionChunk(this.factory, this.rf!, rhs.text!, this.node, x);
+        this.factory.grammar.tool.logInfo({
+            component: "action-translator",
+            msg: "setAttr " + x.text + " " + rhs.text
+        });
+        const rhsChunks = ActionTranslator.translateActionChunk(this.factory, this.rf, rhs.text!, this.node, x);
         const s = new SetAttr(this.nodeContext, x.text!, this.targetGenerator.escapeIfNeeded(x.text!), rhsChunks);
         this.chunks.push(s);
     }
 
     public nonLocalAttr(_expr: string, x: Token, y: Token): void {
-        this.gen.g?.tool.logInfo({ component: "action-translator", msg: "nonLocalAttr " + x.text! + "::" + y.text! });
-        const r = this.factory.g.getRule(x.text!);
+        this.factory.grammar.tool.logInfo({
+            component: "action-translator",
+            msg: "nonLocalAttr " + x.text! + "::" + y.text!
+        });
+
+        const r = this.factory.grammar.getRule(x.text!);
         this.chunks.push(new NonLocalAttrRef(this.nodeContext, x.text!, y.text!,
             this.targetGenerator.escapeIfNeeded(y.text!), r!.index));
     }
 
     public setNonLocalAttr(_expr: string, x: Token, y: Token, rhs: string): void {
-        this.gen.g?.tool.logInfo({
+        this.factory.grammar.tool.logInfo({
             component: "action-translator",
             msg: "setNonLocalAttr " + x.text! + "::" + y.text! + "=" + rhs
         });
-        const r = this.factory.g.getRule(x.text!);
-        const rhsChunks = ActionTranslator.translateActionChunk(this.factory, this.rf!, rhs, this.node);
+
+        const r = this.factory.grammar.getRule(x.text!);
+        const rhsChunks = ActionTranslator.translateActionChunk(this.factory, this.rf, rhs, this.node);
         const s = new SetNonLocalAttr(this.nodeContext, x.text!, y.text!, this.targetGenerator.escapeIfNeeded(y.text!),
             r!.index, rhsChunks);
         this.chunks.push(s);

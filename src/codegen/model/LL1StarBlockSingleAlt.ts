@@ -5,9 +5,9 @@
 
 import { StarLoopEntryState } from "antlr4ng";
 
-import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { IOutputModelFactory } from "../IOutputModelFactory.js";
-import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
+import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
+import type { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { LL1Loop } from "./LL1Loop.js";
 
 export class LL1StarBlockSingleAlt extends LL1Loop {
@@ -18,7 +18,7 @@ export class LL1StarBlockSingleAlt extends LL1Loop {
         this.loopBackStateNumber = star.loopBackState.stateNumber;
         this.decision = star.decision;
 
-        const altLookSets = factory.g.decisionLookahead[this.decision];
+        const altLookSets = factory.grammar.decisionLookahead[this.decision];
         const enterLook = altLookSets[0];
         this.loopExpr = this.addCodeForLoopLookaheadTempVar(enterLook);
     }

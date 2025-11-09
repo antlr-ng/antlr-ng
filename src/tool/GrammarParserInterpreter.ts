@@ -19,6 +19,13 @@ import { LeftRecursiveRule } from "./LeftRecursiveRule.js";
  * A heavier weight {@link ParserInterpreter} that creates parse trees that track alternative numbers for subtree roots.
  */
 export class GrammarParserInterpreter extends ParserInterpreter implements IGrammarParserInterpreter {
+    /**
+     * The grammar associated with this interpreter. Unlike the {@link ParserInterpreter} from the standard
+     * distribution, this can reference Grammar, which is in the tools area not purely runtime.
+     */
+    protected readonly g: IGrammar;
+
+    protected decisionStatesThatSetOuterAltNumInContext: BitSet;
 
     /**
      * We want to stop and track the first error but we cannot bail out like {@link BailErrorStrategy} as consume()
@@ -55,14 +62,6 @@ export class GrammarParserInterpreter extends ParserInterpreter implements IGram
             // Don't consume anything - let it fail later.
         }
     };
-
-    /**
-     * The grammar associated with this interpreter. Unlike the {@link ParserInterpreter} from the standard
-     * distribution, this can reference Grammar, which is in the tools area not purely runtime.
-     */
-    protected readonly g: IGrammar;
-
-    protected decisionStatesThatSetOuterAltNumInContext: BitSet;
 
     /**
      * Cache {@link LeftRecursiveRule.getPrimaryAlts()} and {@link LeftRecursiveRule.getRecursiveOpAlts()} for states

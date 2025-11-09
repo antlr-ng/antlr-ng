@@ -5,11 +5,11 @@
 
 import { DecisionState } from "antlr4ng";
 
-import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { IOutputModelFactory } from "../IOutputModelFactory.js";
-import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
+import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
+import type { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { LL1Choice } from "./LL1Choice.js";
-import { SrcOp } from "./SrcOp.js";
+import type { SrcOp } from "./SrcOp.js";
 
 /** `(A B C)?` */
 export class LL1OptionalBlockSingleAlt extends LL1Choice {
@@ -23,12 +23,11 @@ export class LL1OptionalBlockSingleAlt extends LL1Choice {
         this.decision = (blkAST.atnState as DecisionState).decision;
 
         // Lookahead for each alt 1..n.
-        const altLookSets = factory.g.decisionLookahead[this.decision];
-        this.altLook = this.getAltLookaheadAsStringLists(altLookSets);
+        const altLookSets = factory.grammar.decisionLookahead[this.decision];
+        this.altLook = this.getAltLookaheadAsStringLists(altLookSets, factory.grammar);
 
         const look = altLookSets[0];
         const followLook = altLookSets[1];
-        this.error = this.getThrowNoViableAlt(factory, blkAST);
 
         this.expr = this.addCodeForLookaheadTempVar(look);
         this.followExpr = factory.getLL1Test(followLook, blkAST)!;

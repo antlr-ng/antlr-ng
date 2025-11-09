@@ -9,15 +9,13 @@ import { SrcOp } from "./SrcOp.js";
 
 export class ThrowRecognitionException extends SrcOp {
     public decision: number;
-    public grammarFile: string;
     public grammarLine: number;
     public grammarCharPosInLine: number;
 
-    public constructor(factory: IOutputModelFactory, ast: GrammarAST) {
+    public constructor(factory: IOutputModelFactory, ast: GrammarAST, public grammarFile: string) {
         super(factory, ast);
 
         this.grammarLine = ast.getLine();
         this.grammarLine = ast.getCharPositionInLine();
-        this.grammarFile = factory.g.fileName;
     }
 }

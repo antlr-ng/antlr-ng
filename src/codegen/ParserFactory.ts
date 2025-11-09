@@ -8,25 +8,25 @@ import { DecisionState, IntervalSet, PlusLoopbackState, StarLoopEntryState } fro
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
 import { disjoint } from "../support/helpers.js";
-import { Alternative } from "../tool/Alternative.js";
+import type { Alternative } from "../tool/Alternative.js";
 import type { Grammar } from "../tool/Grammar.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
-import { Rule } from "../tool/Rule.js";
-import { ActionAST } from "../tool/ast/ActionAST.js";
-import { BlockAST } from "../tool/ast/BlockAST.js";
-import { GrammarAST } from "../tool/ast/GrammarAST.js";
+import type { Rule } from "../tool/Rule.js";
+import type { ActionAST } from "../tool/ast/ActionAST.js";
+import type { BlockAST } from "../tool/ast/BlockAST.js";
+import type { GrammarAST } from "../tool/ast/GrammarAST.js";
 import type { IQuantifierAST } from "../tool/ast/IQuantifierAST.js";
-import { TerminalAST } from "../tool/ast/TerminalAST.js";
-import { CodeGenerator } from "./CodeGenerator.js";
+import type { TerminalAST } from "../tool/ast/TerminalAST.js";
+import type { CodeGenerator } from "./CodeGenerator.js";
 import type { IOutputModelFactory } from "./IOutputModelFactory.js";
 import type { OutputModelController } from "./OutputModelController.js";
 import { Action } from "./model/Action.js";
 import { AddToLabelList } from "./model/AddToLabelList.js";
 import { AltBlock } from "./model/AltBlock.js";
-import { Choice } from "./model/Choice.js";
+import type { Choice } from "./model/Choice.js";
 import { CodeBlockForAlt } from "./model/CodeBlockForAlt.js";
 import { CodeBlockForOuterMostAlt } from "./model/CodeBlockForOuterMostAlt.js";
-import { ILabeledOp } from "./model/ILabeledOp.js";
+import type { ILabeledOp } from "./model/ILabeledOp.js";
 import { InvokeRule } from "./model/InvokeRule.js";
 import { LL1AltBlock } from "./model/LL1AltBlock.js";
 import { LL1OptionalBlock } from "./model/LL1OptionalBlock.js";
@@ -45,26 +45,20 @@ import { ParserFile } from "./model/ParserFile.js";
 import { PlusBlock } from "./model/PlusBlock.js";
 import { RuleFunction } from "./model/RuleFunction.js";
 import { SemPred } from "./model/SemPred.js";
-import { SrcOp } from "./model/SrcOp.js";
+import type { SrcOp } from "./model/SrcOp.js";
 import { StarBlock } from "./model/StarBlock.js";
 import { TestSetInline } from "./model/TestSetInline.js";
 import { Wildcard } from "./model/Wildcard.js";
 import type { CodeBlock } from "./model/decl/CodeBlock.js";
-import { Decl } from "./model/decl/Decl.js";
+import type { Decl } from "./model/decl/Decl.js";
 import { RuleContextDecl } from "./model/decl/RuleContextDecl.js";
 import { TokenDecl } from "./model/decl/TokenDecl.js";
 import { TokenListDecl } from "./model/decl/TokenListDecl.js";
 
 export class ParserFactory implements IOutputModelFactory {
-    public readonly g: Grammar;
     public controller: OutputModelController;
 
-    private readonly gen: CodeGenerator;
-
-    public constructor(gen: CodeGenerator, private forceAtn?: boolean) {
-        this.gen = gen;
-        this.g = gen.g!;
-    }
+    public constructor(private gen: CodeGenerator, public grammar: Grammar, private forceAtn?: boolean) { }
 
     public parserFile(fileName: string): ParserFile {
         return new ParserFile(this, fileName);
@@ -78,20 +72,18 @@ export class ParserFactory implements IOutputModelFactory {
         return undefined;
     }
 
-    public getGrammar(): Grammar | undefined {
-        return this.g;
-    }
-
     public lexer(file: LexerFile): Lexer | undefined {
         return undefined;
     }
 
     public rule(r: Rule): RuleFunction {
         if (r instanceof LeftRecursiveRule) {
-            return new LeftRecursiveRuleFunction(this, r);
+            return new LeftRecursiveRuleFunction(this, r, this.gen.generationOptions.generateListener,
+                this.gen.generationOptions.generateVisitor);
         }
 
-        return new RuleFunction(this, r);
+        return new RuleFunction(this, r, this.gen.generationOptions.generateListener,
+            this.gen.generationOptions.generateVisitor);
     }
 
     public epsilon(alt: Alternative, outerMost: boolean): CodeBlockForAlt {
@@ -233,7 +225,7 @@ export class ParserFactory implements IOutputModelFactory {
     public getChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[], labelAST: GrammarAST | null): Choice {
         const decision = (blkAST.atnState as DecisionState).decision;
         let c: Choice;
-        if (!this.forceAtn && disjoint(this.g.decisionLookahead[decision])) {
+        if (!this.forceAtn && disjoint(this.grammar.decisionLookahead[decision])) {
             c = this.getLL1ChoiceBlock(blkAST, alts);
         } else {
             c = this.getComplexChoiceBlock(blkAST, alts);
@@ -267,7 +259,7 @@ export class ParserFactory implements IOutputModelFactory {
                 decision = (ebnfRoot.atnState as DecisionState).decision;
             }
 
-            if (disjoint(this.g.decisionLookahead[decision])) {
+            if (disjoint(this.grammar.decisionLookahead[decision])) {
                 return this.getLL1EBNFBlock(ebnfRoot, alts);
             }
         }
@@ -399,7 +391,7 @@ export class ParserFactory implements IOutputModelFactory {
             d = this.getTokenLabelDecl(implLabel);
             (d as TokenDecl).isImplicit = true;
         } else if (ast.getType() === ANTLRv4Parser.RULE_REF) { // A rule reference?
-            const r = this.g.getRule(ast.getText())!;
+            const r = this.grammar.getRule(ast.getText())!;
             const implLabel = this.gen.targetGenerator.renderImplicitRuleLabel(ast.getText());
             const ctxName = generator.getRuleFunctionContextStructName(r);
             d = new RuleContextDecl(this, implLabel, ctxName);

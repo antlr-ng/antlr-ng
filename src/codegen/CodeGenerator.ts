@@ -3,17 +3,20 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { Token } from "antlr4ng";
+import { ATNSerializer, Token } from "antlr4ng";
 
 import { Constants } from "../Constants.js";
-import { Tool } from "../Tool.js";
 import { Grammar } from "../tool/Grammar.js";
 import { IssueCode } from "../tool/Issues.js";
 import { OutputModelController } from "./OutputModelController.js";
 import { ParserFactory } from "./ParserFactory.js";
 
 import type { IGenerationOptions } from "../config/config.js";
+import { dirname } from "../support/fs-helpers.js";
+import { convertArrayToString } from "../support/helpers.js";
 import { fileSystem } from "../tool-parameters.js";
+import { DOTGenerator } from "../tool/DOTGenerator.js";
+import { LexerGrammar } from "../tool/LexerGrammar.js";
 import type { ITargetGenerator } from "./ITargetGenerator.js";
 
 export const targetLanguages = [
@@ -22,19 +25,14 @@ export const targetLanguages = [
 
 export type SupportedLanguage = typeof targetLanguages[number];
 
-/**  General controller for code gen. Can instantiate sub generator(s). */
+/**  General controller for code gen. */
 export class CodeGenerator {
-    public readonly g?: Grammar;
     public readonly language: SupportedLanguage;
 
-    private readonly tool?: Tool;
+    public constructor(private g: Grammar, public readonly targetGenerator: ITargetGenerator,
+        public readonly generationOptions: IGenerationOptions) {
 
-    public constructor(grammarOrLanguage: Grammar | SupportedLanguage,
-        public readonly targetGenerator: ITargetGenerator) {
-        this.g = grammarOrLanguage instanceof Grammar ? grammarOrLanguage : undefined;
-        this.tool = this.g?.tool;
-
-        this.language = (grammarOrLanguage instanceof Grammar) ? this.g!.getLanguage() : grammarOrLanguage;
+        this.language = this.g.getLanguage();
     }
 
     public get forJava(): boolean {
@@ -95,6 +93,79 @@ export class CodeGenerator {
         return this.targetGenerator.renderBaseVisitorFile(model, declaration, options);
     }
 
+    public generateInterpreterData(g: Grammar): void {
+        let content = "";
+
+        content += "token literal names:\n";
+        let names = g.getTokenLiteralNames();
+        content += names.reduce((previousValue, currentValue) => {
+            return previousValue + (currentValue ?? "null") + "\n";
+        }, "") + "\n";
+
+        content += "token symbolic names:\n";
+        names = g.getTokenSymbolicNames();
+        content += names.reduce((previousValue, currentValue) => {
+            return previousValue + (currentValue ?? "null") + "\n";
+        }, "") + "\n";
+
+        content += "rule names:\n";
+        names = g.getRuleNames();
+        content += names.reduce((previousValue, currentValue) => {
+            return previousValue + (currentValue ?? "null") + "\n";
+        }, "") + "\n";
+
+        if (g.isLexer()) {
+            content += "channel names:\n";
+            content += "DEFAULT_TOKEN_CHANNEL\n";
+            content += "HIDDEN\n";
+            content += g.channelValueToNameList.join("\n") + "\n";
+            content += "mode names:\n";
+
+            if (this.g instanceof LexerGrammar) {
+                content += [...this.g.modes.keys()].join("\n") + "\n";
+            }
+        }
+        content += "\n";
+
+        const serializedATN = ATNSerializer.getSerialized(g.atn!);
+        content += "atn:\n";
+        content += convertArrayToString(serializedATN);
+
+        try {
+            const fileName = this.getOutputFile(g, g.name + ".interp");
+            fileSystem.writeFileSync(fileName, content);
+        } catch (ioe) {
+            this.g.tool.errorManager.toolError(IssueCode.CannotWriteFile, ioe as Error);
+        }
+    }
+
+    /**
+     * Generates .dot files for all rules in the grammar and its imports.
+     *
+     * @param g The grammar to generate the .dot files for.
+     */
+    public generateATNDotFiles(g: Grammar): void {
+        const dotGenerator = new DOTGenerator(g);
+        const grammars = new Array<Grammar>();
+        grammars.push(g);
+        const imported = g.getAllImportedGrammars();
+        grammars.push(...imported);
+
+        for (const ig of grammars) {
+            for (const r of ig.rules.values()) {
+                try {
+                    const dot = dotGenerator.getDOTFromState(g.atn!.ruleToStartState[r.index]!, g.isLexer());
+                    const name = r.g.name + "." + r.name;
+                    const fileName = this.getOutputFile(g, name + ".dot");
+                    fileSystem.writeFileSync(fileName, dot);
+                } catch (ioe) {
+                    this.g.tool.errorManager.toolError(IssueCode.CannotWriteFile, ioe as Error);
+                    throw ioe;
+                }
+            }
+        }
+    }
+
     public writeRecognizer(generatedText: string, header: boolean): void {
         this.writeFile(generatedText, this.getRecognizerFileName(header));
     }
@@ -128,16 +199,12 @@ export class CodeGenerator {
     }
 
     public writeFile(code: string, fileName: string): void {
-        if (this.tool === undefined) {
-            return;
-        }
-
         try {
-            fileName = this.tool.getOutputFile(this.g!, fileName);
+            fileName = this.getOutputFile(this.g, fileName);
             fileSystem.writeFileSync(fileName, code, { encoding: "utf8" });
         } catch (cause) {
             if (cause instanceof Error) {
-                this.g!.tool.errorManager.toolError(IssueCode.CannotWriteFile, cause, fileName);
+                this.g.tool.errorManager.toolError(IssueCode.CannotWriteFile, cause, fileName);
             } else {
                 throw cause;
             }
@@ -145,23 +212,23 @@ export class CodeGenerator {
     }
 
     public getRecognizerFileName(declarationFile?: boolean): string {
-        return this.targetGenerator.getRecognizerFileName(declarationFile ?? false, this.g!.getRecognizerName());
+        return this.targetGenerator.getRecognizerFileName(declarationFile ?? false, this.g.getRecognizerName());
     }
 
     public getListenerFileName(declarationFile?: boolean): string {
-        return this.targetGenerator.getListenerFileName(declarationFile ?? false, this.g!.name);
+        return this.targetGenerator.getListenerFileName(declarationFile ?? false, this.g.name);
     }
 
     public getVisitorFileName(declarationFile?: boolean): string {
-        return this.targetGenerator.getVisitorFileName(declarationFile ?? false, this.g!.name);
+        return this.targetGenerator.getVisitorFileName(declarationFile ?? false, this.g.name);
     }
 
     public getBaseListenerFileName(declarationFile?: boolean): string {
-        return this.targetGenerator.getBaseListenerFileName(declarationFile ?? false, this.g!.name);
+        return this.targetGenerator.getBaseListenerFileName(declarationFile ?? false, this.g.name);
     }
 
     public getBaseVisitorFileName(declarationFile?: boolean): string {
-        return this.targetGenerator.getBaseVisitorFileName(declarationFile ?? false, this.g!.name);
+        return this.targetGenerator.getBaseVisitorFileName(declarationFile ?? false, this.g.name);
     }
 
     /**
@@ -170,7 +237,21 @@ export class CodeGenerator {
      * @returns undefined if no ".tokens" file should be generated.
      */
     public getVocabFileName(): string | undefined {
-        return this.g!.name + Constants.VocabFileExtension;
+        return this.g.name + Constants.VocabFileExtension;
+    }
+
+    /**
+     * @returns the location where antlr-ng will generate output files for a given grammar.
+     * This is either the output directory specified in the configuration or the directory of the input file.
+     *
+     * @param fileNameWithPath path to input source.
+     */
+    public getOutputDirectory(fileNameWithPath: string): string {
+        if (this.generationOptions.outputDirectory) {
+            return this.generationOptions.outputDirectory;
+        }
+
+        return dirname(fileNameWithPath);
     }
 
     /**
@@ -189,27 +270,27 @@ export class CodeGenerator {
 
         // Determine the longest token name length, so we can align the output.
         let longestNameLength = 0;
-        for (const key of this.g!.tokenNameToTypeMap.keys()) {
+        for (const key of this.g.tokenNameToTypeMap.keys()) {
             if (key.length > longestNameLength) {
                 longestNameLength = key.length;
             }
         }
 
-        for (const key of this.g!.stringLiteralToTypeMap.keys()) {
+        for (const key of this.g.stringLiteralToTypeMap.keys()) {
             if (key.length > longestNameLength) {
                 longestNameLength = key.length;
             }
         }
 
         // Make constants for the token names.
-        for (const [key, value] of this.g!.tokenNameToTypeMap) {
+        for (const [key, value] of this.g.tokenNameToTypeMap) {
             if (value >= Token.MIN_USER_TOKEN_TYPE) {
                 lines.push(`${key.padEnd(longestNameLength, " ")} = ${value}`);
             }
         }
 
         // Ditto for the strings.
-        for (const [key, value] of this.g!.stringLiteralToTypeMap) {
+        for (const [key, value] of this.g.stringLiteralToTypeMap) {
             if (value >= Token.MIN_USER_TOKEN_TYPE) {
                 lines.push(`${key.padEnd(longestNameLength, " ")} = ${value}`);
             }
@@ -218,21 +299,42 @@ export class CodeGenerator {
         return lines.join("\n");
     }
 
+    /**
+     * This method is used by all code generators that create output files. If the specified outputDir is not present
+     * it will be created (recursively).
+     *
+     * If the output path is relative, it will be resolved relative to the current working directory.
+     *
+     * If no output dir is specified, then just write to the directory where the grammar file was found.
+     *
+     * @param g The grammar for which we are generating a file.
+     * @param fileName The name of the file to generate.
+     *
+     * @returns The full path to the output file.
+     */
+    private getOutputFile(g: Grammar, fileName: string): string {
+        const outputDir = this.getOutputDirectory(g.fileName);
+        const outputFile = outputDir + "/" + fileName;
+
+        if (!fileSystem.existsSync(outputDir)) {
+            fileSystem.mkdirSync(outputDir, { recursive: true });
+        }
+
+        return outputFile;
+    }
+
     private createController(forceAtn?: boolean): OutputModelController {
-        const factory = new ParserFactory(this, forceAtn);
-        const controller = new OutputModelController(factory);
+        const factory = new ParserFactory(this, this.g, forceAtn);
+        const controller = new OutputModelController(factory, this.g.tool.errorManager, this.g);
         factory.controller = controller;
 
         return controller;
     }
 
     private ensureAtnExists(): void {
-        if (this.g === undefined) {
-            throw new Error("Grammar is undefined.");
-        }
-
         if (this.g.atn === undefined) {
             throw new Error("ATN is undefined.");
         }
     }
+
 }

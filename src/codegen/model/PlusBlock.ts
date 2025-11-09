@@ -10,11 +10,8 @@ import type { IQuantifierAST } from "../../tool/ast/IQuantifierAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { Loop } from "./Loop.js";
-import { ThrowNoViableAlt } from "./ThrowNoViableAlt.js";
 
 export class PlusBlock extends Loop {
-    public error: ThrowNoViableAlt;
-
     public constructor(factory: IOutputModelFactory, plusRoot: IQuantifierAST, alts: CodeBlockForAlt[]) {
         super(factory, plusRoot, alts);
 
@@ -25,7 +22,6 @@ export class PlusBlock extends Loop {
         this.stateNumber = blkStart.loopBackState.stateNumber;
         this.blockStartStateNumber = blkStart.stateNumber;
         this.loopBackStateNumber = loop.stateNumber;
-        this.error = this.getThrowNoViableAlt(factory, plusRoot);
         this.decision = loop.decision;
     }
 

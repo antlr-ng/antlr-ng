@@ -21,13 +21,12 @@ export class ParserFile extends OutputFile {
 
     public constructor(factory: IOutputModelFactory, fileName: string) {
         super(factory, fileName);
-        const g = factory.g;
-        this.namedActions = this.buildNamedActions(g);
+        this.namedActions = this.buildNamedActions();
 
-        this.grammarName = g.name;
+        this.grammarName = factory.grammar.name;
 
-        if (g.getOptionString("contextSuperClass")) {
-            this.contextSuperClass = new ActionText(undefined, [g.getOptionString("contextSuperClass")]);
+        if (factory.grammar.getOptionString("contextSuperClass")) {
+            this.contextSuperClass = new ActionText(undefined, [factory.grammar.getOptionString("contextSuperClass")]);
         }
     }
 

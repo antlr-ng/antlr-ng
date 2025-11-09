@@ -7,8 +7,8 @@ import { IntervalSet } from "antlr4ng";
 
 import { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
-import { SrcOp } from "./SrcOp.js";
 import { ITokenInfo } from "./ITokenInfo.js";
+import { SrcOp } from "./SrcOp.js";
 
 export class Bitset {
     public readonly shift: bigint;
@@ -44,14 +44,14 @@ export class TestSetInline extends SrcOp {
         super(factory, ast);
 
         this.bitsetWordSize = wordSize;
-        const withZeroOffset = TestSetInline.createBitsets(factory, set, wordSize, true);
-        const withoutZeroOffset = TestSetInline.createBitsets(factory, set, wordSize, false);
+        const withZeroOffset = this.createBitsets(factory, set, wordSize, true);
+        const withoutZeroOffset = this.createBitsets(factory, set, wordSize, false);
         this.bitsets = withZeroOffset.length <= withoutZeroOffset.length ? withZeroOffset : withoutZeroOffset;
 
         this.varName = "_la";
     }
 
-    private static createBitsets(factory: IOutputModelFactory, set: IntervalSet, wordSize: number,
+    private createBitsets(factory: IOutputModelFactory, set: IntervalSet, wordSize: number,
         useZeroOffset: boolean): Bitset[] {
         const bitsetList: Bitset[] = [];
         const target = factory.getGenerator()!.targetGenerator;
@@ -71,7 +71,7 @@ export class TestSetInline extends SrcOp {
                 bitsetList.push(current);
             }
 
-            current.addToken(ttype, target.getTokenTypeAsTargetLabel(factory.g, ttype));
+            current.addToken(ttype, target.getTokenTypeAsTargetLabel(this.factory!.grammar, ttype));
         }
 
         return bitsetList;

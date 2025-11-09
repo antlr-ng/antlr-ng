@@ -503,7 +503,10 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
 
         result.push(...this.formatLines(block, 4));
         result.push(`    default:`);
-        result.push(...this.formatLines(this.renderThrowNoViableAlt(choice.error), 8));
+
+        const noViableAltObject = choice.getThrowNoViableAlt(choice.factory!, choice.ast!,
+            this.invariants.grammarFileName);
+        result.push(...this.formatLines(this.renderThrowNoViableAlt(noViableAltObject), 8));
 
         result.push(`}`);
         result.push("");
@@ -1083,7 +1086,10 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
 
         caseBlock.push("");
         caseBlock.push(`default: {`);
-        caseBlock.push(...this.formatLines(this.renderThrowNoViableAlt(choice.error), 4));
+
+        const noViableAltObject = choice.getThrowNoViableAlt(choice.factory!, choice.ast!,
+            this.invariants.grammarFileName);
+        caseBlock.push(...this.formatLines(this.renderThrowNoViableAlt(noViableAltObject), 4));
         caseBlock.push(`}`);
 
         switchBlock.push(...this.formatLines(caseBlock, 4));

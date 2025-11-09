@@ -27,6 +27,7 @@ import { TokenVocabParser } from "../parse/TokenVocabParser.js";
 import { GrammarType } from "../support/GrammarType.js";
 import type { IGrammar, ITool } from "../types.js";
 
+import type { IGenerationOptions } from "../config/config.js";
 import { Utils } from "../misc/Utils.js";
 import { basename } from "../support/fs-helpers.js";
 import type { Constructor } from "../support/helpers.js";
@@ -275,8 +276,8 @@ export class Grammar implements IGrammar, IAttributeResolver {
         }
     }
 
-    public static forFile<T extends Grammar>(c: Constructor<T>, fileName: string, grammarText: string,
-        tokenVocabSource?: Grammar, listener?: ToolListener): T {
+    public static forFile<T extends Grammar>(c: Constructor<T>, fileName: string, options: IGenerationOptions,
+        grammarText: string, tokenVocabSource?: Grammar, listener?: ToolListener): T {
         const grammar = new c(grammarText, tokenVocabSource);
 
         grammar.fileName = fileName;
@@ -890,13 +891,13 @@ export class Grammar implements IGrammar, IAttributeResolver {
         return this.maxChannelType;
     }
 
-    public importTokensFromTokensFile(): void {
+    public importTokensFromTokensFile(options: IGenerationOptions): void {
         const vocab = this.getOptionString("tokenVocab");
         if (vocab) {
-            const vParser = new TokenVocabParser(this, this.tool.getOutputDirectory(this.fileName),
-                this.tool.toolConfiguration.lib);
+            const outputDir = options.outputDirectory;
+            const vParser = new TokenVocabParser(this, outputDir, this.tool.toolConfiguration.lib);
             const tokens = vParser.load();
-            this.tool.logInfo({ component: "grammar", msg: `tokens=${String(tokens)}` });
+            this.tool.logInfo({ component: "grammar", msg: `tokens=${JSON.stringify(tokens)}` });
 
             for (const t of tokens.keys()) {
                 if (t.startsWith("'")) {

@@ -42,9 +42,9 @@ export abstract class Recognizer extends OutputModelObject {
     public constructor(factory: IOutputModelFactory) {
         super(factory);
 
-        const g = factory.g;
         const gen = factory.getGenerator()!;
 
+        const g = factory.grammar;
         let lastSlash = g.fileName.lastIndexOf("/");
         if (lastSlash === -1) {
             lastSlash = g.fileName.lastIndexOf("\\");
@@ -65,7 +65,7 @@ export abstract class Recognizer extends OutputModelObject {
         this.ruleNames = new Set(g.rules.keys());
         this.rules = Array.from(g.rules.values());
         if (gen.forJava) {
-            this.atn = new SerializedJavaATN(factory, g.atn!);
+            this.atn = new SerializedJavaATN(factory, g.atn);
         } else {
             this.atn = new SerializedATN(factory, g.atn);
         }

@@ -14,7 +14,7 @@ import type { IGenerationOptions } from "../config/config.js";
 import { Utils } from "../misc/Utils.js";
 import { Alternative } from "../tool/Alternative.js";
 import type { ErrorManager } from "../tool/ErrorManager.js";
-import { Grammar } from "../tool/Grammar.js";
+import type { Grammar } from "../tool/Grammar.js";
 import { LeftRecursiveRule } from "../tool/LeftRecursiveRule.js";
 import { Rule } from "../tool/Rule.js";
 import { ActionAST } from "../tool/ast/ActionAST.js";
@@ -60,11 +60,9 @@ export class OutputModelController {
     private walker: SourceGenTriggers;
 
     private currentRuleStack = new Array<RuleFunction>();
-    private errorManager: ErrorManager;
 
-    public constructor(factory: IOutputModelFactory) {
+    public constructor(factory: IOutputModelFactory, private errorManager: ErrorManager, private grammar: Grammar) {
         this.factory = factory;
-        this.errorManager = factory.g.tool.errorManager;
     }
 
     /**
@@ -76,8 +74,7 @@ export class OutputModelController {
         const file = this.parserFile(gen.getRecognizerFileName(header), options);
         file.parser = this.parser(file);
 
-        const g = this.factory.g;
-        for (const r of g.rules.values()) {
+        for (const r of this.grammar.rules.values()) {
             this.buildRuleFunction(file.parser, r);
         }
 
@@ -89,8 +86,7 @@ export class OutputModelController {
         const file = this.lexerFile(gen.getRecognizerFileName(header));
         file.lexer = this.lexer(file);
 
-        const g = this.factory.g;
-        for (const r of g.rules.values()) {
+        for (const r of this.grammar.rules.values()) {
             this.buildLexerRuleActions(file.lexer, r);
         }
 
@@ -100,7 +96,7 @@ export class OutputModelController {
     public buildListenerOutputModel(header: boolean): ListenerFile {
         const gen = this.factory.getGenerator()!;
 
-        return new ListenerFile(this.factory, gen.getListenerFileName(header),);
+        return new ListenerFile(this.factory, gen.getListenerFileName(header));
     }
 
     public buildBaseListenerOutputModel(header: boolean): BaseListenerFile {
@@ -152,7 +148,6 @@ export class OutputModelController {
             this.buildNormalRuleFunction(r, ruleFunction);
         }
 
-        const g = this.getGrammar();
         for (const a of r.actions) {
             if (a instanceof PredAST) {
                 let rsf = parser.sempredFuncs.get(r);
@@ -160,7 +155,7 @@ export class OutputModelController {
                     rsf = new RuleSempredFunction(this.factory, r, ruleFunction.ctxType);
                     parser.sempredFuncs.set(r, rsf);
                 }
-                rsf.actions.set(g.sempreds.get(a)!, new Action(this.factory, a));
+                rsf.actions.set(this.grammar.sempreds.get(a) ?? 0, new Action(this.factory, a));
             }
         }
 
@@ -264,7 +259,6 @@ export class OutputModelController {
         }
 
         const gen = this.factory.getGenerator()!;
-        const g = this.factory.g;
         const ctxType = gen.targetGenerator.lexerRuleContext;
         const raf = lexer.actionFuncs.get(r) ?? new RuleActionFunction(this.factory, r, ctxType);
 
@@ -276,9 +270,9 @@ export class OutputModelController {
                     rsf = new RuleSempredFunction(this.factory, r, ctxType);
                     lexer.sempredFuncs.set(r, rsf);
                 }
-                rsf.actions.set(g.sempreds.get(p)!, new Action(this.factory, p));
+                rsf.actions.set(this.grammar.sempreds.get(p) ?? 0, new Action(this.factory, p));
             } else if (a.getType() === ANTLRv4Parser.ACTION) {
-                raf.actions.set(g.lexerActions.get(a)!, new Action(this.factory, a));
+                raf.actions.set(this.grammar.lexerActions.get(a) ?? 0, new Action(this.factory, a));
             }
         }
 
@@ -294,10 +288,6 @@ export class OutputModelController {
 
     public rulePostamble(ruleFunction: RuleFunction, r: Rule): SrcOp[] {
         return this.factory.rulePostamble(ruleFunction, r)!;
-    }
-
-    public getGrammar(): Grammar {
-        return this.factory.g;
     }
 
     public alternative(alt: Alternative, outerMost: boolean): CodeBlockForAlt {

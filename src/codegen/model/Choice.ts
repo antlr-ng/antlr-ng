@@ -5,16 +5,17 @@
 
 import { IntervalSet } from "antlr4ng";
 
-import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { IOutputModelFactory } from "../IOutputModelFactory.js";
+import type { Grammar } from "../../tool/Grammar.js";
+import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
-import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
+import type { CodeBlockForAlt } from "./CodeBlockForAlt.js";
+import type { ITokenInfo } from "./ITokenInfo.js";
 import { RuleElement } from "./RuleElement.js";
-import { SrcOp } from "./SrcOp.js";
+import type { SrcOp } from "./SrcOp.js";
 import { TestSetInline } from "./TestSetInline.js";
 import { ThrowNoViableAlt } from "./ThrowNoViableAlt.js";
-import { ITokenInfo } from "./ITokenInfo.js";
-import { Decl } from "./decl/Decl.js";
+import type { Decl } from "./decl/Decl.js";
 import { TokenTypeDecl } from "./decl/TokenTypeDecl.js";
 
 /**
@@ -42,10 +43,9 @@ export abstract class Choice extends RuleElement {
         this.preamble.push(op);
     }
 
-    public getAltLookaheadAsStringLists(altLookSets: IntervalSet[]): ITokenInfo[][] {
+    public getAltLookaheadAsStringLists(altLookSets: IntervalSet[], grammar: Grammar): ITokenInfo[][] {
         const altLook: ITokenInfo[][] = [];
         const targetGenerator = this.factory!.getGenerator()!.targetGenerator;
-        const grammar = this.factory!.g;
 
         for (const s of altLookSets) {
             const list = s.toArray();
@@ -75,8 +75,9 @@ export abstract class Choice extends RuleElement {
         return expr ?? null;
     }
 
-    public getThrowNoViableAlt(factory: IOutputModelFactory, blkAST: GrammarAST): ThrowNoViableAlt {
-        return new ThrowNoViableAlt(factory, blkAST);
+    public getThrowNoViableAlt(factory: IOutputModelFactory, blkAST: GrammarAST,
+        grammarFileName: string): ThrowNoViableAlt {
+        return new ThrowNoViableAlt(factory, blkAST, grammarFileName);
     }
 
 }

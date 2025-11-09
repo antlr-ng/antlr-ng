@@ -5,8 +5,8 @@
 
 import { SetTransition } from "antlr4ng";
 
-import { GrammarAST } from "../../tool/ast/GrammarAST.js";
-import { IOutputModelFactory } from "../IOutputModelFactory.js";
+import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
 import { TokenTypeDecl } from "./decl/TokenTypeDecl.js";
 import { MatchToken } from "./MatchToken.js";

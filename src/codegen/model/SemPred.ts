@@ -47,7 +47,7 @@ export class SemPred extends Action {
 
         if (failNode instanceof ActionAST) {
             const failActionNode = failNode;
-            const rf = factory.getCurrentRuleFunction() ?? null;
+            const rf = factory.getCurrentRuleFunction();
             this.failChunks = ActionTranslator.translateAction(factory, rf, failActionNode.token!, failActionNode);
         } else {
             this.msg = gen.targetGenerator.getTargetStringLiteralFromANTLRStringLiteral(failNode.getText(), true, true);

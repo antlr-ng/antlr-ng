@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { ATNSerializer, CharStream, CommonTokenStream } from "antlr4ng";
+import { CharStream, CommonTokenStream } from "antlr4ng";
 
 import { ANTLRv4Parser } from "./generated/ANTLRv4Parser.js";
 
@@ -25,16 +25,13 @@ import { GrammarType } from "./support/GrammarType.js";
 import { LogManager } from "./support/LogManager.js";
 import { ParseTreeToASTConverter } from "./support/ParseTreeToASTConverter.js";
 import { basename, dirname } from "./support/fs-helpers.js";
-import { convertArrayToString } from "./support/helpers.js";
 import { fileSystem } from "./tool-parameters.js";
 import { BuildDependencyGenerator } from "./tool/BuildDependencyGenerator.js";
-import { DOTGenerator } from "./tool/DOTGenerator.js";
 import { ErrorManager } from "./tool/ErrorManager.js";
 import type { Grammar } from "./tool/Grammar.js";
 import { GrammarTransformPipeline } from "./tool/GrammarTransformPipeline.js";
 import { IssueCode } from "./tool/Issues.js";
 import type { LexerGrammar } from "./tool/LexerGrammar.js";
-import { Rule } from "./tool/Rule.js";
 import { GrammarAST } from "./tool/ast/GrammarAST.js";
 import { GrammarRootAST } from "./tool/ast/GrammarRootAST.js";
 import type { RuleAST } from "./tool/ast/RuleAST.js";
@@ -138,7 +135,7 @@ export class Tool implements ITool {
         // Make sure grammar is semantically correct (fill in grammar object).
         const sem = new SemanticPipeline(g);
         for (const targetGenerator of this.toolConfiguration.generators) {
-            sem.process(targetGenerator);
+            sem.process(targetGenerator, this.toolConfiguration.generationOptions);
 
             if (this.errorManager.errors > prevErrors) {
                 return;
@@ -153,19 +150,19 @@ export class Tool implements ITool {
             }
 
             g.atn = factory.createATN();
-            if (this.toolConfiguration.generationOptions.atn) {
-                this.exportATNDotFiles(g);
+
+            let codeGenerator;
+            if (genCode) {
+                codeGenerator = new CodeGenerator(g, targetGenerator, this.toolConfiguration.generationOptions);
+            }
+
+            if (codeGenerator && this.toolConfiguration.generationOptions.atn) {
+                codeGenerator.generateATNDotFiles(g);
             }
 
             if (genCode && g.tool.getNumErrors() === 0
                 && this.toolConfiguration.generationOptions.generateInterpreterData) {
-                const interpFile = Tool.generateInterpreterData(g);
-                try {
-                    const fileName = this.getOutputFile(g, g.name + ".interp");
-                    fileSystem.writeFileSync(fileName, interpFile);
-                } catch (ioe) {
-                    this.errorManager.toolError(IssueCode.CannotWriteFile, ioe as Error);
-                }
+                codeGenerator?.generateInterpreterData(g);
             }
 
             // Perform grammar analysis on ATN: build decision DFAs.
@@ -177,8 +174,7 @@ export class Tool implements ITool {
             }
 
             // Generate code.
-            if (genCode) {
-                const codeGenerator = new CodeGenerator(g, targetGenerator);
+            if (genCode && codeGenerator) {
                 const gen = new CodeGenPipeline(g, codeGenerator, this.toolConfiguration.generationOptions);
                 gen.process();
             }
@@ -400,50 +396,6 @@ export class Tool implements ITool {
         return result;
     }
 
-    public exportATNDotFiles(g: Grammar): void {
-        const dotGenerator = new DOTGenerator(g);
-        const grammars = new Array<Grammar>();
-        grammars.push(g);
-        const imported = g.getAllImportedGrammars();
-        grammars.push(...imported);
-
-        for (const ig of grammars) {
-            for (const r of ig.rules.values()) {
-                try {
-                    const dot = dotGenerator.getDOTFromState(g.atn!.ruleToStartState[r.index]!, g.isLexer());
-                    this.writeDOTFile(g, r, dot);
-                } catch (ioe) {
-                    this.errorManager.toolError(IssueCode.CannotWriteFile, ioe as Error);
-                    throw ioe;
-                }
-            }
-        }
-    }
-
-    /**
-     * This method is used by all code generators that create output files. If the specified outputDir is not present
-     * it will be created (recursively).
-     *
-     * If the output path is relative, it will be resolved relative to the current working directory.
-     *
-     * If no output dir is specified, then just write to the directory where the grammar file was found.
-     *
-     * @param g The grammar for which we are generating a file.
-     * @param fileName The name of the file to generate.
-     *
-     * @returns The full path to the output file.
-     */
-    public getOutputFile(g: Grammar, fileName: string): string {
-        const outputDir = this.getOutputDirectory(g.fileName);
-        const outputFile = outputDir + "/" + fileName;
-
-        if (!fileSystem.existsSync(outputDir)) {
-            fileSystem.mkdirSync(outputDir, { recursive: true });
-        }
-
-        return outputFile;
-    }
-
     public getImportedGrammarFile(g: Grammar, fileName: string): string | undefined {
         let candidate = fileName;
         if (!fileSystem.existsSync(candidate)) {
@@ -468,20 +420,6 @@ export class Tool implements ITool {
         return candidate;
     }
 
-    /**
-     * @returns the location where antlr-ng will generate output files for a given grammar.
-     * This is either the output directory specified in the configuration or the directory of the input file.
-     *
-     * @param fileNameWithPath path to input source.
-     */
-    public getOutputDirectory(fileNameWithPath: string): string {
-        if (this.toolConfiguration.outputDirectory) {
-            return this.toolConfiguration.outputDirectory;
-        }
-
-        return dirname(fileNameWithPath);
-    }
-
     public logInfo(info: { component?: string, msg: string; }): void {
         this.logMgr.log(info);
     }
@@ -496,50 +434,6 @@ export class Tool implements ITool {
 
     public panic(): void {
         throw new Error("ANTLR panic");
-    }
-
-    protected writeDOTFile(g: Grammar, rulOrName: Rule | string, dot: string): void {
-        const name = rulOrName instanceof Rule ? rulOrName.g.name + "." + rulOrName.name : rulOrName;
-        const fileName = this.getOutputFile(g, name + ".dot");
-        fileSystem.writeFileSync(fileName, dot);
-    }
-
-    private static generateInterpreterData(g: Grammar): string {
-        let content = "";
-
-        content += "token literal names:\n";
-        let names = g.getTokenLiteralNames();
-        content += names.reduce((previousValue, currentValue) => {
-            return previousValue + (currentValue ?? "null") + "\n";
-        }, "") + "\n";
-
-        content += "token symbolic names:\n";
-        names = g.getTokenSymbolicNames();
-        content += names.reduce((previousValue, currentValue) => {
-            return previousValue + (currentValue ?? "null") + "\n";
-        }, "") + "\n";
-
-        content += "rule names:\n";
-        names = g.getRuleNames();
-        content += names.reduce((previousValue, currentValue) => {
-            return previousValue + (currentValue ?? "null") + "\n";
-        }, "") + "\n";
-
-        if (g.isLexer()) {
-            content += "channel names:\n";
-            content += "DEFAULT_TOKEN_CHANNEL\n";
-            content += "HIDDEN\n";
-            content += g.channelValueToNameList.join("\n") + "\n";
-            content += "mode names:\n";
-            content += [...(g as LexerGrammar).modes.keys()].join("\n") + "\n";
-        }
-        content += "\n";
-
-        const serializedATN = ATNSerializer.getSerialized(g.atn!);
-        content += "atn:\n";
-        content += convertArrayToString(serializedATN);
-
-        return content.toString();
     }
 
     /**

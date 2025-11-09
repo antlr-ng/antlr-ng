@@ -16,10 +16,11 @@ import { StructDecl } from "./StructDecl.js";
 export class AltLabelStructDecl extends StructDecl {
     public altNum: number;
     public parentRule: string;
-    public constructor(factory: IOutputModelFactory, r: Rule, altNum: number, label: string) {
+    public constructor(factory: IOutputModelFactory, r: Rule, altNum: number, label: string, generateListener: boolean,
+        generateVisitor: boolean) {
         // Override name set in super to the label ctx.
         const suffix = Utils.capitalize(label) + factory.getGenerator()!.targetGenerator.ruleContextNameSuffix;
-        super(factory, r, suffix);
+        super(factory, r, generateListener, generateVisitor, suffix);
         this.altNum = altNum;
         this.parentRule = r.name;
         this.derivedFromName = label;

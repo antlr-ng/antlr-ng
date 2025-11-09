@@ -19,27 +19,30 @@ export class SerializedJavaATN extends SerializedATN {
 
     private readonly segments: string[][];
 
-    public constructor(factory: IOutputModelFactory, atn: ATN) {
+    public constructor(factory: IOutputModelFactory, atn?: ATN) {
         super(factory);
-        let data = ATNSerializer.getSerialized(atn);
-        data = this.encodeIntsWith16BitWords(data);
 
-        const size = data.length;
-        const target = factory.getGenerator()!.targetGenerator;
-        const segmentLimit = target.getSerializedATNSegmentLimit();
-        this.segments = new Array<string[]>(Math.trunc((size + segmentLimit - 1) / segmentLimit));
-        let segmentIndex = 0;
+        if (atn) {
+            let data = ATNSerializer.getSerialized(atn);
+            data = this.encodeIntsWith16BitWords(data);
 
-        for (let i = 0; i < size; i += segmentLimit) {
-            const segmentSize = Math.min(i + segmentLimit, size) - i;
-            const segment = new Array<string>(segmentSize);
-            this.segments[segmentIndex++] = segment;
-            for (let j = 0; j < segmentSize; j++) {
-                segment[j] = this.encodeInt16AsCharEscape(data[i + j]);
+            const size = data.length;
+            const target = factory.getGenerator()!.targetGenerator;
+            const segmentLimit = target.getSerializedATNSegmentLimit();
+            this.segments = new Array<string[]>(Math.trunc((size + segmentLimit - 1) / segmentLimit));
+            let segmentIndex = 0;
+
+            for (let i = 0; i < size; i += segmentLimit) {
+                const segmentSize = Math.min(i + segmentLimit, size) - i;
+                const segment = new Array<string>(segmentSize);
+                this.segments[segmentIndex++] = segment;
+                for (let j = 0; j < segmentSize; j++) {
+                    segment[j] = this.encodeInt16AsCharEscape(data[i + j]);
+                }
             }
-        }
 
-        this.serializedAsString = this.segments[0];
+            this.serializedAsString = this.segments[0];
+        }
     }
 
     public getSegments(): string[][] {

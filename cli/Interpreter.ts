@@ -113,8 +113,8 @@ export class Interpreter {
 
         const parameters = defineConfig({
             grammarFiles: interpreterOptions.grammars,
-            outputDirectory: ".",
             generationOptions: {
+                outputDirectory: ".",
                 generateListener: false,
                 generateVisitor: false,
                 atn: false,
@@ -132,8 +132,8 @@ export class Interpreter {
         if (interpreterOptions.grammars.length === 1) {
             // Must be a combined grammar.
             const grammarContent = await fs.promises.readFile(interpreterOptions.grammars[0], "utf8") as string;
-            g = Grammar.forFile(IgnoreTokenVocabGrammar, interpreterOptions.grammars[0], grammarContent,
-                undefined, listener);
+            g = Grammar.forFile(IgnoreTokenVocabGrammar, interpreterOptions.grammars[0], parameters.generationOptions,
+                grammarContent, undefined, listener);
             g.tool.process(g, parameters, false);
         } else {
             const lexerGrammarContent = await fs.promises.readFile(interpreterOptions.grammars[1], "utf8") as string;
@@ -143,7 +143,7 @@ export class Interpreter {
 
             const parserGrammarContent = await fs.promises.readFile(interpreterOptions.grammars[0], "utf8") as string;
             g = Grammar.forFile(IgnoreTokenVocabGrammar, interpreterOptions.grammars[0],
-                parserGrammarContent, lg, listener);
+                parameters.generationOptions, parserGrammarContent, lg, listener);
             g.tool.process(g, parameters, false);
         }
 

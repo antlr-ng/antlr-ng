@@ -1151,7 +1151,10 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         result.push(...this.formatLines(block, 4));
         result.push(`  default:`);
-        result.push(...this.formatLines(this.renderThrowNoViableAlt(choice.error), 4));
+
+        const noViableAltObject = choice.getThrowNoViableAlt(choice.factory!, choice.ast!,
+            this.invariants.grammarFileName);
+        result.push(...this.formatLines(this.renderThrowNoViableAlt(noViableAltObject), 4));
         result.push(`}`);
 
         return this.endRendering("LL1AltBlock", result);
@@ -1571,7 +1574,10 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         caseBlock.push("");
         caseBlock.push(`default:`);
-        caseBlock.push(...this.formatLines(this.renderThrowNoViableAlt(choice.error), 2));
+
+        const noViableAltObject = choice.getThrowNoViableAlt(choice.factory!, choice.ast!,
+            this.invariants.grammarFileName);
+        caseBlock.push(...this.formatLines(this.renderThrowNoViableAlt(noViableAltObject), 2));
 
         switchBlock.push(...this.formatLines(caseBlock, 2));
         switchBlock.push(`}`);

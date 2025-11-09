@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { IOutputModelFactory } from "../IOutputModelFactory.js";
+import { type IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
 import { OutputFile } from "./OutputFile.js";
 
@@ -32,14 +32,13 @@ export class ListenerFile extends OutputFile {
     public constructor(factory: IOutputModelFactory, fileName: string) {
         super(factory, fileName);
 
-        const g = factory.g;
-        this.parserName = g.getRecognizerName();
-        this.grammarName = g.name;
-        this.namedActions = this.buildNamedActions(g, (ast) => {
+        this.parserName = factory.grammar.getRecognizerName();
+        this.grammarName = factory.grammar.name;
+        this.namedActions = this.buildNamedActions((ast) => {
             return ast.getScope() === null;
         });
 
-        for (const r of g.rules.values()) {
+        for (const r of factory.grammar.rules.values()) {
             const labels = r.getAltLabels();
             if (labels !== null) {
                 for (const key of labels.keys()) {
@@ -52,12 +51,12 @@ export class ListenerFile extends OutputFile {
             }
         }
 
-        const ast = g.namedActions.get("header");
+        const ast = factory.grammar.namedActions.get("header");
         if (ast?.getScope() === null) {
             this.header = new Action(factory, ast);
         }
 
-        this.accessLevel = g.getOptionString("accessLevel");
+        this.accessLevel = factory.grammar.getOptionString("accessLevel");
     }
 
 }

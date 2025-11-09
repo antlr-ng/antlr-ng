@@ -34,7 +34,7 @@ export class InvokeRule extends RuleElement implements ILabeledOp {
         const generator = gen.targetGenerator;
 
         const identifier = ast.getText();
-        const r = factory.getGrammar()!.getRule(identifier)!;
+        const r = factory.grammar.getRule(identifier)!;
         this.name = r.name;
         this.escapedName = gen.targetGenerator.escapeIfNeeded(this.name);
         this.ctxName = generator.getRuleFunctionContextStructName(r);;

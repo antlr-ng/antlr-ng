@@ -12,6 +12,7 @@ import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
 import { Constants } from "../Constants.js";
 import { LeftRecursiveRuleTransformer } from "../analysis/LeftRecursiveRuleTransformer.js";
+import type { IGenerationOptions } from "../config/config.js";
 import { isTokenName } from "../support/helpers.js";
 import { Grammar } from "../tool/Grammar.js";
 import { IssueCode } from "../tool/Issues.js";
@@ -45,7 +46,7 @@ export class SemanticPipeline {
     public constructor(private g: Grammar) {
     }
 
-    public process(targetGenerator: ITargetGenerator): void {
+    public process(targetGenerator: ITargetGenerator, options: IGenerationOptions): void {
         // Collect rule objects.
         const ruleCollector = new RuleCollector(this.g);
         ruleCollector.process(this.g.ast);
@@ -94,7 +95,7 @@ export class SemanticPipeline {
         }
 
         // Assign token types.
-        this.g.importTokensFromTokensFile();
+        this.g.importTokensFromTokensFile(options);
         if (this.g.isLexer()) {
             this.assignLexerTokenTypes(this.g, collector.tokensDefs);
         } else {

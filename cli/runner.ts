@@ -30,10 +30,10 @@ if (parameters.config) {
 } else {
     configuration = defineConfig({
         grammarFiles: parameters.grammarFiles,
-        outputDirectory: parameters.outputDirectory,
         lib: parameters.lib,
         generationOptions: {
             atn: parameters.atn,
+            outputDirectory: parameters.outputDirectory,
             generateListener: parameters.generateListener,
             generateVisitor: parameters.generateVisitor,
             package: parameters.package,
@@ -75,7 +75,8 @@ if (!success) {
 }
 
 // Copy the generated files to the physical output directory.
-nodeFs.mkdirSync(configuration.outputDirectory, { recursive: true });
-copyFolderFromMemFs(fs, configuration.outputDirectory, configuration.outputDirectory, false);
+nodeFs.mkdirSync(configuration.generationOptions.outputDirectory, { recursive: true });
+copyFolderFromMemFs(fs, configuration.generationOptions.outputDirectory,
+    configuration.generationOptions.outputDirectory, false);
 
 process.exit(0);

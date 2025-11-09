@@ -10,6 +10,9 @@ export interface IGenerationOptions {
     /** Generate augmented transition network diagrams. (default: false) */
     atn: boolean,
 
+    /** The output directory for the generated files. Relative paths are resolved to the current working directory. */
+    outputDirectory: string,
+
     /** Generate a parse tree listener (default: false). */
     generateListener: boolean,
 
@@ -67,9 +70,6 @@ export interface IToolConfiguration {
      */
     grammarFiles: string[];
 
-    /** The output directory for the generated files. Relative paths are resolved to the current working directory. */
-    outputDirectory: string,
-
     /**
      * @deprecated This will be removed when grammar imports can take paths.
      *
@@ -102,6 +102,7 @@ export interface IToolConfiguration {
 export const defineConfig = (config: DeepPartial<IToolConfiguration>): IToolConfiguration => {
     const generationOptions: Partial<IGenerationOptions> = config.generationOptions ?? {};
     generationOptions.atn ??= false;
+    generationOptions.outputDirectory = generationOptions.outputDirectory ?? ".";
     generationOptions.generateListener ??= false;
     generationOptions.generateVisitor ??= false;
     generationOptions.generateInterpreterData ??= false;
@@ -120,7 +121,6 @@ export const defineConfig = (config: DeepPartial<IToolConfiguration>): IToolConf
 
     return {
         grammarFiles: config.grammarFiles ?? [],
-        outputDirectory: config.outputDirectory ?? ".",
         lib: config.lib ?? ".",
         messageFormatOptions: messageFormatOptions as IToolMessageOptions,
         forceAtn: config.forceAtn ?? false,

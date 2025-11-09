@@ -49,10 +49,8 @@ export class StructDecl extends Decl {
     /** Used to generate method signatures in Go target interfaces */
     public signatures = new OrderedHashSet<Decl>();
 
-    protected readonly generateListener: boolean;
-    protected readonly generateVisitor: boolean;
-
-    public constructor(factory: IOutputModelFactory, r: Rule, name?: string) {
+    public constructor(factory: IOutputModelFactory, r: Rule, protected readonly generateListener: boolean,
+        protected readonly generateVisitor: boolean, name?: string) {
         if (!name) {
             const generator = factory.getGenerator()!.targetGenerator;
             name = generator.getRuleFunctionContextStructName(r);
@@ -61,10 +59,6 @@ export class StructDecl extends Decl {
         super(factory, name);
         this.derivedFromName = r.name;
         this.provideCopyFrom = r.hasAltSpecificContexts();
-
-        const options = factory.g.tool.toolConfiguration.generationOptions;
-        this.generateListener = options.generateListener;
-        this.generateVisitor = options.generateVisitor;
 
         this.addDispatchMethods(r);
     }

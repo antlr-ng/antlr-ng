@@ -16,7 +16,7 @@ export class LexerFile extends OutputFile {
     public constructor(factory: IOutputModelFactory, fileName: string) {
         super(factory, fileName);
 
-        this.namedActions = this.buildNamedActions(factory.g);
+        this.namedActions = this.buildNamedActions();
     }
 
 }

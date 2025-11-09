@@ -28,7 +28,7 @@ export class Action extends RuleElement {
             const [factory, ast] = args as [IOutputModelFactory, ActionAST | undefined];
 
             super(factory, ast);
-            const rf = factory.getCurrentRuleFunction() ?? null;
+            const rf = factory.getCurrentRuleFunction();
             if (ast) {
                 this.chunks = ActionTranslator.translateAction(factory, rf, ast.token!, ast);
             }

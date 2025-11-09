@@ -11,7 +11,7 @@ export let fileSystem: IFs = defaultFs;
 import { antlrVersion } from "./version.js";
 
 /**
- * Registers a memfs file system that holds input files and gets the output.
+ * Changes the default memfs file system to another one.
  *
  * @param fs The file system to use.
  */

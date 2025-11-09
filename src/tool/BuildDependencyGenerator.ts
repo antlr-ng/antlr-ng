@@ -45,15 +45,12 @@ import { Grammar } from "./Grammar.js";
  * output, will know how to organize it.
  */
 export class BuildDependencyGenerator {
-    protected tool: Tool;
-    protected g: Grammar;
     protected generator: CodeGenerator;
 
-    public constructor(tool: Tool, g: Grammar, private options: IGenerationOptions, targetGenerator: ITargetGenerator,
+    public constructor(private tool: Tool, private g: Grammar, private options: IGenerationOptions,
+        targetGenerator: ITargetGenerator,
         private libDir?: string) {
-        this.tool = tool;
-        this.g = g;
-        this.generator = new CodeGenerator(g, targetGenerator);
+        this.generator = new CodeGenerator(g, targetGenerator, options);
     }
 
     /**
@@ -136,10 +133,10 @@ export class BuildDependencyGenerator {
     }
 
     public getOutputFile(fileName: string): URL {
-        let outputDir = this.tool.getOutputDirectory(this.g.fileName);
+        let outputDir = this.generator.getOutputDirectory(this.g.fileName);
         if (outputDir === ".") {
             // Pay attention to -o then.
-            outputDir = this.tool.getOutputDirectory(fileName);
+            outputDir = this.generator.getOutputDirectory(fileName);
         }
 
         if (outputDir === ".") {

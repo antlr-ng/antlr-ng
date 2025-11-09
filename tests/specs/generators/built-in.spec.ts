@@ -21,44 +21,40 @@ import { LexerGrammar } from "../../../src/tool/LexerGrammar.js";
 import { ToolTestUtils } from "../../ToolTestUtils.js";
 
 describe("Test built-in generators", () => {
-    const cppGenerator: ITargetGenerator = new CppTargetGenerator(false, { exportMacro: "ANTLR4CPP_PUBLIC", });
-    cppGenerator.setUp();
-    const tsGenerator: ITargetGenerator = new TypeScriptTargetGenerator(false);
-    tsGenerator.setUp();
-
-    const activeGenerator = cppGenerator;
-
-    const targetDir = resolve(ToolTestUtils.expandTilde("~/antlr-ng-test-generation/mysql"), activeGenerator.language);
-
-    const copyFile = async (name: string): Promise<void> => {
+    const copyFile = async (name: string, targetDir: string): Promise<void> => {
         const generated = fileSystem.readFileSync(`/out/${name}`, "utf-8");
         await writeFile(resolve(targetDir, name), generated);
     };
 
-    const copyCodeFile = async (name: string) => {
-        await copyFile(`${name}${activeGenerator.codeFileExtension}`);
-        if (activeGenerator.needsDeclarationFile) {
-            const headerExt = activeGenerator.declarationFileExtension;
-            await copyFile(`${name}${headerExt}`);
+    const copyCodeFile = async (name: string, generator: ITargetGenerator, targetDir: string) => {
+        await copyFile(`${name}${generator.codeFileExtension}`, targetDir);
+        if (generator.needsDeclarationFile) {
+            const headerExt = generator.declarationFileExtension;
+            await copyFile(`${name}${headerExt}`, targetDir);
         }
     };
 
-    it("test current generator", async () => {
+    it("test TypeScript generator", async () => {
+        const tsGenerator = new TypeScriptTargetGenerator(false);
+        tsGenerator.setUp();
+
+        const targetDir = resolve(ToolTestUtils.expandTilde("~/antlr-ng-test-generation/mysql"), tsGenerator.language);
+
         await mkdir(targetDir, { recursive: true });
 
         const configuration = defineConfig({
             grammarFiles: ["MySQLLexer.g4", "MySQLParser.g4"],
-            outputDirectory: "/out",
             generationOptions: {
+                outputDirectory: "/out",
                 generateListener: true,
                 generateVisitor: true,
                 generateInterpreterData: true,
-                generateDeclarationFile: true,
-                generateBaseListener: true,
-                generateBaseVisitor: true,
+                generateDeclarationFile: false,
+                generateBaseListener: false,
+                generateBaseVisitor: false,
                 package: "antlr4",
             },
-            generators: [activeGenerator],
+            generators: [tsGenerator],
         });
 
         let grammarPath = fileURLToPath(new URL("../../grammars/MySQLLexer.g4", import.meta.url));
@@ -75,31 +71,96 @@ describe("Test built-in generators", () => {
 
         console.log(toTreeSync(fileSystem));
 
-        await copyCodeFile("MySQLLexer");
-        await copyCodeFile("MySQLParser");
+        await copyCodeFile("MySQLLexer", tsGenerator, targetDir);
+        await copyCodeFile("MySQLParser", tsGenerator, targetDir);
 
         if (configuration.generationOptions.generateListener) {
-            await copyCodeFile("MySQLParserListener");
+            await copyCodeFile("MySQLParserListener", tsGenerator, targetDir);
             if (configuration.generationOptions.generateBaseVisitor) {
-                await copyCodeFile("MySQLParserBaseListener");
+                await copyCodeFile("MySQLParserBaseListener", tsGenerator, targetDir);
             }
         }
 
         if (configuration.generationOptions.generateVisitor) {
-            await copyCodeFile("MySQLParserVisitor");
+            await copyCodeFile("MySQLParserVisitor", tsGenerator, targetDir);
 
             if (configuration.generationOptions.generateBaseVisitor) {
-                await copyCodeFile("MySQLParserBaseVisitor");
+                await copyCodeFile("MySQLParserBaseVisitor", tsGenerator, targetDir);
             }
         }
 
         if (configuration.generationOptions.generateInterpreterData) {
-            await copyFile("MySQLLexer.interp");
-            await copyFile("MySQLParser.interp");
+            await copyFile("MySQLLexer.interp", targetDir);
+            await copyFile("MySQLParser.interp", targetDir);
         }
 
         // Tokens files.
-        await copyFile("MySQLLexer.tokens");
-        await copyFile("MySQLParser.tokens");
+        await copyFile("MySQLLexer.tokens", targetDir);
+        await copyFile("MySQLParser.tokens", targetDir);
+    });
+
+    it.only("test C++ generator", async () => {
+        const cppGenerator: ITargetGenerator = new CppTargetGenerator(false, { exportMacro: "ANTLR4CPP_PUBLIC", });
+        cppGenerator.setUp();
+
+        const targetDir = resolve(ToolTestUtils.expandTilde("~/antlr-ng-test-generation/mysql"), cppGenerator.language);
+
+        await mkdir(targetDir, { recursive: true });
+
+        const configuration = defineConfig({
+            grammarFiles: ["MySQLLexer.g4", "MySQLParser.g4"],
+            generationOptions: {
+                outputDirectory: "/out",
+                generateListener: true,
+                generateVisitor: true,
+                generateInterpreterData: true,
+                generateDeclarationFile: true,
+                generateBaseListener: true,
+                generateBaseVisitor: true,
+                package: "antlr4",
+            },
+            generators: [cppGenerator],
+        });
+
+        let grammarPath = fileURLToPath(new URL("../../grammars/MySQLLexer.g4", import.meta.url));
+        let grammarText = await readFile(grammarPath, "utf8");
+        const lg = new LexerGrammar(grammarText);
+        lg.fileName = "MySQLLexer.g4";
+        lg.tool.process(lg, configuration, true);
+
+        grammarPath = fileURLToPath(new URL("../../grammars/MySQLParser.g4", import.meta.url));
+        grammarText = await readFile(grammarPath, "utf8");
+        const g = new Grammar(grammarText);
+        g.fileName = "MySQLParser.g4";
+        g.tool.process(g, configuration, true);
+
+        console.log(toTreeSync(fileSystem));
+
+        await copyCodeFile("MySQLLexer", cppGenerator, targetDir);
+        await copyCodeFile("MySQLParser", cppGenerator, targetDir);
+
+        if (configuration.generationOptions.generateListener) {
+            await copyCodeFile("MySQLParserListener", cppGenerator, targetDir);
+            if (configuration.generationOptions.generateBaseVisitor) {
+                await copyCodeFile("MySQLParserBaseListener", cppGenerator, targetDir);
+            }
+        }
+
+        if (configuration.generationOptions.generateVisitor) {
+            await copyCodeFile("MySQLParserVisitor", cppGenerator, targetDir);
+
+            if (configuration.generationOptions.generateBaseVisitor) {
+                await copyCodeFile("MySQLParserBaseVisitor", cppGenerator, targetDir);
+            }
+        }
+
+        if (configuration.generationOptions.generateInterpreterData) {
+            await copyFile("MySQLLexer.interp", targetDir);
+            await copyFile("MySQLParser.interp", targetDir);
+        }
+
+        // Tokens files.
+        await copyFile("MySQLLexer.tokens", targetDir);
+        await copyFile("MySQLParser.tokens", targetDir);
     });
 });

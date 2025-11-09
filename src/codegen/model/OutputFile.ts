@@ -3,7 +3,6 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { Grammar } from "../../tool/Grammar.js";
 import { ActionAST } from "../../tool/ast/ActionAST.js";
 import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { Action } from "./Action.js";
@@ -19,15 +18,14 @@ export abstract class OutputFile extends OutputModelObject {
 
         this.fileName = fileName;
 
-        const g = factory.g;
-        this.grammarFileName = g.fileName.replace("\\", "/");
-        this.TokenLabelType = g.getOptionString("TokenLabelType");
+        this.grammarFileName = factory.grammar.fileName.replace("\\", "/");
+        this.TokenLabelType = factory.grammar.getOptionString("TokenLabelType");
     }
 
-    public buildNamedActions(g: Grammar, filter?: (ast: ActionAST) => boolean): Map<string, Action> {
+    public buildNamedActions(filter?: (ast: ActionAST) => boolean): Map<string, Action> {
         const namedActions = new Map<string, Action>();
-        for (const name of g.namedActions.keys()) {
-            const ast = g.namedActions.get(name)!;
+        for (const name of this.factory!.grammar.namedActions.keys()) {
+            const ast = this.factory!.grammar.namedActions.get(name)!;
             if (!filter || filter(ast)) {
                 namedActions.set(name, new Action(this.factory!, ast));
             }

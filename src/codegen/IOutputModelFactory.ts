@@ -26,8 +26,9 @@ import type { SrcOp } from "./model/SrcOp.js";
 import type { CodeBlock } from "./model/decl/CodeBlock.js";
 
 export interface IOutputModelFactory {
+    readonly grammar: Grammar;
+
     readonly controller: OutputModelController;
-    readonly g: Grammar; // Note: must stay "g" as it is used used like this in at least one template.
 
     getGenerator(): CodeGenerator | undefined;
 

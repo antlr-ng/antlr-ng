@@ -46,7 +46,6 @@ export class RuleFunction extends OutputModelObject {
     public readonly tokenLabels: Set<string>;
     public readonly startState: ATNState;
     public readonly index: number;
-    public readonly rule: Rule;
     public readonly altToContext: AltLabelStructDecl[];
     public hasLookaheadBlock: boolean;
 
@@ -68,50 +67,50 @@ export class RuleFunction extends OutputModelObject {
 
     public postamble: SrcOp[] | undefined;
 
-    public constructor(factory: IOutputModelFactory, r: Rule) {
+    public constructor(factory: IOutputModelFactory, public readonly rule: Rule,
+        protected readonly generateListener: boolean, protected readonly generateVisitor: boolean) {
         super(factory);
 
-        this.name = r.name;
-        this.escapedName = factory.getGenerator()!.targetGenerator.escapeIfNeeded(r.name);
-        this.rule = r;
-        this.modifiers = this.nodesToStrings(r.modifiers ?? []);
+        this.name = rule.name;
+        this.escapedName = factory.getGenerator()!.targetGenerator.escapeIfNeeded(rule.name);
+        this.modifiers = this.nodesToStrings(rule.modifiers ?? []);
 
-        this.index = r.index;
+        this.index = rule.index;
 
-        this.ruleCtx = new StructDecl(factory, r);
-        this.altToContext = new Array<AltLabelStructDecl>(r.getOriginalNumberOfAlts() + 1);
-        this.addContextGetters(factory, r);
+        this.ruleCtx = new StructDecl(factory, rule, generateListener, generateVisitor);
+        this.altToContext = new Array<AltLabelStructDecl>(rule.getOriginalNumberOfAlts() + 1);
+        this.addContextGetters(factory, rule);
 
-        if (r.args) {
-            if (r.args.attributes.size > 0) {
+        if (rule.args) {
+            if (rule.args.attributes.size > 0) {
                 this.args = [];
-                this.ruleCtx.addDecls(Array.from(r.args.attributes.values()));
-                for (const a of r.args.attributes.values()) {
+                this.ruleCtx.addDecls(Array.from(rule.args.attributes.values()));
+                for (const a of rule.args.attributes.values()) {
                     this.args.push(new AttributeDecl(factory, a));
                 }
                 this.ruleCtx.ctorAttrs = this.args;
             }
         }
 
-        if (r.retvals) {
-            this.ruleCtx.addDecls(Array.from(r.retvals.attributes.values()));
+        if (rule.retvals) {
+            this.ruleCtx.addDecls(Array.from(rule.retvals.attributes.values()));
         }
 
-        if (r.locals) {
-            this.ruleCtx.addDecls(Array.from(r.locals.attributes.values()));
+        if (rule.locals) {
+            this.ruleCtx.addDecls(Array.from(rule.locals.attributes.values()));
         }
 
-        this.ruleLabels = r.getElementLabelNames();
-        this.tokenLabels = r.getTokenRefs();
+        this.ruleLabels = rule.getElementLabelNames();
+        this.tokenLabels = rule.getTokenRefs();
         this.exceptions = new Array<ExceptionClause>();
 
-        for (const e of r.exceptions) {
+        for (const e of rule.exceptions) {
             const catchArg = e.children[0] as ActionAST;
             const catchAction = e.children[1] as ActionAST;
             this.exceptions.push(new ExceptionClause(factory, catchArg, catchAction));
         }
 
-        this.startState = factory.g.atn!.ruleToStartState[r.index]!;
+        this.startState = this.factory!.grammar.atn!.ruleToStartState[rule.index]!;
     }
 
     public addContextGetters(factory: IOutputModelFactory, r: Rule): void {
@@ -137,7 +136,8 @@ export class RuleFunction extends OutputModelObject {
 
                 const decls = this.getDeclsForAllElements(alts);
                 for (const [altNum] of list) {
-                    this.altToContext[altNum] = new AltLabelStructDecl(factory, r, altNum, label);
+                    this.altToContext[altNum] = new AltLabelStructDecl(factory, r, altNum, label, this.generateListener,
+                        this.generateVisitor);
                     if (!this.altLabelCtxs.has(label)) {
                         this.altLabelCtxs.set(label, this.altToContext[altNum]);
                     }
@@ -228,7 +228,7 @@ export class RuleFunction extends OutputModelObject {
     public getDeclForAltElement(t: GrammarAST, refLabelName: string, needList: boolean, optional: boolean): Decl[] {
         const decls = new Array<Decl>();
         if (t.getType() === ANTLRv4Lexer.RULE_REF) {
-            const ruleRef = this.factory!.g.getRule(t.getText())!;
+            const ruleRef = this.factory!.grammar.getRule(t.getText())!;
             const generator = this.factory!.getGenerator()!.targetGenerator;
             const ctxName = generator.getRuleFunctionContextStructName(ruleRef);
             if (needList) {
@@ -283,7 +283,7 @@ export class RuleFunction extends OutputModelObject {
 
     /** Given list of X and r refs in alt, compute how many of each there are. */
     protected getElementFrequenciesForAlt(ast: AltAST): [FrequencySet<string>, FrequencySet<string>] {
-        const errorManager = this.factory!.g.tool.errorManager;
+        const errorManager = this.factory!.grammar.tool.errorManager;
 
         try {
             const visitor = new ElementFrequenciesVisitor(errorManager, new CommonTreeNodeStream(ast));

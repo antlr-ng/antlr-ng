@@ -3,12 +3,12 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { GrammarAST } from "../../tool/ast/GrammarAST.js";
+import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
 import { TerminalAST } from "../../tool/ast/TerminalAST.js";
-import { IOutputModelFactory } from "../IOutputModelFactory.js";
-import { ILabeledOp } from "./ILabeledOp.js";
+import type { IOutputModelFactory } from "../IOutputModelFactory.js";
+import type { ILabeledOp } from "./ILabeledOp.js";
 import { RuleElement } from "./RuleElement.js";
-import { Decl } from "./decl/Decl.js";
+import type { Decl } from "./decl/Decl.js";
 
 export class MatchToken extends RuleElement implements ILabeledOp {
     public readonly name?: string;
@@ -19,12 +19,11 @@ export class MatchToken extends RuleElement implements ILabeledOp {
     public constructor(factory: IOutputModelFactory, ast: TerminalAST | GrammarAST) {
         super(factory, ast);
         if (ast instanceof TerminalAST) {
-            const g = factory.g;
             const gen = factory.getGenerator()!;
-            this.ttype = g.getTokenType(ast.getText());
+            this.ttype = factory.grammar.getTokenType(ast.getText());
 
             const target = gen.targetGenerator;
-            this.name = target.getTokenTypeAsTargetLabel(g, this.ttype);
+            this.name = target.getTokenTypeAsTargetLabel(factory.grammar, this.ttype);
             this.escapedName = target.escapeIfNeeded(this.name);
         }
     }
