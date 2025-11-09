@@ -22,7 +22,7 @@ import {
 import { Constants } from "../src/Constants.js";
 import { LexerATNFactory } from "../src/automata/LexerATNFactory.js";
 import { ParserATNFactory } from "../src/automata/ParserATNFactory.js";
-import { defineConfig, type IToolConfiguration } from "../src/config/config.js";
+import { defineConfig, type IGenerationOptions, type IToolConfiguration } from "../src/config/config.js";
 import { TypeScriptTargetGenerator } from "../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { SemanticPipeline } from "../src/semantics/SemanticPipeline.js";
 import { copyFolderFromMemFs, generateRandomFilename } from "../src/support/fs-helpers.js";
@@ -179,7 +179,9 @@ export class ToolTestUtils {
             try {
                 const parameters = defineConfig({
                     grammarFiles: [tempTestDir + "/" + fileName],
-                    outputDirectory: tempTestDir,
+                    generationOptions: {
+                        outputDirectory: tempTestDir,
+                    },
                     generators: [tsGenerator],
                 });
 
@@ -219,8 +221,8 @@ export class ToolTestUtils {
         try {
             const parameters = defineConfig({
                 grammarFiles: [workDir + "/" + runOptions.grammarFileName],
-                outputDirectory: workDir,
                 generationOptions: {
+                    outputDirectory: workDir,
                     generateListener: runOptions.useListener,
                     generateVisitor: runOptions.useVisitor,
                 },
@@ -274,8 +276,8 @@ export class ToolTestUtils {
         return elements.slice(Token.MIN_USER_TOKEN_TYPE);
     }
 
-    public static createATN(g: Grammar, useSerializer: boolean): ATN {
-        ToolTestUtils.semanticProcess(g);
+    public static createATN(g: Grammar, useSerializer: boolean, options: IGenerationOptions): ATN {
+        ToolTestUtils.semanticProcess(g, options);
         expect(g.tool.getNumErrors()).toBe(0);
 
         const f = g.isLexer() ? new LexerATNFactory(g as LexerGrammar, tsGenerator) : new ParserATNFactory(g);
@@ -318,11 +320,11 @@ export class ToolTestUtils {
         return queue;
     }
 
-    public static semanticProcess(g: Grammar): void {
+    public static semanticProcess(g: Grammar, options: IGenerationOptions): void {
         if (!g.ast.hasErrors) {
             const tool = new Tool();
             const sem = new SemanticPipeline(g);
-            sem.process(tsGenerator);
+            sem.process(tsGenerator, options);
             for (const imp of g.getImportedGrammars()) {
                 tool.processNonCombinedGrammar(imp, false);
             }
@@ -443,8 +445,8 @@ export class ToolTestUtils {
 
         const parameters = defineConfig({
             grammarFiles: [join(workDir, runOptions.grammarFileName)],
-            outputDirectory: workDir,
             generationOptions: {
+                outputDirectory: workDir,
                 generateListener: runOptions.useListener,
                 generateVisitor: runOptions.useVisitor,
             },

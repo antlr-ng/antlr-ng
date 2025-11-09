@@ -80,7 +80,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: subdir
             }), false);
@@ -103,7 +105,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
             }), false);
@@ -131,7 +135,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
             }), false);
@@ -161,7 +167,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
             }), false);
@@ -190,7 +198,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
             }), false);
@@ -220,7 +230,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
             }), false);
@@ -251,7 +263,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
             }), false);
@@ -282,7 +296,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
             }), false);
@@ -313,7 +329,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir
             }), false);
@@ -344,7 +362,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir,
                 generators: [tsGenerator],
@@ -406,7 +426,9 @@ describe("TestCompositeGrammars", () => {
             g.tool.errorManager.addListener(errors);
 
             const parameters = defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 generators: [tsGenerator],
             });
@@ -441,7 +463,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir,
                 generators: [tsGenerator],
@@ -480,7 +504,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: tempDir,
                 generators: [tsGenerator],
@@ -515,7 +541,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.mkdirSync(outdir);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: outdir,
+                generationOptions: {
+                    outputDirectory: outdir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 lib: subdir,
             }), false);
@@ -555,7 +583,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.mkdirSync(outdir);
 
             let queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/MLexer.g4"],
                 lib: outdir,
                 generators: [tsGenerator],
@@ -563,7 +593,9 @@ describe("TestCompositeGrammars", () => {
             expect(queue.all).toHaveLength(0);
 
             queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: outdir,
+                generationOptions: {
+                    outputDirectory: outdir,
+                },
                 grammarFiles: [tempDir + "/MParser.g4"],
                 lib: subdir
             }), false);
@@ -598,7 +630,9 @@ describe("TestCompositeGrammars", () => {
             g.tool.errorManager.addListener(queue);
 
             const parameters = defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
             });
             g.tool.process(g, parameters, false);
@@ -638,7 +672,9 @@ describe("TestCompositeGrammars", () => {
             g.tool.errorManager.addListener(errors);
 
             const parameters = defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
             });
             g.tool.process(g, parameters, false);
@@ -679,7 +715,9 @@ describe("TestCompositeGrammars", () => {
             g.tool.errorManager.addListener(errors);
 
             const parameters = defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 generators: [tsGenerator],
             });
@@ -750,7 +788,9 @@ describe("TestCompositeGrammars", () => {
             g.tool.errorManager.addListener(errors);
 
             const parameters = defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 generators: [tsGenerator],
             });
@@ -798,7 +838,9 @@ describe("TestCompositeGrammars", () => {
             g.tool.errorManager.addListener(errors);
 
             const parameters = defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 generators: [tsGenerator],
             });
@@ -858,7 +900,9 @@ describe("TestCompositeGrammars", () => {
             g.tool.errorManager.addListener(errors);
 
             const parameters = defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
                 generators: [tsGenerator],
             });
@@ -899,7 +943,9 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
-                outputDirectory: tempDir,
+                generationOptions: {
+                    outputDirectory: tempDir,
+                },
                 grammarFiles: [tempDir + "/M.g4"],
             }), false);
 

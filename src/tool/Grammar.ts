@@ -276,8 +276,8 @@ export class Grammar implements IGrammar, IAttributeResolver {
         }
     }
 
-    public static forFile<T extends Grammar>(c: Constructor<T>, fileName: string, options: IGenerationOptions,
-        grammarText: string, tokenVocabSource?: Grammar, listener?: ToolListener): T {
+    public static forFile<T extends Grammar>(c: Constructor<T>, fileName: string, grammarText: string,
+        tokenVocabSource?: Grammar, listener?: ToolListener): T {
         const grammar = new c(grammarText, tokenVocabSource);
 
         grammar.fileName = fileName;

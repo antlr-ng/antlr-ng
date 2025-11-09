@@ -22,7 +22,9 @@ import { ToolTestUtils } from "../ToolTestUtils.js";
 const tsGenerator = new TypeScriptTargetGenerator();
 const testParameters = defineConfig({
     grammarFiles: [],
-    outputDirectory: "",
+    generationOptions: {
+        outputDirectory: "",
+    },
     generators: [tsGenerator]
 });
 
@@ -30,14 +32,14 @@ describe("TestATNParserPrediction", () => {
     /** first check that the ATN predicts right alt. Then check adaptive prediction. */
     const checkPredictedAlt = (lg: LexerGrammar, g: Grammar, decision: number,
         inputString: string, expectedAlt: number): void => {
-        const lexATN = ToolTestUtils.createATN(lg, true);
+        const lexATN = ToolTestUtils.createATN(lg, true, testParameters.generationOptions);
         const lexInterp = new LexerATNSimulator(null, lexATN, [new DFA(lexATN.modeToStartState[Lexer.DEFAULT_MODE])],
             new PredictionContextCache());
         const types = ToolTestUtils.getTokenTypesViaATN(inputString, lexInterp);
 
-        ToolTestUtils.semanticProcess(lg);
+        ToolTestUtils.semanticProcess(lg, testParameters.generationOptions);
         g.importVocab(lg);
-        ToolTestUtils.semanticProcess(g);
+        ToolTestUtils.semanticProcess(g, testParameters.generationOptions);
 
         // Check ATN prediction
         const input = new MockIntTokenStream(types);
@@ -59,13 +61,13 @@ describe("TestATNParserPrediction", () => {
 
     const checkDFAConstruction = (lg: LexerGrammar, g: Grammar, decision: number,
         inputString: string[], dfaString: string[]): void => {
-        const lexATN = ToolTestUtils.createATN(lg, true);
+        const lexATN = ToolTestUtils.createATN(lg, true, testParameters.generationOptions);
         const lexInterp = new LexerATNSimulator(null, lexATN, [new DFA(lexATN.getDecisionState(Lexer.DEFAULT_MODE))],
             new PredictionContextCache());
 
-        ToolTestUtils.semanticProcess(lg);
+        ToolTestUtils.semanticProcess(lg, testParameters.generationOptions);
         g.importVocab(lg);
-        ToolTestUtils.semanticProcess(g);
+        ToolTestUtils.semanticProcess(g, testParameters.generationOptions);
 
         const interp = new ParserInterpreterForTesting(g, null);
         for (let i = 0; i < inputString.length; i++) {

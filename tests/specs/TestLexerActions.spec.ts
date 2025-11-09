@@ -20,7 +20,9 @@ tsGenerator.setUp();
 
 const testParameters = defineConfig({
     grammarFiles: [],
-    outputDirectory: "",
+    generationOptions: {
+        outputDirectory: "",
+    },
     generators: [tsGenerator]
 });
 
@@ -446,8 +448,8 @@ fragment WS: [ \\r\\t\\n]+ ;
         const g = new Grammar(grammarText);
         g.tool.process(g, testParameters, false);
 
-        const gen = new CodeGenerator(g, tsGenerator);
-        const outputFile = gen.generateParser(g.tool.toolConfiguration.generationOptions);
+        const gen = new CodeGenerator(g, tsGenerator, testParameters.generationOptions);
+        const outputFile = gen.generateParser(testParameters.generationOptions);
         expect(outputFile).toContain("createFailedPredicateException(\"false\", \"custom message\");");
         expect(outputFile).toContain("return c.match(/^[0-9a-zA-Z_]+$/);");
     });

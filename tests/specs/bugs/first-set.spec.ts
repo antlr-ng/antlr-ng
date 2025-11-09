@@ -21,7 +21,9 @@ tsGenerator.setUp();
 
 const parameters = defineConfig({
     grammarFiles: [],
-    outputDirectory: "",
+    generationOptions: {
+        outputDirectory: "",
+    },
     generators: [tsGenerator],
 });
 
@@ -141,8 +143,8 @@ describe("General", () => {
         const g = new Grammar(grammarText);
         g.tool.process(g, parameters, false);
 
-        const gen = new CodeGenerator(g, tsGenerator);
-        const output = gen.generateParser(g.tool.toolConfiguration.generationOptions);
+        const gen = new CodeGenerator(g, tsGenerator, parameters.generationOptions);
+        const output = gen.generateParser(parameters.generationOptions);
         expect(output).toContain("createFailedPredicateException(\"false\", \"custom message\");");
         expect(output).toContain("\"\"\"Returns `True` iff on the current index of the parser's");
     });
