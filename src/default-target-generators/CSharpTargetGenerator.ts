@@ -658,12 +658,12 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         return `loop${ast.token?.tokenIndex ?? 0}`;
     }
 
-    public override getSerializedATNSegmentLimit(): number {
-        return 2 ^ 16 - 1; // 64K per segment for C++
+    protected override escapeWord(word: string): string {
+        return "@" + word;
     }
 
-    protected override renderFileHeader(file: OutputModelObjects.OutputFile): Lines {
-        return [];
+    protected override escapeChar(v: number): string {
+        return `\\x${v.toString(16).padStart(4, "0")}`;
     }
 
     protected override renderTypedContext = (ctx: OutputModelObjects.StructDecl): string => {
@@ -2456,109 +2456,6 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(`#endif`);
 
         result.push("}");
-
-        return result;
-    }
-
-    private renderLexerHeader(lexer: OutputModelObjects.Lexer,
-        namedActions: Map<string, OutputModelObjects.Action>): Lines {
-
-        const result: Lines = this.renderAction(namedActions.get("context"));
-
-        const baseClass = lexer.superClass ? this.renderActionChunks([lexer.superClass]) : "Lexer";
-        result.push(`public partial class ${lexer.name} : ${baseClass} {`);
-        result.push(`public:`);
-
-        const block: Lines = [];
-        if (lexer.tokens.size > 0) {
-            block.push(`enum {`);
-            block.push(...this.renderList(this.renderMap(lexer.tokens, 0, "${0} = ${1}"),
-                { wrap: 67, indent: 2, separator: ", " }));
-            block.push(`};`);
-
-            result.push(...this.formatLines(block, 2));
-        }
-
-        if (lexer.escapedChannels.size > 0) {
-            block.push(`enum {`);
-            block.push(...this.renderList(this.renderMap(lexer.escapedChannels, 0, "${0} = ${1}"),
-                { wrap: 67, indent: 2, separator: ", " }));
-            block.push(`};`);
-
-            result.push(...this.formatLines(block, 2));
-        }
-
-        if (lexer.escapedModeNames.length > 1) {
-            block.push(`enum {`);
-            const listedModes: string[] = [];
-            lexer.escapedModeNames.forEach((m, i) => {
-                listedModes.push(`  ${m} = ${i},`);
-            });
-            block.push(...this.renderList(listedModes, { wrap: 67, indent: 2, separator: "\n" }));
-            block.push(`};`);
-
-            result.push(...this.formatLines(block, 2));
-        }
-
-        result.push(`  explicit ${lexer.name}(CharStream *input);`);
-        result.push(``);
-        result.push(`  ~${lexer.name}() override;`);
-        result.push(``);
-        result.push(...this.renderAction(namedActions.get("members")));
-        result.push(``);
-        result.push(`  string getGrammarFileName() const override;`);
-        result.push(``);
-        result.push(`  const List<string>& getRuleNames() const override;`);
-        result.push(``);
-        result.push(`  const List<string>& getChannelNames() const override;`);
-        result.push(``);
-        result.push(`  const List<string>& getModeNames() const override;`);
-        result.push(``);
-        result.push(`  const dfa::Vocabulary& getVocabulary() const override;`);
-        result.push(``);
-        result.push(`  atn::SerializedATNView getSerializedATN() const override;`);
-        result.push(``);
-        result.push(`  const atn::ATN& getATN() const override;`);
-        result.push(``);
-
-        if (lexer.actionFuncs.size > 0) {
-            result.push(`  void action(RuleContext *context, int ruleIndex, int actionIndex) override;`);
-            result.push(``);
-        }
-
-        if (lexer.sempredFuncs.size > 0) {
-            result.push(`  bool sempred(RuleContext *_localctx, int ruleIndex, int predicateIndex) ` +
-                `override;`, ``);
-        }
-
-        result.push(`  // By default the static state used to implement the lexer is lazily initialized during ` +
-            `the first`);
-        result.push(`  // call to the constructor. You can call this function if you wish to initialize the ` +
-            `static state`);
-        result.push(`  // ahead of time.`);
-        result.push(`  static void initialize();`);
-        result.push(``);
-        result.push(`private:`);
-        result.push(...this.formatLines(this.renderAction(namedActions.get("declarations")), 4));
-        result.push(``);
-        result.push(`  // Individual action functions triggered by action() above.`);
-
-        if (lexer.actionFuncs.size > 0) {
-            lexer.actionFuncs.forEach((f) => {
-                result.push(`  void ${f.name}Action(RuleContext *context, int actionIndex);`);
-            });
-        }
-
-        result.push(``);
-        result.push(`  // Individual semantic predicate functions triggered by sempred() above.`);
-
-        if (lexer.sempredFuncs.size > 0) {
-            lexer.sempredFuncs.forEach((f) => {
-                result.push(`  bool ${f.name}Sempred(RuleContext *_localctx, int predicateIndex);`);
-            });
-        }
-
-        result.push(`};`);
 
         return result;
     }

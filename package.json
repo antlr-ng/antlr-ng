@@ -75,7 +75,7 @@
         "generate-parser": "antlr-ng -Dlanguage=TypeScript --exact-output-dir",
         "generate-mysql-cpp": "antlr-ng -Dlanguage=Cpp -DexportMacro=ANTLR4CPP_PUBLIC -p antlr4 --exact-output-dir -l -v -o ~/antlr-ng-test-generation/mysql/Cpp/old ./tests/grammars/MySQLLexer.g4 ./tests/grammars/MySQLParser.g4",
         "generate-mysql-ts": "antlr-ng -Dlanguage=TypeScript -p antlr4 --exact-output-dir -l -v -o ~/antlr-ng-test-generation/mysql/TypeScript/old ./tests/grammars/MySQLLexer.g4 ./tests/grammars/MySQLParser.g4",
-        "generate-mysql-c#": "antlr-ng -Dlanguage=CSharp -p antlr4 --exact-output-dir -l -v -o ~/antlr-ng-test-generation/mysql/C#/old ./tests/grammars/MySQLLexer.g4 ./tests/grammars/MySQLParser.g4",
+        "generate-mysql-c#": "antlr-ng -Dlanguage=CSharp -p antlr4 --exact-output-dir -l -v -o ~/antlr-ng-test-generation/mysql/CSharp/old ./tests/grammars/MySQLLexer.g4 ./tests/grammars/MySQLParser.g4",
         "generate-unicode-data": "tsx ./build/generate-unicode-data.ts",
         "generate-version-file": "tsx ./build/generate-version-file.ts",
         "generate-docs": "typedoc --options typedoc.json",
