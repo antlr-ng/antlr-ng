@@ -39,7 +39,7 @@ Reference MySQL grammar output generated with old generator:
 ### Code Structure
 - **Namespace**: Optional wrapping with `namespace X {}`
 - **Using Statements**: `using System.*`, `using Antlr4.Runtime.*`
-- **Indentation**: Tabs (not spaces!)
+- **Indentation**: 4 spaces
 - **Attributes**: `[NotNull]`, `[System.CodeDom.Compiler.GeneratedCode("ANTLR", "version")]`
 - **XML Comments**: `<summary>`, `<param>`, `<return>`, `<para>`
 
@@ -56,9 +56,8 @@ Reference MySQL grammar output generated with old generator:
 2. Remove all header file logic (C# doesn't need separate .h files)
 3. Replace C++ includes with C# using statements
 4. Update all render methods for C# syntax
-5. Change indentation from spaces to tabs where needed
-6. Update name transformations (token types, channels, modes)
-7. Test incrementally with simple grammars
+5. Update name transformations (token types, channels, modes)
+6. Test incrementally with simple grammars
 
 ### Option 2: Build from TypeScriptTargetGenerator
 1. Copy `TypeScriptTargetGenerator.ts` as base
