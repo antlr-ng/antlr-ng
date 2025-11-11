@@ -2386,12 +2386,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         result.push(`    },`);
         result.push(`    std::vector<std::string>{`);
-        result.push(`      "DEFAULT_TOKEN_CHANNEL", "HIDDEN"`);
+        result.push(...this.renderList(["DEFAULT_TOKEN_CHANNEL", "HIDDEN", ...lexer.channelNames],
+            { wrap: 65, quote: '"', indent: 6 }));
         result.push(`    },`);
-
-        if (lexer.channelNames.length > 0) {
-            result.push(...this.renderList(lexer.channelNames, { wrap: 65, indent: 2, quote: `"` }));
-        }
 
         result.push(`    std::vector<std::string>{`);
         result.push(...this.renderList(lexer.modes, { wrap: 65, indent: 6, quote: `"` }));
@@ -2526,6 +2523,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
             block.push(`};`);
 
             result.push(...this.formatLines(block, 2));
+            block.length = 0;
         }
 
         if (lexer.escapedChannels.size > 0) {
@@ -2535,6 +2533,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
             block.push(`};`);
 
             result.push(...this.formatLines(block, 2));
+            block.length = 0;
         }
 
         if (lexer.escapedModeNames.length > 1) {

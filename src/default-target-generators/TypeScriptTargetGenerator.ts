@@ -1758,7 +1758,6 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
                 result.push("");
                 result.push(...this.formatLines(this.renderRuleActionFunction(func), 0));
             }
-
         }
 
         if (lexer.sempredFuncs.size > 0) {
