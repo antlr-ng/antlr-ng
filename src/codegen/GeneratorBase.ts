@@ -777,8 +777,8 @@ export abstract class GeneratorBase implements ITargetGenerator {
      * @returns An array of strings, each representing a rendered object.
      */
     public renderTemplatedObjectList(list: Iterable<object>, indent: number, template: string,
-        ...keys: string[]): string[] {
-        const result: string[] = [];
+        ...keys: string[]): Lines {
+        const result: Lines = [];
         const indentStr = " ".repeat(indent);
 
         for (const obj of list) {

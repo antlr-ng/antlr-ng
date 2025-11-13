@@ -2264,11 +2264,11 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         if (parser.rules.length > 0) {
             const block: Lines = [];
             block.push(`enum {`);
-            const listedModes: string[] = [];
+            const ruleAssignments: string[] = [];
             parser.rules.forEach((m, i) => {
-                listedModes.push(`Rule${this.toTitleCase(m.name)} = ${i}`);
+                ruleAssignments.push(`Rule${this.toTitleCase(m.name)} = ${i}`);
             });
-            block.push(...this.renderList(listedModes, { wrap: 67, indent: 2, separator: ", " }));
+            block.push(...this.renderList(ruleAssignments, { wrap: 67, indent: 2, separator: ", " }));
             block.push(`};`);
 
             result.push(...this.formatLines(block, 2));

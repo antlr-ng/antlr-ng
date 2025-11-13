@@ -792,7 +792,16 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
     protected override renderStructDecl = (struct: OutputModelObjects.StructDecl): Lines => {
         const result: Lines = this.startRendering("StructDecl");
 
-        result.push(``, `export class ${struct.escapedName} extends antlr.ParserRuleContext {`);
+        const superClass = this.invariants.contextSuperClass ?? "antlr.ParserRuleContext";
+
+        let interfaces = "";
+        if (struct.interfaces.length > 0) {
+            interfaces = " implements " + struct.interfaces.map((i) => {
+                return `, ${i}`;
+            }).join(", ");
+        }
+
+        result.push(`export class ${struct.escapedName} extends ${superClass}${interfaces} {`);
 
         const decls = this.renderDecls(struct.attrs);
         let startLogEntry: string | undefined = undefined;
