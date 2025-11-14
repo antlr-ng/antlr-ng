@@ -300,67 +300,58 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.tokenLabelType = listenerFile.TokenLabelType ?? "IToken";
 
         const result: Lines = this.renderFileHeader(listenerFile);
-        result.push(...this.renderAction(listenerFile.namedActions.get("header")), ``);
-
-        if (!declaration) {
-            result.push(``);
-            result.push(...this.renderAction(listenerFile.namedActions.get("listenerpreinclude")));
-            result.push(`using ${listenerFile.grammarName}Listener.h"`, ``);
-
-            result.push(...this.renderAction(listenerFile.namedActions.get("listenerpostinclude")), ``);
-
-            if (options.package) {
-                result.push(`using namespace ${options.package};`, "");
-            }
-
-            result.push(...this.renderAction(listenerFile.namedActions.get("listenerdefinitions")), ``);
-
-            return result.join("\n");
-        }
-
-        result.push(``, ``);
-
-        result.push(...this.renderAction(listenerFile.namedActions.get("listenerpreinclude")), ``);
-
-        result.push(`using antlr4-runtime.h"`);
-        result.push(`using ${listenerFile.parserName}.h"`, ``);
-
-        result.push(...this.renderAction(listenerFile.namedActions.get("listenerpostinclude")), ``);
-
         if (options.package) {
             result.push(`namespace ${options.package} {`);
         }
 
+        result.push(...this.renderAction(listenerFile.namedActions.get("header")));
+
+        const parserName = listenerFile.parserName;
+        result.push(`using Antlr4.Runtime.Misc;`);
+        result.push(`using IParseTreeListener = Antlr4.Runtime.Tree.IParseTreeListener;`);
+        result.push(`using IToken = Antlr4.Runtime.IToken;`);
         result.push(``);
+        result.push(`/// <summary>`);
+        result.push(`/// This interface defines a complete listener for a parse tree produced by`);
+        result.push(`/// <see cref="${parserName}"/>.`);
+        result.push(`/// </summary>`);
+        result.push(`[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`);
+        result.push(`[System.CLSCompliant(false)]`);
+        result.push(`public interface I${listenerFile.grammarName}Listener : IParseTreeListener {`);
 
-        result.push(`/**`);
-        result.push(` * This interface defines an abstract listener for a parse tree produced by ` +
-            `${listenerFile.parserName}.`);
-        result.push(` */`);
+        const block: Lines = [];
+        listenerFile.listenerNames.forEach((lname) => {
+            const listenerName = this.toTitleCase(lname);
+            block.push(`/// <summary>`);
 
-        result.push(`public partial class ${listenerFile.grammarName}Listener : ` +
-            `tree::ParseTreeListener {`);
-        result.push(`public:`);
+            const ruleName = listenerFile.listenerLabelRuleNames.get(lname);
+            if (ruleName) {
+                block.push(`/// Enter a parse tree produced by the <c>${lname}</c>`);
+                block.push(`/// labeled alternative in <see cref="${parserName}.${ruleName}"/>.`);
+            } else {
+                block.push(`/// Enter a parse tree produced by <see cref="${parserName}.${lname}"/>.`);
+            }
 
-        result.push(...this.renderAction(listenerFile.namedActions.get("listenerdeclarations")), ``);
+            block.push(`/// </summary>`);
+            block.push(`/// <param name="context">The parse tree.</param>`);
+            block.push(`void Enter${listenerName}([NotNull] ${parserName}.${listenerName}Context context);`);
+            block.push(`/// <summary>`);
 
-        for (const lname of listenerFile.listenerNames) {
-            const name = this.toTitleCase(lname);
-            const parserName = listenerFile.parserName;
-            result.push(`  virtual void enter${name}(${parserName}::${name}Context *ctx) = 0;`);
-            result.push(`  virtual void exit${name}(${parserName}::${name}Context *ctx) = 0;`);
-            result.push(``);
-        }
+            if (ruleName) {
+                block.push(`/// Exit a parse tree produced by the <c>${lname}</c>`);
+                block.push(`/// labeled alternative in <see cref="${parserName}.${ruleName}"/>.`);
+            } else {
+                block.push(`/// Exit a parse tree produced by <see cref="${parserName}.${lname}"/>.`);
+            }
 
-        if (listenerFile.namedActions.get("listenermembers")) {
-            result.push(`private:`);
-            result.push(...this.renderAction(listenerFile.namedActions.get("listenermembers")));
-        }
+            block.push(`/// </summary>`);
+            block.push(`/// <param name="context">The parse tree.</param>`);
+            block.push(`void Exit${listenerName}([NotNull] ${parserName}.${listenerName}Context context);`);
+        });
 
-        result.push(``, `};`, ``);
-
+        result.push(...this.formatLines(block, 4));
         if (options.package) {
-            result.push(`}  // namespace ${options.package}`);
+            result.push(`} // namespace ${options.package}`);
         }
 
         return result.join(`\n`);
@@ -373,72 +364,51 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.tokenLabelType = visitorFile.TokenLabelType ?? "IToken";
 
         const result: Lines = this.renderFileHeader(visitorFile);
+        if (options.package) {
+            result.push(`namespace ${options.package} {`);
+        }
+
         result.push(...this.renderAction(visitorFile.namedActions.get("header")), ``);
 
-        if (!declaration) {
-            result.push(``);
-            result.push(...this.renderAction(visitorFile.namedActions.get("visitorpreinclude")));
-            result.push(`using ${visitorFile.grammarName}Visitor.h"`, ``);
+        const parserName = visitorFile.parserName;
+        result.push(`using Antlr4.Runtime.Misc;`);
+        result.push(`using Antlr4.Runtime.Tree;`);
+        result.push(`using IToken = Antlr4.Runtime.IToken;`);
+        result.push(``);
+        result.push(`/// <summary>`);
+        result.push(`/// This interface defines a complete generic visitor for a parse tree produced`);
+        result.push(`/// by <see cref="${parserName}"/>.`);
+        result.push(`/// </summary>`);
+        result.push(`/// <typeparam name="Result">The return type of the visit operation.</typeparam>`);
+        result.push(`[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`);
+        result.push(`[System.CLSCompliant(false)]`);
+        result.push(`public interface I${visitorFile.grammarName}Visitor<Result> : IParseTreeVisitor<Result> {`);
 
-            result.push(...this.renderAction(visitorFile.namedActions.get("visitorpostinclude")), ``);
+        const block: Lines = [];
+        visitorFile.visitorNames.forEach((lname) => {
+            const ruleName = visitorFile.visitorLabelRuleNames.get(lname);
+            const visitorName = this.toTitleCase(lname);
+            result.push(`/// <summary>`);
 
-            if (options.package) {
-                result.push(`using namespace ${options.package};`, "");
+            if (ruleName) {
+                result.push(`/// Visit a parse tree produced by the <c>${lname}</c>`);
+                result.push(`/// labeled alternative in <see cref="${parserName}.${ruleName}"/>.`);
+            } else {
+                result.push(`/// Visit a parse tree produced by <see cref="${parserName}.${lname}"/>.`);
             }
 
-            result.push(...this.renderAction(visitorFile.namedActions.get("visitordefinitions")), ``);
+            result.push(`/// </summary>`);
+            result.push(`/// <param name="context">The parse tree.</param>`);
+            result.push(`/// <return>The visitor result.</return>`);
+            result.push(`Result Visit${visitorName}([NotNull] ${parserName}.${visitorName}Context context);`);
+        });
 
-            return result.join("\n");
-        } else {
-            result.push(``, ``);
-
-            result.push(...this.renderAction(visitorFile.namedActions.get("visitorpreinclude")), ``);
-
-            result.push(`using antlr4-runtime.h"`);
-            result.push(`using ${visitorFile.parserName}.h"`, ``);
-
-            result.push(...this.renderAction(visitorFile.namedActions.get("visitorpostinclude")), ``);
-
-            if (options.package) {
-                result.push(`namespace ${options.package} {`);
-            }
-
-            result.push(``);
-
-            result.push(`/**`);
-            result.push(` * This class defines an abstract visitor for a parse tree`);
-            result.push(` * produced by ${visitorFile.parserName}.`);
-            result.push(` */`);
-
-            result.push(`public partial class ${visitorFile.grammarName}Visitor : ` +
-                `tree::AbstractParseTreeVisitor {`);
-            result.push(`public:`);
-
-            result.push(...this.renderAction(visitorFile.namedActions.get("visitordeclarations")), ``);
-
-            result.push(`  /**`);
-            result.push(`   * Visit parse trees produced by ${visitorFile.parserName}.`);
-            result.push(`   */`);
-
-            for (const lname of visitorFile.visitorNames) {
-                const name = this.toTitleCase(lname);
-                const parserName = visitorFile.parserName;
-                result.push(`  virtual std::any visit${name}(${parserName}::${name}Context *context) = 0;`, ``);
-            }
-
-            if (visitorFile.namedActions.get("visitormembers")) {
-                result.push(`private:`);
-                result.push(...this.renderAction(visitorFile.namedActions.get("visitormembers")));
-            }
-
-            result.push(``, `};`, ``);
-
-            if (options.package) {
-                result.push(`}  // namespace ${options.package}`);
-            }
-
-            return result.join(`\n`);
+        result.push(...this.formatLines(block, 4));
+        if (options.package) {
+            result.push(`} // namespace ${options.package}`);
         }
+
+        return result.join("\n");
     };
 
     public renderLexerRuleContext(): Lines {
