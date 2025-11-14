@@ -500,71 +500,68 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     ): string => {
         const result: Lines = [];
 
-        result.push(`#include <iostream>`, ``);
-        result.push(`using antlr4-runtime.h"`);
-        result.push(`using <lexerName>.h"`);
-
-        result.push(`<if(parserName)>`);
-        result.push(`using <parserName>.h"`);
-        result.push(`<endif>`);
-
+        result.push(`using System;`);
+        result.push(`using Antlr4.Runtime;`);
+        result.push(`using Antlr4.Runtime.Atn;`);
+        result.push(`using Antlr4.Runtime.Tree;`);
+        result.push(`using System.Text;`);
         result.push(``);
-        result.push(``, ``);
+        result.push(`public class Test {`);
+        result.push(`    public static void Main(string[] args) {`);
+        result.push(`        Console.OutputEncoding = Encoding.UTF8;`);
+        result.push(`        Console.InputEncoding = Encoding.UTF8;`);
+        result.push(`        var input = CharStreams.fromPath(args[0]);`);
+        result.push(`        var lex = new ${lexerName}(input);`);
+        result.push(`        var tokens = new CommonTokenStream(lex);`);
 
         if (parserName !== undefined) {
-            result.push(`class TreeShapeListener : tree::ParseTreeListener {`);
-            result.push(`public:`);
-            result.push(`  void visitTerminal(tree::TerminalNode *) override {}`);
-            result.push(`  void visitErrorNode(tree::ErrorNode *) override {}`);
-            result.push(`  void exitEveryRule(ParserRuleContext *) override {}`);
-            result.push(`  void enterEveryRule(ParserRuleContext *ctx) override {`);
-            result.push(`    for (auto child : ctx.children) {`);
-            result.push(`      tree::ParseTree *parent = child.parent;`);
-            result.push(`      ParserRuleContext *rule = dynamic_cast<ParserRuleContext *>(parent);`);
-            result.push(`      if (rule != ctx) {`);
-            result.push(`        throw "Invalid parse tree shape detected.";`);
-            result.push(`      }`);
-            result.push(`    }`);
-            result.push(`  }`);
-            result.push(`};`);
-        }
+            result.push(`        var parser = new <parserName>(tokens);`);
+            result.push(`        parser.Interpreter.PredictionMode = PredictionMode.<predictionMode>;`);
 
-        result.push(``);
-        result.push(`int main(int argc, const char* argv[]) {`);
-        result.push(`  ANTLRFileStream input;`);
-        result.push(`  input.loadFromFile(argv[1]);`);
-        result.push(`  ${lexerName} lexer(&input);`);
-        result.push(`  CommonTokenStream tokens(&lexer);`);
-
-        if (parserName !== undefined) {
-            result.push(`  ${parserName} parser(&tokens);`);
-            result.push(`  parser.getInterpreter<atn::ParserATNSimulator>().setPredictionMode(atn::` +
-                `PredictionMode::${predictionMode});`);
-            if (!buildParseTree) {
-                result.push(`  parser.setBuildParseTree(false);`);
+            if (buildParseTree) {
+                result.push(`        parser.BuildParseTree = false;`);
             }
 
             if (showDiagnosticErrors) {
-                result.push(`  DiagnosticErrorListener errorListener;`);
-                result.push(`  parser.addErrorListener(&errorListener);`);
+                result.push(`        parser.AddErrorListener(new DiagnosticErrorListener());`);
             }
 
-            result.push(`  tree::ParseTree *tree = parser.${parserStartRuleName}();`);
-            result.push(`  TreeShapeListener listener;`);
-            result.push(`  tree::ParseTreeWalker::DEFAULT.walk(&listener, tree);`);
+            if (traceATN) {
+                result.push(`        ParserATNSimulator.trace_atn_sim = true;`);
+            }
+
+            result.push(`        var tree = parser.<parserStartRuleName>();`);
+            result.push(`        ParseTreeWalker.Default.Walk(new TreeShapeListener(), tree);`);
         } else {
-            result.push(`  tokens.fill();`);
-            result.push(`  for (auto token : tokens.getTokens())`);
-            result.push(`    std::cout << token.toString() << std::endl;`);
+            result.push(`        tokens.Fill();`);
+            result.push(`        foreach (object t in tokens.GetTokens())`);
+            result.push(`            Console.Out.WriteLine(t);`);
 
             if (showDFA) {
-                result.push(`  std::cout << lexer.getInterpreter<atn::LexerATNSimulator>().getDFA(` +
-                    `Lexer::DEFAULT_MODE).toLexerString();`);
+                result.push(`        Console.Out.Write(lex.Interpreter.GetDFA(Lexer.DEFAULT_MODE).ToLexerString());`);
             }
         }
 
-        result.push(`  return 0;`);
+        result.push(`	}`);
         result.push(`}`);
+        result.push(``);
+
+        if (parserName !== undefined) {
+            result.push(`class TreeShapeListener : IParseTreeListener {`);
+            result.push(`	public void VisitTerminal(ITerminalNode node) { }`);
+            result.push(`	public void VisitErrorNode(IErrorNode node) { }`);
+            result.push(`	public void ExitEveryRule(ParserRuleContext ctx) { }`);
+            result.push(``);
+            result.push(`	public void EnterEveryRule(ParserRuleContext ctx) {`);
+            result.push(`		for (int i = 0; i < ctx.ChildCount; i++) {`);
+            result.push(`			IParseTree parent = ctx.GetChild(i).Parent;`);
+            result.push(`			if (!(parent is IRuleNode) || ((IRuleNode)parent).RuleContext != ctx) {`);
+            result.push(`				throw new Exception("Invalid parse tree shape detected.");`);
+            result.push(`			}`);
+            result.push(`		}`);
+            result.push(`	}`);
+            result.push(`}`);
+        }
 
         return result.join("\n");
     };
