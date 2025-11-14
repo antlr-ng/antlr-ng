@@ -165,7 +165,7 @@ describe("Test built-in generators", () => {
         await copyFile("MySQLParser.tokens", targetDir);
     });
 
-    it.only("test C# generator", async () => {
+    it("test C# generator", async () => {
         const csharpGenerator: ITargetGenerator = new CSharpTargetGenerator(false);
         csharpGenerator.setUp();
 
