@@ -231,68 +231,63 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.tokenLabelType = visitorFile.TokenLabelType ?? "IToken";
 
         const result: Lines = this.renderFileHeader(visitorFile);
-        result.push(...this.renderAction(visitorFile.namedActions.get("header")), ``);
-
-        if (!declaration) {
-            result.push(``);
-            result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpreinclude")));
-            result.push(`using ${visitorFile.grammarName}BaseVisitor.h"`, ``);
-
-            result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpostinclude")), ``);
-
-            if (options.package) {
-                result.push(`using namespace ${options.package};`, "");
-            }
-
-            result.push(...this.renderAction(visitorFile.namedActions.get("basevisitordefinitions")), ``);
-
-            return result.join("\n");
-        }
-
-        result.push(``);
-        result.push(``);
-        result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpreinclude")), ``);
-        result.push(`using antlr4-runtime.h"`);
-        result.push(`using ${visitorFile.grammarName}Visitor.h"`);
-        result.push(``);
-        result.push(...this.renderAction(visitorFile.namedActions.get("basevisitorpostinclude")), ``);
-
         if (options.package) {
             result.push(`namespace ${options.package} {`);
         }
 
-        result.push(``);
-        result.push(`/**`);
-        result.push(` * This class provides an empty implementation of ${visitorFile.grammarName}Visitor, which ` +
-            `can be`);
-        result.push(` * extended to create a visitor which only needs to handle a subset of the available methods.`);
-        result.push(` */`);
-        result.push(`public partial class ${visitorFile.grammarName}BaseVisitor : ` +
-            `${visitorFile.grammarName}Visitor {`);
-        result.push(`public:`);
-        result.push(...this.renderAction(visitorFile.namedActions.get("basevisitordeclarations")), ``);
+        result.push(...this.renderAction(visitorFile.namedActions.get("header")));
 
-        for (const lname of visitorFile.visitorNames) {
-            const name = this.toTitleCase(lname);
-            const parserName = visitorFile.parserName;
-            result.push(`  virtual std::any visit${name}(${parserName}::${name}Context *ctx) override {`);
-            result.push(`    return visitChildren(ctx);`);
-            result.push(`  }`);
-            result.push(``);
-        }
-
+        result.push(`using Antlr4.Runtime.Misc;`);
+        result.push(`using Antlr4.Runtime.Tree;`);
+        result.push(`using IToken = Antlr4.Runtime.IToken;`);
+        result.push(`using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;`);
         result.push(``);
 
-        if (visitorFile.namedActions.get("basevisitormembers")) {
-            result.push(`private:`);
-            result.push(...this.renderAction(visitorFile.namedActions.get("basevisitormembers")));
-        }
+        const grammarName = visitorFile.grammarName;
+        result.push(`/// <summary>`);
+        result.push(`/// This class provides an empty implementation of <see cref="I${grammarName}Visitor{Result}"/>,`);
+        result.push(`/// which can be extended to create a visitor which only needs to handle a subset`);
+        result.push(`/// of the available methods.`);
+        result.push(`/// </summary>`);
+        result.push(`/// <typeparam name="Result">The return type of the visit operation.</typeparam>`);
+        result.push(`[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`);
+        result.push(`[System.Diagnostics.DebuggerNonUserCode]`);
+        result.push(`[System.CLSCompliant(false)]`);
+        result.push(`public partial class ${grammarName}BaseVisitor<Result> : AbstractParseTreeVisitor<Result>, ` +
+            `I${grammarName}Visitor<Result> {`);
 
-        result.push(`};`);
-        result.push(``);
+        const parserName = visitorFile.parserName;
+        const block: Lines = [];
+        visitorFile.visitorNames.forEach((lname) => {
+            block.push(`/// <summary>`);
+
+            const labelRuleName = visitorFile.visitorLabelRuleNames.get(lname);
+            if (labelRuleName) {
+                block.push(`/// Visit a parse tree produced by the <c>${lname}</c>`);
+                block.push(`/// labeled alternative in <see cref="${parserName}.${labelRuleName}"/>.`);
+            } else {
+                block.push(`/// Visit a parse tree produced by <see cref="${parserName}.${lname}"/>.`);
+            }
+
+            block.push(`/// <para>`);
+            block.push(`/// The default implementation returns the result of calling <see cref=` +
+                `"AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>`);
+            block.push(`/// on <paramref name="context"/>.`);
+            block.push(`/// </para>`);
+            block.push(`/// </summary>`);
+            block.push(`/// <param name="context">The parse tree.</param>`);
+            block.push(`/// <return>The visitor result.</return>`);
+
+            const listenerName = this.toTitleCase(lname);
+            block.push(`public virtual Result Visit${listenerName}([NotNull] ${parserName}.${listenerName}Context ` +
+                `context) { return VisitChildren(context); }`);
+        });
+
+        result.push(...this.formatLines(block, 4));
+        result.push(`}`);
 
         if (options.package) {
-            result.push(`}  // namespace ${options.package}`);
+            result.push(`} // namespace ${options.package}`);
         }
 
         return result.join("\n");
