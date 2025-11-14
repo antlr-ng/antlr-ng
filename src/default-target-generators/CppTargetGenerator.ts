@@ -1971,19 +1971,26 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
             `${ctx}->${t.label}->stop) : nullptr)`];
     };
 
-    protected override renderSetAttr = (t: OutputModelObjects.SetAttr): Lines => {
+    protected override renderSetAttr = (s: OutputModelObjects.SetAttr): Lines => {
         if (this.invariants.declaration) {
             return [];
         }
 
-        const ctx = this.renderContext(t);
+        const ctx = this.renderContext(s);
+        const rhsChunks = s.rhsChunks.map((c) => {
+            return this.renderActionChunks([c]);
+        }).join("");
 
-        return [`${ctx}-><s.escapedName> = <rhsChunks>;`];
+        return [`${ctx}->${s.escapedName} = ${rhsChunks};`];
     };
 
-    protected override renderSetNonLocalAttr = (t: OutputModelObjects.SetNonLocalAttr): Lines => {
-        return [`((${this.toTitleCase(t.ruleName)}Context)getInvokingContext(${t.ruleIndex})).${t.escapedName} = ` +
-            `${t.rhsChunks};`];
+    protected override renderSetNonLocalAttr = (s: OutputModelObjects.SetNonLocalAttr): Lines => {
+        const rhsChunks = s.rhsChunks.map((c) => {
+            return this.renderActionChunks([c]);
+        }).join("");
+
+        return [`((${this.toTitleCase(s.ruleName)}Context)getInvokingContext(${s.ruleIndex})).${s.escapedName} = ` +
+            `${rhsChunks};`];
     };
 
     protected override renderThisRulePropertyRefCtx = (t: OutputModelObjects.ThisRulePropertyRefCtx): Lines => {

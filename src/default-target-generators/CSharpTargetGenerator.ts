@@ -1702,31 +1702,39 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected override renderRulePropertyRefStart = (t: OutputModelObjects.RulePropertyRefStart): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? (${ctx}.${t.label}.start) : null)`];
+        return [`(${ctx}.${t.label} != null ? (${ctx}.${t.label}.Start) : null)`];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? (${ctx}.${t.label}.stop) : null)`];
+        return [`(${ctx}.${t.label} != null ? (${ctx}.${t.label}.Stop) : null)`];
     };
 
     protected override renderRulePropertyRefText = (t: OutputModelObjects.RulePropertyRefText): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? _input.getText(${ctx}.${t.label}.start, ` +
-            `${ctx}.${t.label}.stop) : null)`];
+        return [`(${ctx}.${t.label} != null ? TokenStream.GetText(${ctx}.${t.label}.Start, ` +
+            `${ctx}.${t.label}.Stop) : null)`];
     };
 
-    protected override renderSetAttr = (t: OutputModelObjects.SetAttr): Lines => {
-        const ctx = this.renderContext(t);
+    protected override renderSetAttr = (s: OutputModelObjects.SetAttr): Lines => {
+        const ctx = this.renderContext(s);
 
-        return [`${ctx}.<s.escapedName> = <rhsChunks>;`];
+        const rhsChunks = s.rhsChunks.map((c) => {
+            return this.renderActionChunks([c]);
+        }).join("");
+
+        return [`${ctx}.${s.escapedName} = ${rhsChunks};`];
     };
 
-    protected override renderSetNonLocalAttr = (t: OutputModelObjects.SetNonLocalAttr): Lines => {
-        return [`((${this.toTitleCase(t.ruleName)}Context)getInvokingContext(${t.ruleIndex})).${t.escapedName} = ` +
-            `${t.rhsChunks};`];
+    protected override renderSetNonLocalAttr = (s: OutputModelObjects.SetNonLocalAttr): Lines => {
+        const rhsChunks = s.rhsChunks.map((c) => {
+            return this.renderActionChunks([c]);
+        }).join("");
+
+        return [`((${this.toTitleCase(s.ruleName)}Context)GetInvokingContext(${s.ruleIndex})).${s.escapedName} = ` +
+            `${rhsChunks};`];
     };
 
     protected override renderThisRulePropertyRefCtx = (t: OutputModelObjects.ThisRulePropertyRefCtx): Lines => {
@@ -1738,63 +1746,70 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     };
 
     protected override renderThisRulePropertyRefStart = (t: OutputModelObjects.ThisRulePropertyRefStart): Lines => {
-        return [`_localctx.start`];
+        return [`_localctx.Start`];
     };
 
     protected override renderThisRulePropertyRefStop = (t: OutputModelObjects.ThisRulePropertyRefStop): Lines => {
-        return [`_localctx.stop`];
+        return [`_localctx.Stop`];
     };
 
     protected override renderThisRulePropertyRefText = (t: OutputModelObjects.ThisRulePropertyRefText): Lines => {
-        return [`_input.getText(_localctx.start, _input.LT(-1))`];
+        return [`TokenStream.GetText(_localctx.Start, TokenStream.LT(-1))`];
     };
 
     protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getChannel() : 0)`];
+        return [`(${ctx}.${this.renderTokenTypeName(t.label)} != null ? ${ctx}.${this.renderTokenTypeName(t.label)}.` +
+            `Channel:0)`];
     };
 
     protected override renderTokenPropertyRefIndex = (t: OutputModelObjects.TokenPropertyRefIndex): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getTokenIndex() : 0)`];
+        return [`(${ctx}.${this.renderTokenTypeName(t.label)} != null ? ${ctx}.${this.renderTokenTypeName(t.label)}.` +
+            `TokenIndex:0)`];
     };
 
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? std::stoi(${ctx}.${t.label}.getText()) : 0)`];
+        return [`(${ctx}.${this.renderTokenTypeName(t.label)}!=null?int.Parse(${ctx}.` +
+            `${this.renderTokenTypeName(t.label)}..Text):0)`];
     };
 
     protected override renderTokenPropertyRefLine = (t: OutputModelObjects.TokenPropertyRefLine): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getLine() : 0)`];
+        return [`(${ctx}.${this.renderTokenTypeName(t.label)}!=null ? ${ctx}.${this.renderTokenTypeName(t.label)}.` +
+            `Line:0)`];
     };
 
     protected override renderTokenPropertyRefPos = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getCharPositionInLine() : 0)`];
+        return [`(${ctx}.${this.renderTokenTypeName(t.label)} != null ? ${ctx}.${this.renderTokenTypeName(t.label)}.` +
+            `CharPositionInLine:0)`];
     };
 
     protected override renderTokenPropertyRefText = (t: OutputModelObjects.TokenPropertyRefText): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getText() : "")`];
+        return [`(${ctx}.${this.renderTokenTypeName(t.label)} != null ? ${ctx}.${this.renderTokenTypeName(t.label)}.` +
+            `GetText() : "")`];
     };
 
     protected override renderTokenPropertyRefType = (t: OutputModelObjects.TokenPropertyRefType): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}.${t.label} != null ? ${ctx}.${t.label}.getType() : 0)`];
+        return [`(${ctx}.${this.renderTokenTypeName(t.label)} != null ? ${ctx}.${this.renderTokenTypeName(t.label)}.` +
+            `Type:0)`];
     };
 
     protected override renderTokenRef = (t: OutputModelObjects.TokenRef): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`${ctx}.<t.escapedName>`];
+        return [`${ctx}.${t.escapedName}`];
     };
 
     private renderParser(parserFile: OutputModelObjects.ParserFile,
