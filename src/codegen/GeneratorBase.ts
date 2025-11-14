@@ -658,7 +658,7 @@ export abstract class GeneratorBase implements ITargetGenerator {
             }
 
             result.push(line);
-        } else {
+        } else if (result.length > 0) {
             // The last line was just pushed. Add or replace the final separator if needed.
             if (options.finalSeparator) {
                 const lastIndex = result.length - 1;
