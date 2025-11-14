@@ -139,72 +139,86 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.tokenLabelType = listenerFile.TokenLabelType ?? "IToken";
 
         const result: Lines = this.renderFileHeader(listenerFile);
-        result.push(...this.renderAction(listenerFile.namedActions.get("header")), ``);
-
-        if (!declaration) {
-            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude")), ``);
-            result.push(`using ${listenerFile.grammarName}BaseListener.h"`, ``);
-            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude"))
-                , ``);
-
-            if (options.package) {
-                result.push(`using namespace ${options.package};`, "");
-            }
-
-            result.push(``);
-            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerdefinitions")));
-
-            return result.join("\n");
-        }
-
-        result.push(``, ``);
-        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpreinclude")), ``);
-        result.push(`using antlr4-runtime.h"`);
-        result.push(`using ${listenerFile.grammarName}Listener.h"`, ``);
-        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerpostinclude")), ``);
 
         if (options.package) {
             result.push(`namespace ${options.package} {`);
         }
 
+        result.push(...this.renderAction(listenerFile.namedActions.get("header")));
         result.push(``);
-
-        result.push(`/**`);
-        result.push(` * This class provides an empty implementation of ${listenerFile.grammarName}Listener,`);
-        result.push(` * which can be extended to create a listener which only needs to handle a subset`);
-        result.push(` * of the available methods.`);
-        result.push(` */`);
+        result.push(`using Antlr4.Runtime.Misc;`);
+        result.push(`using IErrorNode = Antlr4.Runtime.Tree.IErrorNode;`);
+        result.push(`using ITerminalNode = Antlr4.Runtime.Tree.ITerminalNode;`);
+        result.push(`using IToken = Antlr4.Runtime.IToken;`);
+        result.push(`using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;`);
+        result.push(``);
+        result.push(`/// <summary>`);
+        result.push(`/// This class provides an empty implementation of <see cref="` +
+            `I${listenerFile.grammarName}Listener"/>,`);
+        result.push(`/// which can be extended to create a listener which only needs to handle a subset`);
+        result.push(`/// of the available methods.`);
+        result.push(`/// </summary>`);
+        result.push(`[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`);
+        result.push(`[System.Diagnostics.DebuggerNonUserCode]`);
+        result.push(`[System.CLSCompliant(false)]`);
         result.push(`public partial class ${listenerFile.grammarName}BaseListener : ` +
-            `${listenerFile.grammarName}Listener {`);
-        result.push(`public:`);
+            `I${listenerFile.grammarName}Listener {`);
 
-        result.push(...this.renderAction(listenerFile.namedActions.get("baselistenerdeclarations")), ``);
+        const parserName = listenerFile.parserName;
+        const block: Lines = [];
+        listenerFile.listenerNames.forEach((lname) => {
+            block.push(`/// <summary>`);
 
-        for (const lname of listenerFile.listenerNames) {
-            const name = this.toTitleCase(lname);
-            const parserName = listenerFile.parserName;
-            result.push(`  virtual void enter${name}(${parserName}::${name}Context * /*ctx*/) override { }`);
-            result.push(`  virtual void exit${name}(${parserName}::${name}Context * /*ctx*/) override { }`);
-            result.push(``);
-        }
+            const listenerName = this.toTitleCase(lname);
+            const ruleName = listenerFile.listenerLabelRuleNames.get(lname);
+            if (ruleName) {
+                block.push(`/// Enter a parse tree produced by the <c>${lname}</c>`);
+                block.push(`/// labeled alternative in <see cref="${parserName}.${ruleName}"/>.`);
 
+            } else {
+                block.push(`/// Enter a parse tree produced by <see cref="${parserName}.${lname}"/>.`);
+            }
+
+            block.push(`/// <para>The default implementation does nothing.</para>`);
+            block.push(`/// </summary>`);
+            block.push(`/// <param name="context">The parse tree.</param>`);
+            block.push(`public virtual void Enter${listenerName}([NotNull] ${parserName}.${listenerName}Context ` +
+                `context) { }`);
+            block.push(`/// <summary>`);
+
+            if (ruleName) {
+                block.push(`/// Exit a parse tree produced by the <c>${lname}</c>`);
+                block.push(`/// labeled alternative in <see cref="${parserName}.${ruleName}"/>.`);
+            } else {
+                block.push(`/// Exit a parse tree produced by <see cref="${parserName}.${lname}"/>.`);
+            }
+
+            block.push(`/// <para>The default implementation does nothing.</para>`);
+            block.push(`/// </summary>`);
+            block.push(`/// <param name="context">The parse tree.</param>`);
+            block.push(`public virtual void Exit${listenerName}([NotNull] ${parserName}.${listenerName}Context ` +
+                `context) { }`);
+
+        });
+
+        result.push(...this.formatLines(block, 4));
         result.push(``);
-        result.push(`  virtual void enterEveryRule(ParserRuleContext * /*ctx*/) override { }`);
-        result.push(`  virtual void exitEveryRule(ParserRuleContext * /*ctx*/) override { }`);
-        result.push(`  virtual void visitTerminal(tree::TerminalNode * /*node*/) override { }`);
-        result.push(`  virtual void visitErrorNode(tree::ErrorNode * /*node*/) override { }`);
-        result.push(``);
-
-        if (listenerFile.namedActions.get("baselistenermembers")) {
-            result.push(`private:`);
-            result.push(...this.renderAction(listenerFile.namedActions.get("baselistenermembers")), ``);
-        }
-
-        result.push(`};`);
-        result.push(``);
+        result.push(`    /// <inheritdoc/>`);
+        result.push(`    /// <remarks>The default implementation does nothing.</remarks>`);
+        result.push(`    public virtual void EnterEveryRule([NotNull] ParserRuleContext context) { }`);
+        result.push(`    /// <inheritdoc/>`);
+        result.push(`    /// <remarks>The default implementation does nothing.</remarks>`);
+        result.push(`    public virtual void ExitEveryRule([NotNull] ParserRuleContext context) { }`);
+        result.push(`    /// <inheritdoc/>`);
+        result.push(`    /// <remarks>The default implementation does nothing.</remarks>`);
+        result.push(`    public virtual void VisitTerminal([NotNull] ITerminalNode node) { }`);
+        result.push(`    /// <inheritdoc/>`);
+        result.push(`    /// <remarks>The default implementation does nothing.</remarks>`);
+        result.push(`    public virtual void VisitErrorNode([NotNull] IErrorNode node) { }`);
+        result.push(`}`);
 
         if (options.package) {
-            result.push(`}  // namespace ${options.package}`);
+            result.push(`} // namespace ${options.package}`);
         }
 
         return result.join("\n");
