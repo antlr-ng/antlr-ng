@@ -7,7 +7,6 @@ import { Utils } from "../../../misc/Utils.js";
 import { MurmurHash } from "../../../support/MurmurHash.js";
 import { Rule } from "../../../tool/Rule.js";
 import { IOutputModelFactory } from "../../IOutputModelFactory.js";
-import { DispatchMethod } from "../DispatchMethod.js";
 import { ListenerDispatchMethod } from "../ListenerDispatchMethod.js";
 import { VisitorDispatchMethod } from "../VisitorDispatchMethod.js";
 import { StructDecl } from "./StructDecl.js";
@@ -27,7 +26,7 @@ export class AltLabelStructDecl extends StructDecl {
     }
 
     public override addDispatchMethods(r: Rule): void {
-        this.dispatchMethods = new Array<DispatchMethod>();
+        this.dispatchMethods.length = 0;
         if (this.generateListener) {
             this.dispatchMethods.push(new ListenerDispatchMethod(this.factory!, true));
             this.dispatchMethods.push(new ListenerDispatchMethod(this.factory!, false));

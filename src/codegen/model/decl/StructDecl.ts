@@ -10,6 +10,7 @@ import type { Rule } from "../../../tool/Rule.js";
 import type { IOutputModelFactory } from "../../IOutputModelFactory.js";
 import type { DispatchMethod } from "../DispatchMethod.js";
 import { ListenerDispatchMethod } from "../ListenerDispatchMethod.js";
+import type { OutputModelObject } from "../OutputModelObject.js";
 import { VisitorDispatchMethod } from "../VisitorDispatchMethod.js";
 import { AttributeDecl } from "./AttributeDecl.js";
 import { ContextGetterDecl } from "./ContextGetterDecl.js";
@@ -38,16 +39,20 @@ export class StructDecl extends Decl {
     public readonly ruleContextListDecls = new OrderedHashSet<Decl>();
     public readonly attributeDecls = new HashSet<Decl>();
 
-    public dispatchMethods: DispatchMethod[] = [];
+    public readonly dispatchMethods: DispatchMethod[] = [];
 
-    public attrs = new OrderedHashSet<Decl>();
+    public readonly attrs = new OrderedHashSet<Decl>();
 
-    public getters = new OrderedHashSet<Decl>();
+    public readonly getters = new OrderedHashSet<Decl>();
 
     public ctorAttrs: AttributeDecl[] = [];
 
+    public readonly interfaces: OutputModelObject[] = [];
+
+    public readonly extensionMembers: OutputModelObject[] = [];
+
     /** Used to generate method signatures in Go target interfaces */
-    public signatures = new OrderedHashSet<Decl>();
+    public readonly signatures = new OrderedHashSet<Decl>();
 
     public constructor(factory: IOutputModelFactory, r: Rule, protected readonly generateListener: boolean,
         protected readonly generateVisitor: boolean, name?: string) {
@@ -64,7 +69,6 @@ export class StructDecl extends Decl {
     }
 
     public addDispatchMethods(r: Rule): void {
-        this.dispatchMethods = new Array<DispatchMethod>();
         if (!r.hasAltSpecificContexts()) {
             // No enter/exit for this ruleContext if rule has labels.
             if (this.generateListener) {

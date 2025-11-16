@@ -121,6 +121,9 @@ export interface IRenderCollectionOptions {
     /** The string rendered between elements. If not set then ", " is used. */
     separator?: string;
 
+    /** The string to use after the final element. If not given then no separator is rendered. */
+    finalSeparator?: string;
+
     /** The quote character(s) to use for wrapping each element. */
     quote?: string;
 
@@ -647,7 +650,23 @@ export abstract class GeneratorBase implements ITargetGenerator {
         }
 
         if (line.length > 0) {
+            // Remove the last separator if no final separator is given. Otherwise replace it.
+            if (options.finalSeparator) {
+                line = line.slice(0, -separator.length) + options.finalSeparator;
+            } else {
+                line = line.slice(0, -separator.length);
+            }
+
             result.push(line);
+        } else if (result.length > 0) {
+            // The last line was just pushed. Add or replace the final separator if needed.
+            if (options.finalSeparator) {
+                const lastIndex = result.length - 1;
+                result[lastIndex] = result[lastIndex].slice(0, -separator.length) + options.finalSeparator;
+            } else {
+                const lastIndex = result.length - 1;
+                result[lastIndex] = result[lastIndex].slice(0, -separator.length);
+            }
         }
 
         return this.formatLines(result, options.indent);
@@ -758,8 +777,8 @@ export abstract class GeneratorBase implements ITargetGenerator {
      * @returns An array of strings, each representing a rendered object.
      */
     public renderTemplatedObjectList(list: Iterable<object>, indent: number, template: string,
-        ...keys: string[]): string[] {
-        const result: string[] = [];
+        ...keys: string[]): Lines {
+        const result: Lines = [];
         const indentStr = " ".repeat(indent);
 
         for (const obj of list) {
