@@ -8,7 +8,7 @@ Target generators implement the `ITargetGenerator` interface and extend `Generat
 
 ## Available Generators
 
-### TypeScriptTargetGenerator.ts
+### TypeScriptTargetGenerator
 
 The TypeScript target generator produces TypeScript code from ANTLR4 grammars. It generates:
 
@@ -24,8 +24,10 @@ TypeScript features:
 - Generates type-safe code with proper TypeScript types
 
 > Note: The TypeScript target generator has already been optimized for TypeScript best practices and does not strictly follow the old ANTLR4 ST4 templates.
+ 
+The generated code is compatible with the current antlr4ng TypeScript runtime.
 
-### CppTargetGenerator.ts
+### CppTargetGenerator
 
 The C++ target generator produces C++ code from ANTLR4 grammars. It generates:
 
@@ -35,6 +37,17 @@ The C++ target generator produces C++ code from ANTLR4 grammars. It generates:
 - (Base)Visitor interface and base class (.h)
 
 The generated code is compatible with the current C++ ANTLR4 runtime.
+
+### CsharpTargetGenerator
+
+The C# target generator produces C# code from ANTLR4 grammars. It generates:
+
+- Parser files (.cs)
+- Lexer files (.cs)
+- (Base)Listener interface and base class (.cs)
+- (Base)Visitor interface and base class (.cs)
+
+The generated code is compatible with the current C# ANTLR4 runtime.
 
 ## Template Files
 
