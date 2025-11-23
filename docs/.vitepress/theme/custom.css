@@ -233,3 +233,40 @@ div.language-bash pre.shiki.complete-dark.vp-code code span {
         max-width: 988px !important;
     }
 }
+
+@media (width < 960px) {
+    .landingPageContent .features {
+        flex-direction: column;
+    }
+
+    .landingPageContent .box {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+}
+
+@media (width < 768px) {
+    .header {
+        flex-direction: column;
+        position: relative;
+    }
+    
+    .header .gradient, .header .background {
+        height: unset;
+        inset: 0;
+    }
+
+    .header .logo {
+        margin-top: 50px;
+        padding: 0;
+    }
+
+    .header #title-host {
+        margin: 50px 0 100px;
+    }
+
+    .title.title {
+        flex-shrink: 1;
+        white-space: wrap;
+    }
+}
