@@ -247,7 +247,7 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
 
     /**
      * @returns the name of the runtime class used in the rule struct definition (default: `RuleContext` for a lexer
-     * and `<name><ruleContextNameSuffix>` for a parser, where <name> is written in title case).
+     * and `<name><ruleContextNameSuffix>` for a parser, where `<name>` is written in title case).
      */
     getRuleFunctionContextStructName(r: Rule): string;
 
