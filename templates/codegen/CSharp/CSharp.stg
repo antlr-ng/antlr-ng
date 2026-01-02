@@ -69,7 +69,7 @@ using IToken = Antlr4.Runtime.IToken;
 /// \</summary>
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "<file.ANTLRVersion>")]
 [System.CLSCompliant(false)]
-public interface I<file.grammarName>Listener : IParseTreeListener {
+<file.accessLevel; null="public"> interface I<file.grammarName>Listener : IParseTreeListener {
 	<file.listenerNames:{lname |
 /// \<summary>
 <if(file.listenerLabelRuleNames.(lname))>
@@ -118,7 +118,7 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "<file.ANTLRVersion>")]
 [System.Diagnostics.DebuggerNonUserCode]
 [System.CLSCompliant(false)]
-public partial class <file.grammarName>BaseListener : I<file.grammarName>Listener {
+<file.accessLevel; null="public"> partial class <file.grammarName>BaseListener : I<file.grammarName>Listener {
 	<file.listenerNames:{lname |
 /// \<summary>
 <if(file.listenerLabelRuleNames.(lname))>
@@ -178,7 +178,7 @@ using IToken = Antlr4.Runtime.IToken;
 /// \<typeparam name="Result">The return type of the visit operation.\</typeparam>
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "<file.ANTLRVersion>")]
 [System.CLSCompliant(false)]
-public interface I<file.grammarName>Visitor\<Result> : IParseTreeVisitor\<Result> {
+<file.accessLevel; null="public"> interface I<file.grammarName>Visitor\<Result> : IParseTreeVisitor\<Result> {
 	<file.visitorNames:{lname |
 /// \<summary>
 <if(file.visitorLabelRuleNames.(lname))>
@@ -217,7 +217,7 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "<file.ANTLRVersion>")]
 [System.Diagnostics.DebuggerNonUserCode]
 [System.CLSCompliant(false)]
-public partial class <file.grammarName>BaseVisitor\<Result> : AbstractParseTreeVisitor\<Result>, I<file.grammarName>Visitor\<Result> {
+<file.accessLevel; null="public"> partial class <file.grammarName>BaseVisitor\<Result> : AbstractParseTreeVisitor\<Result>, I<file.grammarName>Visitor\<Result> {
 	<file.visitorNames:{lname |
 /// \<summary>
 <if(file.visitorLabelRuleNames.(lname))>
@@ -269,7 +269,7 @@ Parser(parser, funcs, atn, sempredFuncs, superClass) ::= <<
 Parser_(parser, funcs, atn, sempredFuncs, ctor, superClass) ::= <<
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "<file.ANTLRVersion>")]
 [System.CLSCompliant(false)]
-public partial class <parser.name> : <superClass; null="Parser"> {
+<file.accessLevel; null="public"> partial class <parser.name> : <superClass; null="Parser"> {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	<if(parser.tokens)>
@@ -858,7 +858,7 @@ CaptureNextTokenType(d) ::= "<d.varName> = TokenStream.LA(1);"
 
 StructDecl(struct,ctorAttrs,attrs,getters,dispatchMethods,interfaces,extensionMembers,signatures,
            superClass={ParserRuleContext}) ::= <<
-public partial class <struct.escapedName> : <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif><if(interfaces)>, <interfaces; separator=", "><endif> {
+<file.accessLevel; null="public"> partial class <struct.escapedName> : <if(contextSuperClass)><contextSuperClass><else>ParserRuleContext<endif><if(interfaces)>, <interfaces; separator=", "><endif> {
 	<attrs:{a | public <a>;}; separator="\n">
 	<getters:{g | <g>}; separator="\n">
 	<if(ctorAttrs)>public <struct.escapedName>(ParserRuleContext parent, int invokingState) : base(parent, invokingState) { }<endif>
@@ -881,7 +881,7 @@ public partial class <struct.escapedName> : <if(contextSuperClass)><contextSuper
 >>
 
 AltLabelStructDecl(struct,attrs,getters,dispatchMethods) ::= <<
-public partial class <struct.escapedName> : <currentRule.name; format="cap">Context {
+<file.accessLevel; null="public"> partial class <struct.escapedName> : <currentRule.name; format="cap">Context {
 	<attrs:{a | public <a>;}; separator="\n">
 	<getters:{g | <g>}; separator="\n">
 	public <struct.escapedName>(<currentRule.name; format="cap">Context context) { CopyFrom(context); }
@@ -982,7 +982,7 @@ using DFA = Antlr4.Runtime.Dfa.DFA;
 Lexer(lexer, atn, actionFuncs, sempredFuncs, superClass) ::= <<
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "<file.ANTLRVersion>")]
 [System.CLSCompliant(false)]
-public partial class <lexer.name> : <superClass; null="Lexer"> {
+<file.accessLevel; null="public"> partial class <lexer.name> : <superClass; null="Lexer"> {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	<if(lexer.tokens)>

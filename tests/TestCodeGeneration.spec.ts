@@ -131,4 +131,34 @@ describe("TestCodeGeneration", () => {
         expect(evals.length).toBeGreaterThan(0);
     });
 
+    it("CSharpAccessLevelOption", (): void => {
+        const g =
+            "grammar T;\n" +
+            "options { language=CSharp; accessLevel=internal; }\n" +
+            "a : 'a' ;\n";
+
+        const grammar = new Grammar(g);
+        grammar.tool.process(grammar, false);
+
+        if (!grammar.ast.hasErrors) {
+            const sem = new SemanticPipeline(grammar);
+            sem.process();
+
+            const factory = new ParserATNFactory(grammar);
+            grammar.atn = factory.createATN();
+
+            const gen = new CodeGenerator(grammar);
+            const outputFileST = gen.generateParser(grammar.tool.toolParameters);
+
+            const sw = new StringWriter();
+            const out = new AutoIndentWriter(sw);
+            outputFileST.write(out);
+            const generatedCode = sw.toString();
+
+            // Verify internal accessibility is used instead of public
+            expect(generatedCode).toContain("internal partial class");
+            expect(generatedCode).not.toContain("public partial class");
+        }
+    });
+
 });
