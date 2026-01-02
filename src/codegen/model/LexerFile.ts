@@ -13,6 +13,7 @@ import { OutputFile } from "./OutputFile.js";
 export class LexerFile extends OutputFile {
     public genPackage?: string; // from -package cmd-line
     public exportMacro?: string; // from -DexportMacro cmd-line
+    public accessLevel?: string; // from -DaccessLevel cmd-line
     public genListener: boolean; // from -listener cmd-line
     public genVisitor: boolean; // from -visitor cmd-line
 
@@ -28,6 +29,7 @@ export class LexerFile extends OutputFile {
         this.namedActions = this.buildNamedActions(factory.g);
         this.genPackage = toolParameters.package;
         this.exportMacro = factory.g.getOptionString("exportMacro");
+        this.accessLevel = factory.g.getOptionString("accessLevel");
         this.genListener = toolParameters.generateListener ?? true;
         this.genVisitor = toolParameters.generateVisitor ?? false;
     }

@@ -15,6 +15,7 @@ import { Parser } from "./Parser.js";
 export class ParserFile extends OutputFile {
     public genPackage?: string; // from -package cmd-line
     public exportMacro?: string; // from -DexportMacro cmd-line
+    public accessLevel?: string; // from -DaccessLevel cmd-line
     public genListener: boolean; // from -listener cmd-line
     public genVisitor: boolean; // from -visitor cmd-line
 
@@ -35,6 +36,7 @@ export class ParserFile extends OutputFile {
         this.namedActions = this.buildNamedActions(g);
         this.genPackage = toolParameters.package;
         this.exportMacro = g.getOptionString("exportMacro");
+        this.accessLevel = g.getOptionString("accessLevel");
 
         // Need the below members in the ST for Python, C++.
         this.genListener = toolParameters.generateListener ?? true;
