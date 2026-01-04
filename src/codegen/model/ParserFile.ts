@@ -11,6 +11,7 @@ import { OutputFile } from "./OutputFile.js";
 import type { Parser } from "./Parser.js";
 
 export class ParserFile extends OutputFile {
+    public accessLevel?: string;
     public grammarName: string;
 
     public parser: Parser;
@@ -24,6 +25,7 @@ export class ParserFile extends OutputFile {
         this.namedActions = this.buildNamedActions();
 
         this.grammarName = factory.grammar.name;
+        this.accessLevel = factory.grammar.getOptionString("accessLevel");
 
         if (factory.grammar.getOptionString("contextSuperClass")) {
             this.contextSuperClass = new ActionText(undefined, [factory.grammar.getOptionString("contextSuperClass")]);

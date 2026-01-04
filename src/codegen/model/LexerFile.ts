@@ -9,6 +9,7 @@ import { Lexer } from "./Lexer.js";
 import { OutputFile } from "./OutputFile.js";
 
 export class LexerFile extends OutputFile {
+    public accessLevel?: string;
     public lexer: Lexer;
 
     public namedActions: Map<string, Action>;
@@ -17,6 +18,7 @@ export class LexerFile extends OutputFile {
         super(factory, fileName);
 
         this.namedActions = this.buildNamedActions();
+        this.accessLevel = factory.grammar.getOptionString("accessLevel");
     }
 
 }

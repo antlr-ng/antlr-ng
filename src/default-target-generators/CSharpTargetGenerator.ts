@@ -67,6 +67,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.grammarName = parserFile.parser.grammarName;
         this.invariants.grammarFileName = parserFile.parser.grammarFileName;
         this.invariants.tokenLabelType = parserFile.TokenLabelType ?? "IToken";
+        this.invariants.accessLevel = parserFile.accessLevel ?? "public";
 
         const className = parserFile.contextSuperClass
             ? this.renderActionChunks([parserFile.contextSuperClass]).join("") : undefined;
@@ -108,6 +109,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.grammarName = lexerFile.lexer.grammarName;
         this.invariants.grammarFileName = lexerFile.lexer.grammarFileName;
         this.invariants.tokenLabelType = lexerFile.TokenLabelType ?? "IToken";
+        this.invariants.accessLevel = lexerFile.accessLevel ?? "public";
 
         const result: Lines = this.renderFileHeader(lexerFile);
 
@@ -142,6 +144,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.grammarFileName = listenerFile.grammarFileName;
         this.invariants.tokenLabelType = listenerFile.TokenLabelType ?? "IToken";
 
+        const accessLevel = listenerFile.accessLevel ?? "public";
         const result: Lines = this.renderFileHeader(listenerFile);
 
         if (options.package) {
@@ -165,7 +168,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`,
             `[System.Diagnostics.DebuggerNonUserCode]`,
             `[System.CLSCompliant(false)]`,
-            `public partial class ${listenerFile.grammarName}BaseListener : I${listenerFile.grammarName}Listener {`
+            `${accessLevel} partial class ${listenerFile.grammarName}BaseListener : I${listenerFile.grammarName}Listener {`
         );
 
         const parserName = listenerFile.parserName;
@@ -250,6 +253,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.grammarFileName = visitorFile.grammarFileName;
         this.invariants.tokenLabelType = visitorFile.TokenLabelType ?? "IToken";
 
+        const accessLevel = visitorFile.accessLevel ?? "public";
         const result: Lines = this.renderFileHeader(visitorFile);
         if (options.package) {
             result.push(
@@ -277,7 +281,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`,
             `[System.Diagnostics.DebuggerNonUserCode]`,
             `[System.CLSCompliant(false)]`,
-            `public partial class ${grammarName}BaseVisitor<Result> : AbstractParseTreeVisitor<Result>, ` +
+            `${accessLevel} partial class ${grammarName}BaseVisitor<Result> : AbstractParseTreeVisitor<Result>, ` +
             `I${grammarName}Visitor<Result> {`
         );
 
@@ -336,6 +340,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.grammarFileName = listenerFile.grammarFileName;
         this.invariants.tokenLabelType = listenerFile.TokenLabelType ?? "IToken";
 
+        const accessLevel = listenerFile.accessLevel ?? "public";
         const result: Lines = this.renderFileHeader(listenerFile);
         if (options.package) {
             result.push(
@@ -357,7 +362,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `/// </summary>`,
             `[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`,
             `[System.CLSCompliant(false)]`,
-            `public interface I${listenerFile.grammarName}Listener : IParseTreeListener {`
+            `${accessLevel} interface I${listenerFile.grammarName}Listener : IParseTreeListener {`
         );
 
         const block: Lines = [];
@@ -420,6 +425,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         this.invariants.grammarFileName = visitorFile.grammarFileName;
         this.invariants.tokenLabelType = visitorFile.TokenLabelType ?? "IToken";
 
+        const accessLevel = visitorFile.accessLevel ?? "public";
         const result: Lines = this.renderFileHeader(visitorFile);
         if (options.package) {
             result.push(
@@ -441,7 +447,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `/// <typeparam name="Result">The return type of the visit operation.</typeparam>`,
             `[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`,
             `[System.CLSCompliant(false)]`,
-            `public interface I${visitorFile.grammarName}Visitor<Result> : IParseTreeVisitor<Result> {`
+            `${accessLevel} interface I${visitorFile.grammarName}Visitor<Result> : IParseTreeVisitor<Result> {`
         );
 
         const block: Lines = [];
@@ -1403,6 +1409,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const escapedName = struct.escapedName;
         const superClass = this.invariants.contextSuperClass ?? "ParserRuleContext";
+        const accessLevel = this.invariants.accessLevel ?? "public";
 
         let interfaces = "";
         if (struct.interfaces.length > 0) {
@@ -1413,7 +1420,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         result.push(
             ``,
-            `public partial class ${escapedName} : ${superClass}${interfaces} {`
+            `${accessLevel} partial class ${escapedName} : ${superClass}${interfaces} {`
         );
 
         const decls = this.renderDecls(struct.attrs);
@@ -1519,8 +1526,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result = this.startRendering("AltLabelStructDecl");
 
         const escapedName = struct.escapedName;
+        const accessLevel = this.invariants.accessLevel ?? "public";
         result.push(
-            `public partial class ${escapedName} : ${this.toTitleCase(currentRule.name)}Context {`
+            `${accessLevel} partial class ${escapedName} : ${this.toTitleCase(currentRule.name)}Context {`
         );
 
         const decls = this.renderDecls(struct.attrs);
@@ -2279,10 +2287,11 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
         const parserName = this.toTitleCase(this.invariants.recognizerName);
         const superClass = parser.superClass ? this.renderActionChunks([parser.superClass]) : "Parser";
+        const accessLevel = this.invariants.accessLevel ?? "public";
         result.push(
             `[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`,
             `[System.CLSCompliant(false)]`,
-            `public partial class ${parserName} : ${superClass} {`,
+            `${accessLevel} partial class ${parserName} : ${superClass} {`,
             `    protected static DFA[] decisionToDFA;`,
             `    protected static PredictionContextCache sharedContextCache = new PredictionContextCache();`
         );
@@ -2392,10 +2401,11 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = [];
 
         const baseClass = lexer.superClass ? this.renderActionChunks([lexer.superClass]) : "Lexer";
+        const accessLevel = this.invariants.accessLevel ?? "public";
         result.push(
             `[System.CodeDom.Compiler.GeneratedCode("ANTLR", "${antlrVersion}")]`,
             `[System.CLSCompliant(false)]`,
-            `public partial class ${lexer.name} : ${baseClass} {`,
+            `${accessLevel} partial class ${lexer.name} : ${baseClass} {`,
             `    protected static DFA[] decisionToDFA;`,
             `    protected static PredictionContextCache sharedContextCache = new PredictionContextCache();`
         );
