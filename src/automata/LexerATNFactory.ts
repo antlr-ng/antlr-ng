@@ -39,7 +39,13 @@ interface ICharactersDataCheckStatus {
 
 export class LexerATNFactory extends ParserATNFactory {
 
-    private codegenTemplates: STGroup;
+    /**
+     * The code generator whose templates are consulted only as a fallback for lexer commands that are not built in.
+     * The templates are loaded lazily (see {@link codegenTemplates}) so that grammars using only built-in commands
+     * (and metadata-only runs with language = None) never touch a target template group.
+     */
+    private readonly codeGenerator: CodeGenerator;
+    private codegenTemplatesCache?: STGroup;
 
     /** Maps from an action index to a {@link LexerAction} object. */
     private indexToActionMap = new Map<number, LexerAction>();
@@ -53,8 +59,18 @@ export class LexerATNFactory extends ParserATNFactory {
         super(g);
 
         // Use code generation to get correct language templates for lexer commands.
-        codeGenerator ??= new CodeGenerator(g);
-        this.codegenTemplates = codeGenerator.templates;
+        this.codeGenerator = codeGenerator ?? new CodeGenerator(g);
+    }
+
+    /**
+     * Lazily resolved target templates, used only as a fallback for non built-in lexer commands. Loading the template
+     * group reads a target `.stg` file from disk, which is avoided entirely for the common case (built-in commands
+     * only), matching the behavior needed for language = None metadata-only generation.
+     */
+    private get codegenTemplates(): STGroup {
+        this.codegenTemplatesCache ??= this.codeGenerator.templates;
+
+        return this.codegenTemplatesCache;
     }
 
     public override createATN(): ATN {

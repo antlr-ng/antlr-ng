@@ -20,7 +20,7 @@ import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
 import { ClassFactory } from "../ClassFactory.js";
 
-import { targetLanguages, type SupportedLanguage } from "../codegen/CodeGenerator.js";
+import { noTargetLanguage, targetLanguages, type ToolLanguage } from "../codegen/CodeGenerator.js";
 import { Constants } from "../Constants.js";
 
 import { CharSupport } from "../misc/CharSupport.js";
@@ -1137,13 +1137,22 @@ export class Grammar implements IGrammar, IAttributeResolver {
         return "combined";
     }
 
-    public getLanguage(): SupportedLanguage {
-        const language = this.getOptionString("language") as SupportedLanguage | undefined;
-        if (language && !targetLanguages.includes(language)) {
+    public getLanguage(): ToolLanguage {
+        const language = this.getOptionString("language") as ToolLanguage | undefined;
+        if (language && language !== noTargetLanguage && !targetLanguages.includes(language)) {
             this.tool.errorManager.toolError(IssueCode.CannotCreateTargetGenerator, language);
         }
 
         return language ?? "Java";
+    }
+
+    /**
+     * @returns true if target code generation is disabled for this grammar, i.e. the language is the
+     * {@link noTargetLanguage} sentinel. In that case the tool still writes the language-agnostic `.interp` and
+     * `.tokens` artifacts but emits no target language sources.
+     */
+    public isCodeGenerationDisabled(): boolean {
+        return this.getLanguage() === noTargetLanguage;
     }
 
     public getOptionString(key: string): string | undefined {

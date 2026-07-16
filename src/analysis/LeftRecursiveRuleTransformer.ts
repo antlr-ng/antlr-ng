@@ -11,7 +11,7 @@ import { CharStream, CommonToken, CommonTokenStream } from "antlr4ng";
 
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
-import type { SupportedLanguage } from "../codegen/CodeGenerator.js";
+import type { ToolLanguage } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
@@ -99,7 +99,7 @@ export class LeftRecursiveRuleTransformer {
 
     /** @returns true if successful */
     public translateLeftRecursiveRule(context: GrammarRootAST, r: LeftRecursiveRule,
-        language: SupportedLanguage): boolean {
+        language: ToolLanguage): boolean {
         const prevRuleAST = r.ast;
         const ruleName = prevRuleAST.children[0].getText();
         const leftRecursiveRuleWalker = new LeftRecursiveRuleAnalyzer(prevRuleAST, this.tool, ruleName, language);
