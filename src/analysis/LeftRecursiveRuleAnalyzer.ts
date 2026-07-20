@@ -12,7 +12,7 @@ import { STGroupFile, type STGroup } from "stringtemplate4ts";
 
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
-import { CodeGenerator, type SupportedLanguage } from "../codegen/CodeGenerator.js";
+import { CodeGenerator, type ToolLanguage } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { OrderedHashMap } from "../misc/OrderedHashMap.js";
 import { dupTree } from "../support/helpers.js";
@@ -57,7 +57,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
 
     public altAssociativity = new Map<number, Associativity>();
 
-    public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage) {
+    public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: ToolLanguage) {
         super(new CommonTreeNodeStream(ruleAST),
             tool.errorManager);
         this.tool = tool;

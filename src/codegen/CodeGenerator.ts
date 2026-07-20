@@ -37,6 +37,32 @@ export const targetLanguages = [
 
 export type SupportedLanguage = typeof targetLanguages[number];
 
+/**
+ * A pseudo target that disables target code generation. When selected (via `-Dlanguage=None` or an
+ * `options { language = None; }` grammar option) the tool still runs the full grammar/ATN pipeline and writes the
+ * language-agnostic artifacts (`.interp` and `.tokens`), but emits no target language sources (parser, lexer,
+ * listener, visitor). This is useful for consumers that only need the serialized ATN metadata, e.g. alternative
+ * runtimes that read the `.interp` files directly.
+ */
+export const noTargetLanguage = "None";
+
+/** The language identifier used to disable target code generation. */
+export type NoLanguage = typeof noTargetLanguage;
+
+/**
+ * The language value carried by the tool. This is either one of the real target languages or the {@link NoLanguage}
+ * sentinel, which disables code generation.
+ */
+export type ToolLanguage = SupportedLanguage | NoLanguage;
+
+/**
+ * The target language used internally to build the templates that a few pipeline steps need even when no target code
+ * is generated (lexer command fallbacks and the left-recursive rule rewrite). It is only consulted for grammar
+ * constructs whose template output is identical across all targets, so the resulting ATN (and therefore the `.interp`
+ * output) is target independent.
+ */
+export const defaultTargetLanguage: SupportedLanguage = "Java";
+
 /**  General controller for code gen.  Can instantiate sub generator(s). */
 export class CodeGenerator {
     private static readonly vocabFilePattern =
@@ -58,16 +84,23 @@ export class CodeGenerator {
 
     public target: Target;
     public readonly g?: Grammar;
+
+    /**
+     * The language that drives the templates. This is always a real target language: when the tool language is the
+     * {@link noTargetLanguage} sentinel it resolves to {@link defaultTargetLanguage}, so the few pipeline steps that
+     * need templates during ATN construction keep working while no target code is emitted.
+     */
     public readonly language: SupportedLanguage;
 
     private readonly tool?: Tool;
     private readonly lineWidth = 72;
 
-    public constructor(grammarOrLanguage: Grammar | SupportedLanguage) {
+    public constructor(grammarOrLanguage: Grammar | ToolLanguage) {
         this.g = grammarOrLanguage instanceof Grammar ? grammarOrLanguage : undefined;
         this.tool = this.g?.tool;
 
-        this.language = (grammarOrLanguage instanceof Grammar) ? this.g!.getLanguage() : grammarOrLanguage;
+        const toolLanguage = (grammarOrLanguage instanceof Grammar) ? this.g!.getLanguage() : grammarOrLanguage;
+        this.language = toolLanguage === noTargetLanguage ? defaultTargetLanguage : toolLanguage;
         this.target = new (CodeGenerator.languageMap.get(this.language)!)(this);
     }
 

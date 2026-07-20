@@ -20,6 +20,14 @@ export class CodeGenPipeline {
     }
 
     public process(toolParameters: IToolParameters): void {
+        // When target code generation is disabled (language = None) only the language-agnostic vocab file is written.
+        // The .interp file has already been produced by the tool at this point, and no target sources are emitted.
+        if (this.g.isCodeGenerationDisabled()) {
+            this.gen.writeVocabFile();
+
+            return;
+        }
+
         // All templates are generated in memory to report the most complete error information possible, but actually
         // writing output files stops after the first error is reported.
         const errorCount = this.g.tool.errorManager.errors;
