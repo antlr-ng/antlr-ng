@@ -1137,14 +1137,16 @@ export class Grammar implements IGrammar, IAttributeResolver {
         return "combined";
     }
 
-    public getLanguage(): ToolLanguage {
-        const language = this.getOptionString("language") as ToolLanguage | undefined;
-        if (language && language !== noTargetLanguage && !targetLanguages.includes(language)) {
-            this.tool.errorManager.toolError(IssueCode.CannotCreateTargetGenerator, language);
-        }
+public getLanguage(): ToolLanguage {
+    const language = this.getOptionString("language") as ToolLanguage | undefined;
+    if (language && language !== noTargetLanguage && !targetLanguages.includes(language)) {
+        this.tool.errorManager.toolError(IssueCode.CannotCreateTargetGenerator, language);
 
-        return language ?? "Java";
+        return "Java";
     }
+
+    return language ?? "Java";
+}
 
     /**
      * @returns true if target code generation is disabled for this grammar, i.e. the language is the
