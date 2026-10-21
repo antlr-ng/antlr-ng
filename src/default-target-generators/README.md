@@ -150,6 +150,31 @@ Python specifics:
 
 The generated code is compatible with the current Python 3 ANTLR4 runtime (`antlr4-python3-runtime`).
 
+### DartTargetGenerator
+
+The Dart target generator produces Dart code from ANTLR4 grammars. It generates:
+
+- Parser files (.dart), with the rule context classes in the same file
+- Lexer files (.dart)
+- (Base)Listener abstract class and base class (.dart)
+- (Base)Visitor abstract class and base class (.dart)
+
+Dart specifics:
+
+- Dart has no packages in the Java sense, so the `package` generation option is ignored. Generated files import
+  each other by relative file name.
+- Token type constants are prefixed with `TOKEN_` (e.g. `TParser.TOKEN_ID`), rule indexes are top-level
+  `RULE_<name>` constants.
+- Dollar signs start an interpolation in Dart strings, so they are escaped (`\$`) in predicate messages and
+  literal names. A literal dollar in a grammar action must be written as `\$`, because `$name` is an attribute
+  reference in ANTLR actions.
+- Rule and label names which are Dart keywords get an underscore appended (`class` becomes `class_()`).
+- The base listener and visitor files are only imported by the parser when they are generated.
+- `RuntimeMetaData.checkVersion()` is called with the ANTLR version the Dart runtime expects (4.13.2), not with
+  the antlr-ng version, to avoid a version mismatch warning at runtime.
+
+The generated code is compatible with the current Dart ANTLR4 runtime (`antlr4` on pub.dev).
+
 ## Template Files
 
 The generators are TypeScript implementations based on the StringTemplate4 files located in `templates/codegen/`. Once all languages are done these templates will be removed.
