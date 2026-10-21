@@ -11,6 +11,7 @@
 - Added the Go target generator (`GoTargetGenerator`), which replaces the StringTemplate based Go target. It
   produces the same code as the ANTLR4 Go target, formatted for `gofmt`, and marks generated files with the
   `// Code generated ... DO NOT EDIT.` line.
+- Added the Dart target generator (`DartTargetGenerator`), which replaces the StringTemplate based Dart target.
 - Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
 
 ## 1.0.10
