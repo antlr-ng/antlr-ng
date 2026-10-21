@@ -93,7 +93,7 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
             ? this.renderActionChunks([parserFile.contextSuperClass]).join("") : undefined;
 
         const result: Lines = this.renderFileHeader(parserFile);
-        result.push(...this.renderParser(parser, parserFile.namedActions, options));
+        this.append(result, this.renderParser(parser, parserFile.namedActions, options));
 
         return this.finish(result);
     };
@@ -108,7 +108,7 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         this.invariants.packageName = options.package;
 
         const result: Lines = this.renderFileHeader(lexerFile);
-        result.push(...this.renderLexer(lexer, lexerFile.namedActions));
+        this.append(result, this.renderLexer(lexer, lexerFile.namedActions));
 
         return this.finish(result);
     };
