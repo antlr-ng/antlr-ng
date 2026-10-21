@@ -59,7 +59,7 @@ export class CodeGenPipeline {
                     this.codeGenerator.writeListener(listener, false);
                 }
 
-                if (this.options.generateBaseListener) {
+                if (this.options.generateBaseListener && this.codeGenerator.targetGenerator.wantsBaseListener) {
                     if (this.options.generateDeclarationFile) {
                         const baseListener = this.codeGenerator.generateBaseListener(this.options, true);
                         if (this.g.tool.errorManager.errors === errorCount) {
@@ -87,7 +87,7 @@ export class CodeGenPipeline {
                     this.codeGenerator.writeVisitor(visitor, false);
                 }
 
-                if (this.options.generateBaseVisitor) {
+                if (this.options.generateBaseVisitor && this.codeGenerator.targetGenerator.wantsBaseVisitor) {
                     if (this.options.generateDeclarationFile) {
                         const baseVisitor = this.codeGenerator.generateBaseVisitor(this.options, true);
                         if (this.g.tool.errorManager.errors === errorCount) {
