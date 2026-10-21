@@ -400,7 +400,9 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
     public renderRecRuleLabeledAltStartAction = (parserName: string, ruleName: string, currentAltLabel: string,
         label: string | undefined, isListLabel: boolean): Lines => {
-        const result: Lines = this.startRendering("RecRuleLabeledAltStartAction");
+        // No log markers here: the result is joined to a single line (see note above), which the log
+        // rendering would treat as an empty section.
+        const result: Lines = [];
 
         const ctxName = `${this.toTitleCase(currentAltLabel)}Context`;
         result.push(
@@ -418,12 +420,12 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
         result.push(`p.PushNewRecursionContext(localctx, _startState, ${parserName}RULE_${ruleName})`);
 
-        return this.endRendering("RecRuleLabeledAltStartAction", [result.join("\n")]);
+        return [result.join("\n")];
     };
 
     public renderRecRuleAltStartAction = (parserName: string, ruleName: string, ctxName: string,
         label: string | undefined, isListLabel: boolean): Lines => {
-        const result: Lines = this.startRendering("RecRuleAltStartAction");
+        const result: Lines = [];
 
         const contextName = `${this.toTitleCase(ctxName)}Context`;
         result.push(`localctx = New${contextName}(p, _parentctx, _parentState)`);
@@ -439,7 +441,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
         result.push(`p.PushNewRecursionContext(localctx, _startState, ${parserName}RULE_${ruleName})`);
 
-        return this.endRendering("RecRuleAltStartAction", [result.join("\n")]);
+        return [result.join("\n")];
     };
 
     public renderTestFile = (grammarName: string, lexerName: string, parserName: string | undefined,
@@ -1908,7 +1910,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
         ];
     };
 
-    protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
+    protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefChannel): Lines => {
         return [this.renderTokenProperty(t, "int", "0", "GetChannel()")];
     };
 
@@ -2087,12 +2089,11 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
             const funcs: Lines = [];
             for (const f of parser.sempredFuncs.values()) {
-                const ctxType = `${this.toTitleCase(f.name)}Context`;
+                // The context is passed on unchanged. The predicate code does its own type assertion, which
+                // also works for labeled alternatives (whose context type is not the rule context type).
                 result.push(
                     `\tcase ${f.ruleIndex}:`,
-                    `\t\tvar t *${ctxType} = nil`,
-                    `\t\tif localctx != nil { t = localctx.(*${ctxType}) }`,
-                    `\t\treturn p.${this.toTitleCase(f.escapedName)}_Sempred(t, predIndex)`,
+                    `\t\treturn p.${this.toTitleCase(f.escapedName)}_Sempred(localctx, predIndex)`,
                     ``,
                 );
 
@@ -2376,7 +2377,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
             return [];
         }
 
-        lines[0] = `staticData.serializedATN = ${lines[0]}`;
+        this.prefixFirstLine(lines, `staticData.serializedATN = `);
 
         return this.indent(lines);
     }
@@ -2501,7 +2502,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
         for (const getter of struct.getters) {
             const lines = this.renderDecls([getter]);
             if (lines.length > 0) {
-                lines[0] = `func (s *${struct.escapedName}) ${lines[0]}`;
+                this.prefixFirstLine(lines, `func (s *${struct.escapedName}) `);
                 result.push(...lines, ``);
             }
         }
@@ -2695,6 +2696,24 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
     private packageName(options: IGenerationOptions): string {
         return options.package ? options.package : "parser";
+    }
+
+    /**
+     * Prepends the given prefix to the first content line of the list, skipping any rendering log markers
+     * (which are only present when `logRendering` is enabled).
+     *
+     * @param lines The lines to modify.
+     * @param prefix The prefix to add.
+     */
+    private prefixFirstLine(lines: Lines, prefix: string): void {
+        const index = lines.findIndex((line) => {
+            return line !== undefined && !line.startsWith("/* Start rendering ")
+                && !line.startsWith("/* End rendering ");
+        });
+
+        if (index >= 0) {
+            lines[index] = prefix + lines[index];
+        }
     }
 
     /**

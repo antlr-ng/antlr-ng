@@ -353,7 +353,7 @@ export abstract class GeneratorBase implements ITargetGenerator {
 
     protected abstract renderThisRulePropertyRefText: (t: ThisRulePropertyRefText) => Lines;
 
-    protected abstract renderTokenPropertyRefChannel: (t: TokenPropertyRefPos) => Lines;
+    protected abstract renderTokenPropertyRefChannel: (t: TokenPropertyRefChannel) => Lines;
 
     protected abstract renderTokenPropertyRefIndex: (t: TokenPropertyRefIndex) => Lines;
 
