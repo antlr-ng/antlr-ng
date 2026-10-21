@@ -39,6 +39,7 @@ import { ThisRulePropertyRefParser } from "./model/chunk/ThisRulePropertyRefPars
 import { ThisRulePropertyRefStart } from "./model/chunk/ThisRulePropertyRefStart.js";
 import { ThisRulePropertyRefStop } from "./model/chunk/ThisRulePropertyRefStop.js";
 import { ThisRulePropertyRefText } from "./model/chunk/ThisRulePropertyRefText.js";
+import { TokenPropertyRefChannel } from "./model/chunk/TokenPropertyRefChannel.js";
 import { TokenPropertyRefIndex } from "./model/chunk/TokenPropertyRefIndex.js";
 import { TokenPropertyRefInt } from "./model/chunk/TokenPropertyRefInt.js";
 import { TokenPropertyRefLine } from "./model/chunk/TokenPropertyRefLine.js";
@@ -146,7 +147,6 @@ export abstract class GeneratorBase implements ITargetGenerator {
      * @returns The default map with the most common escape sequences. Subclasses can override this method to provide
      *          additional or different escape sequences.
      */
-    // XXX: make private once the Java serialized ATN is converted.
     public static readonly defaultCharValueEscape = new Map<CodePoint, string>([
         ["\t".codePointAt(0)!, "\\t"],
         ["\b".codePointAt(0)!, "\\b"],
@@ -352,7 +352,7 @@ export abstract class GeneratorBase implements ITargetGenerator {
 
     protected abstract renderThisRulePropertyRefText: (t: ThisRulePropertyRefText) => Lines;
 
-    protected abstract renderTokenPropertyRefChannel: (t: TokenPropertyRefPos) => Lines;
+    protected abstract renderTokenPropertyRefChannel: (t: TokenPropertyRefChannel) => Lines;
 
     protected abstract renderTokenPropertyRefIndex: (t: TokenPropertyRefIndex) => Lines;
 
@@ -1116,7 +1116,7 @@ export abstract class GeneratorBase implements ITargetGenerator {
             [ThisRulePropertyRefStart, this.renderThisRulePropertyRefStart],
             [ThisRulePropertyRefStop, this.renderThisRulePropertyRefStop],
             [ThisRulePropertyRefText, this.renderThisRulePropertyRefText],
-            [TokenPropertyRefPos, this.renderTokenPropertyRefChannel],
+            [TokenPropertyRefChannel, this.renderTokenPropertyRefChannel],
             [TokenPropertyRefIndex, this.renderTokenPropertyRefIndex],
             [TokenPropertyRefInt, this.renderTokenPropertyRefInt],
             [TokenPropertyRefLine, this.renderTokenPropertyRefLine],
