@@ -279,11 +279,24 @@ describe("TestSwiftCodeGeneration", () => {
             "throws {");
         expect(code).toContain("try NUMBER_action((_localctx as RuleContext?), actionIndex)");
         expect(code).toContain("private func NUMBER_action(_ _localctx: RuleContext?, _ actionIndex: Int) throws {");
-        expect(code).toContain("print(\"number\")");
+        expect(code).toContain("case 0:\n\t\t\t print(\"number\") \n\t\t\tbreak");
         expect(code).toContain("func sempred(_ _localctx: RuleContext?, _ ruleIndex: Int, _ predIndex: Int) " +
             "throws -> Bool {");
         expect(code).toContain("return try PRED_sempred(_localctx?.castdown(RuleContext.self), predIndex)");
         expect(code).toContain("case 0: return nesting == 0");
+    });
+
+    it("Empty lexer action", () => {
+        const code = generateLexer(
+            "lexer grammar L;\n" +
+            "EMPTY : 'x' {} ;\n" +
+            "BLANK : 'y' {  } ;\n");
+
+        // Swift requires at least one statement per case, so empty actions get a break.
+        expect(code).toContain("private func EMPTY_action(_ _localctx: RuleContext?, _ actionIndex: Int) throws {");
+        expect(code).toContain("\t\tcase 0:\n\t\t\tbreak\n\t\tdefault: break");
+        expect(code).toContain("private func BLANK_action(_ _localctx: RuleContext?, _ actionIndex: Int) throws {");
+        expect(code).toContain("\t\tcase 1:\n\t\t\t  \n\t\t\tbreak\n\t\tdefault: break");
     });
 
     it("Sets, lists and lookahead tests", () => {

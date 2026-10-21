@@ -1342,10 +1342,12 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
             `\tswitch (actionIndex) {`,
         );
 
+        // Every case needs at least one statement in Swift, which the break guarantees for empty actions.
         for (const [index, action] of r.actions) {
             result.push(
                 `\tcase ${index}:`,
                 ...this.indent(this.renderAction(action), 2),
+                `\t\tbreak`,
             );
         }
 
@@ -1544,25 +1546,19 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
     protected override renderRulePropertyRefStart = (t: OutputModelObjects.RulePropertyRefStart): Lines => {
         const ref = `${this.renderContext(t)}.${t.label}`;
 
-        return [
-            `(${ref} != nil ? (${ref}!.start?.description ?? "") : "")`,
-        ];
+        return [this.renderNilSafeAccess(ref, `(${ref}!.start?.description ?? "")`, `""`)];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
         const ref = `${this.renderContext(t)}.${t.label}`;
 
-        return [
-            `(${ref} != nil ? (${ref}!.stop?.description ?? "") : "")`,
-        ];
+        return [this.renderNilSafeAccess(ref, `(${ref}!.stop?.description ?? "")`, `""`)];
     };
 
     protected override renderRulePropertyRefText = (t: OutputModelObjects.RulePropertyRefText): Lines => {
         const ref = `${this.renderContext(t)}.${t.label}`;
 
-        return [
-            `(${ref} != nil ? try _input.getText(${ref}!.start, ${ref}!.stop) : "")`,
-        ];
+        return [this.renderNilSafeAccess(ref, `try _input.getText(${ref}!.start, ${ref}!.stop)`, `""`)];
     };
 
     protected override renderSetAttr = (s: OutputModelObjects.SetAttr): Lines => {
@@ -1625,9 +1621,7 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
         const ref = `${this.renderContext(t)}.${t.label}`;
 
-        return [
-            `(${ref} != nil ? Int(${ref}!.getText()!) : 0)`,
-        ];
+        return [this.renderNilSafeAccess(ref, `Int(${ref}!.getText()!)`, "0")];
     };
 
     protected override renderTokenPropertyRefLine = (t: OutputModelObjects.TokenPropertyRefLine): Lines => {
@@ -1741,31 +1735,7 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
         );
 
         this.append(result, this.indent(this.renderRuleFunctions(namedActions, parser.funcs)));
-
-        if (parser.sempredFuncs.size > 0) {
-            result.push(
-                `\toverride ${this.openLevel}`,
-                `\tfunc sempred(_ _localctx: RuleContext?, _ ruleIndex: Int, _ predIndex: Int) throws -> Bool {`,
-                `\t\tswitch (ruleIndex) {`,
-            );
-
-            const funcs: Lines = [];
-            for (const f of parser.sempredFuncs.values()) {
-                result.push(
-                    `\t\tcase ${f.ruleIndex}:`,
-                    `\t\t\treturn try ${f.name}_sempred(_localctx?.castdown(${f.ctxType}.self), predIndex)`,
-                );
-
-                funcs.push(...this.renderRuleSempredFunction(f));
-            }
-
-            result.push(
-                `\t\tdefault: return true`,
-                `\t\t}`,
-                `\t}`,
-            );
-            this.append(result, this.indent(funcs));
-        }
+        this.append(result, this.indent(this.renderSempredDispatch(parser.sempredFuncs.values())));
 
         result.push(``);
         this.append(result, this.renderSerializedATN(parser.atn));
@@ -1944,32 +1914,48 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
             );
         }
 
-        if (lexer.sempredFuncs.size > 0) {
+        result.push(...this.renderSempredDispatch(lexer.sempredFuncs.values()));
+
+        return this.endRendering("actionHandlers", result);
+    }
+
+    /**
+     * Renders the `sempred` dispatch method of a recognizer, together with the rule specific predicate functions.
+     *
+     * @param sempredFuncs The predicate functions of the recognizer.
+     *
+     * @returns The rendered lines (empty if there are no predicates).
+     */
+    private renderSempredDispatch(sempredFuncs: Iterable<OutputModelObjects.RuleSempredFunction>): Lines {
+        const funcs = Array.from(sempredFuncs);
+        if (funcs.length === 0) {
+            return [];
+        }
+
+        const result: Lines = [
+            `override ${this.openLevel}`,
+            `func sempred(_ _localctx: RuleContext?, _ ruleIndex: Int, _ predIndex: Int) throws -> Bool {`,
+            `\tswitch (ruleIndex) {`,
+        ];
+
+        for (const f of funcs) {
             result.push(
-                `override ${this.openLevel}`,
-                `func sempred(_ _localctx: RuleContext?, _ ruleIndex: Int, _ predIndex: Int) throws -> Bool {`,
-                `\tswitch (ruleIndex) {`,
-            );
-
-            const funcs: Lines = [];
-            for (const f of lexer.sempredFuncs.values()) {
-                result.push(
-                    `\tcase ${f.ruleIndex}:`,
-                    `\t\treturn try ${f.name}_sempred(_localctx?.castdown(${f.ctxType}.self), predIndex)`,
-                );
-
-                funcs.push(...this.renderRuleSempredFunction(f));
-            }
-
-            result.push(
-                `\tdefault: return true`,
-                `\t}`,
-                `}`,
-                ...funcs,
+                `\tcase ${f.ruleIndex}:`,
+                `\t\treturn try ${f.name}_sempred(_localctx?.castdown(${f.ctxType}.self), predIndex)`,
             );
         }
 
-        return this.endRendering("actionHandlers", result);
+        result.push(
+            `\tdefault: return true`,
+            `\t}`,
+            `}`,
+        );
+
+        for (const f of funcs) {
+            result.push(...this.renderRuleSempredFunction(f));
+        }
+
+        return result;
     }
 
     /**
@@ -2116,7 +2102,20 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
     private renderTokenProperty(t: TokenPropertyRef, accessor: string, defaultValue: string): string {
         const ref = `${this.renderContext(t)}.${t.label}`;
 
-        return `(${ref} != nil ? ${ref}!.${accessor} : ${defaultValue})`;
+        return this.renderNilSafeAccess(ref, `${ref}!.${accessor}`, defaultValue);
+    }
+
+    /**
+     * Renders an expression which is only evaluated when the given reference is not nil.
+     *
+     * @param ref The (optional) reference to check.
+     * @param expression The expression to evaluate when the reference is not nil.
+     * @param defaultValue The value to use when the reference is nil.
+     *
+     * @returns The rendered conditional expression.
+     */
+    private renderNilSafeAccess(ref: string, expression: string, defaultValue: string): string {
+        return `(${ref} != nil ? ${expression} : ${defaultValue})`;
     }
 
     /**
