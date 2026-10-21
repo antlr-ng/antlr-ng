@@ -16,11 +16,15 @@ export class UnicodeEscapes {
         let text = "";
 
         switch (language) {
+            case "PHP": {
+                // PHP only supports the \u{...} form (any number of hex digits).
+                return `\\u{${codePoint.toString(16).toUpperCase()}}`;
+            }
+
             case "CSharp":
             case "Python3":
             case "Cpp":
-            case "Go":
-            case "PHP": {
+            case "Go": {
                 if (Character.isSupplementaryCodePoint(codePoint)) {
                     introducer = "\\U";
                     text = codePoint.toString(16).padStart(8, "0");

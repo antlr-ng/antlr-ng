@@ -230,33 +230,33 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         result.push(
             ``,
-            `\t/**`,
-            `\t * {@inheritdoc}`,
-            `\t *`,
-            `\t * The default implementation does nothing.`,
-            `\t */`,
-            `\tpublic function enterEveryRule(ParserRuleContext $context): void {}`,
+            `    /**`,
+            `     * {@inheritdoc}`,
+            `     *`,
+            `     * The default implementation does nothing.`,
+            `     */`,
+            `    public function enterEveryRule(ParserRuleContext $context): void {}`,
             ``,
-            `\t/**`,
-            `\t * {@inheritdoc}`,
-            `\t *`,
-            `\t * The default implementation does nothing.`,
-            `\t */`,
-            `\tpublic function exitEveryRule(ParserRuleContext $context): void {}`,
+            `    /**`,
+            `     * {@inheritdoc}`,
+            `     *`,
+            `     * The default implementation does nothing.`,
+            `     */`,
+            `    public function exitEveryRule(ParserRuleContext $context): void {}`,
             ``,
-            `\t/**`,
-            `\t * {@inheritdoc}`,
-            `\t *`,
-            `\t * The default implementation does nothing.`,
-            `\t */`,
-            `\tpublic function visitTerminal(TerminalNode $node): void {}`,
+            `    /**`,
+            `     * {@inheritdoc}`,
+            `     *`,
+            `     * The default implementation does nothing.`,
+            `     */`,
+            `    public function visitTerminal(TerminalNode $node): void {}`,
             ``,
-            `\t/**`,
-            `\t * {@inheritdoc}`,
-            `\t *`,
-            `\t * The default implementation does nothing.`,
-            `\t */`,
-            `\tpublic function visitErrorNode(ErrorNode $node): void {}`,
+            `    /**`,
+            `     * {@inheritdoc}`,
+            `     *`,
+            `     * The default implementation does nothing.`,
+            `     */`,
+            `    public function visitErrorNode(ErrorNode $node): void {}`,
             `}`,
         );
 
@@ -572,20 +572,12 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         return result.replaceAll("$", "\\$");
     }
 
-    public override getLoopLabel(ast: GrammarASTWithOptions): string {
-        return `loop${ast.token?.tokenIndex ?? 0}`;
-    }
-
     protected override renderFileHeader(file: OutputModelObjects.OutputFile): Lines {
         return [
             `<?php`,
             ``,
             `// Generated from ${file.grammarFileName} by antlr-ng ${antlrVersion}. Do not edit!`,
         ];
-    }
-
-    protected override escapeChar(v: number): string {
-        return `\\u{${v.toString(16).toUpperCase()}}`;
     }
 
     protected override renderTypedContext = (ctx: OutputModelObjects.StructDecl): string => {
@@ -1400,7 +1392,7 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         const result = this.startRendering("RuleSempredFunction");
 
         result.push(
-            `private function sempred${this.toTitleCase(r.name)}(?Context\\${r.ctxType} $localContext, ` +
+            `private function sempred${this.toTitleCase(r.name)}(?${this.contextType(r.ctxType)} $localContext, ` +
             `int $predicateIndex): bool`,
             `{`,
             `    switch ($predicateIndex) {`,
@@ -1705,25 +1697,25 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(
             `namespace${packageName ? " " + packageName : ""} {`,
             ...this.renderAction(namedActions.get("header")),
-            `\tuse Antlr\\Antlr4\\Runtime\\Atn\\ATN;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Atn\\ATNDeserializer;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Atn\\ParserATNSimulator;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Dfa\\DFA;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Error\\Exceptions\\FailedPredicateException;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Error\\Exceptions\\NoViableAltException;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\PredictionContexts\\PredictionContextCache;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Error\\Exceptions\\RecognitionException;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\RuleContext;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Token;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\TokenStream;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Vocabulary;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\VocabularyImpl;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\RuntimeMetaData;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Parser;`,
+            `    use Antlr\\Antlr4\\Runtime\\Atn\\ATN;`,
+            `    use Antlr\\Antlr4\\Runtime\\Atn\\ATNDeserializer;`,
+            `    use Antlr\\Antlr4\\Runtime\\Atn\\ParserATNSimulator;`,
+            `    use Antlr\\Antlr4\\Runtime\\Dfa\\DFA;`,
+            `    use Antlr\\Antlr4\\Runtime\\Error\\Exceptions\\FailedPredicateException;`,
+            `    use Antlr\\Antlr4\\Runtime\\Error\\Exceptions\\NoViableAltException;`,
+            `    use Antlr\\Antlr4\\Runtime\\PredictionContexts\\PredictionContextCache;`,
+            `    use Antlr\\Antlr4\\Runtime\\Error\\Exceptions\\RecognitionException;`,
+            `    use Antlr\\Antlr4\\Runtime\\RuleContext;`,
+            `    use Antlr\\Antlr4\\Runtime\\Token;`,
+            `    use Antlr\\Antlr4\\Runtime\\TokenStream;`,
+            `    use Antlr\\Antlr4\\Runtime\\Vocabulary;`,
+            `    use Antlr\\Antlr4\\Runtime\\VocabularyImpl;`,
+            `    use Antlr\\Antlr4\\Runtime\\RuntimeMetaData;`,
+            `    use Antlr\\Antlr4\\Runtime\\Parser;`,
             ...this.renderAction(namedActions.get("definitions")),
             ``,
-            `\tfinal class ${parserName} extends ${superClass}`,
-            `\t{`,
+            `    final class ${parserName} extends ${superClass}`,
+            `    {`,
         );
 
         const body: Lines = [];
@@ -1833,24 +1825,24 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         this.append(result, this.indent(body, 2));
         result.push(
-            `\t}`,
+            `    }`,
             `}`,
             ``,
             `namespace ${packageName ? packageName + "\\" : ""}Context {`,
-            `\tuse Antlr\\Antlr4\\Runtime\\ParserRuleContext;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Token;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Tree\\ParseTreeVisitor;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Tree\\TerminalNode;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Tree\\ParseTreeListener;`,
-            `\tuse ${packageName ? packageName + "\\" : ""}${parserName};`,
+            `    use Antlr\\Antlr4\\Runtime\\ParserRuleContext;`,
+            `    use Antlr\\Antlr4\\Runtime\\Token;`,
+            `    use Antlr\\Antlr4\\Runtime\\Tree\\ParseTreeVisitor;`,
+            `    use Antlr\\Antlr4\\Runtime\\Tree\\TerminalNode;`,
+            `    use Antlr\\Antlr4\\Runtime\\Tree\\ParseTreeListener;`,
+            `    use ${packageName ? packageName + "\\" : ""}${parserName};`,
         );
 
         if (options.generateVisitor) {
-            result.push(`\tuse ${packageName ? packageName + "\\" : ""}${parser.grammarName}Visitor;`);
+            result.push(`    use ${packageName ? packageName + "\\" : ""}${parser.grammarName}Visitor;`);
         }
 
         if (options.generateListener) {
-            result.push(`\tuse ${packageName ? packageName + "\\" : ""}${parser.grammarName}Listener;`);
+            result.push(`    use ${packageName ? packageName + "\\" : ""}${parser.grammarName}Listener;`);
         }
 
         result.push(...this.indent(this.renderAction(namedActions.get("contexts"))), ``);
@@ -1879,21 +1871,21 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(
             `namespace${packageName ? " " + packageName : ""} {`,
             ...this.renderAction(namedActions.get("header")),
-            `\tuse Antlr\\Antlr4\\Runtime\\Atn\\ATNDeserializer;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Atn\\LexerATNSimulator;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Lexer;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\CharStream;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\PredictionContexts\\PredictionContextCache;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\RuleContext;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Atn\\ATN;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Dfa\\DFA;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\Vocabulary;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\RuntimeMetaData;`,
-            `\tuse Antlr\\Antlr4\\Runtime\\VocabularyImpl;`,
+            `    use Antlr\\Antlr4\\Runtime\\Atn\\ATNDeserializer;`,
+            `    use Antlr\\Antlr4\\Runtime\\Atn\\LexerATNSimulator;`,
+            `    use Antlr\\Antlr4\\Runtime\\Lexer;`,
+            `    use Antlr\\Antlr4\\Runtime\\CharStream;`,
+            `    use Antlr\\Antlr4\\Runtime\\PredictionContexts\\PredictionContextCache;`,
+            `    use Antlr\\Antlr4\\Runtime\\RuleContext;`,
+            `    use Antlr\\Antlr4\\Runtime\\Atn\\ATN;`,
+            `    use Antlr\\Antlr4\\Runtime\\Dfa\\DFA;`,
+            `    use Antlr\\Antlr4\\Runtime\\Vocabulary;`,
+            `    use Antlr\\Antlr4\\Runtime\\RuntimeMetaData;`,
+            `    use Antlr\\Antlr4\\Runtime\\VocabularyImpl;`,
             ...this.renderAction(namedActions.get("definitions")),
             ``,
-            `\tfinal class ${lexerName} extends ${superClass}`,
-            `\t{`,
+            `    final class ${lexerName} extends ${superClass}`,
+            `    {`,
         );
 
         const body: Lines = [];
@@ -2015,7 +2007,7 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         this.append(result, this.indent(body, 2));
         result.push(
-            `\t}`,
+            `    }`,
             `}`,
         );
 
@@ -2258,6 +2250,18 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         return this.renderCodeBlockForAlt(alt);
+    }
+
+    /**
+     * Qualifies a context type with the `Context` namespace, unless it is the lexer rule context (which is the
+     * runtime class, not a generated one).
+     *
+     * @param ctxType The context type name.
+     *
+     * @returns The qualified type name.
+     */
+    private contextType(ctxType: string): string {
+        return ctxType === this.lexerRuleContext ? ctxType : `Context\\${ctxType}`;
     }
 
     private renderAdaptivePredict(decision: number): string {
