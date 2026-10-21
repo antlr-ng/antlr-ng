@@ -162,10 +162,13 @@ The Java target generator produces Java code from ANTLR4 grammars. It generates:
 Java specifics:
 
 - The `package` generation option becomes the Java package.
-- The serialized ATN is emitted as a string literal of 16-bit char escapes (`isATNSerializedAsInts` is false),
-  because Java limits the size of int array initializers. Values which don't fit in 15 bits are encoded in
-  two chars. The string is split into segments of 21845 chars (the class file limit for a UTF-8 encoded string
-  constant), which are joined at runtime.
+- The serialized ATN is emitted as a string literal of 16-bit char escapes, because Java limits the size of int
+  array initializers. The generator's `renderSerializedATN` does this conversion itself (the informational
+  `isATNSerializedAsInts` property is set to false, but it is not what triggers the string form). Values which
+  don't fit in 15 bits are encoded in two chars. The string is split into segments of 21845 chars (the class
+  file limit for a UTF-8 encoded string constant), which are joined at runtime.
+- The old template rendered a blank line for an empty action (e.g. the `{}` the tool inserts into left-recursive
+  rules); the generator leaves such actions out.
 - Rule and token names which are Java keywords (plus `rule` and `parserRule`) get an underscore appended
   (`class` becomes `class_()`).
 - `RuntimeMetaData.checkVersion()` is called with the ANTLR version the Java runtime expects (4.13.2), not with

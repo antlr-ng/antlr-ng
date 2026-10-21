@@ -30,7 +30,10 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
     public override readonly wantsBaseVisitor = true;
     public override readonly supportsOverloadedMethods = true;
 
-    /** The Java target keeps the serialized ATN in (segmented) string literals, not in an int array. */
+    /**
+     * Informational only (the core does not read this flag): the Java target keeps the serialized ATN in
+     * (segmented) string literals, not in an int array. The string form is produced by `renderSerializedATN`.
+     */
     public override readonly isATNSerializedAsInts = false;
 
     public override readonly inlineTestSetWordSize = 64;
@@ -413,6 +416,10 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
         ];
 
         if (parserName !== undefined) {
+            if (parserStartRuleName === undefined) {
+                throw new Error("A parser start rule name is required to render the Java test file.");
+            }
+
             result.push(
                 `		${parserName} parser = new ${parserName}(tokens);`,
                 `		parser.getInterpreter().setPredictionMode(PredictionMode.${predictionMode});`,
@@ -434,7 +441,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
                 result.push(`		parser.setProfile(true);`);
             }
 
-            result.push(`		ParserRuleContext tree = parser.${parserStartRuleName ?? ""}();`);
+            result.push(`		ParserRuleContext tree = parser.${parserStartRuleName}();`);
 
             if (profile) {
                 result.push(`		System.out.println(Arrays.toString(parser.getParseInfo().getDecisionInfo()));`);
@@ -1409,9 +1416,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
     };
 
     protected override renderRulePropertyRef = (t: OutputModelObjects.RulePropertyRef): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
-
-        return [`(${ref}!=null?(${ref}.start):null)`];
+        return this.renderRulePropertyRefStart(t);
     };
 
     protected override renderRulePropertyRefCtx = (t: OutputModelObjects.RulePropertyRefCtx): Lines => {
@@ -1509,38 +1514,6 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
         return [`${this.renderContext(t)}.${t.escapedName}`];
     };
 
-    /**
-     * Renders a list of source operations, separated by line breaks. This mirrors the StringTemplate semantics of
-     * `<ops; separator="\n">`: an operation which renders to nothing still produces an empty line, unless nothing
-     * has been rendered before it.
-     *
-     * @param srcOps The operations to render.
-     *
-     * @returns The rendered lines.
-     */
-    protected override renderSourceOps(srcOps: Array<OutputModelObjects.SrcOp | null> | undefined): Lines {
-        const result: Lines = [];
-
-        let seenAValue = false;
-        for (const srcOp of srcOps ?? []) {
-            if (!srcOp) {
-                continue;
-            }
-
-            const lines = super.renderSourceOps([srcOp]);
-            if (lines.length === 0) {
-                if (seenAValue) {
-                    result.push("");
-                }
-            } else {
-                this.append(result, lines);
-                seenAValue = true;
-            }
-        }
-
-        return result;
-    }
-
     private renderParser(parser: OutputModelObjects.Parser, namedActions: NamedActions): Lines {
         const result: Lines = [];
 
@@ -1604,26 +1577,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
         this.append(body, this.renderRuleFunctions(namedActions, parser.funcs));
 
         if (parser.sempredFuncs.size > 0) {
-            body.push(
-                `public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {`,
-                `	switch (ruleIndex) {`,
-            );
-
-            const funcs: Lines = [];
-            for (const f of parser.sempredFuncs.values()) {
-                body.push(
-                    `	case ${f.ruleIndex}:`,
-                    `		return ${f.name}_sempred((${f.ctxType})_localctx, predIndex);`,
-                );
-                this.append(funcs, this.renderRuleSempredFunction(f));
-            }
-
-            body.push(
-                `	}`,
-                `	return true;`,
-                `}`,
-            );
-            this.append(body, funcs);
+            this.append(body, this.renderSempredDispatch(parser.sempredFuncs.values()));
             body.push(``);
         }
 
@@ -1771,30 +1725,43 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
         }
 
         if (lexer.sempredFuncs.size > 0) {
-            result.push(
-                `@Override`,
-                `public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {`,
-                `	switch (ruleIndex) {`,
-            );
-
-            const funcs: Lines = [];
-            for (const f of lexer.sempredFuncs.values()) {
-                result.push(
-                    `	case ${f.ruleIndex}:`,
-                    `		return ${f.name}_sempred((${f.ctxType})_localctx, predIndex);`,
-                );
-                this.append(funcs, this.renderRuleSempredFunction(f));
-            }
-
-            result.push(
-                `	}`,
-                `	return true;`,
-                `}`,
-            );
-            this.append(result, funcs);
+            result.push(`@Override`);
+            this.append(result, this.renderSempredDispatch(lexer.sempredFuncs.values()));
         }
 
         return this.endRendering("ActionHandlers", result);
+    }
+
+    /**
+     * Renders the `sempred` method, which dispatches to the per-rule predicate methods, followed by these methods.
+     *
+     * @param sempredFuncs The predicate functions of the recognizer.
+     *
+     * @returns The rendered lines.
+     */
+    private renderSempredDispatch(sempredFuncs: Iterable<OutputModelObjects.RuleSempredFunction>): Lines {
+        const result: Lines = [
+            `public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {`,
+            `	switch (ruleIndex) {`,
+        ];
+
+        const funcs: Lines = [];
+        for (const f of sempredFuncs) {
+            result.push(
+                `	case ${f.ruleIndex}:`,
+                `		return ${f.name}_sempred((${f.ctxType})_localctx, predIndex);`,
+            );
+            this.append(funcs, this.renderRuleSempredFunction(f));
+        }
+
+        result.push(
+            `	}`,
+            `	return true;`,
+            `}`,
+        );
+        this.append(result, funcs);
+
+        return result;
     }
 
     /**
@@ -1922,12 +1889,10 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
      * @returns The rendered lines.
      */
     private renderDecl(decl: OutputModelObjects.Decl): Lines {
-        const lines = this.renderDecls([decl]);
-        if (this.logRendering && lines.length > 1) {
-            return lines.slice(1, -1);
-        }
-
-        return lines;
+        return this.renderDecls([decl]).filter((line) => {
+            return line !== undefined && !line.startsWith("/* Start rendering ")
+                && !line.startsWith("/* End rendering ");
+        });
     }
 
     private renderAlt(alt: OutputModelObjects.CodeBlockForAlt): Lines {
@@ -2089,9 +2054,10 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
                 data16.push(0xFFFF, 0xFFFF);
             } else if (v <= 0x7FFF) {
                 data16.push(v);
-            } else { // v > 0x7FFF
-                if (v >= 0x7FFF_FFFF) {
+            } else { // v > 0x7FFF or v < -1
+                if (v < -1 || v >= 0x7FFF_FFFF) {
                     // Too big to fit in 15 bits + 16 bits? (+1 would be 8000_0000 which is bad encoding).
+                    // Negative values other than -1 cannot be represented either.
                     throw new Error(`Serialized ATN data element[${i}] = ${v} doesn't fit in 31 bits`);
                 }
 
