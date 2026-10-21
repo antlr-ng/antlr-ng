@@ -14,5 +14,12 @@ export default defineConfig({
         },
         testTimeout: 10000,
         setupFiles: ["./tests/setup.ts"],
+        coverage: {
+            provider: "v8",
+            include: ["src/**/*.ts"],
+            exclude: ["src/generated/**", "src/version.ts"],
+            reporter: ["text-summary", "html", "json-summary", "lcov"],
+            reportsDirectory: "coverage",
+        },
     }
 });

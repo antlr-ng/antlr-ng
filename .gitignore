@@ -1,6 +1,6 @@
 node_modules
 output
-coverage
+/coverage
 runtime-testsuite/generated
 /dist
 src/generated
