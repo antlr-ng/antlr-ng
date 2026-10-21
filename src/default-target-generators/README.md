@@ -94,6 +94,30 @@ PHP specifics:
 
 The generated code is compatible with the current PHP ANTLR4 runtime (`antlr/antlr4-php-runtime`).
 
+### SwiftTargetGenerator
+
+The Swift target generator produces Swift code from ANTLR4 grammars. It generates:
+
+- Parser files (.swift), with the rule contexts as nested classes of the parser
+- Lexer files (.swift)
+- Listener protocol and base class (.swift)
+- Visitor class and base class (.swift)
+
+Swift specifics:
+
+- Swift has no packages in the Java sense, so the `package` generation option is ignored. All generated files
+  `import Antlr4` and are meant to be compiled together.
+- Rule, token and label names which are Swift keywords (including `Type`, `Protocol` and `Self`) are escaped with
+  backticks (`` `class` ``).
+- Grammar actions must be valid Swift. Attribute references like `$depth` and `$t.text` are translated to nil-safe
+  Swift expressions. Rule attribute types `int`, `long`, `float`, `double`, `bool` and `boolean` are mapped to
+  `Int`, `Int64`, `Float`, `Double` and `Bool`.
+- The `accessLevel` grammar option replaces the default `open`/`public` access levels of the generated declarations.
+- `RuntimeMetaData.checkVersion()` is called with the ANTLR version the Swift runtime expects (4.13.2), not with
+  the antlr-ng version, to avoid a version mismatch warning at runtime.
+
+The generated code is compatible with the current Swift ANTLR4 runtime (`Antlr4`).
+
 ## Template Files
 
 The generators are TypeScript implementations based on the StringTemplate4 files located in `templates/codegen/`. Once all languages are done these templates will be removed.
