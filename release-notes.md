@@ -6,6 +6,11 @@
 
 # antlr-ng Release Notes
 
+## Unreleased
+
+- Added the PHP target generator (`PHPTargetGenerator`), which replaces the StringTemplate based PHP target.
+- Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
+
 ## 1.0.10
 
 - Fixed Bug #63: Newest ANTLRv4*.g4/LexerAdaptor.ts doesn't work for a couple of grammars
