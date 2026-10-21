@@ -176,7 +176,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
                 `void exit${name}(${name}Context ctx);`,
             );
 
-            result.push(...this.indent(block));
+            result.push(...this.formatLines(block, 2));
             if (index < names.length - 1) {
                 result.push(``);
             }
@@ -289,7 +289,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
                 `T? visit${name}(${name}Context ctx);`,
             );
 
-            result.push(...this.indent(block));
+            result.push(...this.formatLines(block, 2));
             if (index < names.length - 1) {
                 result.push(``);
             }
@@ -543,20 +543,20 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         currentRule: OutputModelObjects.RuleFunction): Lines => {
         const result = this.startRendering("RuleFunction");
 
-        const modifiers = currentRule.modifiers.length > 0 ? currentRule.modifiers.join(" ") + " " : "";
+        // Rule modifiers (public, private, ...) have no equivalent in Dart and are ignored.
         const args = this.renderArgs(currentRule.args);
         const callArgs = this.renderCallArgs(currentRule.args);
 
         result.push(
             ``,
-            `${modifiers}${currentRule.ctxType} ${currentRule.escapedName}(${args}) {`,
+            `${currentRule.ctxType} ${currentRule.escapedName}(${args}) {`,
             `  dynamic _localctx = ${currentRule.ctxType}(context, state${callArgs});`,
             `  enterRule(_localctx, ${currentRule.startState.stateNumber}, RULE_${currentRule.name});`,
-            ...this.indent(this.renderAction(currentRule.namedActions?.get("init"))),
-            ...this.indent(this.renderLocals(currentRule)),
+            ...this.formatLines(this.renderAction(currentRule.namedActions?.get("init")), 2),
+            ...this.formatLines(this.renderLocals(currentRule), 2),
             `  try {`,
-            ...this.indent(this.renderRuleBody(currentRule), 2),
         );
+        this.append(result, this.formatLines(this.renderRuleBody(currentRule), 4));
 
         // The catch clauses continue the line with the closing brace of the try block.
         const handlers: Lines = [];
@@ -570,13 +570,13 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
         handlers.push(
             `finally {`,
-            ...this.indent(this.renderAction(currentRule.finallyAction)),
+            ...this.formatLines(this.renderAction(currentRule.finallyAction), 2),
             `  exitRule();`,
             `}`,
         );
 
         result.push(
-            ...this.indent(this.joinBraces(handlers)),
+            ...this.formatLines(this.joinBraces(handlers), 2),
             `  return _localctx;`,
             `}`,
         );
@@ -588,7 +588,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         currentRule: OutputModelObjects.LeftRecursiveRuleFunction): Lines => {
         const result = this.startRendering("LeftRecursiveRuleFunction");
 
-        const modifiers = currentRule.modifiers.length > 0 ? currentRule.modifiers.join(" ") + " " : "";
+        // Rule modifiers (public, private, ...) have no equivalent in Dart and are ignored.
         const args = this.renderArgs(currentRule.args);
         const callArgs = this.renderCallArgs(currentRule.args);
         const startState = currentRule.startState.stateNumber;
@@ -596,25 +596,26 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         // The precedence is an optional parameter, which must come last in Dart.
         result.push(
             ``,
-            `${modifiers}${currentRule.ctxType} ${currentRule.escapedName}(${args.length > 0 ? args + ", " : ""}` +
-            `[int _p = 0]) {`,
+            `${currentRule.ctxType} ${currentRule.escapedName}(${args.length > 0 ? args + ", " : ""}[int _p = 0]) {`,
             `  final _parentctx = context;`,
             `  final _parentState = state;`,
             `  dynamic _localctx = ${currentRule.ctxType}(context, _parentState${callArgs});`,
             `  var _prevctx = _localctx;`,
             `  var _startState = ${startState};`,
             `  enterRecursionRule(_localctx, ${startState}, RULE_${currentRule.name}, _p);`,
-            ...this.indent(this.renderAction(currentRule.namedActions?.get("init"))),
-            ...this.indent(this.renderLocals(currentRule)),
+            ...this.formatLines(this.renderAction(currentRule.namedActions?.get("init")), 2),
+            ...this.formatLines(this.renderLocals(currentRule), 2),
             `  try {`,
-            ...this.indent(this.renderRuleBody(currentRule), 2),
-            ...this.indent(this.joinBraces([
+        );
+        this.append(result, this.formatLines(this.renderRuleBody(currentRule), 4));
+        result.push(
+            ...this.formatLines(this.joinBraces([
                 ...this.renderDefaultExceptionHandler(),
                 `finally {`,
-                ...this.indent(this.renderAction(currentRule.finallyAction)),
+                ...this.formatLines(this.renderAction(currentRule.finallyAction), 2),
                 `  unrollRecursionContexts(_parentctx);`,
                 `}`,
-            ])),
+            ]), 2),
             `  return _localctx;`,
             `}`,
         );
@@ -734,9 +735,16 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
     protected override renderExceptionClause = (srcOp: OutputModelObjects.ExceptionClause): Lines => {
         const result = this.startRendering("ExceptionClause");
 
+        // A catch argument is either just a name (`catch [e]`) or a type followed by a name
+        // (`catch [RecognitionException e]`). The latter needs an `on` clause in Dart.
+        const catchArg = this.renderAction(srcOp.catchArg).join(" ").trim().split(/\s+/);
+        const clause = catchArg.length > 1
+            ? `on ${catchArg.slice(0, -1).join(" ")} catch (${catchArg[catchArg.length - 1]}) {`
+            : `catch (${catchArg[0]}) {`;
+
         result.push(
-            `catch (${this.renderAction(srcOp.catchArg).join(" ")}) {`,
-            ...this.indent(this.renderAction(srcOp.catchAction)),
+            clause,
+            ...this.formatLines(this.renderAction(srcOp.catchAction), 2),
             `}`,
         );
 
@@ -760,7 +768,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         choice.alts.forEach((alt, index) => {
             result.push(
                 ...this.renderCases(choice.altLook[index]),
-                ...this.indent(this.renderAlt(alt)),
+                ...this.formatLines(this.renderAlt(alt), 2),
                 `  break;`,
             );
         });
@@ -769,7 +777,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             this.invariants.grammarFileName);
         result.push(
             `default:`,
-            ...this.indent(this.renderThrowNoViableAlt(noViableAltObject)),
+            ...this.formatLines(this.renderThrowNoViableAlt(noViableAltObject), 2),
             `}`,
         );
 
@@ -790,7 +798,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             const alt = choice.alts[index] as OutputModelObjects.CodeBlockForAlt | undefined;
             result.push(
                 ...this.renderCases(look),
-                ...this.indent(alt ? this.renderAlt(alt) : []),
+                ...this.formatLines(alt ? this.renderAlt(alt) : [], 2),
                 `  break;`,
             );
         });
@@ -815,7 +823,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         );
 
         choice.alts.forEach((alt) => {
-            result.push(...this.indent(this.renderAlt(alt)));
+            result.push(...this.formatLines(this.renderAlt(alt), 2));
         });
 
         result.push(`}`, ``);
@@ -833,12 +841,12 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         );
 
         choice.alts.forEach((alt) => {
-            result.push(...this.indent(this.renderAlt(alt)));
+            result.push(...this.formatLines(this.renderAlt(alt), 2));
         });
 
         result.push(
-            ...this.indent(this.renderSync(choice.loopBackStateNumber)),
-            ...this.indent(this.renderSourceOps(choice.iteration)),
+            ...this.formatLines(this.renderSync(choice.loopBackStateNumber), 2),
+            ...this.formatLines(this.renderSourceOps(choice.iteration), 2),
             `}`,
         );
 
@@ -855,12 +863,12 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         );
 
         choice.alts.forEach((alt) => {
-            result.push(...this.indent(this.renderAlt(alt)));
+            result.push(...this.formatLines(this.renderAlt(alt), 2));
         });
 
         result.push(
-            ...this.indent(this.renderSync(choice.stateNumber)), // Loop back/exit decision.
-            ...this.indent(this.renderSourceOps(choice.iteration)),
+            ...this.formatLines(this.renderSync(choice.stateNumber), 2), // Loop back/exit decision.
+            ...this.formatLines(this.renderSourceOps(choice.iteration), 2),
             `} while (${this.renderSourceOps(choice.loopExpr ? [choice.loopExpr] : undefined).join("")});`,
         );
 
@@ -916,8 +924,8 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
         result.push(
             `class ${name} extends ${superClass}${interfaces} {`,
-            ...this.indent(this.renderAttributes(struct)),
-            ...this.indent(this.renderDecls(struct.getters)),
+            ...this.formatLines(this.renderAttributes(struct), 2),
+            ...this.formatLines(this.renderDecls(struct.getters), 2),
         );
 
         const ctor = `${name}([ParserRuleContext? parent, int? invokingState${ctorArgs}]) : ` +
@@ -956,10 +964,10 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             result.push(`  }`);
         }
 
-        result.push(...this.indent(this.renderDispatchMethods(struct)));
+        result.push(...this.formatLines(this.renderDispatchMethods(struct), 2));
 
         for (const e of struct.extensionMembers) {
-            result.push(...this.indent(this.renderAction(e as OutputModelObjects.Action)));
+            result.push(...this.formatLines(this.renderAction(e as OutputModelObjects.Action), 2));
         }
 
         result.push(`}`, ``);
@@ -975,10 +983,10 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
         result.push(
             `class ${struct.escapedName} extends ${parentContext} {`,
-            ...this.indent(this.renderAttributes(struct)),
-            ...this.indent(this.renderDecls(struct.getters)),
+            ...this.formatLines(this.renderAttributes(struct), 2),
+            ...this.formatLines(this.renderDecls(struct.getters), 2),
             `  ${struct.escapedName}(${parentContext} ctx) { copyFrom(ctx); }`,
-            ...this.indent(this.renderDispatchMethods(struct)),
+            ...this.formatLines(this.renderDispatchMethods(struct), 2),
             `}`,
             ``,
         );
@@ -1049,16 +1057,16 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             `_alt = ${predict};`,
             `while (_alt != ${choice.exitAlt} && _alt != ATN.INVALID_ALT_NUMBER) {`,
             `  if (_alt == 1${!blockAST.greedy ? " + 1" : ""}) {`,
-            ...this.indent(this.renderSourceOps(choice.iteration), 2),
+            ...this.formatLines(this.renderSourceOps(choice.iteration), 4),
         );
 
         choice.alts.forEach((alt) => {
-            result.push(...this.indent(this.renderAlt(alt), 2));
+            result.push(...this.formatLines(this.renderAlt(alt), 4));
         });
 
         result.push(
             `  }`,
-            ...this.indent(this.renderSync(choice.loopBackStateNumber)),
+            ...this.formatLines(this.renderSync(choice.loopBackStateNumber), 2),
             `  _alt = ${predict};`,
             `}`,
         );
@@ -1083,7 +1091,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             // Alt numbers are 1-based, so we add 1 to the index.
             result.push(
                 `  case ${index + 1}${!blockAST.greedy ? " + 1" : ""}:`,
-                ...this.indent(this.renderAlt(alt), 2),
+                ...this.formatLines(this.renderAlt(alt), 4),
                 `    break;`,
             );
         });
@@ -1092,9 +1100,9 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             this.invariants.grammarFileName);
         result.push(
             `  default:`,
-            ...this.indent(this.renderThrowNoViableAlt(noViableAltObject), 2),
+            ...this.formatLines(this.renderThrowNoViableAlt(noViableAltObject), 4),
             `  }`,
-            ...this.indent(this.renderSync(choice.loopBackStateNumber)), // Loop back/exit decision.
+            ...this.formatLines(this.renderSync(choice.loopBackStateNumber), 2), // Loop back/exit decision.
             `  _alt = ${this.renderAdaptivePredict(choice.decision)};`,
             `} while (_alt != ${choice.exitAlt} && _alt != ATN.INVALID_ALT_NUMBER);`,
         );
@@ -1115,7 +1123,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             // Alt numbers are 1-based, so we add 1 to the index.
             result.push(
                 `case ${index + 1}${!blockAST.greedy ? "+1" : ""}:`,
-                ...this.indent(this.renderAlt(alt)),
+                ...this.formatLines(this.renderAlt(alt), 2),
                 `  break;`,
             );
         });
@@ -1143,7 +1151,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             // Alt numbers are 1-based, so we add 1 to the index.
             result.push(
                 `case ${index + 1}:`,
-                ...this.indent(this.renderAlt(alt)),
+                ...this.formatLines(this.renderAlt(alt), 2),
                 `  break;`,
             );
         });
@@ -1229,7 +1237,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             } else {
                 result.push(
                     `    case ${index}:`,
-                    ...this.indent(lines, 3),
+                    ...this.formatLines(lines, 6),
                     `      break;`,
                 );
             }
@@ -1427,13 +1435,13 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
     protected override renderRulePropertyRefStart = (t: OutputModelObjects.RulePropertyRefStart): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}.start`,
+            `${this.renderContext(t)}.${t.label}?.start`,
         ];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}.stop`,
+            `${this.renderContext(t)}.${t.label}?.stop`,
         ];
     };
 
@@ -1504,7 +1512,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         const ref = `${this.renderContext(t)}.${t.label}`;
 
         return [
-            `${ref} != null ? int.parse(${ref}.text) : 0`,
+            `(${ref} != null ? int.parse(${ref}.text) : 0)`,
         ];
     };
 
@@ -1518,7 +1526,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
     protected override renderTokenPropertyRefText = (t: OutputModelObjects.TokenPropertyRefText): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}.text`,
+            `${this.renderContext(t)}.${t.label}?.text`,
         ];
     };
 
@@ -1568,7 +1576,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             ...this.renderList(parser.ruleNames, { wrap: this.wrapWidth(4), indent: 4, quote: "'" }),
             `  ];`,
             ``,
-            ...this.indent(this.renderVocabulary(parser.literalNames, parser.symbolicNames)),
+            ...this.formatLines(this.renderVocabulary(parser.literalNames, parser.symbolicNames), 2),
             ``,
             `  @override`,
             `  String get grammarFileName => '${parser.grammarFileName}';`,
@@ -1581,13 +1589,13 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             `    return _ATN;`,
             `  }`,
             ``,
-            ...this.indent(this.renderAction(namedActions.get("members"))),
+            ...this.formatLines(this.renderAction(namedActions.get("members")), 2),
             `  ${parserName}(TokenStream input) : super(input) {`,
             `    interpreter = ParserATNSimulator(this, _ATN, _decisionToDFA, _sharedContextCache);`,
             `  }`,
         );
 
-        this.append(result, this.indent(this.renderRuleFunctions(namedActions, parser.funcs)));
+        this.append(result, this.formatLines(this.renderRuleFunctions(namedActions, parser.funcs), 2));
 
         if (parser.sempredFuncs.size > 0) {
             result.push(
@@ -1610,15 +1618,13 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
                 `    }`,
                 `    return true;`,
                 `  }`,
-                ...this.indent(funcs),
+                ...this.formatLines(funcs, 2),
             );
         }
 
-        result.push(
-            ``,
-            ...this.indent(this.renderSerializedATN(parser.atn)),
-            `}`,
-        );
+        result.push(``);
+        this.append(result, this.formatLines(this.renderSerializedATN(parser.atn), 2));
+        result.push(`}`);
 
         // The rule contexts, followed by the contexts of the labeled alternatives.
         for (const func of parser.funcs) {
@@ -1698,9 +1704,9 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             ...this.renderList(lexer.ruleNames, { wrap: this.wrapWidth(4), indent: 4, quote: "'" }),
             `  ];`,
             ``,
-            ...this.indent(this.renderVocabulary(lexer.literalNames, lexer.symbolicNames)),
+            ...this.formatLines(this.renderVocabulary(lexer.literalNames, lexer.symbolicNames), 2),
             ``,
-            ...this.indent(this.renderAction(namedActions.get("members"))),
+            ...this.formatLines(this.renderAction(namedActions.get("members")), 2),
             ``,
             `  ${lexerName}(CharStream input) : super(input) {`,
             `    interpreter = LexerATNSimulator(_ATN, _decisionToDFA, _sharedContextCache, recog: this);`,
@@ -1715,10 +1721,10 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             `  @override`,
             `  ATN getATN() { return _ATN; }`,
             ``,
-            ...this.indent(this.renderActionHandlers(lexer)),
-            ...this.indent(this.renderSerializedATN(lexer.atn)),
-            `}`,
+            ...this.formatLines(this.renderActionHandlers(lexer), 2),
         );
+        this.append(result, this.formatLines(this.renderSerializedATN(lexer.atn), 2));
+        result.push(`}`);
 
         return result;
     }
@@ -1919,43 +1925,11 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
      * @returns The rendered lines.
      */
     private renderAttributes(struct: OutputModelObjects.StructDecl): Lines {
-        const result: Lines = [];
-        for (const a of struct.attrs) {
-            result.push(`${this.renderDecl(a)};`);
-        }
-
-        return result;
-    }
-
-    /**
-     * Renders a single declaration of a context class field.
-     *
-     * @param d The declaration to render.
-     *
-     * @returns The rendered declaration (without a trailing semicolon).
-     */
-    private renderDecl(d: OutputModelObjects.Decl): string {
-        if (d instanceof OutputModelObjects.TokenListDecl) {
-            return this.renderTokenListDecl(d).join("");
-        }
-
-        if (d instanceof OutputModelObjects.TokenDecl) {
-            return this.renderTokenDecl(d).join("");
-        }
-
-        if (d instanceof OutputModelObjects.RuleContextListDecl) {
-            return this.renderRuleContextListDecl(d).join("");
-        }
-
-        if (d instanceof OutputModelObjects.RuleContextDecl) {
-            return this.renderRuleContextDecl(d).join("");
-        }
-
-        if (d instanceof OutputModelObjects.AttributeDecl) {
-            return this.renderAttributeDecl(d).join("");
-        }
-
-        throw new Error(`Unhandled declaration type: ${d.constructor.name}`);
+        // Each declaration is rendered without a terminating semicolon (they are also used as parameters).
+        // Log markers (when rendering is logged) are comments and must not get one.
+        return this.renderDecls(struct.attrs).map((line) => {
+            return line === undefined || line.startsWith("/*") ? line : `${line};`;
+        });
     }
 
     /**
@@ -2009,7 +1983,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
     private renderTokenProperty(t: TokenPropertyRef, property: string, defaultValue: string): string {
         const ref = `${this.renderContext(t)}.${t.label}`;
 
-        return `${ref} != null ? ${ref}.${property} : ${defaultValue}`;
+        return `(${ref}?.${property} ?? ${defaultValue})`;
     }
 
     /**
@@ -2141,30 +2115,6 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
     }
 
     /**
-     * Prefixes all non-empty lines with the given number of indentation levels (2 spaces each). Undefined
-     * lines are removed.
-     *
-     * @param lines The lines to indent.
-     * @param levels The number of levels to indent.
-     *
-     * @returns The indented lines.
-     */
-    private indent(lines: Lines, levels = 1): Lines {
-        const prefix = "  ".repeat(levels);
-        const result: Lines = [];
-
-        for (const line of lines) {
-            if (line === undefined) {
-                continue;
-            }
-
-            result.push(line.length === 0 ? line : prefix + line);
-        }
-
-        return result;
-    }
-
-    /**
      * Joins the given lines to the final file content, making sure there's exactly one newline at the end.
      *
      * @param lines The lines of the file.
@@ -2172,11 +2122,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
      * @returns The file content.
      */
     private finish(lines: Lines): string {
-        let text = lines.filter((line) => {
-            return line !== undefined;
-        }).join("\n");
-
-        text = text.replace(/\n+$/, "");
+        const text = this.formatLines(lines).join("\n").replace(/\n+$/, "");
 
         return text + "\n";
     }
