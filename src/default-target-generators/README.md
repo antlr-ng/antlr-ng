@@ -136,11 +136,13 @@ Python specifics:
 - Rule, token and label names which are Python keywords or builtins (e.g. `list`, `type`, `None`) get an
   underscore appended (`list_`, `None_`) in method and attribute names. Rule and token names in the name lists and
   the `RULE_*` constants are not changed.
-- The text of grammar actions is re-indented: leading and trailing blank lines are removed and the common
-  indentation of all lines is stripped, so an action can be written in any indentation in the grammar.
-  Multiple statements in an action must be placed on separate lines (a trailing semicolon after an attribute
-  assignment like `$value = 1;` is consumed by the action translator).
-- Empty `catch` blocks and empty lexer actions are rendered as `pass`.
+- The text of grammar actions is re-indented: leading and trailing blank lines are removed, tabs in the leading
+  whitespace are expanded (tab stops of 8 columns) and the common indentation of all lines is stripped, so an
+  action can be written in any indentation in the grammar. Multiple statements in an action must be placed on
+  separate lines (a trailing semicolon after an attribute assignment like `$value = 1;` is consumed by the action
+  translator).
+- Empty blocks (`catch` blocks, lexer actions, empty alternatives, empty predicates) are rendered as `pass`.
+  Multi-line predicates are wrapped in parentheses.
 - `checkVersion()` is called with the ANTLR version the Python runtime expects (4.13.2), not with the antlr-ng
   version, to avoid a version mismatch warning at runtime.
 
