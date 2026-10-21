@@ -9,7 +9,7 @@
 ## Unreleased
 
 - Added the Java target generator (`JavaTargetGenerator`), which replaces the StringTemplate based Java target.
-  The generator renders the serialized ATN as (segmented) string literals itself, so the Java specific
+  Its `renderSerializedATN` converts the serialized ATN to (segmented) string literals, so the Java specific
   `SerializedJavaATN` model and the `forJava` special casing in the code generator were removed.
 
 ## 1.0.10

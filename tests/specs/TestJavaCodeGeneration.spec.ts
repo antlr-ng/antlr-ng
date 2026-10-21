@@ -7,8 +7,6 @@ import { describe, expect, it } from "vitest";
 
 await import("../../src/Tool.js"); // To kick off the loading of the tool
 
-import { LexerATNFactory } from "../../src/automata/LexerATNFactory.js";
-import { ParserATNFactory } from "../../src/automata/ParserATNFactory.js";
 import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
 import { defineConfig } from "../../src/config/config.js";
 import { JavaTargetGenerator } from "../../src/default-target-generators/JavaTargetGenerator.js";
@@ -49,9 +47,6 @@ const generateParser = (grammarText: string, packageName?: string): string => {
     grammar.tool.process(grammar, config, false);
     expect(grammar.ast.hasErrors).toBe(false);
 
-    const factory = new ParserATNFactory(grammar);
-    grammar.atn = factory.createATN();
-
     const gen = new CodeGenerator(grammar, javaGenerator, config.generationOptions);
 
     return gen.generateParser(config.generationOptions);
@@ -68,9 +63,6 @@ const generateLexer = (grammarText: string): string => {
     const grammar = new LexerGrammar(grammarText);
     grammar.tool.process(grammar, dummyParameters, false);
     expect(grammar.ast.hasErrors).toBe(false);
-
-    const factory = new LexerATNFactory(grammar, javaGenerator);
-    grammar.atn = factory.createATN();
 
     const gen = new CodeGenerator(grammar, javaGenerator, dummyParameters.generationOptions);
 
@@ -268,6 +260,29 @@ describe("TestJavaCodeGeneration", () => {
         expect(code).toContain("public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {");
         expect(code).toContain("return PRED_sempred((RuleContext)_localctx, predIndex);");
         expect(code).toContain("return  nesting == 0 ;");
+    });
+
+    it("Test file", () => {
+        const render = (parserName: string | undefined, startRule: string | undefined) => {
+            return javaGenerator.renderTestFile("T", "TLexer", parserName, startRule, true, false, false, false,
+                false, false, "LL", true);
+        };
+
+        const parserTest = render("TParser", "a");
+        expect(parserTest).toContain("TParser parser = new TParser(tokens);");
+        expect(parserTest).toContain("parser.getInterpreter().setPredictionMode(PredictionMode.LL);");
+        expect(parserTest).toContain("parser.addErrorListener(new DiagnosticErrorListener());");
+        expect(parserTest).toContain("ParserRuleContext tree = parser.a();");
+        expect(parserTest).toContain("static class TreeShapeListener implements ParseTreeListener {");
+
+        const lexerTest = render(undefined, undefined);
+        expect(lexerTest).toContain("tokens.fill();");
+        expect(lexerTest).not.toContain("TreeShapeListener");
+
+        // A parser test without a start rule cannot be rendered.
+        expect(() => {
+            return render("TParser", undefined);
+        }).toThrow("A parser start rule name is required");
     });
 
     it("Sets, lists and lookahead tests", () => {
