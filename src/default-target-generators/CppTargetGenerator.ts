@@ -2025,7 +2025,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return [`_input->getText(_localctx->start, _input->LT(-1))`];
     };
 
-    protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
+    protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefChannel): Lines => {
         if (this.invariants.declaration) {
             return [];
         }

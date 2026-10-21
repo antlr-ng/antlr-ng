@@ -1235,7 +1235,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         return ["this.tokenStream.getTextFromRange(localContext.start, this.tokenStream.LT(-1))"];
     };
 
-    protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
+    protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefChannel): Lines => {
         const ctx = this.renderContext(t);
 
         return [`${ctx}._${t.label}?.channel ?? 0`];
