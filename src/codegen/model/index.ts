@@ -33,6 +33,7 @@ export { ThisRulePropertyRefParser } from "./chunk/ThisRulePropertyRefParser.js"
 export { ThisRulePropertyRefStart } from "./chunk/ThisRulePropertyRefStart.js";
 export { ThisRulePropertyRefStop } from "./chunk/ThisRulePropertyRefStop.js";
 export { ThisRulePropertyRefText } from "./chunk/ThisRulePropertyRefText.js";
+export { TokenPropertyRefChannel } from "./chunk/TokenPropertyRefChannel.js";
 export { TokenPropertyRefIndex } from "./chunk/TokenPropertyRefIndex.js";
 export { TokenPropertyRefInt } from "./chunk/TokenPropertyRefInt.js";
 export { TokenPropertyRefLine } from "./chunk/TokenPropertyRefLine.js";
