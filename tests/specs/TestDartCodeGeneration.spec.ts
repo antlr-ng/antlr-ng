@@ -259,7 +259,7 @@ describe("TestDartCodeGeneration", () => {
         // Predicates and attribute access go through the local context.
         expect(code).toContain("if (!(_localctx.depth < 10)) {");
         expect(code).toContain("_localctx.value = _localctx.depth + 1;");
-        expect(code).toContain("var x = [_localctx.t != null ? _localctx.t.channel : 0, _localctx.t.text, " +
+        expect(code).toContain("var x = [(_localctx.t?.channel ?? 0), _localctx.t?.text, " +
             "tokenStream.getTextRange(_localctx.start, tokenStream.LT(-1))];");
 
         // Dollar signs in the predicate text are escaped, so Dart doesn't interpolate them.
@@ -280,6 +280,34 @@ describe("TestDartCodeGeneration", () => {
         expect(code).toContain("done = true;");
         expect(code).toContain("exitRule();");
         expect(code).not.toContain("on RecognitionException catch (re)");
+    });
+
+    it("Typed exception clauses", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "a : ID ;\n" +
+            "  catch [RecognitionException e] { handled = true; }\n" +
+            "  catch [StateError e] { rethrow; }\n" +
+            "ID : [a-z]+ ;\n");
+
+        expect(code).toContain("} on RecognitionException catch (e) {");
+        expect(code).toContain("handled = true;");
+        expect(code).toContain("} on StateError catch (e) {");
+        expect(code).toContain("rethrow;");
+        expect(code).toContain("} finally {");
+        expect(code).not.toContain("catch (RecognitionException e)");
+    });
+
+    it("Token and rule property references are null safe", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "a : t=ID r=b {$t.type == 5 && $t.int > 0 && $r.start != null && $r.stop != null && $t.line > 0}? ;\n" +
+            "b : ID ;\n" +
+            "ID : [a-z]+ ;\n");
+
+        expect(code).toContain("if (!((_localctx.t?.type ?? 0) == 5 && (_localctx.t != null ? " +
+            "int.parse(_localctx.t.text) : 0) > 0 && _localctx.r?.start != null && _localctx.r?.stop != null && " +
+            "(_localctx.t?.line ?? 0) > 0)) {");
     });
 
     it("Lexer with modes and channels", () => {
