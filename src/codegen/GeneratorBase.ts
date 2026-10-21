@@ -147,7 +147,6 @@ export abstract class GeneratorBase implements ITargetGenerator {
      * @returns The default map with the most common escape sequences. Subclasses can override this method to provide
      *          additional or different escape sequences.
      */
-    // XXX: make private once the Java serialized ATN is converted.
     public static readonly defaultCharValueEscape = new Map<CodePoint, string>([
         ["\t".codePointAt(0)!, "\\t"],
         ["\b".codePointAt(0)!, "\\b"],
