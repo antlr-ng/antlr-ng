@@ -433,15 +433,15 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             `    localctx = ${this.invariants.recognizerName}.${currentRule.ctxType}(self, self._ctx, self.state` +
             `${this.renderCallArgs(currentRule.args)})`,
             `    self.enterRule(localctx, ${currentRule.startState.stateNumber}, self.RULE_${currentRule.name})`,
-            ...this.indent(this.renderAction(currentRule.namedActions?.get("init"))),
-            ...this.indent(this.renderDecls(currentRule.locals.values())),
+            ...this.formatLines(this.renderAction(currentRule.namedActions?.get("init")), 4),
+            ...this.formatLines(this.renderDecls(currentRule.locals.values()), 4),
             `    try:`,
-            ...this.indent(this.renderRuleBody(currentRule), 2),
+            ...this.formatLines(this.renderRuleBody(currentRule), 8),
         );
 
         if (currentRule.exceptions && currentRule.exceptions.length > 0) {
             for (const e of currentRule.exceptions) {
-                result.push(...this.indent(this.renderExceptionClause(e)));
+                result.push(...this.formatLines(this.renderExceptionClause(e), 4));
             }
         } else {
             result.push(
@@ -454,7 +454,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
         result.push(
             `    finally:`,
-            ...this.indent(this.renderAction(currentRule.finallyAction), 2),
+            ...this.formatLines(this.renderAction(currentRule.finallyAction), 8),
             `        self.exitRule()`,
             `    return localctx`,
             ``,
@@ -480,16 +480,16 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             `    _startState = ${currentRule.startState.stateNumber}`,
             `    self.enterRecursionRule(localctx, ${currentRule.startState.stateNumber}, ` +
             `self.RULE_${currentRule.name}, _p)`,
-            ...this.indent(this.renderAction(currentRule.namedActions?.get("init"))),
-            ...this.indent(this.renderDecls(currentRule.locals.values())),
+            ...this.formatLines(this.renderAction(currentRule.namedActions?.get("init")), 4),
+            ...this.formatLines(this.renderDecls(currentRule.locals.values()), 4),
             `    try:`,
-            ...this.indent(this.renderRuleBody(currentRule), 2),
+            ...this.formatLines(this.renderRuleBody(currentRule), 8),
             `    except RecognitionException as re:`,
             `        localctx.exception = re`,
             `        self._errHandler.reportError(self, re)`,
             `        self._errHandler.recover(self, re)`,
             `    finally:`,
-            ...this.indent(this.renderAction(currentRule.finallyAction), 2),
+            ...this.formatLines(this.renderAction(currentRule.finallyAction), 8),
             `        self.unrollRecursionContexts(_parentctx)`,
             `    return localctx`,
             ``,
@@ -641,7 +641,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
         result.push(
             `except ${this.renderAction(srcOp.catchArg).join(" ").trim()}:`,
-            ...this.indent(this.renderBlockBody(this.renderAction(srcOp.catchAction))),
+            ...this.formatLines(this.renderBlockBody(this.renderAction(srcOp.catchAction)), 4),
         );
 
         return this.endRendering("ExceptionClause", result);
@@ -664,7 +664,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         choice.alts.forEach((alt, index) => {
             result.push(
                 `${index === 0 ? "if" : "elif"} ${this.renderCases(choice.altLook[index])}:`,
-                ...this.indent(this.renderAlt(alt)),
+                ...this.formatLines(this.renderAlt(alt), 4),
                 `    pass`,
             );
         });
@@ -673,7 +673,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             this.invariants.grammarFileName);
         result.push(
             `else:`,
-            ...this.indent(this.renderThrowNoViableAlt(noViableAltObject)),
+            ...this.formatLines(this.renderThrowNoViableAlt(noViableAltObject), 4),
             ``,
         );
 
@@ -694,7 +694,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             const alt = choice.alts[index] as OutputModelObjects.CodeBlockForAlt | undefined;
             result.push(
                 `${index === 0 ? "if" : "elif"} ${this.renderCases(look)}:`,
-                ...this.indent(alt ? this.renderAlt(alt) : []),
+                ...this.formatLines(alt ? this.renderAlt(alt) : [], 4),
                 `    pass`,
             );
         });
@@ -717,11 +717,15 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             `if ${this.renderSourceOps(choice.expr ? [choice.expr] : undefined).join("")}:`,
         );
 
+        const body: Lines = [];
         choice.alts.forEach((alt) => {
-            result.push(...this.indent(this.renderAlt(alt)));
+            body.push(...this.renderAlt(alt));
         });
 
-        result.push(``);
+        result.push(
+            ...this.formatLines(this.renderBlockBody(body), 4),
+            ``,
+        );
 
         return this.endRendering("LL1OptionalBlockSingleAlt", result);
     };
@@ -736,12 +740,12 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         );
 
         choice.alts.forEach((alt) => {
-            result.push(...this.indent(this.renderAlt(alt)));
+            result.push(...this.formatLines(this.renderAlt(alt), 4));
         });
 
         result.push(
-            ...this.indent(this.renderSync(choice.loopBackStateNumber)),
-            ...this.indent(this.renderSourceOps(choice.iteration)),
+            ...this.formatLines(this.renderSync(choice.loopBackStateNumber), 4),
+            ...this.formatLines(this.renderSourceOps(choice.iteration), 4),
             ``,
         );
 
@@ -758,12 +762,12 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         );
 
         choice.alts.forEach((alt) => {
-            result.push(...this.indent(this.renderAlt(alt)));
+            result.push(...this.formatLines(this.renderAlt(alt), 4));
         });
 
         result.push(
-            ...this.indent(this.renderSync(choice.stateNumber)), // Loop back/exit decision.
-            ...this.indent(this.renderSourceOps(choice.iteration)),
+            ...this.formatLines(this.renderSync(choice.stateNumber), 4), // Loop back/exit decision.
+            ...this.formatLines(this.renderSourceOps(choice.iteration), 4),
             `    if not (${this.renderSourceOps(choice.loopExpr ? [choice.loopExpr] : undefined).join("")}):`,
             `        break`,
             ``,
@@ -818,7 +822,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             `    def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1${ctorArgs}):`,
             `        super().__init__(parent, invokingState)`,
             `        self.parser = parser`,
-            ...this.indent(this.renderDecls(struct.attrs), 2),
+            ...this.formatLines(this.renderDecls(struct.attrs), 8),
         );
 
         for (const a of struct.ctorAttrs) {
@@ -847,10 +851,10 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             result.push(``);
         }
 
-        result.push(...this.indent(this.renderDispatchMethods(struct)));
+        result.push(...this.formatLines(this.renderDispatchMethods(struct), 4));
 
         for (const e of struct.extensionMembers) {
-            result.push(...this.indent(this.renderAction(e as OutputModelObjects.Action)), ``);
+            result.push(...this.formatLines(this.renderAction(e as OutputModelObjects.Action), 4), ``);
         }
 
         result.push(``);
@@ -870,11 +874,11 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             `    def __init__(self, parser, ctx:ParserRuleContext): # actually a ` +
             `${this.invariants.recognizerName}.${parentContext}`,
             `        super().__init__(parser)`,
-            ...this.indent(this.renderDecls(struct.attrs), 2),
+            ...this.formatLines(this.renderDecls(struct.attrs), 8),
             `        self.copyFrom(ctx)`,
             ``,
             ...this.renderGetters(struct),
-            ...this.indent(this.renderDispatchMethods(struct)),
+            ...this.formatLines(this.renderDispatchMethods(struct), 4),
             ``,
         );
 
@@ -944,15 +948,16 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             `_alt = ${predict}`,
             `while _alt!=${choice.exitAlt} and _alt!=ATN.INVALID_ALT_NUMBER:`,
             `    if _alt==1${!blockAST.greedy ? "+1" : ""}:`,
-            ...this.indent(this.renderSourceOps(choice.iteration), 2),
         );
 
+        const body: Lines = this.renderSourceOps(choice.iteration);
         choice.alts.forEach((alt) => {
-            result.push(...this.indent(this.renderAlt(alt), 2));
+            body.push(...this.renderAlt(alt));
         });
 
         result.push(
-            ...this.indent(this.renderSync(choice.loopBackStateNumber)),
+            ...this.formatLines(this.renderBlockBody(body), 8),
+            ...this.formatLines(this.renderSync(choice.loopBackStateNumber), 4),
             `    _alt = ${predict}`,
             ``,
         );
@@ -976,7 +981,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             // Alt numbers are 1-based, so we add 1 to the index.
             result.push(
                 `    ${index === 0 ? "if" : "elif"} _alt == ${index + 1}${nonGreedy}:`,
-                ...this.indent(this.renderAlt(alt), 2),
+                ...this.formatLines(this.renderBlockBody(this.renderAlt(alt)), 8),
             );
         });
 
@@ -984,8 +989,8 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             this.invariants.grammarFileName);
         result.push(
             `    else:`,
-            ...this.indent(this.renderThrowNoViableAlt(noViableAltObject), 2),
-            ...this.indent(this.renderSync(choice.loopBackStateNumber)), // Loop back/exit decision.
+            ...this.formatLines(this.renderThrowNoViableAlt(noViableAltObject), 8),
+            ...this.formatLines(this.renderSync(choice.loopBackStateNumber), 4), // Loop back/exit decision.
             `    _alt = ${this.renderAdaptivePredict(choice.decision)}`,
             ``,
         );
@@ -1006,7 +1011,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             // Alt numbers are 1-based, so we add 1 to the index.
             result.push(
                 `${index === 0 ? "if" : "elif"} la_ == ${index + 1}${!blockAST.greedy ? "+1" : ""}:`,
-                ...this.indent(this.renderAlt(alt)),
+                ...this.formatLines(this.renderBlockBody(this.renderAlt(alt)), 4),
             );
         });
 
@@ -1033,7 +1038,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             // Alt numbers are 1-based, so we add 1 to the index.
             result.push(
                 `${index === 0 ? "if" : "elif"} la_ == ${index + 1}:`,
-                ...this.indent(this.renderAlt(alt)),
+                ...this.formatLines(this.renderAlt(alt), 4),
                 `    pass`,
             );
         });
@@ -1076,9 +1081,15 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             message = `, ${p.msg}`;
         }
 
+        // A multi-line predicate is valid inside the parentheses. Its continuation lines are indented relative
+        // to the if statement (the first line has already been trimmed, so only the rest is dedented).
+        const [head, ...rest] = chunks.split("\n");
+        const condition = [`if not (${head}`, ...this.formatLines(this.dedent(rest), 4)];
+        condition[condition.length - 1] += `):`;
+
         result.push(
             `self.state = ${p.stateNumber}`,
-            `if not (${chunks}):`,
+            ...condition,
             `    from antlr4.error.Errors import FailedPredicateException`,
             `    raise FailedPredicateException(self, ${p.predicate}${message})`,
         );
@@ -1119,7 +1130,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         for (const [index, action] of r.actions) {
             result.push(
                 `    ${first ? "if" : "elif"} actionIndex == ${index}:`,
-                ...this.indent(this.renderBlockBody(this.renderAction(action)), 2),
+                ...this.formatLines(this.renderBlockBody(this.renderAction(action)), 8),
             );
             first = false;
         }
@@ -1138,14 +1149,9 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
         let first = true;
         for (const [index, action] of r.actions) {
-            const lines = this.renderAction(action);
-            if (lines.length > 0) {
-                lines[0] = `return ${lines[0]}`;
-            }
-
             result.push(
                 `    ${first ? "if" : "elif"} predIndex == ${index}:`,
-                ...this.indent(lines, 2),
+                ...this.formatLines(this.renderBlockBody(this.renderReturn(this.renderAction(action))), 8),
             );
             first = false;
         }
@@ -1486,10 +1492,10 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
         const members = namedActions.get("members");
         if (members) {
-            result.push(...this.indent(this.renderAction(members)), ``);
+            result.push(...this.formatLines(this.renderAction(members), 4), ``);
         }
 
-        this.append(result, this.indent(this.renderRuleFunctions(namedActions, parser.funcs)));
+        this.append(result, this.formatLines(this.renderRuleFunctions(namedActions, parser.funcs), 4));
 
         if (parser.sempredFuncs.size > 0) {
             result.push(
@@ -1512,7 +1518,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
                 `            return pred(localctx, predIndex)`,
                 ``,
             );
-            this.append(result, this.indent(funcs));
+            this.append(result, this.formatLines(funcs, 4));
         }
 
         return result;
@@ -1596,10 +1602,10 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
         const members = namedActions.get("members");
         if (members) {
-            result.push(...this.indent(this.renderAction(members)), ``);
+            result.push(...this.formatLines(this.renderAction(members), 4), ``);
         }
 
-        this.append(result, this.indent(this.renderActionHandlers(lexer)));
+        this.append(result, this.formatLines(this.renderActionHandlers(lexer), 4));
 
         return result;
     }
@@ -1759,7 +1765,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         for (const getter of struct.getters) {
             const lines = this.renderDecls([getter]);
             if (lines.length > 0) {
-                result.push(...this.indent(lines), ``);
+                result.push(...this.formatLines(lines, 4), ``);
             }
         }
 
@@ -1949,6 +1955,33 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
     }
 
     /**
+     * Renders a return statement for the given expression lines. A multi-line expression is wrapped in
+     * parentheses, so the line breaks are allowed in Python.
+     *
+     * @param lines The lines of the expression.
+     *
+     * @returns The rendered lines (empty if there is no expression).
+     */
+    private renderReturn(lines: Lines): Lines {
+        const expression = lines.filter((line) => {
+            return line !== undefined;
+        });
+
+        if (expression.length === 0) {
+            return [];
+        }
+
+        if (expression.length === 1) {
+            return [`return ${expression[0]}`];
+        }
+
+        const result = [`return (${expression[0]}`, ...this.formatLines(expression.slice(1), 4)];
+        result[result.length - 1] += `)`;
+
+        return result;
+    }
+
+    /**
      * Makes sure a block body is not empty (which is a syntax error in Python).
      *
      * @param lines The rendered body.
@@ -1965,7 +1998,8 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
     /**
      * Removes leading and trailing blank lines, trailing whitespace and the common indentation of all remaining
-     * lines.
+     * lines. Tabs in the leading whitespace are expanded to spaces (tab stops of 8 columns, like Python does),
+     * so actions mixing tabs and spaces are re-indented consistently.
      *
      * @param lines The lines to process.
      *
@@ -1973,7 +2007,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
      */
     private dedent(lines: string[]): Lines {
         lines = lines.map((line) => {
-            return line.trimEnd();
+            return this.expandLeadingTabs(line.trimEnd());
         });
 
         while (lines.length > 0 && lines[0].length === 0) {
@@ -1998,6 +2032,31 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
     }
 
     /**
+     * Expands the tabs in the leading whitespace of a line to spaces, using tab stops of 8 columns.
+     *
+     * @param line The line to process.
+     *
+     * @returns The line with the leading tabs expanded.
+     */
+    private expandLeadingTabs(line: string): string {
+        const match = /^[ \t]*/.exec(line)![0];
+        if (!match.includes("\t")) {
+            return line;
+        }
+
+        let indentation = "";
+        for (const c of match) {
+            if (c === "\t") {
+                indentation += " ".repeat(8 - (indentation.length % 8));
+            } else {
+                indentation += c;
+            }
+        }
+
+        return indentation + line.substring(match.length);
+    }
+
+    /**
      * Appends all lines to the target list. Unlike the spread operator this works for very large lists too.
      *
      * @param target The list to append to.
@@ -2007,30 +2066,6 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         for (const line of lines) {
             target.push(line);
         }
-    }
-
-    /**
-     * Prefixes all non-empty lines with the given number of indentation levels (4 spaces each). Undefined
-     * lines are removed.
-     *
-     * @param lines The lines to indent.
-     * @param levels The number of levels to indent.
-     *
-     * @returns The indented lines.
-     */
-    private indent(lines: Lines, levels = 1): Lines {
-        const prefix = "    ".repeat(levels);
-        const result: Lines = [];
-
-        for (const line of lines) {
-            if (line === undefined) {
-                continue;
-            }
-
-            result.push(line.length === 0 ? line : prefix + line);
-        }
-
-        return result;
     }
 
     /**

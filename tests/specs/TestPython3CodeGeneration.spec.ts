@@ -28,8 +28,8 @@ const createConfig = (outputDirectory: string, packageName?: string) => {
             outputDirectory,
             generateListener: true,
             generateVisitor: true,
-            generateBaseListener: true,
-            generateBaseVisitor: true,
+            generateBaseListener: false, // Python has no base listener/visitor classes.
+            generateBaseVisitor: false,
             package: packageName ?? "",
         }
     });
@@ -93,10 +93,6 @@ describe("TestPython3CodeGeneration", () => {
         expect(files).toContain("TLexer.py");
         expect(files).toContain("TListener.py");
         expect(files).toContain("TVisitor.py");
-
-        // Python has no base listener/visitor classes.
-        expect(files).not.toContain("TBaseListener.py");
-        expect(files).not.toContain("TBaseVisitor.py");
 
         const parser = fileSystem.readFileSync("/python3-spec-out/TParser.py", "utf-8") as string;
         expect(parser.startsWith("# Generated from T.g4 by antlr-ng")).toBe(true);
@@ -402,5 +398,36 @@ describe("TestPython3CodeGeneration", () => {
 
         // Optional LL(1) block with a two token set.
         expect(code).toContain("            if _la==5 or _la==6:\n");
+    });
+
+    it("Empty alternatives and multi-line predicates", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "a : (A | )? B (C | {}) ;\n" +
+            "b : A {\n" +
+            "        self.x and\n" +
+            "        self.y\n" +
+            "    }? B ;\n" +
+            "A : 'a' ;\n" +
+            "B : 'b' ;\n" +
+            "C : 'c' ;\n");
+
+        // Empty alternatives get a pass statement, so the block is valid Python.
+        expect(code).toContain("            la_ = self._interp.adaptivePredict(self._input,0,self._ctx)\n" +
+            "            if la_ == 1:\n" +
+            "                self.state = 4\n" +
+            "                self.match(TParser.A)\n" +
+            "            elif la_ == 2:\n" +
+            "                pass\n");
+        expect(code).toContain("            elif token in [-1]:\n" +
+            "                pass\n");
+
+        // Multi-line predicates are wrapped in parentheses.
+        expect(code).toContain("            if not (self.x and\n" +
+            "                self.y):\n");
+        expect(code).toContain("    def b_sempred(self, localctx:BContext, predIndex:int):\n" +
+            "        if predIndex == 0:\n" +
+            "            return (self.x and\n" +
+            "                self.y)\n");
     });
 });
