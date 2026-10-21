@@ -2202,7 +2202,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         ];
     };
 
-    protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
+    protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefChannel): Lines => {
         const ctx = this.renderContext(t);
 
         const label = this.renderTokenTypeName(t.label);
