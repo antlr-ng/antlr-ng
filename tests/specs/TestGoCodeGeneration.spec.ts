@@ -204,6 +204,37 @@ describe("TestGoCodeGeneration", () => {
         expect(code).toContain("return localctx.(*AContext).GetT().GetChannel()");
     });
 
+    it("Multi-line predicates are collapsed", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "a : {\n    true\n}? ID ;\n" +
+            "ID : [a-z]+ ;\n");
+
+        // Go inserts semicolons at line ends, so the predicate must end up on a single line in both places.
+        expect(code).toContain("if !(true) {");
+        expect(code).toContain("return true\n");
+        expect(code).not.toContain("return \n");
+    });
+
+    it("Qualified return value references use the escaped label getter", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "a : type=b { _ = $type.value } ;\n" +
+            "b returns [int value] : ID ;\n" +
+            "ID : [a-z]+ ;\n");
+
+        expect(code).toContain("GetType_() IBContext");
+        expect(code).toContain("localctx.(*AContext).GetType_().GetValue()");
+        expect(code).not.toContain("GetType().GetValue()");
+    });
+
+    it("Test driver escapes the start rule", () => {
+        const code = goGenerator.renderTestFile("T", "TLexer", "TParser", "type", false, false, false, false, false,
+            false, "LL", true);
+
+        expect(code).toContain("tree := p.Type_()");
+    });
+
     it("Lexer with modes and channels", () => {
         const code = generateLexer(
             "lexer grammar L;\n" +

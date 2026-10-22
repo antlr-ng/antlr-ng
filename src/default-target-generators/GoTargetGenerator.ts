@@ -527,7 +527,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
             }
 
             result.push(
-                `\ttree := p.${this.toTitleCase(parserStartRuleName ?? "")}()`,
+                `\ttree := p.${this.toTitleCase(this.escapeIfNeeded(parserStartRuleName ?? ""))}()`,
                 `\tantlr.ParseTreeWalkerDefault.Walk(NewTreeShapeListener(), tree)`,
             );
         } else {
@@ -1398,15 +1398,21 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
         result.push(`p.SetState(${w.stateNumber})`);
 
         if (w.labels.length > 0) {
-            result.push(
-                ``,
+            // Scope the temporary, so that multiple labeled wildcards in the same alternative don't collide.
+            const body: Lines = [
                 `var _mwc = p.MatchWildcard()`,
                 ``,
-            );
+            ];
 
             for (const l of w.labels) {
-                result.push(`${this.renderLabelref(l)} = _mwc`);
+                body.push(`${this.renderLabelref(l)} = _mwc`);
             }
+
+            result.push(
+                `{`,
+                ...this.indent(body),
+                `}`,
+            );
         } else {
             result.push(`p.MatchWildcard()`);
         }
@@ -1585,8 +1591,9 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
     protected override renderSemPred = (p: OutputModelObjects.SemPred): Lines => {
         const result: Lines = this.startRendering("SemPred");
 
-        const chunks = this.renderActionChunks(p.chunks).join("");
-        const failChunks = this.renderActionChunks(p.failChunks).join("");
+        // Go inserts semicolons at line ends, so a predicate spanning multiple lines must be collapsed.
+        const chunks = this.collapseLines(this.renderActionChunks(p.chunks).join(""));
+        const failChunks = this.collapseLines(this.renderActionChunks(p.failChunks).join(""));
 
         let message: string;
         if (failChunks.length > 0) {
@@ -1659,10 +1666,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
         );
 
         for (const [index, action] of r.actions) {
-            const lines = this.renderAction(action);
-            if (lines.length > 0) {
-                lines[0] = `return ${lines[0]!.trimStart()}`;
-            }
+            const lines = [`return ${this.collapseLines(this.renderAction(action).join("\n"))}`];
 
             result.push(
                 `\tcase ${index}:`,
@@ -1811,7 +1815,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
     protected override renderQRetValueRef = (a: OutputModelObjects.QRetValueRef): Lines => {
         return [
-            `${this.renderContext(a)}.Get${this.toTitleCase(a.dict)}().Get${this.toTitleCase(a.escapedName)}()`,
+            `${this.renderContext(a)}.${this.labelGetter(a.dict)}.Get${this.toTitleCase(a.escapedName)}()`,
         ];
     };
 
@@ -2679,6 +2683,19 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
      *
      * @returns The getter call.
      */
+    /**
+     * Joins a (possibly multi-line) action text into a single line, as Go's automatic semicolon insertion would
+     * otherwise break expressions that span lines (e.g. `return` followed by a line break).
+     *
+     * @param text The action text.
+     *
+     * @returns The text with all line breaks and surrounding whitespace removed.
+     */
+    private collapseLines(text: string): string {
+        return text.split("\n").map((line) => { return line.trim(); }).filter((line) => { return line.length > 0; })
+            .join(" ");
+    }
+
     private labelGetter(label: string): string {
         return `Get${this.toTitleCase(this.escapeIfNeeded(label))}()`;
     }
