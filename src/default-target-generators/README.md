@@ -49,6 +49,29 @@ The C# target generator produces C# code from ANTLR4 grammars. It generates:
 
 The generated code is compatible with the current C# ANTLR4 runtime.
 
+### GoTargetGenerator
+
+The Go target generator produces Go code from ANTLR4 grammars. It generates:
+
+- Parser files (`<name>_parser.go`)
+- Lexer files (`<name>_lexer.go`)
+- (Base)Listener interface and base struct (`<name>_listener.go`, `<name>_base_listener.go`)
+- (Base)Visitor interface and base struct (`<name>_visitor.go`, `<name>_base_visitor.go`)
+
+Go specifics:
+
+- File names are derived from the grammar name in lower case, like the ANTLR4 Go target did (e.g. `MySQLParser`
+  becomes `mysql_parser.go`).
+- The package name comes from the `package` generation option and defaults to `parser`.
+- Rule and label names which are Go keywords or clash with methods of the runtime (e.g. `start`, `stop`) get an
+  underscore suffix (`type` becomes `Type_()`).
+- Exception clauses (`catch`) in a grammar are ignored, because Go has no exceptions. Error handling is done
+  via the `errorExit` label in each rule function, as in the ANTLR4 Go target.
+- Generated files start with a `// Code generated ... DO NOT EDIT.` line, which Go tools recognize.
+- Statements in grammar actions must be separated by line breaks, not by semicolons (Go syntax).
+
+The generated code is compatible with the current Go ANTLR4 runtime (`github.com/antlr4-go/antlr/v4`).
+
 ## Template Files
 
 The generators are TypeScript implementations based on the StringTemplate4 files located in `templates/codegen/`. Once all languages are done these templates will be removed.
