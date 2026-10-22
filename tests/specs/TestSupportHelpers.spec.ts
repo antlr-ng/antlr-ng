@@ -7,11 +7,11 @@ import { describe, expect, it } from "vitest";
 
 import { Token, Vocabulary } from "antlr4ng";
 
-import { Character } from "../../../src/support/Character.js";
-import { getPropertyCodePoints } from "../../../src/support/Unicode.js";
+import { Character } from "../../src/support/Character.js";
+import { getPropertyCodePoints } from "../../src/support/Unicode.js";
 import {
     convertArrayToString, convertMapToString, format, getTokenDisplayName,
-} from "../../../src/support/helpers.js";
+} from "../../src/support/helpers.js";
 
 describe("Support helpers coverage", () => {
     it("formats strings like Java", () => {

@@ -7,17 +7,17 @@ import { describe, expect, it, vi } from "vitest";
 
 import { CharStream, CommonTokenStream, LexerInterpreter, SemanticContext } from "antlr4ng";
 
-import { defineConfig } from "../../../src/config/config.js";
-import { BuildDependencyGenerator } from "../../../src/tool/BuildDependencyGenerator.js";
-import { ErrorManager } from "../../../src/tool/ErrorManager.js";
-import { Issue } from "../../../src/tool/Issue.js";
-import { IssueCode } from "../../../src/tool/Issues.js";
-import { ToolListener } from "../../../src/tool/ToolListener.js";
-import { generateRandomFilename } from "../../../src/support/fs-helpers.js";
-import { fileSystem } from "../../../src/tool-parameters.js";
-import { Grammar, LexerGrammar, Tool } from "../../../src/tool/index.js";
-import { ErrorQueue } from "../../support/ErrorQueue.js";
-import { dummyConfiguration, generate, tsGenerator } from "./GenerationHelper.js";
+import { defineConfig } from "../../src/config/config.js";
+import { BuildDependencyGenerator } from "../../src/tool/BuildDependencyGenerator.js";
+import { ErrorManager } from "../../src/tool/ErrorManager.js";
+import { Issue } from "../../src/tool/Issue.js";
+import { IssueCode } from "../../src/tool/Issues.js";
+import { ToolListener } from "../../src/tool/ToolListener.js";
+import { generateRandomFilename } from "../../src/support/fs-helpers.js";
+import { fileSystem } from "../../src/tool-parameters.js";
+import { Grammar, LexerGrammar, Tool } from "../../src/tool/index.js";
+import { ErrorQueue } from "../support/ErrorQueue.js";
+import { dummyConfiguration, generate, tsGenerator } from "../support/GenerationHelper.js";
 
 describe("Tool coverage", () => {
     describe("BuildDependencyGenerator", () => {

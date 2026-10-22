@@ -7,15 +7,15 @@ import { describe, expect, it } from "vitest";
 
 import type { CommonToken, CommonTokenStream } from "antlr4ng";
 
-import { GrammarToken } from "../../../src/parse/GrammarToken.js";
-import { ScopeParser } from "../../../src/parse/ScopeParser.js";
-import { TokenVocabParser } from "../../../src/parse/TokenVocabParser.js";
-import { generateRandomFilename } from "../../../src/support/fs-helpers.js";
-import { fileSystem } from "../../../src/tool-parameters.js";
-import { IssueCode } from "../../../src/tool/Issues.js";
-import { Grammar } from "../../../src/tool/index.js";
-import { ErrorQueue } from "../../support/ErrorQueue.js";
-import { dummyConfiguration } from "./GenerationHelper.js";
+import { GrammarToken } from "../../src/parse/GrammarToken.js";
+import { ScopeParser } from "../../src/parse/ScopeParser.js";
+import { TokenVocabParser } from "../../src/parse/TokenVocabParser.js";
+import { generateRandomFilename } from "../../src/support/fs-helpers.js";
+import { fileSystem } from "../../src/tool-parameters.js";
+import { IssueCode } from "../../src/tool/Issues.js";
+import { Grammar } from "../../src/tool/index.js";
+import { ErrorQueue } from "../support/ErrorQueue.js";
+import { dummyConfiguration } from "../support/GenerationHelper.js";
 
 describe("Parse coverage", () => {
     describe("ScopeParser", () => {

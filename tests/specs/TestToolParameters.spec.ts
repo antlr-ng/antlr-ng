@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { fs } from "memfs";
 
-import { fileSystem, parseToolParameters, useFileSystem } from "../../../src/tool-parameters.js";
+import { fileSystem, parseToolParameters, useFileSystem } from "../../src/tool-parameters.js";
 
 describe("Tool parameters coverage", () => {
     it("parses all options", () => {

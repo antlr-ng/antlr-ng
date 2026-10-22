@@ -5,11 +5,11 @@
 
 import { describe, expect, it } from "vitest";
 
-import { CppTargetGenerator } from "../../../src/default-target-generators/CppTargetGenerator.js";
-import { CSharpTargetGenerator } from "../../../src/default-target-generators/CSharpTargetGenerator.js";
-import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
-import { IssueCode } from "../../../src/tool/Issues.js";
-import { generate, lexerOf, parserOf } from "./GenerationHelper.js";
+import { CppTargetGenerator } from "../../src/default-target-generators/CppTargetGenerator.js";
+import { CSharpTargetGenerator } from "../../src/default-target-generators/CSharpTargetGenerator.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
+import { IssueCode } from "../../src/tool/Issues.js";
+import { generate, lexerOf, parserOf } from "../support/GenerationHelper.js";
 
 /**
  * Grammar driven tests for the code generation triggers (SourceGenTriggers + OutputModelController + ParserFactory)

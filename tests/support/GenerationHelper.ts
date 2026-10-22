@@ -5,14 +5,14 @@
 
 import { join } from "node:path";
 
-import { ATNPrinter } from "../../../src/automata/ATNPrinter.js";
-import { LexerATNFactory } from "../../../src/automata/LexerATNFactory.js";
-import { defineConfig, type IGenerationOptions, type IToolConfiguration } from "../../../src/config/config.js";
-import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
-import { generateRandomFilename } from "../../../src/support/fs-helpers.js";
-import { fileSystem } from "../../../src/tool-parameters.js";
-import { Grammar, LexerGrammar, Tool } from "../../../src/tool/index.js";
-import { ErrorQueue } from "../../support/ErrorQueue.js";
+import { ATNPrinter } from "../../src/automata/ATNPrinter.js";
+import { LexerATNFactory } from "../../src/automata/LexerATNFactory.js";
+import { defineConfig, type IGenerationOptions, type IToolConfiguration } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
+import { generateRandomFilename } from "../../src/support/fs-helpers.js";
+import { fileSystem } from "../../src/tool-parameters.js";
+import { Grammar, LexerGrammar, Tool } from "../../src/tool/index.js";
+import { ErrorQueue } from "./ErrorQueue.js";
 
 /** The outcome of a full tool run on one or more grammars. */
 export interface IGenerationResult {

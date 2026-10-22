@@ -5,8 +5,8 @@
 
 import { describe, expect, it } from "vitest";
 
-import { IssueCode } from "../../../src/tool/Issues.js";
-import { generate, parserOf } from "./GenerationHelper.js";
+import { IssueCode } from "../../src/tool/Issues.js";
+import { generate, parserOf } from "../support/GenerationHelper.js";
 
 /**
  * Grammar driven tests for the left-recursion elimination (LeftRecursiveRuleWalker + LeftRecursiveRuleAnalyzer).

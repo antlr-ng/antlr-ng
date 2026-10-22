@@ -7,14 +7,14 @@ import { describe, expect, it } from "vitest";
 
 import { BitSet, CommonToken } from "antlr4ng";
 
-import { ANTLRv4Parser } from "../../../src/generated/ANTLRv4Parser.js";
-import { Grammar, LexerGrammar } from "../../../src/tool/index.js";
-import { GrammarAST } from "../../../src/tool/ast/GrammarAST.js";
-import { GrammarRootAST } from "../../../src/tool/ast/GrammarRootAST.js";
-import type { IGrammarASTVisitor } from "../../../src/tool/ast/IGrammarASTVisitor.js";
-import type { RuleAST } from "../../../src/tool/ast/RuleAST.js";
-import type { GrammarASTWithOptions } from "../../../src/tool/ast/GrammarASTWithOptions.js";
-import { dummyConfiguration } from "./GenerationHelper.js";
+import { ANTLRv4Parser } from "../../src/generated/ANTLRv4Parser.js";
+import { Grammar, LexerGrammar } from "../../src/tool/index.js";
+import { GrammarAST } from "../../src/tool/ast/GrammarAST.js";
+import { GrammarRootAST } from "../../src/tool/ast/GrammarRootAST.js";
+import type { IGrammarASTVisitor } from "../../src/tool/ast/IGrammarASTVisitor.js";
+import type { RuleAST } from "../../src/tool/ast/RuleAST.js";
+import type { GrammarASTWithOptions } from "../../src/tool/ast/GrammarASTWithOptions.js";
+import { dummyConfiguration } from "../support/GenerationHelper.js";
 
 /** Collects the AST class names of all visited nodes. */
 class TypeCollector implements IGrammarASTVisitor<string> {

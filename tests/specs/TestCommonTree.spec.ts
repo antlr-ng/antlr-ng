@@ -7,13 +7,13 @@ import { describe, expect, it } from "vitest";
 
 import { CommonToken, Token } from "antlr4ng";
 
-import { Constants } from "../../../src/Constants.js";
-import { CommonTree } from "../../../src/tree/CommonTree.js";
-import { CommonTreeNodeStream } from "../../../src/tree/CommonTreeNodeStream.js";
-import { TreeIterator } from "../../../src/tree/TreeIterator.js";
-import { EarlyExitException } from "../../../src/tree/exceptions/EarlyExitException.js";
-import { FailedPredicateException } from "../../../src/tree/exceptions/FailedPredicateException.js";
-import { NoViableAltException } from "../../../src/tree/exceptions/NoViableAltException.js";
+import { Constants } from "../../src/Constants.js";
+import { CommonTree } from "../../src/tree/CommonTree.js";
+import { CommonTreeNodeStream } from "../../src/tree/CommonTreeNodeStream.js";
+import { TreeIterator } from "../../src/tree/TreeIterator.js";
+import { EarlyExitException } from "../../src/tree/exceptions/EarlyExitException.js";
+import { FailedPredicateException } from "../../src/tree/exceptions/FailedPredicateException.js";
+import { NoViableAltException } from "../../src/tree/exceptions/NoViableAltException.js";
 
 /**
  * Creates a tree node with the given type and text (and token index = type for easy identification).
