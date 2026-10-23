@@ -72,6 +72,28 @@ Go specifics:
 
 The generated code is compatible with the current Go ANTLR4 runtime (`github.com/antlr4-go/antlr/v4`).
 
+### PHPTargetGenerator
+
+The PHP target generator produces PHP code from ANTLR4 grammars. It generates:
+
+- Parser files (.php), with the rule contexts in a `Context` sub namespace of the same file
+- Lexer files (.php)
+- (Base)Listener interface and base class (.php)
+- (Base)Visitor interface and base class (.php)
+
+PHP specifics:
+
+- The `package` generation option becomes the PHP namespace. Without it the global namespace is used.
+- PHP variables in grammar actions must be written with an escaped dollar sign (`\$this->foo`), because `$name`
+  is an attribute reference in ANTLR actions. Rule attributes are declared without the dollar
+  (`r[int depth] returns [int value]`) and referenced as `$depth` in actions.
+- Rule and token names are used as they are (PHP allows keywords as method and constant names).
+- Dollar signs in predicate messages and literal names are escaped, so PHP doesn't interpolate them.
+- `RuntimeMetaData::checkVersion()` is called with the ANTLR version the PHP runtime expects (4.13.2), not with
+  the antlr-ng version, to avoid a version mismatch warning at runtime.
+
+The generated code is compatible with the current PHP ANTLR4 runtime (`antlr/antlr4-php-runtime`).
+
 ## Template Files
 
 The generators are TypeScript implementations based on the StringTemplate4 files located in `templates/codegen/`. Once all languages are done these templates will be removed.
