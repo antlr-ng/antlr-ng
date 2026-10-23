@@ -23,6 +23,8 @@
   target language in the TypeScript, C++, C# and Swift generators. The label is declared with its escaped name, but
   the references used the raw name. Also fixed `$label.ctx` in TypeScript (unbalanced parenthesis) and `$label.int`
   in C# (`..Text`).
+- Fixed the token set test for sets containing EOF in the TypeScript, Go, C++ and C# generators. The negative bitset
+  offset was dropped, so EOF was rejected by the generated parser.
 
 ## 1.0.10
 
