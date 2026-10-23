@@ -12,6 +12,8 @@
   produces the same code as the ANTLR4 Go target, formatted for `gofmt`, and marks generated files with the
   `// Code generated ... DO NOT EDIT.` line.
 - Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
+- Fixed the token set test for sets containing EOF in the TypeScript, Go, C++ and C# generators. The negative bitset
+  offset was dropped, so EOF was rejected by the generated parser.
 
 ## 1.0.10
 
