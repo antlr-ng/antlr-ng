@@ -1033,7 +1033,9 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctorArgs = struct.ctorAttrs.map((a) => {
-            return `, ?${this.renderAttributeDecl(a).join("")} = null`;
+            // Only type and name here. An initializer stays on the property, which the constructor keeps
+            // when the argument is null.
+            return `, ?${a.type} $${a.name} = null`;
         }).join("");
 
         result.push(
@@ -2326,7 +2328,8 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
     }
 
     private renderOffsetShiftVar(shiftAmount: string, offset: bigint): string {
-        return offset > 0 ? `($${shiftAmount} - ${offset})` : `$${shiftAmount}`;
+        // The offset is negative when the set contains EOF (-1), so it must be applied as well.
+        return offset !== 0n ? `($${shiftAmount} - ${offset})` : `$${shiftAmount}`;
     }
 
     private renderCommonSetStuff = (m: OutputModelObjects.MatchSet, invert: boolean): Lines => {

@@ -191,6 +191,20 @@ describe("TestPHPCodeGeneration", () => {
         expect(code).toContain("throw new FailedPredicateException($this, \"\\$depth < 10\");");
     });
 
+    it("Rule argument with an initializer", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "a[int depth = 1] : ID ;\n" +
+            "ID : [a-z]+ ;\n");
+
+        // The initializer stays on the property and is not repeated in the constructor signature.
+        expect(code).toContain("public function __construct(?ParserRuleContext $parent, ?int $invokingState = null, " +
+            "?int $depth = null)");
+        expect(code).toContain("public $depth = 1;");
+        expect(code).toContain("$this->depth = $depth ?? $this->depth;");
+        expect(code).not.toContain("= 1 = null");
+    });
+
     it("Exception clauses", () => {
         const code = generateParser(
             "grammar T;\n" +
@@ -265,5 +279,16 @@ describe("TestPHPCodeGeneration", () => {
         expect(code).toContain("$localContext->ids[] = $localContext->ID;");
         expect(code).toContain("public function ID(?int $index = null)");
         expect(code).toContain("return $this->getTokens(TParser::ID);");
+    });
+
+    it("Set containing EOF", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "a : (EOF | A | B) ;\n" +
+            "A : 'a' ;\n" +
+            "B : 'b' ;\n");
+
+        // EOF (-1) gives the bitset a negative offset, which must be applied to the token type.
+        expect(code).toContain("(((($_la - -1)) & ~0x3f) === 0 && ((1 << ($_la - -1)) & 13) !== 0)");
     });
 });
