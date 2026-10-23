@@ -8,6 +8,9 @@
 
 ## Unreleased
 
+- Added the Go target generator (`GoTargetGenerator`), which replaces the StringTemplate based Go target. It
+  produces the same code as the ANTLR4 Go target, formatted for `gofmt`, and marks generated files with the
+  `// Code generated ... DO NOT EDIT.` line.
 - Added the PHP target generator (`PHPTargetGenerator`), which replaces the StringTemplate based PHP target.
 - Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
 
