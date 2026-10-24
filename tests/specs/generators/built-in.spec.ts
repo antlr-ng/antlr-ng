@@ -16,6 +16,7 @@ import type { ITargetGenerator } from "../../../src/codegen/ITargetGenerator.js"
 import { CppTargetGenerator } from "../../../src/default-target-generators/CppTargetGenerator.js";
 import { CSharpTargetGenerator } from "../../../src/default-target-generators/CSharpTargetGenerator.js";
 import { GoTargetGenerator } from "../../../src/default-target-generators/GoTargetGenerator.js";
+import { PHPTargetGenerator } from "../../../src/default-target-generators/PHPTargetGenerator.js";
 import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { Grammar } from "../../../src/index.js";
 import { fileSystem } from "../../../src/tool-parameters.js";
@@ -99,7 +100,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    });
+    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test C++ generator", async () => {
         const cppGenerator: ITargetGenerator = new CppTargetGenerator(false, { exportMacro: "ANTLR4CPP_PUBLIC", });
@@ -164,7 +165,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    });
+    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test C# generator", async () => {
         const csharpGenerator: ITargetGenerator = new CSharpTargetGenerator(false);
@@ -230,7 +231,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    });
+    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test Go generator", async () => {
         const goGenerator: ITargetGenerator = new GoTargetGenerator(false);
@@ -285,6 +286,71 @@ describe("Test built-in generators", () => {
 
             if (configuration.generationOptions.generateBaseVisitor) {
                 await copyFile(goGenerator.getBaseVisitorFileName(false, "MySQLParser"), targetDir);
+            }
+        }
+
+        if (configuration.generationOptions.generateInterpreterData) {
+            await copyFile("MySQLLexer.interp", targetDir);
+            await copyFile("MySQLParser.interp", targetDir);
+        }
+
+        // Tokens files.
+        await copyFile("MySQLLexer.tokens", targetDir);
+        await copyFile("MySQLParser.tokens", targetDir);
+    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+
+    it("test PHP generator", async () => {
+        const phpGenerator: ITargetGenerator = new PHPTargetGenerator(false);
+        phpGenerator.setUp();
+
+        const targetDir = resolve(ToolTestUtils.expandTilde("~/antlr-ng-test-generation/mysql"), phpGenerator.language);
+
+        await mkdir(targetDir, { recursive: true });
+
+        const configuration = defineConfig({
+            grammarFiles: ["MySQLLexer.g4", "MySQLParser.g4"],
+            generationOptions: {
+                outputDirectory: "/out",
+                generateListener: true,
+                generateVisitor: true,
+                generateInterpreterData: true,
+                generateDeclarationFile: false,
+                generateBaseListener: true,
+                generateBaseVisitor: true,
+                package: "MySQL",
+            },
+            generators: [phpGenerator],
+        });
+
+        let grammarPath = fileURLToPath(new URL("../../grammars/MySQLLexer.g4", import.meta.url));
+        let grammarText = await readFile(grammarPath, "utf8");
+        const lg = new LexerGrammar(grammarText);
+        lg.fileName = "MySQLLexer.g4";
+        lg.tool.process(lg, configuration, true);
+
+        grammarPath = fileURLToPath(new URL("../../grammars/MySQLParser.g4", import.meta.url));
+        grammarText = await readFile(grammarPath, "utf8");
+        const g = new Grammar(grammarText);
+        g.fileName = "MySQLParser.g4";
+        g.tool.process(g, configuration, true);
+
+        console.log(toTreeSync(fileSystem));
+
+        await copyCodeFile("MySQLLexer", phpGenerator, targetDir);
+        await copyCodeFile("MySQLParser", phpGenerator, targetDir);
+
+        if (configuration.generationOptions.generateListener) {
+            await copyCodeFile("MySQLParserListener", phpGenerator, targetDir);
+            if (configuration.generationOptions.generateBaseListener) {
+                await copyCodeFile("MySQLParserBaseListener", phpGenerator, targetDir);
+            }
+        }
+
+        if (configuration.generationOptions.generateVisitor) {
+            await copyCodeFile("MySQLParserVisitor", phpGenerator, targetDir);
+
+            if (configuration.generationOptions.generateBaseVisitor) {
+                await copyCodeFile("MySQLParserBaseVisitor", phpGenerator, targetDir);
             }
         }
 
