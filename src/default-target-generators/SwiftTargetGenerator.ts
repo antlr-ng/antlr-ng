@@ -1621,7 +1621,8 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
         const ref = `${this.renderContext(t)}.${t.label}`;
 
-        return [this.renderNilSafeAccess(ref, `Int(${ref}!.getText()!)`, "0")];
+        // Int(String) returns an optional, so fall back to 0 for text that is not a number.
+        return [this.renderNilSafeAccess(ref, `(Int(${ref}!.getText()!) ?? 0)`, "0")];
     };
 
     protected override renderTokenPropertyRefLine = (t: OutputModelObjects.TokenPropertyRefLine): Lines => {
@@ -2141,7 +2142,8 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
     }
 
     private renderOffsetShiftVar(shiftAmount: string, offset: bigint): string {
-        return offset > 0 ? `(${shiftAmount} - ${offset})` : shiftAmount;
+        // The offset is negative when the set contains EOF (-1), so it must be applied as well.
+        return offset !== 0n ? `(${shiftAmount} - ${offset})` : shiftAmount;
     }
 
     private renderCommonSetStuff = (m: OutputModelObjects.MatchSet, invert: boolean): Lines => {

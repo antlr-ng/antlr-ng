@@ -223,6 +223,22 @@ describe("TestSwiftCodeGeneration", () => {
             "_localctx.castdown(AContext.self).t!.getText()! : \"\")");
     });
 
+    it("Token int and rule start/stop references", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "a : n=INT r=b { let next = $n.int + 1; let first: Token? = $r.start; let last: Token? = $r.stop } ;\n" +
+            "b : INT ;\n" +
+            "INT : [0-9]+ ;\n");
+
+        // Int(String) is optional, so the conversion needs a fallback to produce an Int.
+        expect(code).toContain("let next = (_localctx.castdown(AContext.self).n != nil ? " +
+            "(Int(_localctx.castdown(AContext.self).n!.getText()!) ?? 0) : 0) + 1");
+
+        // Start and stop references are tokens, not strings.
+        expect(code).toContain("let first: Token? = _localctx.castdown(AContext.self).r?.start");
+        expect(code).toContain("let last: Token? = _localctx.castdown(AContext.self).r?.stop");
+    });
+
     it("Exception clauses and rule actions", () => {
         const code = generateParser(
             "grammar T;\n" +
@@ -329,5 +345,17 @@ describe("TestSwiftCodeGeneration", () => {
         expect(code).toContain("func ID() -> [TerminalNode] {");
         expect(code).toContain("return getTokens(TParser.Tokens.ID.rawValue)");
         expect(code).toContain("func ID(_ i: Int) -> TerminalNode? {");
+    });
+
+    it("Set containing EOF", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "s : A (EOF | B | C) ;\n" +
+            "A : 'a' ;\n" +
+            "B : 'b' ;\n" +
+            "C : 'c' ;\n");
+
+        // EOF (-1) gives the bitset an offset of -1, which must be applied to the token type.
+        expect(code).toContain("if (!(((Int64((_la - -1)) & ~0x3f) == 0 && ((Int64(1) << (_la - -1)) & 25) != 0))) {");
     });
 });
