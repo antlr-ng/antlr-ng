@@ -1546,13 +1546,13 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
     protected override renderRulePropertyRefStart = (t: OutputModelObjects.RulePropertyRefStart): Lines => {
         const ref = `${this.renderContext(t)}.${t.label}`;
 
-        return [this.renderNilSafeAccess(ref, `(${ref}!.start?.description ?? "")`, `""`)];
+        return [`${ref}?.start`];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
         const ref = `${this.renderContext(t)}.${t.label}`;
 
-        return [this.renderNilSafeAccess(ref, `(${ref}!.stop?.description ?? "")`, `""`)];
+        return [`${ref}?.stop`];
     };
 
     protected override renderRulePropertyRefText = (t: OutputModelObjects.RulePropertyRefText): Lines => {
