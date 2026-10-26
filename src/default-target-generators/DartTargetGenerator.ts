@@ -2009,7 +2009,8 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
     }
 
     private renderOffsetShiftVar(shiftAmount: string, offset: bigint): string {
-        return offset > 0 ? `(${shiftAmount} - ${offset})` : shiftAmount;
+        // The offset is negative when the set contains EOF (-1), so it must be applied as well.
+        return offset !== 0n ? `(${shiftAmount} - ${offset})` : shiftAmount;
     }
 
     private renderCommonSetStuff = (m: OutputModelObjects.MatchSet, invert: boolean): Lines => {

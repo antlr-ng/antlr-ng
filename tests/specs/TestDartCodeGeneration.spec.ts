@@ -374,4 +374,16 @@ describe("TestDartCodeGeneration", () => {
         expect(code).toContain("List<TerminalNode> IDs() => getTokens(TParser.TOKEN_ID);");
         expect(code).toContain("TerminalNode? ID(int i) => getToken(TParser.TOKEN_ID, i);");
     });
+
+    it("Set containing EOF", () => {
+        const code = generateParser(
+            "grammar T;\n" +
+            "s : A (EOF | B | C) ;\n" +
+            "A : 'a' ;\n" +
+            "B : 'b' ;\n" +
+            "C : 'c' ;\n");
+
+        // EOF (-1) gives the bitset an offset of -1, which must be applied to the token type.
+        expect(code).toContain("if (!(((((_la - -1)) & ~0x3f) == 0 && ((1 << (_la - -1)) & 25) != 0))) {");
+    });
 });
