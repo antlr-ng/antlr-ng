@@ -3,9 +3,6 @@
     "version": "1.0.10",
     "description": "Next generation ANTLR Tool",
     "type": "module",
-    "engines": {
-        "node": ">=22"
-    },
     "author": "Mike Lischke",
     "repository": {
         "type": "git",
