@@ -6,6 +6,10 @@
 
 # antlr-ng Release Notes
 
+## Unreleased
+
+- Fixed Bug #70: the TestRig (`grun`) could not load the generated lexer and parser on Windows.
+
 ## 1.0.10
 
 - Fixed Bug #63: Newest ANTLRv4*.g4/LexerAdaptor.ts doesn't work for a couple of grammars
