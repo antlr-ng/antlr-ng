@@ -386,4 +386,29 @@ describe("TestDartCodeGeneration", () => {
         // EOF (-1) gives the bitset an offset of -1, which must be applied to the token type.
         expect(code).toContain("if (!(((((_la - -1)) & ~0x3f) == 0 && ((1 << (_la - -1)) & 25) != 0))) {");
     });
+
+    it("Escaped labels and trailing comments in predicates", () => {
+        const code = generateParser(
+            "grammar K;\n" +
+            "default : e r p EOF ;\n" +
+            "e : class=e '*' e | INT ;\n" +
+            "r returns [int v] : class=b { $v = $class.value; } ;\n" +
+            "b returns [int value] : INT { $value = 42; } ;\n" +
+            "p : {true // trailing comment}? INT ;\n" +
+            "INT : [0-9]+ ;\n");
+
+        // Labels in left recursive rules and rule label references are escaped.
+        expect(code).toContain("_localctx.class_ = _prevctx;");
+        expect(code).toContain("_localctx.v = _localctx.class_.value;");
+        expect(code).not.toContain(".class = ");
+
+        // A trailing comment must not swallow the rest of the statement.
+        expect(code).toContain("if (!(true // trailing comment\n)) {");
+        expect(code).toContain("case 1: return true // trailing comment\n;");
+
+        // The test driver calls the escaped start rule.
+        const driver = dartGenerator.renderTestFile("K", "KLexer", "KParser", "default", false, false, false, false,
+            false, false, "LL", true);
+        expect(driver).toContain("ParserRuleContext tree = parser.default_();");
+    });
 });
