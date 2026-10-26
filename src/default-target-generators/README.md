@@ -140,8 +140,10 @@ Python specifics:
   whitespace are expanded (tab stops of 8 columns) and the common indentation of all lines is stripped, so an
   action can be written in any indentation in the grammar. Multiple statements in an action must be placed on
   separate lines (a trailing semicolon after an attribute assignment like `$value = 1;` is consumed by the action
-  translator).
-- Empty blocks (`catch` blocks, lexer actions, empty alternatives, empty predicates) are rendered as `pass`.
+  translator). Because whole lines are re-indented, the content of a multi-line (triple-quoted) string in an action
+  changes too; use `\n` escapes or `textwrap.dedent` if the exact whitespace in such a string matters.
+- Empty or comment-only blocks (`catch` blocks, lexer actions, empty alternatives, empty predicates) get a `pass`
+  statement.
   Multi-line predicates are wrapped in parentheses.
 - `checkVersion()` is called with the ANTLR version the Python runtime expects (4.13.2), not with the antlr-ng
   version, to avoid a version mismatch warning at runtime.

@@ -430,4 +430,59 @@ describe("TestPython3CodeGeneration", () => {
             "            return (self.x and\n" +
             "                self.y)\n");
     });
+
+    it("Escaped labels, EOF sets and comment-only bodies", () => {
+        const grammarText =
+            "grammar K;\n" +
+            "async : e t r p ;\n" +
+            "e : class=e '*' e | INT ;\n" +
+            "t : (EOF | A | B)? X ;\n" +
+            "r returns [int v] : class=b { $v = $class.value } ;\n" +
+            "b returns [int value] : INT { $value = 42 } ;\n" +
+            "p : { True # trailing comment }? INT ;\n" +
+            "catch [RecognitionException as ex] {\n" +
+            "    # ignored\n" +
+            "}\n" +
+            "A : 'a' ;\n" +
+            "B : 'b' ;\n" +
+            "X : 'x' { # comment only\n" +
+            "} ;\n" +
+            "INT : [0-9]+ ;\n";
+        const code = generateParser(grammarText);
+
+        // async/await are keywords.
+        expect(code).toContain("    def async_(self):\n");
+
+        // Labels in left recursive rules and rule label references are escaped.
+        expect(code).toMatch(
+            /localctx = KParser\.EContext\(self, _parentctx, _parentState\)\n *localctx\.class_ = _prevctx\n/);
+        expect(code).not.toContain("localctx.class ");
+        expect(code).toContain("            localctx.class_ = self.b()\n" +
+            "            localctx.v = localctx.class_.value\n");
+
+        // A set with EOF has a negative offset, which must be applied.
+        expect(code).toContain("if ((((_la - -1)) & ~0x3f) == 0 and ((1 << (_la - -1)) & 25) != 0):\n");
+
+        // A trailing comment must not swallow the closing parenthesis of a predicate.
+        expect(code).toContain("            if not (True # trailing comment\n" +
+            "            ):\n");
+
+        // Comment-only bodies need a pass statement.
+        expect(code).toContain("        except RecognitionException as ex:\n" +
+            "            # ignored\n" +
+            "            pass\n");
+
+        const lexer = generateLexer(
+            "lexer grammar KLexer;\n" +
+            "X : 'x' { # comment only\n" +
+            "} ;\n");
+        expect(lexer).toContain("        if actionIndex == 0:\n" +
+            "            # comment only\n" +
+            "            pass\n");
+
+        // The test driver calls the escaped start rule.
+        const driver = pythonGenerator.renderTestFile("K", "KLexer", "KParser", "async", false, false, false, false,
+            false, false, "LL", true);
+        expect(driver).toContain("    tree = parser.async_()\n");
+    });
 });

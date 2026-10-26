@@ -36,7 +36,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
     public override readonly inlineTestSetWordSize = 64;
 
     public override readonly reservedWords = new Set([
-        "abs", "all", "and", "any", "apply", "as", "assert",
+        "abs", "all", "and", "any", "apply", "as", "assert", "async", "await",
         "bin", "bool", "break", "buffer", "bytearray",
         "callable", "chr", "class", "classmethod", "coerce", "compile", "complex", "continue",
         "def", "del", "delattr", "dict", "dir", "divmod",
@@ -270,9 +270,9 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
         if (label !== undefined) {
             if (isListLabel) {
-                result.push(`localctx.${label}.append(_prevctx)`);
+                result.push(`localctx.${this.escapeIfNeeded(label)}.append(_prevctx)`);
             } else {
-                result.push(`localctx.${label} = _prevctx`);
+                result.push(`localctx.${this.escapeIfNeeded(label)} = _prevctx`);
             }
         }
 
@@ -289,9 +289,9 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
         if (label !== undefined) {
             if (isListLabel) {
-                result.push(`localctx.${label}.append(_prevctx)`);
+                result.push(`localctx.${this.escapeIfNeeded(label)}.append(_prevctx)`);
             } else {
-                result.push(`localctx.${label} = _prevctx`);
+                result.push(`localctx.${this.escapeIfNeeded(label)} = _prevctx`);
             }
         }
 
@@ -376,7 +376,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             }
 
             result.push(
-                `    tree = parser.${parserStartRuleName ?? ""}()`,
+                `    tree = parser.${this.escapeIfNeeded(parserStartRuleName ?? "")}()`,
                 `    ParseTreeWalker.DEFAULT.walk(TreeShapeListener(), tree)`,
             );
         } else {
@@ -1085,7 +1085,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         // to the if statement (the first line has already been trimmed, so only the rest is dedented).
         const [head, ...rest] = chunks.split("\n");
         const condition = [`if not (${head}`, ...this.formatLines(this.dedent(rest), 4)];
-        condition[condition.length - 1] += `):`;
+        this.closeExpression(condition, "):");
 
         result.push(
             `self.state = ${p.stateNumber}`,
@@ -1295,7 +1295,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
     protected override renderQRetValueRef = (a: OutputModelObjects.QRetValueRef): Lines => {
         return [
-            `${this.renderContext(a)}.${a.dict}.${a.escapedName}`,
+            `${this.renderContext(a)}.${this.escapeIfNeeded(a.dict)}.${a.escapedName}`,
         ];
     };
 
@@ -1849,7 +1849,8 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
     }
 
     private renderOffsetShiftVar(shiftAmount: string, offset: bigint): string {
-        return offset > 0 ? `(${shiftAmount} - ${offset})` : shiftAmount;
+        // The offset is negative when the set contains EOF (-1), so it must be applied as well.
+        return offset !== 0n ? `(${shiftAmount} - ${offset})` : shiftAmount;
     }
 
     private renderCommonSetStuff = (m: OutputModelObjects.MatchSet, invert: boolean): Lines => {
@@ -1976,21 +1977,46 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         }
 
         const result = [`return (${expression[0]}`, ...this.formatLines(expression.slice(1), 4)];
-        result[result.length - 1] += `)`;
+        this.closeExpression(result, ")");
 
         return result;
     }
 
     /**
-     * Makes sure a block body is not empty (which is a syntax error in Python).
+     * Appends the closing delimiter to the last line of a parenthesized expression. If that line contains a `#`
+     * (which can start a trailing comment), the delimiter is put on a line of its own instead, so it is not
+     * swallowed by the comment.
+     *
+     * @param lines The lines of the expression. The last entry is modified or a new line is added.
+     * @param delimiter The closing delimiter.
+     */
+    private closeExpression(lines: Lines, delimiter: string): void {
+        const last = lines[lines.length - 1] ?? "";
+        if (last.includes("#")) {
+            lines.push(delimiter);
+        } else {
+            lines[lines.length - 1] = last + delimiter;
+        }
+    }
+
+    /**
+     * Makes sure a block body contains a statement (an empty or comment-only body is a syntax error in Python).
      *
      * @param lines The rendered body.
      *
-     * @returns The body, or a `pass` statement if the body is empty.
+     * @returns The body, with a `pass` statement appended if it contains no statement.
      */
     private renderBlockBody(lines: Lines): Lines {
-        if (lines.length === 0) {
-            return [`pass`];
+        const hasStatement = lines.some((line) => {
+            return line?.split("\n").some((part) => {
+                const text = part.trim();
+
+                return text.length > 0 && !text.startsWith("#");
+            }) ?? false;
+        });
+
+        if (!hasStatement) {
+            return [...lines, `pass`];
         }
 
         return lines;
