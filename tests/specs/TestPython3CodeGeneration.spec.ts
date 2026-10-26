@@ -440,6 +440,13 @@ describe("TestPython3CodeGeneration", () => {
             "r returns [int v] : class=b { $v = $class.value } ;\n" +
             "b returns [int value] : INT { $value = 42 } ;\n" +
             "p : { True # trailing comment }? INT ;\n" +
+            "q\n" +
+            "@init {\n" +
+            "# initialization\n" +
+            "    self.started = True\n" +
+            "  # less indented comment\n" +
+            "}\n" +
+            "    : INT ;\n" +
             "catch [RecognitionException as ex] {\n" +
             "    # ignored\n" +
             "}\n" +
@@ -466,6 +473,11 @@ describe("TestPython3CodeGeneration", () => {
         // A trailing comment must not swallow the closing parenthesis of a predicate.
         expect(code).toContain("            if not (True # trailing comment\n" +
             "            ):\n");
+
+        // Comment-only lines don't count for the common indentation of an action.
+        expect(code).toContain("        # initialization\n" +
+            "        self.started = True\n" +
+            "        # less indented comment\n");
 
         // Comment-only bodies need a pass statement.
         expect(code).toContain("        except RecognitionException as ex:\n" +

@@ -2024,8 +2024,8 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
     /**
      * Removes leading and trailing blank lines, trailing whitespace and the common indentation of all remaining
-     * lines. Tabs in the leading whitespace are expanded to spaces (tab stops of 8 columns, like Python does),
-     * so actions mixing tabs and spaces are re-indented consistently.
+     * code lines (comment-only lines are not considered). Tabs in the leading whitespace are expanded to spaces
+     * (tab stops of 8 columns, like Python does), so actions mixing tabs and spaces are re-indented consistently.
      *
      * @param lines The lines to process.
      *
@@ -2044,16 +2044,23 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             lines.pop();
         }
 
-        let common = Number.MAX_SAFE_INTEGER;
-        for (const line of lines) {
-            if (line.length > 0) {
-                const indentation = /^[ \t]*/.exec(line)![0].length;
-                common = Math.min(common, indentation);
-            }
-        }
+        // Python ignores the indentation of comment-only lines, so they don't count for the common indentation,
+        // unless there are only comments.
+        const indentationOf = (line: string): number => {
+            return /^ */.exec(line)![0].length;
+        };
 
+        const nonEmpty = lines.filter((line) => {
+            return line.length > 0;
+        });
+        const code = nonEmpty.filter((line) => {
+            return !line.trimStart().startsWith("#");
+        });
+        const common = Math.min(...(code.length > 0 ? code : nonEmpty).map(indentationOf));
+
+        // A comment with less indentation than the code loses only its own indentation, never its text.
         return lines.map((line) => {
-            return line.length === 0 ? "" : line.substring(common);
+            return line.substring(Math.min(common, indentationOf(line)));
         });
     }
 
