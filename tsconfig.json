@@ -5,6 +5,7 @@
         "moduleResolution": "Node16",
         "sourceMap": true,
         "esModuleInterop": true,
+        "isolatedModules": true, // esbuild transpiles each file on its own, so type re-exports need "export type".
         "noEmit": false,
         "declaration": true,
         "emitDeclarationOnly": true,
