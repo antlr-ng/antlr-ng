@@ -310,4 +310,36 @@ describe("TestJavaCodeGeneration", () => {
         expect(code).toContain("public List<TerminalNode> ID() { return getTokens(TParser.ID); }");
         expect(code).toContain("public TerminalNode ID(int i) {");
     });
+
+    it("Escaped labels, EOF sets and trailing comments in predicates", () => {
+        const code = generateParser(
+            "grammar K;\n" +
+            "default : e t r p EOF ;\n" +
+            "e : class=e '*' e | INT ;\n" +
+            "t : (EOF | A | B)? X ;\n" +
+            "r returns [int v] : class=b { $v = $class.value; } ;\n" +
+            "b returns [int value] : INT { $value = 42; } ;\n" +
+            "p : {true // trailing comment}? INT ;\n" +
+            "A : 'a' ;\n" +
+            "B : 'b' ;\n" +
+            "X : 'x' ;\n" +
+            "INT : [0-9]+ ;\n");
+
+        // Labels in left recursive rules and rule label references are escaped.
+        expect(code).toContain("_localctx.class_ = _prevctx;");
+        expect(code).toContain("((RContext)_localctx).v = ((RContext)_localctx).class_.value;");
+        expect(code).not.toContain(".class = ");
+
+        // A set with EOF has a negative offset, which must be applied.
+        expect(code).toContain("if (((((_la - -1)) & ~0x3f) == 0 && ((1L << (_la - -1)) & 25L) != 0)) {");
+
+        // A trailing comment must not swallow the rest of the statement.
+        expect(code).toContain("if (!(true // trailing comment\n)) throw new FailedPredicateException(");
+        expect(code).toContain("return true // trailing comment\n;");
+
+        // The test driver calls the escaped start rule.
+        const driver = javaGenerator.renderTestFile("K", "KLexer", "KParser", "default", false, false, false, false,
+            false, false, "LL", true);
+        expect(driver).toContain("ParserRuleContext tree = parser.default_();");
+    });
 });

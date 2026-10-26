@@ -369,9 +369,9 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
 
         if (label !== undefined) {
             if (isListLabel) {
-                result.push(`((${altContext})_localctx).${label}.add(_prevctx);`);
+                result.push(`((${altContext})_localctx).${this.escapeIfNeeded(label)}.add(_prevctx);`);
             } else {
-                result.push(`((${altContext})_localctx).${label} = _prevctx;`);
+                result.push(`((${altContext})_localctx).${this.escapeIfNeeded(label)} = _prevctx;`);
             }
         }
 
@@ -386,9 +386,9 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
 
         if (label !== undefined) {
             if (isListLabel) {
-                result.push(`_localctx.${label}.add(_prevctx);`);
+                result.push(`_localctx.${this.escapeIfNeeded(label)}.add(_prevctx);`);
             } else {
-                result.push(`_localctx.${label} = _prevctx;`);
+                result.push(`_localctx.${this.escapeIfNeeded(label)} = _prevctx;`);
             }
         }
 
@@ -441,7 +441,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
                 result.push(`		parser.setProfile(true);`);
             }
 
-            result.push(`		ParserRuleContext tree = parser.${parserStartRuleName}();`);
+            result.push(`		ParserRuleContext tree = parser.${this.escapeIfNeeded(parserStartRuleName)}();`);
 
             if (profile) {
                 result.push(`		System.out.println(Arrays.toString(parser.getParseInfo().getDecisionInfo()));`);
@@ -1177,9 +1177,10 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
             message = `, ${p.msg}`;
         }
 
+        const exception = `throw new FailedPredicateException(this, ${p.predicate}${message});`;
         result.push(
             `setState(${p.stateNumber});`,
-            `if (!(${chunks})) throw new FailedPredicateException(this, ${p.predicate}${message});`,
+            `if (!(${this.closeExpression(chunks, `)) ${exception}`)}`,
         );
 
         return this.endRendering("SemPred", result);
@@ -1238,7 +1239,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
             }
 
             lines[0] = `return ${lines[0]}`;
-            lines[lines.length - 1] += ";";
+            lines[lines.length - 1] = this.closeExpression(lines[lines.length - 1] ?? "", ";");
             this.append(result, this.indent(lines, 2));
         }
 
@@ -1408,7 +1409,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
     };
 
     protected override renderQRetValueRef = (a: OutputModelObjects.QRetValueRef): Lines => {
-        return [`${this.renderContext(a)}.${a.dict}.${a.escapedName}`];
+        return [`${this.renderContext(a)}.${this.escapeIfNeeded(a.dict)}.${a.escapedName}`];
     };
 
     protected override renderRetValueRef = (t: OutputModelObjects.RetValueRef): Lines => {
@@ -1945,7 +1946,24 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
     }
 
     private renderOffsetShiftVar(shiftAmount: string, offset: bigint): string {
-        return offset > 0 ? `(${shiftAmount} - ${offset})` : shiftAmount;
+        // The offset is negative when the set contains EOF (-1), so it must be applied as well.
+        return offset !== 0n ? `(${shiftAmount} - ${offset})` : shiftAmount;
+    }
+
+    /**
+     * Appends the closing part to an expression from a grammar action. If the last line of the expression contains
+     * a `//` (which can start a trailing comment), the closing part is put on a line of its own instead, so it is
+     * not swallowed by the comment.
+     *
+     * @param expression The expression, possibly spanning multiple lines.
+     * @param closing The text to append.
+     *
+     * @returns The expression with the closing part.
+     */
+    private closeExpression(expression: string, closing: string): string {
+        const lastLine = expression.substring(expression.lastIndexOf("\n") + 1);
+
+        return lastLine.includes("//") ? `${expression}\n${closing}` : expression + closing;
     }
 
     private renderCommonSetStuff = (m: OutputModelObjects.MatchSet, invert: boolean): Lines => {
