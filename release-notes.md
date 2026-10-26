@@ -14,6 +14,8 @@
 - Added the PHP target generator (`PHPTargetGenerator`), which replaces the StringTemplate based PHP target.
 - Added the Swift target generator (`SwiftTargetGenerator`), which replaces the StringTemplate based Swift target.
 - Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
+- Fixed loading a config file with `-c`/`--config` when it is given as a relative or a Windows path, and running the
+  CLI with the default `lib` folder (`.`).
 
 ## 1.0.10
 
