@@ -8,7 +8,8 @@
 import * as nodeFs from "fs";
 import { createFsFromVolume, Volume } from "memfs";
 
-import { fileURLToPath } from "url";
+import { resolve } from "path";
+import { fileURLToPath, pathToFileURL } from "url";
 import { Tool } from "../src/Tool.js";
 import { copyFolderFromMemFs, copyFolderToMemFs, dirname } from "../src/support/fs-helpers.js";
 import { parseToolParameters, useFileSystem } from "../src/tool-parameters.js";
@@ -24,8 +25,9 @@ const parameters = parseToolParameters(process.argv.slice(2));
 let configuration: IToolConfiguration;
 
 if (parameters.config) {
+    // import() takes a URL and resolves a relative specifier against this module, not the working directory.
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { default: config } = await import(parameters.config);
+    const { default: config } = await import(pathToFileURL(resolve(parameters.config)).href);
     configuration = config as IToolConfiguration;
 } else {
     configuration = defineConfig({
@@ -55,6 +57,7 @@ copyFolderToMemFs(fs, fileURLToPath(dirname(import.meta.url) + "/../templates"),
 
 // Copy all files to the memfs file system. We use the same files for all files. It doesn't matter for memfs.
 if (configuration.lib) {
+    fs.mkdirSync(configuration.lib, { recursive: true });
     copyFolderToMemFs(fs, configuration.lib, configuration.lib, false);
 }
 
