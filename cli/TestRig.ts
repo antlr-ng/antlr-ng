@@ -19,6 +19,7 @@ import {
 
 import { readFile } from "fs/promises";
 import { resolve } from "path";
+import { pathToFileURL } from "url";
 
 import { parseBoolean } from "./cli-options.js";
 
@@ -161,7 +162,8 @@ export class TestRig {
     private async loadClass<T extends Recognizer<ATNSimulator>>(t: Constructor<T>,
         fileName: string): Promise<T & Record<string, unknown>> {
         try {
-            const module = await import(fileName) as ModuleType<T>;
+            // import() takes a URL. A plain Windows path (C:\...) would be taken as a URL with the scheme "c:".
+            const module = await import(pathToFileURL(fileName).href) as ModuleType<T>;
 
             // Helper function to check if a class extends another class (directly or indirectly).
             const extendsClass = (child: Function, parent: Function): boolean => {
