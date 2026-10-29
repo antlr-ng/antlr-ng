@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-export { IToolParameters } from "./tool-parameters.js";
+export type { IToolParameters } from "./tool-parameters.js";
 
 export * from "./Tool.js";
 export * from "./tool/Issue.js";

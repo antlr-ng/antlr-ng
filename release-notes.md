@@ -17,6 +17,8 @@
 - Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
 - Fixed loading a config file with `-c`/`--config` when it is given as a relative or a Windows path, and running the
   CLI with the default `lib` folder (`.`).
+- Fixed importing the `antlr-ng` package as a library: interface re-exports failed at runtime (`does not provide an
+  export named 'IToolParameters'`). `isolatedModules` is now enabled, so the type check catches this.
 
 ## 1.0.10
 

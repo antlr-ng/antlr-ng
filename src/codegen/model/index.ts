@@ -60,7 +60,7 @@ export { TokenListDecl } from "./decl/TokenListDecl.js";
 export { TokenTypeDecl } from "./decl/TokenTypeDecl.js";
 export { ExceptionClause } from "./ExceptionClause.js";
 export { InvokeRule } from "./InvokeRule.js";
-export { ITokenInfo } from "./ITokenInfo.js";
+export type { ITokenInfo } from "./ITokenInfo.js";
 export { LeftRecursiveRuleFunction } from "./LeftRecursiveRuleFunction.js";
 export { Lexer } from "./Lexer.js";
 export { LexerFile } from "./LexerFile.js";
