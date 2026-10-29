@@ -118,6 +118,38 @@ Swift specifics:
 
 The generated code is compatible with the current Swift ANTLR4 runtime (`Antlr4`).
 
+### Python3TargetGenerator
+
+The Python 3 target generator produces Python code from ANTLR4 grammars. It generates:
+
+- Parser files (.py), with the rule contexts as nested classes of the parser class
+- Lexer files (.py)
+- Listener classes (.py)
+- Visitor classes (.py)
+
+Python specifics:
+
+- There are no base listener/visitor classes. The generated listener and visitor classes are complete
+  implementations (the context dispatch methods check with `hasattr` whether a listener/visitor implements a method).
+- The `package` generation option is not used. The generated listener and visitor import the parser relative to
+  their own package when they are part of one (`if "." in __name__`).
+- Rule, token and label names which are Python keywords or builtins (e.g. `list`, `type`, `None`) get an
+  underscore appended (`list_`, `None_`) in method and attribute names. Rule and token names in the name lists and
+  the `RULE_*` constants are not changed.
+- The text of grammar actions is re-indented: leading and trailing blank lines are removed, tabs in the leading
+  whitespace are expanded (tab stops of 8 columns) and the common indentation of all lines is stripped, so an
+  action can be written in any indentation in the grammar. Multiple statements in an action must be placed on
+  separate lines (a trailing semicolon after an attribute assignment like `$value = 1;` is consumed by the action
+  translator). Because whole lines are re-indented, the content of a multi-line (triple-quoted) string in an action
+  changes too; use `\n` escapes or `textwrap.dedent` if the exact whitespace in such a string matters.
+- Empty or comment-only blocks (`catch` blocks, lexer actions, empty alternatives, empty predicates) get a `pass`
+  statement.
+  Multi-line predicates are wrapped in parentheses.
+- `checkVersion()` is called with the ANTLR version the Python runtime expects (4.13.2), not with the antlr-ng
+  version, to avoid a version mismatch warning at runtime.
+
+The generated code is compatible with the current Python 3 ANTLR4 runtime (`antlr4-python3-runtime`).
+
 ## Template Files
 
 The generators are TypeScript implementations based on the StringTemplate4 files located in `templates/codegen/`. Once all languages are done these templates will be removed.
