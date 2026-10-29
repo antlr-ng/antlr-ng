@@ -1421,7 +1421,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
     };
 
     protected override renderRulePropertyRefCtx = (t: OutputModelObjects.RulePropertyRefCtx): Lines => {
-        return [`${this.renderContext(t)}.${t.label}`];
+        return [`${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`];
     };
 
     protected override renderRulePropertyRefParser = (t: OutputModelObjects.RulePropertyRefParser): Lines => {
@@ -1429,19 +1429,19 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
     };
 
     protected override renderRulePropertyRefStart = (t: OutputModelObjects.RulePropertyRefStart): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return [`(${ref}!=null?(${ref}.start):null)`];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return [`(${ref}!=null?(${ref}.stop):null)`];
     };
 
     protected override renderRulePropertyRefText = (t: OutputModelObjects.RulePropertyRefText): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return [`(${ref}!=null?_input.getText(${ref}.start,${ref}.stop):null)`];
     };
@@ -1490,7 +1490,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
     };
 
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return [`(${ref}!=null?Integer.valueOf(${ref}.getText()):0)`];
     };
@@ -1917,7 +1917,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
     }
 
     private renderTokenProperty(t: TokenPropertyRef, accessor: string, defaultValue: string): string {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return `(${ref}!=null?${ref}.${accessor}:${defaultValue})`;
     }

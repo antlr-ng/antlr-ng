@@ -342,4 +342,21 @@ describe("TestJavaCodeGeneration", () => {
             false, false, "LL", true);
         expect(driver).toContain("ParserRuleContext tree = parser.default_();");
     });
+
+    it("Escaped labels in token and rule property references", () => {
+        const code = generateParser(
+            "grammar K;\n" +
+            "s returns [int v, String w] : class=INT try=b {\n" +
+            "    $v = $class.int + $class.channel + $class.line;\n" +
+            "    $w = $class.text + $try.text + $try.start + $try.stop + $try.ctx;\n" +
+            "} ;\n" +
+            "b : INT ;\n" +
+            "INT : [0-9]+ ;\n");
+
+        expect(code).toContain("((SContext)_localctx).class_!=null?Integer.valueOf(((SContext)_localctx).class_");
+        expect(code).toContain("((SContext)_localctx).class_!=null?((SContext)_localctx).class_.getChannel():0");
+        expect(code).toContain("((SContext)_localctx).try_!=null?_input.getText(((SContext)_localctx).try_.start");
+        expect(code).toContain("((SContext)_localctx).try_!=null?(((SContext)_localctx).try_.stop):null");
+        expect(code).not.toMatch(/_localctx\)\.(class|try)\b/);
+    });
 });
