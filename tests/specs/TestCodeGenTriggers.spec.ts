@@ -162,7 +162,7 @@ describe("Code generation triggers coverage", () => {
             "Number(localContext._ID?.text ?? '0'))");
         expect(parser).toContain("use(localContext._a!.y, (localContext._a != null ? " +
             "this.tokenStream.getTextFromRange(localContext._a.start, localContext._a.stop) : ''), " +
-            "(localContext._a!.start), (localContext._a!.stop), (localContext._a)");
+            "(localContext._a!.start), (localContext._a!.stop), localContext._a)");
         expect(parser).toContain("(this.getInvokingContext(1) as Rule1Context).z = 1; " +
             "(this.getInvokingContext(1) as Rule1Context).y;");
         expect(parser).toContain("use(localContext.foo)");
@@ -424,7 +424,7 @@ describe("Code generation triggers coverage", () => {
             "this.tokenStream.getTextFromRange(localContext.start, this.tokenStream.LT(-1)))");
         expect(tsCode).toContain("use(localContext._t!.ret, (localContext._t != null ? " +
             "this.tokenStream.getTextFromRange(localContext._t.start, localContext._t.stop) : ''), " +
-            "(localContext._t!.start), (localContext._t!.stop), (localContext._t)");
+            "(localContext._t!.start), (localContext._t!.stop), localContext._t)");
 
         // C#.
         const csGenerator = new CSharpTargetGenerator(false);

@@ -1165,13 +1165,13 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
     protected override renderRulePropertyRef = (r: OutputModelObjects.RulePropertyRef): Lines => {
         const ctx = this.renderContext(r);
 
-        return [`(${ctx}._${r.label}!.start)`];
+        return [`(${ctx}._${this.escapeIfNeeded(r.label)}!.start)`];
     };
 
     protected override renderRulePropertyRefCtx = (r: OutputModelObjects.RulePropertyRefCtx): Lines => {
         const ctx = this.renderContext(r);
 
-        return [`(${ctx}._${r.label}`];
+        return [`${ctx}._${this.escapeIfNeeded(r.label)}`];
     };
 
     protected override renderRulePropertyRefParser = (r: OutputModelObjects.RulePropertyRefParser): Lines => {
@@ -1181,20 +1181,19 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
     protected override renderRulePropertyRefStart = (r: OutputModelObjects.RulePropertyRefStart): Lines => {
         const ctx = this.renderContext(r);
 
-        return [`(${ctx}._${r.label}!.start)`];
+        return [`(${ctx}._${this.escapeIfNeeded(r.label)}!.start)`];
     };
 
     protected override renderRulePropertyRefStop = (r: OutputModelObjects.RulePropertyRefStop): Lines => {
         const ctx = this.renderContext(r);
 
-        return [`(${ctx}._${r.label}!.stop)`];
+        return [`(${ctx}._${this.escapeIfNeeded(r.label)}!.stop)`];
     };
 
     protected override renderRulePropertyRefText = (r: OutputModelObjects.RulePropertyRefText): Lines => {
-        const ctx = this.renderContext(r);
+        const ref = `${this.renderContext(r)}._${this.escapeIfNeeded(r.label)}`;
 
-        return [`(${ctx}._${r.label} != null ? this.tokenStream.getTextFromRange(${ctx}._${r.label}.start, ` +
-            `${ctx}._${r.label}.stop) : '')`];
+        return [`(${ref} != null ? this.tokenStream.getTextFromRange(${ref}.start, ${ref}.stop) : '')`];
     };
 
     protected override renderSetAttr = (s: OutputModelObjects.SetAttr): Lines => {
@@ -1238,43 +1237,43 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
     protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefChannel): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`${ctx}._${t.label}?.channel ?? 0`];
+        return [`${ctx}._${this.escapeIfNeeded(t.label)}?.channel ?? 0`];
     };
 
     protected override renderTokenPropertyRefIndex = (t: OutputModelObjects.TokenPropertyRefIndex): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}._${t.label}?.tokenIndex ?? 0)`];
+        return [`(${ctx}._${this.escapeIfNeeded(t.label)}?.tokenIndex ?? 0)`];
     };
 
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`Number(${ctx}._${t.label}?.text ?? '0')`];
+        return [`Number(${ctx}._${this.escapeIfNeeded(t.label)}?.text ?? '0')`];
     };
 
     protected override renderTokenPropertyRefLine = (t: OutputModelObjects.TokenPropertyRefLine): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}._${t.label}?.line ?? 0)`];
+        return [`(${ctx}._${this.escapeIfNeeded(t.label)}?.line ?? 0)`];
     };
 
     protected override renderTokenPropertyRefPos = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}._${t.label}?.column ?? 0)`];
+        return [`(${ctx}._${this.escapeIfNeeded(t.label)}?.column ?? 0)`];
     };
 
     protected override renderTokenPropertyRefText = (t: OutputModelObjects.TokenPropertyRefText): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}._${t.label}?.text ?? '')`];
+        return [`(${ctx}._${this.escapeIfNeeded(t.label)}?.text ?? '')`];
     };
 
     protected override renderTokenPropertyRefType = (t: OutputModelObjects.TokenPropertyRefType): Lines => {
         const ctx = this.renderContext(t);
 
-        return [`(${ctx}._${t.label}?.type ?? 0)`];
+        return [`(${ctx}._${this.escapeIfNeeded(t.label)}?.type ?? 0)`];
     };
 
     protected override renderTokenRef = (t: OutputModelObjects.TokenRef): Lines => {

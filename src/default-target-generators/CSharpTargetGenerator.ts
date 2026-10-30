@@ -2105,18 +2105,18 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
     protected override renderRulePropertyRef = (t: OutputModelObjects.RulePropertyRef): Lines => {
         const ctx = this.renderContext(t);
+        const ref = `${ctx}.${this.escapeIfNeeded(t.label)}`;
 
         return [
-            `(${ctx}.${t.label} != null ? (${ctx}.${t.label}.start) : null)`
+            `(${ref} != null ? (${ref}.start) : null)`
         ];
     };
 
     protected override renderRulePropertyRefCtx = (t: OutputModelObjects.RulePropertyRefCtx): Lines => {
         const ctx = this.renderContext(t);
+        const ref = `${ctx}.${this.escapeIfNeeded(t.label)}`;
 
-        return [
-            `${ctx}.${t.label}`
-        ];
+        return [ref];
     };
 
     protected override renderRulePropertyRefParser = (t: OutputModelObjects.RulePropertyRefParser): Lines => {
@@ -2127,25 +2127,28 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
     protected override renderRulePropertyRefStart = (t: OutputModelObjects.RulePropertyRefStart): Lines => {
         const ctx = this.renderContext(t);
+        const ref = `${ctx}.${this.escapeIfNeeded(t.label)}`;
 
         return [
-            `(${ctx}.${t.label} != null ? (${ctx}.${t.label}.Start) : null)`
+            `(${ref} != null ? (${ref}.Start) : null)`
         ];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
         const ctx = this.renderContext(t);
+        const ref = `${ctx}.${this.escapeIfNeeded(t.label)}`;
 
         return [
-            `(${ctx}.${t.label} != null ? (${ctx}.${t.label}.Stop) : null)`
+            `(${ref} != null ? (${ref}.Stop) : null)`
         ];
     };
 
     protected override renderRulePropertyRefText = (t: OutputModelObjects.RulePropertyRefText): Lines => {
         const ctx = this.renderContext(t);
+        const ref = `${ctx}.${this.escapeIfNeeded(t.label)}`;
 
         return [
-            `(${ctx}.${t.label} != null ? TokenStream.GetText(${ctx}.${t.label}.Start, ${ctx}.${t.label}.Stop) : null)`
+            `(${ref} != null ? TokenStream.GetText(${ref}.Start, ${ref}.Stop) : null)`
         ];
     };
 
@@ -2205,7 +2208,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected override renderTokenPropertyRefChannel = (t: OutputModelObjects.TokenPropertyRefChannel): Lines => {
         const ctx = this.renderContext(t);
 
-        const label = this.renderTokenTypeName(t.label);
+        const label = this.renderTokenTypeName(this.escapeIfNeeded(t.label));
 
         return [
             `(${ctx}.${label} != null ? ${ctx}.${label}.Channel:0)`
@@ -2215,7 +2218,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected override renderTokenPropertyRefIndex = (t: OutputModelObjects.TokenPropertyRefIndex): Lines => {
         const ctx = this.renderContext(t);
 
-        const label = this.renderTokenTypeName(t.label);
+        const label = this.renderTokenTypeName(this.escapeIfNeeded(t.label));
 
         return [
             `(${ctx}.${label} != null ? ${ctx}.${label}.TokenIndex:0)`
@@ -2225,17 +2228,17 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
         const ctx = this.renderContext(t);
 
-        const label = this.renderTokenTypeName(t.label);
+        const label = this.renderTokenTypeName(this.escapeIfNeeded(t.label));
 
         return [
-            `(${ctx}.${label}!=null?int.Parse(${ctx}.` + `${label}..Text):0)`
+            `(${ctx}.${label}!=null?int.Parse(${ctx}.` + `${label}.Text):0)`
         ];
     };
 
     protected override renderTokenPropertyRefLine = (t: OutputModelObjects.TokenPropertyRefLine): Lines => {
         const ctx = this.renderContext(t);
 
-        const label = this.renderTokenTypeName(t.label);
+        const label = this.renderTokenTypeName(this.escapeIfNeeded(t.label));
 
         return [
             `(${ctx}.${label}!=null ? ${ctx}.${label}.Line:0)`
@@ -2245,7 +2248,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected override renderTokenPropertyRefPos = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
         const ctx = this.renderContext(t);
 
-        const label = this.renderTokenTypeName(t.label);
+        const label = this.renderTokenTypeName(this.escapeIfNeeded(t.label));
 
         return [
             `(${ctx}.${label} != null ? ${ctx}.${label}.CharPositionInLine:0)`
@@ -2255,7 +2258,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected override renderTokenPropertyRefText = (t: OutputModelObjects.TokenPropertyRefText): Lines => {
         const ctx = this.renderContext(t);
 
-        const label = this.renderTokenTypeName(t.label);
+        const label = this.renderTokenTypeName(this.escapeIfNeeded(t.label));
 
         return [
             `(${ctx}.${label} != null ? ${ctx}.${label}.GetText() : "")`
@@ -2265,7 +2268,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected override renderTokenPropertyRefType = (t: OutputModelObjects.TokenPropertyRefType): Lines => {
         const ctx = this.renderContext(t);
 
-        const label = this.renderTokenTypeName(t.label);
+        const label = this.renderTokenTypeName(this.escapeIfNeeded(t.label));
 
         return [
             `(${ctx}.${label} != null ? ${ctx}.${label}.Type:0)`];
