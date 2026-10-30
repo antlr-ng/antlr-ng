@@ -1418,13 +1418,13 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
     protected override renderRulePropertyRef = (t: OutputModelObjects.RulePropertyRef): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}`,
+            `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`,
         ];
     };
 
     protected override renderRulePropertyRefCtx = (t: OutputModelObjects.RulePropertyRefCtx): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}`,
+            `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`,
         ];
     };
 
@@ -1436,18 +1436,18 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
     protected override renderRulePropertyRefStart = (t: OutputModelObjects.RulePropertyRefStart): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}?.start`,
+            `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}?.start`,
         ];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}?.stop`,
+            `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}?.stop`,
         ];
     };
 
     protected override renderRulePropertyRefText = (t: OutputModelObjects.RulePropertyRefText): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return [
             `(${ref} != null ? tokenStream.getTextRange(${ref}.start, ${ref}.stop) : null)`,
@@ -1510,7 +1510,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
     };
 
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return [
             `(${ref} != null ? int.parse(${ref}.text) : 0)`,
@@ -1527,7 +1527,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
     protected override renderTokenPropertyRefText = (t: OutputModelObjects.TokenPropertyRefText): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}?.text`,
+            `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}?.text`,
         ];
     };
 
@@ -1982,7 +1982,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
      * @returns The rendered expression.
      */
     private renderTokenProperty(t: TokenPropertyRef, property: string, defaultValue: string): string {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return `(${ref}?.${property} ?? ${defaultValue})`;
     }
