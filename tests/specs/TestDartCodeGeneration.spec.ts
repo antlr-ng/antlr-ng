@@ -411,4 +411,22 @@ describe("TestDartCodeGeneration", () => {
             false, false, "LL", true);
         expect(driver).toContain("ParserRuleContext tree = parser.default_();");
     });
+
+    it("Escaped labels in token and rule property references", () => {
+        const code = generateParser(
+            "grammar K;\n" +
+            "s returns [int v, String w] : class=INT try=b {\n" +
+            "    $v = $class.int + $class.channel + $class.line;\n" +
+            "    $w = $class.text + $try.text + $try.start + $try.stop + $try.ctx;\n" +
+            "} ;\n" +
+            "b : INT ;\n" +
+            "INT : [0-9]+ ;\n");
+
+        expect(code).toContain("(_localctx.class_ != null ? int.parse(_localctx.class_.text) : 0) + " +
+            "(_localctx.class_?.channel ?? 0)");
+        expect(code).toContain("_localctx.class_?.text + (_localctx.try_ != null ? " +
+            "tokenStream.getTextRange(_localctx.try_.start, _localctx.try_.stop) : null)");
+        expect(code).toContain("_localctx.try_?.start + _localctx.try_?.stop + _localctx.try_;");
+        expect(code).not.toMatch(/_localctx\.(class|try)\b/);
+    });
 });
