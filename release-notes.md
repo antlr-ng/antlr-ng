@@ -19,6 +19,10 @@
   CLI with the default `lib` folder (`.`).
 - Fixed importing the `antlr-ng` package as a library: interface re-exports failed at runtime (`does not provide an
   export named 'IToolParameters'`). `isolatedModules` is now enabled, so the type check catches this.
+- Fixed token and rule property references (`$label.text`, `$label.start`, ...) for labels which are keywords in the
+  target language in the TypeScript, C++, C# and Swift generators. The label is declared with its escaped name, but
+  the references used the raw name. Also fixed `$label.ctx` in TypeScript (unbalanced parenthesis) and `$label.int`
+  in C# (`..Text`).
 
 ## 1.0.10
 

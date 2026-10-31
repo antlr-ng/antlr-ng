@@ -1918,8 +1918,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? (${ctx}->${t.label}->start) : nullptr)`];
+        return [`(${ref} != nullptr ? (${ref}->start) : nullptr)`];
     };
 
     protected override renderRulePropertyRefCtx = (t: OutputModelObjects.RulePropertyRefCtx): Lines => {
@@ -1928,8 +1929,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`${ctx}->${t.label}`];
+        return [ref];
     };
 
     protected override renderRulePropertyRefParser = (t: OutputModelObjects.RulePropertyRefParser): Lines => {
@@ -1946,8 +1948,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? (${ctx}->${t.label}->start) : nullptr)`];
+        return [`(${ref} != nullptr ? (${ref}->start) : nullptr)`];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
@@ -1956,8 +1959,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? (${ctx}->${t.label}->stop) : nullptr)`];
+        return [`(${ref} != nullptr ? (${ref}->stop) : nullptr)`];
     };
 
     protected override renderRulePropertyRefText = (t: OutputModelObjects.RulePropertyRefText): Lines => {
@@ -1966,9 +1970,10 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? _input->getText(${ctx}->${t.label}->start, ` +
-            `${ctx}->${t.label}->stop) : nullptr)`];
+        return [`(${ref} != nullptr ? _input->getText(${ref}->start, ` +
+            `${ref}->stop) : nullptr)`];
     };
 
     protected override renderSetAttr = (s: OutputModelObjects.SetAttr): Lines => {
@@ -2031,8 +2036,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getChannel() : 0)`];
+        return [`(${ref} != nullptr ? ${ref}->getChannel() : 0)`];
     };
 
     protected override renderTokenPropertyRefIndex = (t: OutputModelObjects.TokenPropertyRefIndex): Lines => {
@@ -2041,8 +2047,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getTokenIndex() : 0)`];
+        return [`(${ref} != nullptr ? ${ref}->getTokenIndex() : 0)`];
     };
 
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
@@ -2051,8 +2058,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? std::stoi(${ctx}->${t.label}->getText()) : 0)`];
+        return [`(${ref} != nullptr ? std::stoi(${ref}->getText()) : 0)`];
     };
 
     protected override renderTokenPropertyRefLine = (t: OutputModelObjects.TokenPropertyRefLine): Lines => {
@@ -2061,8 +2069,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getLine() : 0)`];
+        return [`(${ref} != nullptr ? ${ref}->getLine() : 0)`];
     };
 
     protected override renderTokenPropertyRefPos = (t: OutputModelObjects.TokenPropertyRefPos): Lines => {
@@ -2071,8 +2080,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getCharPositionInLine() : 0)`];
+        return [`(${ref} != nullptr ? ${ref}->getCharPositionInLine() : 0)`];
     };
 
     protected override renderTokenPropertyRefText = (t: OutputModelObjects.TokenPropertyRefText): Lines => {
@@ -2081,8 +2091,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getText() : "")`];
+        return [`(${ref} != nullptr ? ${ref}->getText() : "")`];
     };
 
     protected override renderTokenPropertyRefType = (t: OutputModelObjects.TokenPropertyRefType): Lines => {
@@ -2091,8 +2102,9 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         const ctx = this.renderContext(t);
+        const ref = `${ctx}->${this.escapeIfNeeded(t.label)}`;
 
-        return [`(${ctx}->${t.label} != nullptr ? ${ctx}->${t.label}->getType() : 0)`];
+        return [`(${ref} != nullptr ? ${ref}->getType() : 0)`];
     };
 
     protected override renderTokenRef = (t: OutputModelObjects.TokenRef): Lines => {

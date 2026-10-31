@@ -1527,13 +1527,13 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
 
     protected override renderRulePropertyRef = (t: OutputModelObjects.RulePropertyRef): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}`,
+            `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`,
         ];
     };
 
     protected override renderRulePropertyRefCtx = (t: OutputModelObjects.RulePropertyRefCtx): Lines => {
         return [
-            `${this.renderContext(t)}.${t.label}`,
+            `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`,
         ];
     };
 
@@ -1544,19 +1544,19 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
     };
 
     protected override renderRulePropertyRefStart = (t: OutputModelObjects.RulePropertyRefStart): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return [`${ref}?.start`];
     };
 
     protected override renderRulePropertyRefStop = (t: OutputModelObjects.RulePropertyRefStop): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return [`${ref}?.stop`];
     };
 
     protected override renderRulePropertyRefText = (t: OutputModelObjects.RulePropertyRefText): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return [this.renderNilSafeAccess(ref, `try _input.getText(${ref}!.start, ${ref}!.stop)`, `""`)];
     };
@@ -1619,7 +1619,7 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
     };
 
     protected override renderTokenPropertyRefInt = (t: OutputModelObjects.TokenPropertyRefInt): Lines => {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         // Int(String) returns an optional, so fall back to 0 for text that is not a number.
         return [this.renderNilSafeAccess(ref, `(Int(${ref}!.getText()!) ?? 0)`, "0")];
@@ -2101,7 +2101,7 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
      * @returns The rendered expression.
      */
     private renderTokenProperty(t: TokenPropertyRef, accessor: string, defaultValue: string): string {
-        const ref = `${this.renderContext(t)}.${t.label}`;
+        const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return this.renderNilSafeAccess(ref, `${ref}!.${accessor}`, defaultValue);
     }
