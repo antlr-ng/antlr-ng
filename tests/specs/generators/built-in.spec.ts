@@ -15,6 +15,7 @@ import { toTreeSync } from "memfs/lib/print/index.js";
 import type { ITargetGenerator } from "../../../src/codegen/ITargetGenerator.js";
 import { CppTargetGenerator } from "../../../src/default-target-generators/CppTargetGenerator.js";
 import { CSharpTargetGenerator } from "../../../src/default-target-generators/CSharpTargetGenerator.js";
+import { DartTargetGenerator } from "../../../src/default-target-generators/DartTargetGenerator.js";
 import { GoTargetGenerator } from "../../../src/default-target-generators/GoTargetGenerator.js";
 import { PHPTargetGenerator } from "../../../src/default-target-generators/PHPTargetGenerator.js";
 import { Python3TargetGenerator } from "../../../src/default-target-generators/Python3TargetGenerator.js";
@@ -485,6 +486,72 @@ describe("Test built-in generators", () => {
 
             if (configuration.generationOptions.generateBaseVisitor) {
                 await copyCodeFile("MySQLParserBaseVisitor", pythonGenerator, targetDir);
+            }
+        }
+
+        if (configuration.generationOptions.generateInterpreterData) {
+            await copyFile("MySQLLexer.interp", targetDir);
+            await copyFile("MySQLParser.interp", targetDir);
+        }
+
+        // Tokens files.
+        await copyFile("MySQLLexer.tokens", targetDir);
+        await copyFile("MySQLParser.tokens", targetDir);
+    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+
+    it("test Dart generator", async () => {
+        const dartGenerator: ITargetGenerator = new DartTargetGenerator(false);
+        dartGenerator.setUp();
+
+        const targetDir = resolve(ToolTestUtils.expandTilde("~/antlr-ng-test-generation/mysql"),
+            dartGenerator.language);
+
+        await mkdir(targetDir, { recursive: true });
+
+        const configuration = defineConfig({
+            grammarFiles: ["MySQLLexer.g4", "MySQLParser.g4"],
+            generationOptions: {
+                outputDirectory: "/out",
+                generateListener: true,
+                generateVisitor: true,
+                generateInterpreterData: true,
+                generateDeclarationFile: false,
+                generateBaseListener: true,
+                generateBaseVisitor: true,
+                package: "mysql",
+            },
+            generators: [dartGenerator],
+        });
+
+        let grammarPath = fileURLToPath(new URL("../../grammars/MySQLLexer.g4", import.meta.url));
+        let grammarText = await readFile(grammarPath, "utf8");
+        const lg = new LexerGrammar(grammarText);
+        lg.fileName = "MySQLLexer.g4";
+        lg.tool.process(lg, configuration, true);
+
+        grammarPath = fileURLToPath(new URL("../../grammars/MySQLParser.g4", import.meta.url));
+        grammarText = await readFile(grammarPath, "utf8");
+        const g = new Grammar(grammarText);
+        g.fileName = "MySQLParser.g4";
+        g.tool.process(g, configuration, true);
+
+        console.log(toTreeSync(fileSystem));
+
+        await copyCodeFile("MySQLLexer", dartGenerator, targetDir);
+        await copyCodeFile("MySQLParser", dartGenerator, targetDir);
+
+        if (configuration.generationOptions.generateListener) {
+            await copyCodeFile("MySQLParserListener", dartGenerator, targetDir);
+            if (configuration.generationOptions.generateBaseListener) {
+                await copyCodeFile("MySQLParserBaseListener", dartGenerator, targetDir);
+            }
+        }
+
+        if (configuration.generationOptions.generateVisitor) {
+            await copyCodeFile("MySQLParserVisitor", dartGenerator, targetDir);
+
+            if (configuration.generationOptions.generateBaseVisitor) {
+                await copyCodeFile("MySQLParserBaseVisitor", dartGenerator, targetDir);
             }
         }
 
