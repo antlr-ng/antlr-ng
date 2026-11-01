@@ -661,7 +661,10 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             return [`${d.type} ${d.escapedName} = ${d.initValue}`];
         }
 
-        return [`${d.type}? ${d.escapedName}`];
+        // Don't make an explicitly nullable type (`int?`) nullable again.
+        const type = d.type.endsWith("?") ? d.type : `${d.type}?`;
+
+        return [`${type} ${d.escapedName}`];
     };
 
     protected override renderCaptureNextToken = (d: OutputModelObjects.CaptureNextToken): Lines => {
@@ -702,7 +705,7 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
     protected override renderContextRuleListGetterDecl = (r: OutputModelObjects.ContextRuleListGetterDecl): Lines => {
         return [
-            `List<${r.ctxName}> ${r.name}s() => getRuleContexts<${r.ctxName}>();`,
+            `List<${r.ctxName}> ${this.escapeIfNeeded(r.name + "s")}() => getRuleContexts<${r.ctxName}>();`,
         ];
     };
 
@@ -715,20 +718,23 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
 
     protected override renderContextTokenGetterDecl = (t: OutputModelObjects.ContextTokenGetterDecl): Lines => {
         return [
-            `TerminalNode? ${t.escapedName}() => getToken(${this.invariants.recognizerName}.TOKEN_${t.name}, 0);`,
+            `TerminalNode? ${t.escapedName}() => ` +
+            `getToken(${this.invariants.recognizerName}.TOKEN_${t.escapedName}, 0);`,
         ];
     };
 
     protected override renderContextTokenListGetterDecl = (t: OutputModelObjects.ContextTokenListGetterDecl): Lines => {
         return [
-            `List<TerminalNode> ${t.name}s() => getTokens(${this.invariants.recognizerName}.TOKEN_${t.name});`,
+            `List<TerminalNode> ${this.escapeIfNeeded(t.name + "s")}() => ` +
+            `getTokens(${this.invariants.recognizerName}.TOKEN_${t.escapedName});`,
         ];
     };
 
     protected override renderContextTokenListIndexedGetterDecl = (
         t: OutputModelObjects.ContextTokenListIndexedGetterDecl): Lines => {
         return [
-            `TerminalNode? ${t.escapedName}(int i) => getToken(${this.invariants.recognizerName}.TOKEN_${t.name}, i);`,
+            `TerminalNode? ${t.escapedName}(int i) => ` +
+            `getToken(${this.invariants.recognizerName}.TOKEN_${t.escapedName}, i);`,
         ];
     };
 
@@ -736,11 +742,16 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         const result = this.startRendering("ExceptionClause");
 
         // A catch argument is either just a name (`catch [e]`) or a type followed by a name
-        // (`catch [RecognitionException e]`). The latter needs an `on` clause in Dart.
-        const catchArg = this.renderAction(srcOp.catchArg).join(" ").trim().split(/\s+/);
-        const clause = catchArg.length > 1
-            ? `on ${catchArg.slice(0, -1).join(" ")} catch (${catchArg[catchArg.length - 1]}) {`
-            : `catch (${catchArg[0]}) {`;
+        // (`catch [RecognitionException e]`), optionally followed by a stack trace name (`catch [e, s]`).
+        // A type needs an `on` clause in Dart.
+        const [exception, ...rest] = this.renderAction(srcOp.catchArg).join(" ").split(",").map((part) => {
+            return part.trim();
+        });
+        const words = exception.split(/\s+/);
+        const parameters = [words[words.length - 1], ...rest].join(", ");
+        const clause = words.length > 1
+            ? `on ${words.slice(0, -1).join(" ")} catch (${parameters}) {`
+            : `catch (${parameters}) {`;
 
         result.push(
             clause,

@@ -429,4 +429,43 @@ describe("TestDartCodeGeneration", () => {
         expect(code).toContain("_localctx.try_?.start + _localctx.try_?.stop + _localctx.try_;");
         expect(code).not.toMatch(/_localctx\.(class|try)\b/);
     });
+
+    it("Keyword token names and list getters", () => {
+        const code = generateParser(
+            "grammar K;\n" +
+            "s : i i Function Function ;\n" +
+            "i : Function ;\n" +
+            "Function : 'f' ;\n");
+
+        expect(code).toContain("static const int TOKEN_Function_ = 1;");
+        expect(code).toContain("List<IContext> is_() => getRuleContexts<IContext>();");
+        expect(code).toContain("List<TerminalNode> Functions() => getTokens(KParser.TOKEN_Function_);");
+        expect(code).toContain("TerminalNode? Function_(int i) => getToken(KParser.TOKEN_Function_, i);");
+        expect(code).toContain("TerminalNode? Function_() => getToken(KParser.TOKEN_Function_, 0);");
+        expect(code).not.toMatch(/TOKEN_Function\b/);
+    });
+
+    it("Explicitly nullable argument and return types", () => {
+        const code = generateParser(
+            "grammar K;\n" +
+            "s : a[null] ;\n" +
+            "a[String? value, int count] returns [int? result] : INT ;\n" +
+            "INT : [0-9]+ ;\n");
+
+        expect(code).toContain("AContext a(String? value, int? count) {");
+        expect(code).toContain("  String? value;\n  int? count;\n  int? result;");
+        expect(code).not.toContain("??");
+    });
+
+    it("Catch clauses with a stack trace parameter", () => {
+        const code = generateParser(
+            "grammar K;\n" +
+            "s : INT ;\n" +
+            "catch [e, stackTrace] { print(stackTrace); }\n" +
+            "catch [FormatException e, st] { print(st); }\n" +
+            "INT : [0-9]+ ;\n");
+
+        expect(code).toContain("} catch (e, stackTrace) {");
+        expect(code).toContain("} on FormatException catch (e, st) {");
+    });
 });
