@@ -230,13 +230,13 @@ describe("TestActionTranslation", () => {
 
         // ref to value returned from recursive call to rule
         let action = "$v = $e.v;";
-        let expected = "(localContext!._v = localContext._e!.v)";
+        let expected = "(localContext!.v = localContext._e!.v)";
         testActions(recursiveTemplate, "inline", action, expected);
         testActions(leftRecursiveTemplate, "inline", action, expected);
 
         // ref to predefined attribute obtained from recursive call to rule
         action = "$v = $e.text.length();";
-        expected = "(localContext!._v = (localContext._e != null ? this.tokenStream.getTextFromRange(localContext." +
+        expected = "(localContext!.v = (localContext._e != null ? this.tokenStream.getTextFromRange(localContext." +
             "_e.start, localContext._e.stop) : '').length())";
         testActions(recursiveTemplate, "inline", action, expected);
         testActions(leftRecursiveTemplate, "inline", action, expected);

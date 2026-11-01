@@ -134,7 +134,7 @@ describe("Code generation triggers coverage", () => {
         // Rule with args, return values, locals and init/after actions.
         expect(parser).toContain("public rule1(x: int): Rule1Context {");
         expect(parser).toContain("init();");
-        expect(parser).toContain("(localContext!._y = localContext?.x! + localContext.z)");
+        expect(parser).toContain("(localContext!.y = localContext?.x! + localContext.z)");
         expect(parser).toContain("this.context!.stop = this.tokenStream.LT(-1);");
 
         // Alternative labels.

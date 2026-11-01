@@ -169,6 +169,36 @@ describe.sequential("TestParserExec", () => {
         }
     });
 
+    it("testLeftRecursiveRuleWithReturnValue", async () => {
+        const tempDir = mkdtempSync(join(tmpdir(), "AntlrLeftRecursion"));
+        try {
+            const grammar =
+                "grammar Calc;\n" +
+                "s : e EOF {console.log($e.v);} ;\n" +
+                "e returns [v: number]\n" +
+                "    : a=e '*' b=e {$v = $a.v * $b.v;}\n" +
+                "    | a=e '+' b=e {$v = $a.v + $b.v;}\n" +
+                "    | '(' e ')' {$v = $e.v;}\n" +
+                "    | INT {$v = $INT.int;}\n" +
+                "    ;\n" +
+                "INT : [0-9]+ ;\n" +
+                "WS : [ \\t\\n\\r]+ -> skip ;\n";
+
+            let generationErrors = "";
+            const output = await ToolTestUtils.captureTerminalOutput(async () => {
+                const queue = await ToolTestUtils.execParser("Calc.g4", grammar, "CalcParser", "CalcLexer", "s",
+                    "2 + 3 * 4 + (1 + 1) * 5", false, false, tempDir);
+                generationErrors = queue.toString(true);
+            });
+
+            expect(generationErrors).toBe("");
+            expect(output.output).toBe("24\n");
+            expect(output.error).toBe("");
+        } finally {
+            rmSync(tempDir, { recursive: true });
+        }
+    });
+
     it("testCaseInsensitiveInCombinedGrammar", async () => {
         const tempDir = mkdtempSync(join(tmpdir(), "AntlrLexerActions"));
         try {

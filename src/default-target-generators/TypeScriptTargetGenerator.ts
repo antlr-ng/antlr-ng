@@ -1202,7 +1202,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
             return this.renderActionChunks([c]);
         }).join("");
 
-        return [`(${ctx}!._${s.escapedName} = ${rhsChunks})`];
+        return [`(${ctx}!.${s.escapedName} = ${rhsChunks})`];
     };
 
     protected override renderSetNonLocalAttr = (s: OutputModelObjects.SetNonLocalAttr): Lines => {

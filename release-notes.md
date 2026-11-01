@@ -25,6 +25,9 @@
   in C# (`..Text`).
 - Fixed the token set test for sets containing EOF in the TypeScript, Go, C++ and C# generators. The negative bitset
   offset was dropped, so EOF was rejected by the generated parser.
+- Fixed left-recursive rules with return values (`e returns [int v] : e '*' e | INT ;`), which were rejected with
+  errors 34 and 35. Also fixed assignments to return values, arguments and locals (`$v = ...`) in the TypeScript
+  generator, which wrote to an underscore-prefixed field, so the value never reached the declared one.
 
 ## 1.0.10
 
