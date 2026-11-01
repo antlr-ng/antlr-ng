@@ -573,13 +573,32 @@ describe("Tool coverage", () => {
         });
 
         it("reports exceptions thrown during generation", () => {
-            // A generator which was not set up has no render maps, which makes code generation throw.
+            const generator = new TypeScriptTargetGenerator(false);
+            generator.setUp();
+            generator.renderParserFile = () => {
+                throw new Error("generator failure");
+            };
+
             const result = generate(grammar, undefined, (config) => {
-                config.generators = [new TypeScriptTargetGenerator(false)];
+                config.generators = [generator];
             });
             expect(result.success).toBe(false);
             expect(result.queue.errors.map((e) => { return e.code; })).toEqual([IssueCode.InternalError]);
-            expect(result.queue.errors[0].toString()).toContain("internal error: Cannot read properties of undefined");
+            expect(result.queue.errors[0].toString()).toContain("internal error: generator failure");
+        });
+
+        it("reports a grammar file which cannot be opened only once", () => {
+            const result = generate(grammar, undefined, (config) => {
+                config.grammarFiles = ["/does/not/exist/Missing.g4"];
+            });
+            expect(result.success).toBe(false);
+            expect(result.queue.errors.map((e) => { return e.code; })).toEqual([IssueCode.CannotOpenFile]);
+        });
+
+        it("fails when the grammar has errors", () => {
+            const result = generate("grammar GenErr;\na : A ;;\nA : 'a' ;");
+            expect(result.success).toBe(false);
+            expect(result.queue.errors.map((e) => { return e.code; })).toEqual([IssueCode.SyntaxError]);
         });
     });
 });

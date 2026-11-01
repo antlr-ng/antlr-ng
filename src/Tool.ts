@@ -90,7 +90,7 @@ export class Tool implements ITool {
             }
         }
 
-        return true;
+        return this.errorManager.errors === 0;
     }
 
     /**
@@ -236,7 +236,14 @@ export class Tool implements ITool {
         const g = new Graph();
         const roots = new Array<GrammarRootAST>();
         for (const fileName of fileNames) {
-            const root = this.parseGrammar(fileName);
+            let root: GrammarRootAST | undefined;
+            try {
+                root = this.parseGrammar(fileName);
+            } catch {
+                // Already reported by parseGrammar.
+                continue;
+            }
+
             if (!root) {
                 continue;
             }
