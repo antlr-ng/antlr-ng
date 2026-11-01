@@ -73,6 +73,11 @@ for (const grammarFile of configuration.grammarFiles) {
 const tool = new Tool();
 const success = tool.generate(configuration);
 
+// The log file is written to the virtual file system, next to the grammars.
+if (configuration.log) {
+    copyFolderFromMemFs(fs, ".", ".", false, /^antlr-ng-\d+\.log$/);
+}
+
 if (!success) {
     process.exit(1);
 }

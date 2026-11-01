@@ -56,17 +56,28 @@ export class Tool implements ITool {
     public generate(parameters: IToolConfiguration): boolean {
         try {
             this.toolConfiguration = parameters;
+
+            // Reset and (re)configure the error manager.
+            this.errorManager.configure(this.toolConfiguration.messageFormatOptions);
+
             if (this.toolConfiguration.grammarFiles.length === 0) {
                 this.errorManager.toolError(IssueCode.NoGrammarsFound);
 
                 return false;
             }
 
-            // Reset and (re)configure the error manager.
-            this.errorManager.configure(this.toolConfiguration.messageFormatOptions);
+            if (this.toolConfiguration.generators.length === 0) {
+                this.errorManager.toolError(IssueCode.NoTargetGenerators);
+
+                return false;
+            }
 
             this.processGrammarsOnCommandLine();
-        } catch {
+        } catch (e) {
+            const error = e instanceof Error ? e : new Error(String(e));
+            this.logInfo({ component: "tool", msg: error.stack ?? error.message });
+            this.errorManager.toolError(IssueCode.InternalError, error, error.message, "");
+
             return false;
         } finally {
             if (this.toolConfiguration.log) {

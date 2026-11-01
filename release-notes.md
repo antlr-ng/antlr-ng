@@ -25,6 +25,9 @@
   in C# (`..Text`).
 - Fixed the token set test for sets containing EOF in the TypeScript, Go, C++ and C# generators. The negative bitset
   offset was dropped, so EOF was rejected by the generated parser.
+- Errors during code generation are now reported as internal errors instead of making the tool fail without a message,
+  and a configuration without target generators is rejected with a clear error. The CLI runner now also writes the
+  `--log` file to disk.
 
 ## 1.0.10
 

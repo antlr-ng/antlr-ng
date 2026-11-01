@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from "vitest";
 import { CharStream, CommonTokenStream, LexerInterpreter, SemanticContext } from "antlr4ng";
 
 import { defineConfig } from "../../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { BuildDependencyGenerator } from "../../src/tool/BuildDependencyGenerator.js";
 import { ErrorManager } from "../../src/tool/ErrorManager.js";
 import { Issue } from "../../src/tool/Issue.js";
@@ -548,6 +549,37 @@ describe("Tool coverage", () => {
             expect(parser).toMatch(/public static readonly T2 = \d+;/);
             expect(parser).toContain("public b(): BContext {");
             expect(parser).toContain("this.match(Root3Parser.T2);");
+        });
+    });
+
+    describe("Tool.generate", () => {
+        const grammar = "grammar Gen;\na : A ;\nA : 'a' ;";
+
+        it("reports missing grammar files", () => {
+            const result = generate(grammar, undefined, (config) => {
+                config.grammarFiles = [];
+            });
+            expect(result.success).toBe(false);
+            expect(result.queue.errors.map((e) => { return e.code; })).toEqual([IssueCode.NoGrammarsFound]);
+        });
+
+        it("reports a configuration without target generators", () => {
+            const result = generate(grammar, undefined, (config) => {
+                config.generators = [];
+            });
+            expect(result.success).toBe(false);
+            expect(result.queue.errors.map((e) => { return e.code; })).toEqual([IssueCode.NoTargetGenerators]);
+            expect(result.queue.errors[0].toString()).toContain("no target generators configured");
+        });
+
+        it("reports exceptions thrown during generation", () => {
+            // A generator which was not set up has no render maps, which makes code generation throw.
+            const result = generate(grammar, undefined, (config) => {
+                config.generators = [new TypeScriptTargetGenerator(false)];
+            });
+            expect(result.success).toBe(false);
+            expect(result.queue.errors.map((e) => { return e.code; })).toEqual([IssueCode.InternalError]);
+            expect(result.queue.errors[0].toString()).toContain("internal error: Cannot read properties of undefined");
         });
     });
 });
