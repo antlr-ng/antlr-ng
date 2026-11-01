@@ -200,6 +200,33 @@ describe.sequential("TestParserExec", () => {
         }
     });
 
+    // A set containing EOF (-1) gets a bitset with a negative offset, which must be applied to the token type.
+    it("Set containing EOF", async () => {
+        const tempDir = mkdtempSync(join(tmpdir(), "AntlrParserExec"));
+        try {
+            const grammar = "grammar T;\n" +
+                "s : A (EOF | B | C) ;\n" +
+                "A : 'a' ;\n" +
+                "B : 'b' ;\n" +
+                "C : 'c' ;\n";
+
+            for (const input of ["a", "ab", "ac"]) {
+                let generationErrors = "";
+                const output = await ToolTestUtils.captureTerminalOutput(async () => {
+                    const queue = await ToolTestUtils.execParser("T.g4", grammar, "TParser", "TLexer", "s", input,
+                        false, false, tempDir);
+                    generationErrors = queue.toString(true);
+                });
+
+                expect(generationErrors).toBe("");
+                expect(output.output).toBe("");
+                expect(output.error).toBe("");
+            }
+        } finally {
+            rmSync(tempDir, { recursive: true });
+        }
+    });
+
     it("Fail Element Option", () => {
         const parameters = defineConfig({
             grammarFiles: ["T.g4"],
