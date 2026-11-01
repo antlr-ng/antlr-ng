@@ -1197,12 +1197,10 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
     };
 
     protected override renderSetAttr = (s: OutputModelObjects.SetAttr): Lines => {
-        const ctx = this.renderContext(s);
-        const rhsChunks = s.rhsChunks.map((c) => {
-            return this.renderActionChunks([c]);
-        }).join("");
+        const rhs = this.renderActionChunks(s.rhsChunks).join("");
 
-        return [`(${ctx}!.${s.escapedName} = ${rhsChunks})`];
+        // The action splitter consumes the semicolon of the assignment, so it must be added here.
+        return [`${this.renderContext(s)}!.${s.escapedName} = ${rhs};`];
     };
 
     protected override renderSetNonLocalAttr = (s: OutputModelObjects.SetNonLocalAttr): Lines => {

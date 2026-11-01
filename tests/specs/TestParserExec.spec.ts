@@ -177,7 +177,7 @@ describe.sequential("TestParserExec", () => {
                 "s : e EOF {console.log($e.v);} ;\n" +
                 "e returns [v: number]\n" +
                 "    : a=e '*' b=e {$v = $a.v * $b.v;}\n" +
-                "    | a=e '+' b=e {$v = $a.v + $b.v;}\n" +
+                "    | a=e '+' b=e {$v = $a.v; $v = $v + $b.v;}\n" +
                 "    | '(' e ')' {$v = $e.v;}\n" +
                 "    | INT {$v = $INT.int;}\n" +
                 "    ;\n" +
