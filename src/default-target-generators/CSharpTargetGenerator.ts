@@ -94,7 +94,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             ""
         );
 
-        result.push(...this.renderParser(parserFile, parserFile.namedActions));
+        this.append(result, this.renderParser(parserFile, parserFile.namedActions));
 
         if (options.package) {
             result.push(`} // namespace ${options.package}`);
@@ -129,7 +129,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             ""
         );
 
-        result.push(...this.renderLexer(lexerFile.lexer, lexerFile.namedActions, options.package));
+        this.append(result, this.renderLexer(lexerFile.lexer, lexerFile.namedActions, options.package));
 
         if (options.package) {
             result.push(`} // namespace ${options.package}`);
@@ -322,7 +322,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             );
         });
 
-        result.push(...this.formatLines(block, 4));
+        this.append(result, this.formatLines(block, 4));
         result.push(`}`);
 
         if (options.package) {
@@ -409,7 +409,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             );
         });
 
-        result.push(...this.formatLines(block, 4));
+        this.append(result, this.formatLines(block, 4));
         if (options.package) {
             result.push(`
                 } // namespace ${options.package}`
@@ -477,7 +477,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             );
         });
 
-        result.push(...this.formatLines(block, 4));
+        this.append(result, this.formatLines(block, 4));
         if (options.package) {
             result.push(`} // namespace ${options.package}`);
         }
@@ -1950,7 +1950,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         result.push(
             ``,
             `private static int[] _serializedATN = {`,
-            ...this.renderList(model.serialized, { wrap: 69, indent: 4, separator: "," }),
+        );
+        this.append(result, this.renderList(model.serialized, { wrap: 69, indent: 4, separator: "," }));
+        result.push(
             `};`,
             ``,
             `public static readonly ATN _ATN =`,
@@ -2354,9 +2356,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `{`,
             `    Interpreter = new ParserATNSimulator(this, _ATN, decisionToDFA, sharedContextCache);`,
             `}`,
-
-            ...this.renderRuleFunctions(namedActions, parser.funcs)
         );
+        this.append(result, this.renderRuleFunctions(namedActions, parser.funcs));
 
         if (parser.sempredFuncs.size > 0) {
             result.push(
@@ -2389,11 +2390,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             );
         }
 
-        result.push(
-            ``,
-            ...this.renderSerializedATN(parser.atn),
-            `}`
-        );
+        result.push(``);
+        this.append(result, this.renderSerializedATN(parser.atn));
+        result.push(`}`);
 
         return result;
     }
@@ -2494,9 +2493,9 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `	}`,
 
             ...this.formatLines(this.renderActionHandlers(lexer), 4),
-            ...this.formatLines(this.renderSerializedATN(lexer.atn), 4),
-            `}`
         );
+        this.append(result, this.formatLines(this.renderSerializedATN(lexer.atn), 4));
+        result.push(`}`);
 
         return result;
     }

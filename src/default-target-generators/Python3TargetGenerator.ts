@@ -2090,18 +2090,6 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
     }
 
     /**
-     * Appends all lines to the target list. Unlike the spread operator this works for very large lists too.
-     *
-     * @param target The list to append to.
-     * @param lines The lines to append.
-     */
-    private append(target: Lines, lines: Lines): void {
-        for (const line of lines) {
-            target.push(line);
-        }
-    }
-
-    /**
      * Joins the given lines to the final file content, making sure there's exactly one newline at the end.
      *
      * @param lines The lines of the file.
