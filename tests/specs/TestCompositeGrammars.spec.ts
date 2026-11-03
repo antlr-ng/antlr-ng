@@ -80,6 +80,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },
@@ -105,6 +106,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },
@@ -135,6 +137,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },
@@ -167,6 +170,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },
@@ -198,6 +202,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },
@@ -230,6 +235,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },
@@ -263,6 +269,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },
@@ -296,6 +303,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },
@@ -329,6 +337,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/S.g4", slave);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },
@@ -541,6 +550,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.mkdirSync(outdir);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: outdir,
                 },
@@ -593,6 +603,7 @@ describe("TestCompositeGrammars", () => {
             expect(queue.all).toHaveLength(0);
 
             queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: outdir,
                 },
@@ -943,6 +954,7 @@ describe("TestCompositeGrammars", () => {
             fileSystem.writeFileSync(tempDir + "/M.g4", master);
 
             const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
                 generationOptions: {
                     outputDirectory: tempDir,
                 },

@@ -70,8 +70,17 @@ for (const grammarFile of configuration.grammarFiles) {
     copyFolderToMemFs(fs, parentDir, parentDir, false, /\.tokens/);
 }
 
+// The log file is written to the current directory of the virtual file system.
+if (configuration.log) {
+    fs.mkdirSync(".", { recursive: true });
+}
+
 const tool = new Tool();
 const success = tool.generate(configuration);
+
+if (configuration.log) {
+    copyFolderFromMemFs(fs, ".", ".", false, /^antlr-ng-\d+\.log$/);
+}
 
 if (!success) {
     process.exit(1);

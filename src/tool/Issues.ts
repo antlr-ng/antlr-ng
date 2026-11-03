@@ -136,6 +136,9 @@ export enum IssueCode {
     RangeProbablyContainsNotImpliedCharacter,
     EofClosure,
     RedundantCaseInsensitiveLexerRuleOption,
+
+    // Appended here to keep the numbers of the other issues stable.
+    NoTargetGenerators,
 }
 
 export interface IssueDetails {
@@ -600,5 +603,9 @@ export const issueTypes = new Map<IssueCode, IssueDetails>([
     [IssueCode.RedundantCaseInsensitiveLexerRuleOption, {
         message: "caseInsensitive lexer rule option is redundant because its value equals to global value (<arg>)",
         severity: IssueSeverity.Warning
+    }],
+    [IssueCode.NoTargetGenerators, {
+        message: "no target generators configured; use a config file which lists at least one generator",
+        severity: IssueSeverity.Fatal
     }],
 ]);
