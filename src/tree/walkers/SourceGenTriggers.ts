@@ -69,20 +69,8 @@ export class SourceGenTriggers extends TreeParser {
                 if (this.input.lookahead(1) === Constants.Down) {
                     this.match(this.input, Constants.Down);
 
-                    let matchCount = 0;
-                    while (true) {
-                        const lookahead = this.input.lookahead(1);
-                        if (lookahead > Constants.Up) { // Any node type (bare option names are ID nodes).
-                            this.matchAny();
-                        } else {
-                            if (matchCount >= 1) {
-                                break;
-                            }
-
-                            throw new EarlyExitException(1);
-                        }
-
-                        matchCount++;
+                    if (this.matchAnyUntilUp() === 0) {
+                        throw new EarlyExitException(1);
                     }
 
                     this.match(this.input, Constants.Up);
@@ -853,7 +841,7 @@ export class SourceGenTriggers extends TreeParser {
                     const lookahead3 = this.input.lookahead(3);
                     if (lookahead3 === ANTLRv4Lexer.ARG_ACTION) {
                         const lookahead4 = this.input.lookahead(4);
-                        if (lookahead4 >= ANTLRv4Lexer.ACTION && lookahead4 <= ANTLRv4Lexer.WILDCARD) {
+                        if (lookahead4 > Constants.Up) {
                             const tokenRef = this.match(this.input, ANTLRv4Lexer.TOKEN_REF)!;
                             this.match(this.input, Constants.Down);
                             const argAction = this.match(this.input, ANTLRv4Lexer.ARG_ACTION)!;
@@ -886,8 +874,7 @@ export class SourceGenTriggers extends TreeParser {
                             }
                         }
                     } else {
-                        if ((lookahead3 === ANTLRv4Lexer.ACTION)
-                            || (lookahead3 >= ANTLRv4Lexer.ARG_OR_CHARSET && lookahead3 <= ANTLRv4Lexer.WILDCARD)) {
+                        if (lookahead3 > Constants.Up) {
                             const tokenRef = this.match(this.input, ANTLRv4Lexer.TOKEN_REF)!;
                             this.match(this.input, Constants.Down);
                             this.matchAny();

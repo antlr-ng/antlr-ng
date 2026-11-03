@@ -32,7 +32,7 @@
   and a configuration without target generators is rejected with a clear error. The CLI runner now also writes the
   `--log` file to disk.
 - Fixed Bug #100: the tool hung on a rule reference with a bare element option (e.g. `r <true>`), because the tree
-  walkers did not skip option nodes of type ID.
+  walkers did not skip option nodes of type ID. Such options also made left-recursive rules fail with error 92.
 
 ## 1.0.10
 
