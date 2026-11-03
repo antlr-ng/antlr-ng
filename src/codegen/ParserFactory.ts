@@ -136,28 +136,7 @@ export class ParserFactory implements IOutputModelFactory {
     public tokenRef(id: GrammarAST, labelAST: GrammarAST | null, args: GrammarAST | null): Array<SrcOp | null> {
         const matchOp = new MatchToken(this, id as TerminalAST);
 
-        if (labelAST) {
-            const label = labelAST.getText();
-            const rf = this.getCurrentRuleFunction()!;
-            if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-                // Add Token _X and List<Token> X decls.
-                this.defineImplicitLabel(id, matchOp);
-                const l = this.getTokenListLabelDecl(label);
-                rf.addContextDecl(id.getAltLabel()!, l);
-            } else {
-                const d = this.getTokenLabelDecl(label);
-                matchOp.labels.push(d);
-                rf.addContextDecl(id.getAltLabel()!, d);
-            }
-        }
-
-        if (this.controller.needsImplicitLabel(id, matchOp)) {
-            this.defineImplicitLabel(id, matchOp);
-        }
-
-        const listLabelOp = this.getAddToListOpIfListLabelPresent(matchOp, labelAST);
-
-        return [matchOp, listLabelOp];
+        return [matchOp, this.addTokenLabels(id, matchOp, labelAST)];
     }
 
     public getTokenLabelDecl(label: string): Decl {
@@ -176,55 +155,13 @@ export class ParserFactory implements IOutputModelFactory {
             matchOp = new MatchSet(this, setAST);
         }
 
-        if (labelAST !== null) {
-            const label = labelAST.getText();
-            const rf = this.getCurrentRuleFunction()!;
-            if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-                this.defineImplicitLabel(setAST, matchOp);
-                const l = this.getTokenListLabelDecl(label);
-                rf.addContextDecl(setAST.getAltLabel()!, l);
-            } else {
-                const d = this.getTokenLabelDecl(label);
-                matchOp.labels.push(d);
-                rf.addContextDecl(setAST.getAltLabel()!, d);
-            }
-        }
-
-        if (this.controller.needsImplicitLabel(setAST, matchOp)) {
-            this.defineImplicitLabel(setAST, matchOp);
-        }
-
-        const listLabelOp = this.getAddToListOpIfListLabelPresent(matchOp, labelAST);
-
-        return [matchOp, listLabelOp!];
+        return [matchOp, this.addTokenLabels(setAST, matchOp, labelAST)!];
     }
 
     public wildcard(ast: GrammarAST, labelAST: GrammarAST | null): SrcOp[] {
         const wild = new Wildcard(this, ast);
 
-        if (labelAST) {
-            // Same as for token refs: a list label gets an implicit token label plus the list, otherwise the label
-            // and the list would be declared with the same name.
-            const label = labelAST.getText();
-            const rf = this.getCurrentRuleFunction()!;
-            if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
-                this.defineImplicitLabel(ast, wild);
-                const l = this.getTokenListLabelDecl(label);
-                rf.addContextDecl(ast.getAltLabel()!, l);
-            } else {
-                const d = this.getTokenLabelDecl(label);
-                wild.labels.push(d);
-                rf.addContextDecl(ast.getAltLabel()!, d);
-            }
-        }
-
-        if (this.controller.needsImplicitLabel(ast, wild)) {
-            this.defineImplicitLabel(ast, wild);
-        }
-
-        const listLabelOp = this.getAddToListOpIfListLabelPresent(wild, labelAST);
-
-        return [wild, listLabelOp!];
+        return [wild, this.addTokenLabels(ast, wild, labelAST)!];
     }
 
     public getChoiceBlock(blkAST: BlockAST, alts: CodeBlockForAlt[], labelAST: GrammarAST | null): Choice {
@@ -423,5 +360,37 @@ export class ParserFactory implements IOutputModelFactory {
         }
 
         return labelOp;
+    }
+
+    /**
+     * Declares the label of a token match (token ref, set or wildcard). A list label (`x+=`) gets an implicit
+     * token label plus the list, so the list doesn't share its name with a single token label. Also adds an
+     * implicit label if actions need one.
+     *
+     * @param ast The matched element.
+     * @param op The match operation.
+     * @param labelAST The label, if there's one.
+     *
+     * @returns The operation that adds the match to the list label, if there's one.
+     */
+    private addTokenLabels(ast: GrammarAST, op: ILabeledOp, labelAST: GrammarAST | null): AddToLabelList | null {
+        if (labelAST) {
+            const label = labelAST.getText();
+            const rf = this.getCurrentRuleFunction()!;
+            if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
+                this.defineImplicitLabel(ast, op);
+                rf.addContextDecl(ast.getAltLabel()!, this.getTokenListLabelDecl(label));
+            } else {
+                const d = this.getTokenLabelDecl(label);
+                op.labels.push(d);
+                rf.addContextDecl(ast.getAltLabel()!, d);
+            }
+        }
+
+        if (this.controller.needsImplicitLabel(ast, op)) {
+            this.defineImplicitLabel(ast, op);
+        }
+
+        return this.getAddToListOpIfListLabelPresent(op, labelAST);
     }
 }

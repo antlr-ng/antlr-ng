@@ -67,6 +67,15 @@ describe("TestBasicSemanticErrors", () => {
         ToolTestUtils.testErrors([grammar, expected]);
     });
 
+    it("Bug #98 Labels on the wildcard are allowed", (): void => {
+        const grammar =
+            "grammar T;\n" +
+            "s : x=. y+=. '(' (ID | z=.+?) ')' EOF;\n" +
+            "ID : [a-z]+;\n";
+
+        ToolTestUtils.testErrors([grammar, ""]);
+    });
+
     it("testArgumentRetvalLocalConflicts", (): void => {
         const grammar =
             "grammar T;\n" +

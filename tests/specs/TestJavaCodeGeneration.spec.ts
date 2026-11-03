@@ -359,4 +359,20 @@ describe("TestJavaCodeGeneration", () => {
         expect(code).toContain("((SContext)_localctx).try_!=null?(((SContext)_localctx).try_.stop):null");
         expect(code).not.toMatch(/_localctx\)\.(class|try)\b/);
     });
+
+    it("Labels on the wildcard", () => {
+        // A list label gets an implicit token label for each match, which is added to the list (bug #98).
+        const code = generateParser(
+            "grammar T;\n" +
+            "s : '(' x=.+? ')' y+=. y+=. EOF ;\n" +
+            "ID : [a-z]+ ;\n");
+
+        expect(code).toContain("public Token x;");
+        expect(code).toContain("public List<Token> y = new ArrayList<Token>();");
+        expect(code).toContain("((SContext)_localctx).x = matchWildcard();");
+        const implicitLabel = /\(\(SContext\)_localctx\)\.(_tset\d+) = matchWildcard\(\);/.exec(code)?.[1];
+        expect(implicitLabel).toBeDefined();
+        expect(code).toContain(`((SContext)_localctx).y.add(((SContext)_localctx).${implicitLabel});`);
+        expect(code).not.toContain("public Token y;");
+    });
 });
