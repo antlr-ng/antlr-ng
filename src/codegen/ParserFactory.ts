@@ -203,13 +203,18 @@ export class ParserFactory implements IOutputModelFactory {
         const wild = new Wildcard(this, ast);
 
         if (labelAST) {
+            // Same as for token refs: a list label gets an implicit token label plus the list, otherwise the label
+            // and the list would be declared with the same name.
             const label = labelAST.getText();
-            const d = this.getTokenLabelDecl(label);
-            wild.labels.push(d);
-            this.getCurrentRuleFunction()!.addContextDecl(ast.getAltLabel()!, d);
+            const rf = this.getCurrentRuleFunction()!;
             if (labelAST.parent?.getType() === ANTLRv4Parser.PLUS_ASSIGN) {
+                this.defineImplicitLabel(ast, wild);
                 const l = this.getTokenListLabelDecl(label);
-                this.getCurrentRuleFunction()!.addContextDecl(ast.getAltLabel()!, l);
+                rf.addContextDecl(ast.getAltLabel()!, l);
+            } else {
+                const d = this.getTokenLabelDecl(label);
+                wild.labels.push(d);
+                rf.addContextDecl(ast.getAltLabel()!, d);
             }
         }
 

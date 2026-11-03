@@ -219,7 +219,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
             case ANTLRv4Parser.SET:
             case ANTLRv4Parser.NOT:
             case ANTLRv4Parser.RULE_REF:
-            case ANTLRv4Parser.STAR: {
+            case ANTLRv4Parser.WILDCARD: {
                 return;
             }
 
