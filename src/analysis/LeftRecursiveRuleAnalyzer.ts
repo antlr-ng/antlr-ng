@@ -231,7 +231,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         const lines: string[] = [];
 
         if (this.retvals) {
-            lines.push(`${this.ruleName}[${this.retvals.getText()}]`);
+            lines.push(`${this.ruleName} returns [${this.retvals.getText()}]`);
         } else {
             lines.push(this.ruleName);
         }

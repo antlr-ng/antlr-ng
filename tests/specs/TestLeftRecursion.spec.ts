@@ -5,6 +5,14 @@
 
 import { describe, expect, it } from "vitest";
 
+import type { ITargetGenerator } from "../../src/codegen/ITargetGenerator.js";
+import { CppTargetGenerator } from "../../src/default-target-generators/CppTargetGenerator.js";
+import { CSharpTargetGenerator } from "../../src/default-target-generators/CSharpTargetGenerator.js";
+import { GoTargetGenerator } from "../../src/default-target-generators/GoTargetGenerator.js";
+import { PHPTargetGenerator } from "../../src/default-target-generators/PHPTargetGenerator.js";
+import { Python3TargetGenerator } from "../../src/default-target-generators/Python3TargetGenerator.js";
+import { SwiftTargetGenerator } from "../../src/default-target-generators/SwiftTargetGenerator.js";
+import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { IssueCode } from "../../src/tool/Issues.js";
 import { generate, parserOf } from "../support/GenerationHelper.js";
 
@@ -408,5 +416,28 @@ describe("Left recursion coverage", () => {
 
         const result = generate(grammar);
         expect(result.queue.errors.map((e) => { return e.code; })).toContain(IssueCode.LeftRecursionCycles);
+    });
+
+    it.each([
+        ["TypeScript", new TypeScriptTargetGenerator(false)],
+        ["Cpp", new CppTargetGenerator(false)],
+        ["CSharp", new CSharpTargetGenerator(false)],
+        ["Go", new GoTargetGenerator(false)],
+        ["PHP", new PHPTargetGenerator(false)],
+        ["Python3", new Python3TargetGenerator(false)],
+        ["Swift", new SwiftTargetGenerator(false)],
+    ])("return values of a left-recursive rule (%s)", (_name: string, generator: ITargetGenerator) => {
+        generator.setUp();
+        const grammar =
+            "grammar LRRet;\n" +
+            "s : e ;\n" +
+            "e returns [int v] : a=e '*' b=e {$v = 1;} | INT {$v = 2;} ;\n" +
+            "INT : [0-9]+ ;\n";
+
+        const result = generate(grammar, undefined, (config) => {
+            config.generators = [generator];
+        });
+        expect(result.queue.errors).toHaveLength(0);
+        expect(result.success).toBe(true);
     });
 });
