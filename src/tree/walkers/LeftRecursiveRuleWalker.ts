@@ -144,7 +144,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
                     while (true) {
                         const lookahead = this.input.lookahead(1);
-                        if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.PUBLIC) {
+                        if (lookahead > Constants.Up) {
                             this.matchAny();
                             if (this.failed) {
                                 return isLeftRec;

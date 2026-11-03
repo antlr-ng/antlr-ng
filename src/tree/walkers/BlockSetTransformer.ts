@@ -174,7 +174,7 @@ export class BlockSetTransformer extends TreeRewriter {
                     let matchCount = 0;
                     while (true) {
                         const lookahead = this.input.lookahead(1);
-                        if (lookahead >= ANTLRv4Parser.ACTION && lookahead <= ANTLRv4Parser.WILDCARD) {
+                        if (lookahead > Constants.Up) {
                             this.matchAny();
                             if (this.failed) {
                                 return result;

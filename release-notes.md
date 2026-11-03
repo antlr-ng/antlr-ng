@@ -31,6 +31,8 @@
 - Errors during code generation are now reported as internal errors instead of making the tool fail without a message,
   and a configuration without target generators is rejected with a clear error. The CLI runner now also writes the
   `--log` file to disk.
+- Fixed Bug #100: the tool hung on a rule reference with a bare element option (e.g. `r <true>`), because the tree
+  walkers did not skip option nodes of type ID.
 
 ## 1.0.10
 

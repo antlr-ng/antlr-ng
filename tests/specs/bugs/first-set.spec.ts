@@ -149,4 +149,21 @@ describe("General", () => {
         expect(output).toContain("\"\"\"Returns `True` iff on the current index of the parser's");
     });
 
+    it("Bug #100 Bare element option on a rule reference hangs the tool", () => {
+        // A bare option name (`<true>`) is an ID node in the grammar AST, which the tree walkers did not skip.
+        const grammarText = `grammar T;
+            s : '{' (ID | t <true>) '}' ;
+            t : ID ;
+            ID : 'a'..'z'+ ;
+            WS : ' ' -> skip ;`;
+
+        const g = new Grammar(grammarText);
+        g.tool.process(g, parameters, false);
+        expect(g.tool.getNumErrors()).toBe(0);
+
+        const gen = new CodeGenerator(g, tsGenerator, parameters.generationOptions);
+        const output = gen.generateParser(parameters.generationOptions);
+        expect(output).toContain("this.t();");
+    });
+
 });

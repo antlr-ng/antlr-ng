@@ -38,15 +38,9 @@ export class ATNBuilder extends TreeParser {
                 if (this.input.lookahead(1) === Constants.Down) {
                     this.match(this.input, Constants.Down);
 
-                    while (true) {
-                        const lookahead = this.input.lookahead(1);
-                        if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
-                            this.matchAny();
-                        } else {
-                            if (lookahead === Constants.Up) {
-                                break;
-                            }
-                        }
+                    // Skip all option nodes (any node type above Up).
+                    while (this.input.lookahead(1) > Constants.Up) {
+                        this.matchAny();
                     }
                     this.match(this.input, Constants.Up);
                 }
@@ -100,15 +94,9 @@ export class ATNBuilder extends TreeParser {
                 if (this.input.lookahead(1) === Constants.Down) {
                     this.match(this.input, Constants.Down);
 
-                    while (true) {
-                        const lookahead = this.input.lookahead(1);
-                        if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
-                            this.matchAny();
-                        } else {
-                            if (lookahead === Constants.Up) {
-                                break;
-                            }
-                        }
+                    // Skip all option nodes (any node type above Up).
+                    while (this.input.lookahead(1) > Constants.Up) {
+                        this.matchAny();
                     }
 
                     this.match(this.input, Constants.Up);
@@ -943,13 +931,10 @@ export class ATNBuilder extends TreeParser {
                     if (this.input.lookahead(1) === Constants.Down) {
                         this.match(this.input, Constants.Down);
 
-                        while (true) {
-                            const lookahead = this.input.lookahead(1);
-                            if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
-                                this.matchAny();
-                            } else if (lookahead === Constants.Up) {
-                                break;
-                            }
+                        // Skip all element options. A bare option name (e.g. `<true>`) is an ID node, whose
+                        // type is outside the ACTION..WILDCARD range.
+                        while (this.input.lookahead(1) > Constants.Up) {
+                            this.matchAny();
                         }
 
                         this.match(this.input, Constants.Up);

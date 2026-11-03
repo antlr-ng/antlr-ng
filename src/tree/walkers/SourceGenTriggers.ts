@@ -72,7 +72,7 @@ export class SourceGenTriggers extends TreeParser {
                     let matchCount = 0;
                     while (true) {
                         const lookahead = this.input.lookahead(1);
-                        if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
+                        if (lookahead > Constants.Up) { // Any node type (bare option names are ID nodes).
                             this.matchAny();
                         } else {
                             if (matchCount >= 1) {
