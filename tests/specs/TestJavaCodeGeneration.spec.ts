@@ -370,9 +370,16 @@ describe("TestJavaCodeGeneration", () => {
         expect(code).toContain("public Token x;");
         expect(code).toContain("public List<Token> y = new ArrayList<Token>();");
         expect(code).toContain("((SContext)_localctx).x = matchWildcard();");
-        const implicitLabel = /\(\(SContext\)_localctx\)\.(_tset\d+) = matchWildcard\(\);/.exec(code)?.[1];
-        expect(implicitLabel).toBeDefined();
-        expect(code).toContain(`((SContext)_localctx).y.add(((SContext)_localctx).${implicitLabel});`);
         expect(code).not.toContain("public Token y;");
+
+        // Each `y+=.` gets its own implicit label, which is declared once and added to the list.
+        const implicitLabels = [...code.matchAll(/\(\(SContext\)_localctx\)\.(_tset\d+) = matchWildcard\(\);/g)]
+            .map((match) => { return match[1]; });
+        expect(implicitLabels).toHaveLength(2);
+        expect(new Set(implicitLabels).size).toBe(2);
+        for (const label of implicitLabels) {
+            expect(code.split(`public Token ${label};`)).toHaveLength(2);
+            expect(code).toContain(`((SContext)_localctx).y.add(((SContext)_localctx).${label});`);
+        }
     });
 });
