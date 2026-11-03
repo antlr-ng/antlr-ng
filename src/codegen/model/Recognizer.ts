@@ -11,7 +11,6 @@ import { ActionText } from "./chunk/ActionText.js";
 import { OutputModelObject } from "./OutputModelObject.js";
 import type { RuleSempredFunction } from "./RuleSempredFunction.js";
 import { SerializedATN } from "./SerializedATN.js";
-import { SerializedJavaATN } from "./SerializedJavaATN.js";
 
 export abstract class Recognizer extends OutputModelObject {
     public name: string;
@@ -64,11 +63,7 @@ export abstract class Recognizer extends OutputModelObject {
 
         this.ruleNames = new Set(g.rules.keys());
         this.rules = Array.from(g.rules.values());
-        if (gen.forJava) {
-            this.atn = new SerializedJavaATN(factory, g.atn);
-        } else {
-            this.atn = new SerializedATN(factory, g.atn);
-        }
+        this.atn = new SerializedATN(factory, g.atn);
 
         if (g.getOptionString("superClass")) {
             this.superClass = new ActionText(undefined, [g.getOptionString("superClass")]);

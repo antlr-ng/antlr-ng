@@ -35,10 +35,6 @@ export class CodeGenerator {
         this.language = this.g.getLanguage();
     }
 
-    public get forJava(): boolean {
-        return this.targetGenerator.language === "Java";
-    }
-
     public generateLexer(options: IGenerationOptions, declaration?: boolean): string {
         this.ensureAtnExists();
         declaration ??= false;

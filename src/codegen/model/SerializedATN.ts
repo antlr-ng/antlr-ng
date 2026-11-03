@@ -9,8 +9,8 @@ import { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { OutputModelObject } from "./OutputModelObject.js";
 
 /**
- * Represents a serialized ATN that is just a list of signed integers; works for all targets except for java, which
- * requires a 16-bit char encoding. See {@link SerializedJavaATN}.
+ * Represents a serialized ATN that is just a list of signed integers. Targets which need a different
+ * representation (e.g. Java, which uses 16-bit char encoded string literals) convert the list while rendering.
  */
 export class SerializedATN extends OutputModelObject {
     public readonly serialized: number[];

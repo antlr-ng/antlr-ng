@@ -140,25 +140,6 @@ export interface IRenderCollectionOptions {
  * The actual code generation is done in the subclasses.
  */
 export abstract class GeneratorBase implements ITargetGenerator {
-    /**
-     * For pure strings of Unicode char, how can we display it in the target language as a literal. Useful for dumping
-     * predicates and such that may refer to chars that need to be escaped when represented as strings.
-     *
-     * @returns The default map with the most common escape sequences. Subclasses can override this method to provide
-     *          additional or different escape sequences.
-     */
-    // XXX: make private once the Java serialized ATN is converted.
-    public static readonly defaultCharValueEscape = new Map<CodePoint, string>([
-        ["\t".codePointAt(0)!, "\\t"],
-        ["\b".codePointAt(0)!, "\\b"],
-        ["\n".codePointAt(0)!, "\\n"],
-        ["\r".codePointAt(0)!, "\\r"],
-        ["\f".codePointAt(0)!, "\\f"],
-        ["'".codePointAt(0)!, "\\'"],
-        ['"'.codePointAt(0)!, '\\"'],
-        ["\\".codePointAt(0)!, "\\\\"],
-    ]);
-
     public abstract readonly id: string;
 
     public abstract readonly version: string;
@@ -225,6 +206,24 @@ export abstract class GeneratorBase implements ITargetGenerator {
     public readonly needsDeclarationFile: boolean = false;
 
     public readonly declarationFileExtension?: string;
+
+    /**
+     * For pure strings of Unicode char, how can we display it in the target language as a literal. Useful for dumping
+     * predicates and such that may refer to chars that need to be escaped when represented as strings.
+     *
+     * @returns The default map with the most common escape sequences. Subclasses can override this method to provide
+     *          additional or different escape sequences.
+     */
+    protected static readonly defaultCharValueEscape = new Map<CodePoint, string>([
+        ["\t".codePointAt(0)!, "\\t"],
+        ["\b".codePointAt(0)!, "\\b"],
+        ["\n".codePointAt(0)!, "\\n"],
+        ["\r".codePointAt(0)!, "\\r"],
+        ["\f".codePointAt(0)!, "\\f"],
+        ["'".codePointAt(0)!, "\\'"],
+        ['"'.codePointAt(0)!, '\\"'],
+        ["\\".codePointAt(0)!, "\\\\"],
+    ]);
 
     protected abstract readonly reservedWords: Set<string>;
 
