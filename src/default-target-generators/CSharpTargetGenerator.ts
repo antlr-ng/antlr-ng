@@ -220,8 +220,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             );
         });
 
+        this.append(result, this.formatLines(block, 4));
         result.push(
-            ...this.formatLines(block, 4),
             ``,
             `    /// <inheritdoc/>`,
             `    /// <remarks>The default implementation does nothing.</remarks>`,
@@ -2379,15 +2379,13 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
                 );
             });
 
+            this.append(result, this.formatLines(cases, 8));
             result.push(
-                ...this.formatLines(cases, 8),
-
                 `        }`,
                 `        return true;`,
                 `    }`,
-
-                ...this.formatLines(funcs, 8)
             );
+            this.append(result, this.formatLines(funcs, 8));
         }
 
         result.push(``);
@@ -2491,9 +2489,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `			decisionToDFA[i] = new DFA(_ATN.GetDecisionState(i), i);`,
             `		}`,
             `	}`,
-
-            ...this.formatLines(this.renderActionHandlers(lexer), 4),
         );
+        this.append(result, this.formatLines(this.renderActionHandlers(lexer), 4));
         this.append(result, this.formatLines(this.renderSerializedATN(lexer.atn), 4));
         result.push(`}`);
 
@@ -2553,10 +2550,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
                 `}`
             );
 
-            result.push(
-                ...this.formatLines(block, 4),
-                "}"
-            );
+            this.append(result, this.formatLines(block, 4));
+            result.push("}");
 
             for (const [_, func] of lexer.actionFuncs) {
                 result.push(
@@ -2590,8 +2585,8 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
                 `    }`,
                 `    return true;`,
                 `}`,
-                ...funcs
             );
+            this.append(result, funcs);
         }
 
         return this.endRendering("actionHandlers", result);

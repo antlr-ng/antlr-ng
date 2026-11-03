@@ -1611,7 +1611,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
                 cases.push("");
             });
 
-            block.push(...this.formatLines(cases, 8));
+            this.append(block, this.formatLines(cases, 8));
             block.push(`        default:`);
             block.push(`    }`);
             block.push("");
@@ -1619,7 +1619,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
             block.push(`}`);
             block.push("");
 
-            block.push(...funcs);
+            this.append(block, funcs);
         }
 
         block.push("");
@@ -1716,7 +1716,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         block.push(`public get modeNames(): string[] { return ${lexer.name}.modeNames; }`);
         block.push("");
 
-        block.push(...this.renderActionHandlers(lexer));
+        this.append(block, this.renderActionHandlers(lexer));
         this.append(block, this.renderSerializedATN(lexer.atn));
         block.push("");
         block.push(`private static readonly vocabulary = new antlr.Vocabulary(${lexer.name}.literalNames, ` +
@@ -1757,7 +1757,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
 
             block.push(`}`);
 
-            result.push(...this.formatLines(block, 4));
+            this.append(result, this.formatLines(block, 4));
             result.push("}");
 
             for (const [_, func] of lexer.actionFuncs) {
@@ -1787,7 +1787,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
             result.push(`    return true;`);
             result.push(`}`);
             result.push("");
-            result.push(...funcs);
+            this.append(result, funcs);
         }
 
         return this.endRendering("actionHandlers", result);

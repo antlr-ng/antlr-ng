@@ -3,9 +3,10 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-// Renders the parser of a generated grammar with many rules in several target generators and prints the line count
-// of each result as JSON. It runs in a separate Node.js process (see TestLargeGrammarGeneration.spec.ts), because
-// the test workers have a larger stack than a normal Node.js process.
+// Renders all files of a generated grammar with many rules in several target generators and prints the line count
+// of each result as JSON (or the error message if rendering failed). It runs in a separate Node.js process with a
+// small stack (see TestLargeGrammarGeneration.spec.ts), because the test workers have a larger stack than a normal
+// Node.js process and a smaller stack lowers the size at which a spread call fails.
 
 import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
 import type { ITargetGenerator } from "../../src/codegen/ITargetGenerator.js";
@@ -16,11 +17,19 @@ import { TypeScriptTargetGenerator } from "../../src/default-target-generators/T
 import { Grammar } from "../../src/tool/index.js";
 
 const ruleCount = Number(process.argv[2]);
-const rules = Array.from({ length: ruleCount }, (_, i) => {
-    return `r${i} : ID (',' ID)* | INT ;`;
+
+// Parser rules have predicates and two labeled alternatives, lexer rules have actions, so that the sempred and
+// action functions and the listener/visitor files grow with the rule count as well.
+const predicates = "{true}? ".repeat(6);
+const actions = "{this.count++;} ".repeat(6);
+const parserRules = Array.from({ length: ruleCount }, (_, i) => {
+    return `r${i} : ${predicates}ID (',' ID)* # A${i} | INT # B${i} ;`;
 });
-const grammarText = `grammar T;\ns : r0 EOF ;\n${rules.join("\n")}\nID : [a-z]+ ;\nINT : [0-9]+ ;\n` +
-    "WS : ' ' -> skip ;\n";
+const lexerRules = Array.from({ length: ruleCount }, (_, i) => {
+    return `K${i} : 'k${i}' ${actions};`;
+});
+const grammarText = `grammar T;\ns : r0 EOF ;\n${parserRules.join("\n")}\n${lexerRules.join("\n")}\n` +
+    "ID : [a-z]+ ;\nINT : [0-9]+ ;\nWS : ' ' -> skip ;\n";
 
 const generators: ITargetGenerator[] = [
     new TypeScriptTargetGenerator(),
@@ -30,7 +39,7 @@ const generators: ITargetGenerator[] = [
 
 const parameters = defineConfig({
     grammarFiles: [],
-    generationOptions: { outputDirectory: "" },
+    generationOptions: { outputDirectory: "", generateListener: true, generateVisitor: true },
     generators,
 });
 
@@ -38,13 +47,34 @@ const g = new Grammar(grammarText);
 g.tool.process(g, parameters, false);
 
 const result: Record<string, number | string> = { errors: g.tool.getNumErrors() };
+const options = parameters.generationOptions;
 for (const generator of generators) {
     generator.setUp();
-    try {
-        const gen = new CodeGenerator(g, generator, parameters.generationOptions);
-        result[generator.language] = gen.generateParser(parameters.generationOptions).split("\n").length;
-    } catch (e) {
-        result[generator.language] = String(e);
+    const gen = new CodeGenerator(g, generator, options);
+    const lexerGen = new CodeGenerator(g.implicitLexer!, generator, options);
+
+    // C++ renders most of the listener and visitor code in the declaration (header) files.
+    const variants = generator.needsDeclarationFile ? [false, true] : [false];
+    const files: Array<[string, () => string]> = [];
+    for (const declaration of variants) {
+        const suffix = declaration ? "Declaration" : "";
+        files.push(
+            [`parser${suffix}`, () => { return gen.generateParser(options, declaration); }],
+            [`lexer${suffix}`, () => { return lexerGen.generateLexer(options, declaration); }],
+            [`listener${suffix}`, () => { return gen.generateListener(options, declaration); }],
+            [`baseListener${suffix}`, () => { return gen.generateBaseListener(options, declaration); }],
+            [`visitor${suffix}`, () => { return gen.generateVisitor(options, declaration); }],
+            [`baseVisitor${suffix}`, () => { return gen.generateBaseVisitor(options, declaration); }],
+        );
+    }
+
+    for (const [kind, render] of files) {
+        const key = `${generator.language}.${kind}`;
+        try {
+            result[key] = render().split("\n").length;
+        } catch (e) {
+            result[key] = String(e);
+        }
     }
 }
 
