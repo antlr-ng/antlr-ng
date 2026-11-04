@@ -20,6 +20,6 @@ export class ToolParseErrorListener extends BaseErrorListener {
         e: RecognitionException | null): void {
         const sourceName = recognizer.inputStream?.getSourceName() ?? "<unknown>";
         this.tool.errorManager.syntaxError(IssueCode.SyntaxError, sourceName, line, charPositionInLine, e ?? undefined,
-            msg);
+            msg, undefined, offendingSymbol);
     }
 }

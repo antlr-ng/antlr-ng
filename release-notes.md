@@ -18,6 +18,11 @@
   Its `renderSerializedATN` converts the serialized ATN to (segmented) string literals, so the Java specific
   `SerializedJavaATN` model and the `forJava` special casing in the code generator were removed.
 - Added the Dart target generator (`DartTargetGenerator`), which replaces the StringTemplate based Dart target.
+- `Issue` now exposes where an issue was found: `fileName`, `line`, `column`, and for issues at a token also
+  `endLine` and `endColumn` (exclusive; columns count code points). `message` returns the issue text without
+  severity, code and location, and `error` returns the causing exception. This lets tools such as language servers
+  show an issue at its exact range instead of parsing the rendered string. `ErrorManager.syntaxError` takes the
+  offending token as a new optional last parameter.
 - Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
 - Fixed loading a config file with `-c`/`--config` when it is given as a relative or a Windows path, and running the
   CLI with the default `lib` folder (`.`).
