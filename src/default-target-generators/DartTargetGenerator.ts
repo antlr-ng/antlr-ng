@@ -1290,7 +1290,9 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         // The ATN is rendered inside the recognizer class, so the list is indented by 6 columns in total.
         result.push(
             `static const List<int> _serializedATN = [`,
-            ...this.renderList(model.serialized, { wrap: this.wrapWidth(6), indent: 4, separator: "," }),
+        );
+        this.append(result, this.renderList(model.serialized, { wrap: this.wrapWidth(6), indent: 4, separator: "," }));
+        result.push(
             `];`,
             ``,
             `static final ATN _ATN =`,
@@ -1630,8 +1632,8 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
                 `    }`,
                 `    return true;`,
                 `  }`,
-                ...this.formatLines(funcs, 2),
             );
+            this.append(result, this.formatLines(funcs, 2));
         }
 
         result.push(``);
@@ -1733,8 +1735,8 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             `  @override`,
             `  ATN getATN() { return _ATN; }`,
             ``,
-            ...this.formatLines(this.renderActionHandlers(lexer), 2),
         );
+        this.append(result, this.formatLines(this.renderActionHandlers(lexer), 2));
         this.append(result, this.formatLines(this.renderSerializedATN(lexer.atn), 2));
         result.push(`}`);
 
@@ -1773,8 +1775,8 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
             result.push(
                 `  }`,
                 `}`,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
         if (lexer.sempredFuncs.size > 0) {
@@ -1798,8 +1800,8 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
                 `  }`,
                 `  return true;`,
                 `}`,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
         if (result.length > 0) {
@@ -2129,18 +2131,6 @@ export class DartTargetGenerator extends GeneratorBase implements ITargetGenerat
         }
 
         return result;
-    }
-
-    /**
-     * Appends all lines to the target list. Unlike the spread operator this works for very large lists too.
-     *
-     * @param target The list to append to.
-     * @param lines The lines to append.
-     */
-    private append(target: Lines, lines: Lines): void {
-        for (const line of lines) {
-            target.push(line);
-        }
     }
 
     /**

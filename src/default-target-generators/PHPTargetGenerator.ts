@@ -1429,8 +1429,8 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         result.push(
             `private const SERIALIZED_ATN =`,
-            ...this.indent(list),
         );
+        this.append(result, this.indent(list));
 
         return this.endRendering("SerializedATN", result);
     };
@@ -1741,7 +1741,9 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
             ``,
             ...this.renderVocabulary(parser.literalNames, parser.symbolicNames),
             ``,
-            ...this.renderSerializedATN(parser.atn),
+        );
+        this.append(body, this.renderSerializedATN(parser.atn));
+        body.push(
             `protected static $atn;`,
             `protected static $decisionToDFA;`,
             `protected static $sharedContextCache;`,
@@ -1932,7 +1934,9 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
             ``,
             ...this.renderVocabulary(lexer.literalNames, lexer.symbolicNames),
             ``,
-            ...this.renderSerializedATN(lexer.atn),
+        );
+        this.append(body, this.renderSerializedATN(lexer.atn));
+        body.push(
             `protected static $atn;`,
             `protected static $decisionToDFA;`,
             `protected static $sharedContextCache;`,
@@ -2004,8 +2008,8 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
             `{`,
             `    return self::vocabulary();`,
             `}`,
-            ...this.renderActionHandlers(lexer),
         );
+        this.append(body, this.renderActionHandlers(lexer));
 
         this.append(result, this.indent(body, 2));
         result.push(
@@ -2051,8 +2055,8 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
                 `    }`,
                 `}`,
                 ``,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
         if (lexer.sempredFuncs.size > 0) {
@@ -2080,8 +2084,8 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
                 `    return true;`,
                 `}`,
                 ``,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
         return this.endRendering("actionHandlers", result);

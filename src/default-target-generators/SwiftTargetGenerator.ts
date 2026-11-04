@@ -1845,8 +1845,8 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
             `\toverride ${this.openLevel}`,
             `\tfunc getATN() -> ATN { return ${lexerName}._ATN }`,
             ``,
-            ...this.indent(this.renderActionHandlers(lexer)),
         );
+        this.append(result, this.indent(this.renderActionHandlers(lexer)));
 
         this.append(result, this.renderSerializedATN(lexer.atn));
         result.push(
@@ -1911,11 +1911,11 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
                 `\tdefault: break`,
                 `\t}`,
                 `}`,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
-        result.push(...this.renderSempredDispatch(lexer.sempredFuncs.values()));
+        this.append(result, this.renderSempredDispatch(lexer.sempredFuncs.values()));
 
         return this.endRendering("actionHandlers", result);
     }
