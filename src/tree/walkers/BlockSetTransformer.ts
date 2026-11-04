@@ -171,36 +171,14 @@ export class BlockSetTransformer extends TreeRewriter {
                         throw new NoViableAltException(1, 0);
                     }
 
-                    let matchCount = 0;
-                    while (true) {
-                        const lookahead = this.input.lookahead(1);
-                        if (lookahead >= ANTLRv4Parser.ACTION && lookahead <= ANTLRv4Parser.WILDCARD) {
-                            this.matchAny();
-                            if (this.failed) {
-                                return result;
-                            }
+                    if (this.matchAnyUntilUp() === 0) {
+                        if (this.backtracking > 0) {
+                            this.failed = true;
 
-                            if (this.backtracking === 1) {
-                                result = first;
-                                if (result?.parent?.isNil()) {
-                                    result = result.parent as GrammarAST;
-                                }
-                            }
-                        } else {
-                            if (matchCount >= 1) {
-                                break;
-                            }
-
-                            if (this.backtracking > 0) {
-                                this.failed = true;
-
-                                return result;
-                            }
-
-                            throw new EarlyExitException(2);
+                            return result;
                         }
 
-                        ++matchCount;
+                        throw new EarlyExitException(2);
                     }
 
                     this.match(this.input, Constants.Up);

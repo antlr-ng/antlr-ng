@@ -404,8 +404,11 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
                         }
 
                         elementOptions += key;
-                        elementOptions += "=";
-                        elementOptions += value!.getText();
+
+                        // A bare option (e.g. `<true>`) has no value.
+                        if (value) {
+                            elementOptions += "=" + value.getText();
+                        }
                     }
                 }
             }

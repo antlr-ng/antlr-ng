@@ -38,16 +38,7 @@ export class ATNBuilder extends TreeParser {
                 if (this.input.lookahead(1) === Constants.Down) {
                     this.match(this.input, Constants.Down);
 
-                    while (true) {
-                        const lookahead = this.input.lookahead(1);
-                        if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
-                            this.matchAny();
-                        } else {
-                            if (lookahead === Constants.Up) {
-                                break;
-                            }
-                        }
-                    }
+                    this.matchAnyUntilUp();
                     this.match(this.input, Constants.Up);
                 }
             }
@@ -100,17 +91,7 @@ export class ATNBuilder extends TreeParser {
                 if (this.input.lookahead(1) === Constants.Down) {
                     this.match(this.input, Constants.Down);
 
-                    while (true) {
-                        const lookahead = this.input.lookahead(1);
-                        if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
-                            this.matchAny();
-                        } else {
-                            if (lookahead === Constants.Up) {
-                                break;
-                            }
-                        }
-                    }
-
+                    this.matchAnyUntilUp();
                     this.match(this.input, Constants.Up);
                 }
             }
@@ -943,15 +924,8 @@ export class ATNBuilder extends TreeParser {
                     if (this.input.lookahead(1) === Constants.Down) {
                         this.match(this.input, Constants.Down);
 
-                        while (true) {
-                            const lookahead = this.input.lookahead(1);
-                            if (lookahead >= ANTLRv4Lexer.ACTION && lookahead <= ANTLRv4Lexer.WILDCARD) {
-                                this.matchAny();
-                            } else if (lookahead === Constants.Up) {
-                                break;
-                            }
-                        }
-
+                        // A bare option name (e.g. `<true>`) is an ID node here.
+                        this.matchAnyUntilUp();
                         this.match(this.input, Constants.Up);
                     }
 
@@ -1053,7 +1027,7 @@ export class ATNBuilder extends TreeParser {
                         const lookahead3 = this.input.lookahead(3);
                         if (lookahead3 === ANTLRv4Lexer.ARG_ACTION) {
                             const lookahead4 = this.input.lookahead(4);
-                            if (lookahead4 >= ANTLRv4Lexer.ACTION && lookahead4 <= ANTLRv4Lexer.WILDCARD) {
+                            if (lookahead4 > Constants.Up) {
                                 alt24 = 3;
                             } else {
                                 if (lookahead4 >= Constants.Down && lookahead4 <= Constants.Up) {
@@ -1073,9 +1047,7 @@ export class ATNBuilder extends TreeParser {
                                     }
                                 }
                             }
-                        } else if (
-                            (lookahead3 >= ANTLRv4Lexer.ACTION)
-                            || (lookahead3 >= ANTLRv4Lexer.ARG_OR_CHARSET && lookahead3 <= ANTLRv4Lexer.WILDCARD)) {
+                        } else if (lookahead3 > Constants.Up) {
                             alt24 = 4;
                         } else {
                             const mark = this.input.mark();

@@ -15,6 +15,7 @@ import { defineConfig } from "../../../src/config/config.js";
 import { TypeScriptTargetGenerator } from "../../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { DOTGenerator } from "../../../src/tool/DOTGenerator.js";
 import { Grammar, LexerGrammar } from "../../../src/tool/index.js";
+import { LeftRecursiveRule } from "../../../src/tool/LeftRecursiveRule.js";
 
 const tsGenerator = new TypeScriptTargetGenerator();
 tsGenerator.setUp();
@@ -147,6 +148,40 @@ describe("General", () => {
         const output = gen.generateParser(parameters.generationOptions);
         expect(output).toContain("createFailedPredicateException(\"false\", \"custom message\");");
         expect(output).toContain("\"\"\"Returns `True` iff on the current index of the parser's");
+    });
+
+    it("Bug #100 Bare element option on a rule reference hangs the tool", () => {
+        // A bare option name (`<true>`) is an ID node in the grammar AST, which the tree walkers did not skip.
+        const grammarText = `grammar T;
+            s : '{' (ID | t <true>) '}' ;
+            t : ID ;
+            ID : 'a'..'z'+ ;
+            WS : ' ' -> skip ;`;
+
+        const g = new Grammar(grammarText);
+        g.tool.process(g, parameters, false);
+        expect(g.tool.getNumErrors()).toBe(0);
+
+        const gen = new CodeGenerator(g, tsGenerator, parameters.generationOptions);
+        const output = gen.generateParser(parameters.generationOptions);
+        expect(output).toContain("this.t();");
+    });
+
+    it.each([
+        "e '+' INT <true>",
+        "e '+' t <true>",
+    ])("Bug #100 Bare element option in a left-recursive alternative (%s)", (alt) => {
+        // The left-recursion rewrite copies element options into the new rule text and failed on the missing value.
+        const grammarText = `grammar T;
+            e : ${alt} | INT ;
+            t : INT ;
+            INT : '0'..'9'+ ;
+            WS : ' ' -> skip ;`;
+
+        const g = new Grammar(grammarText);
+        g.tool.process(g, parameters, false);
+        expect(g.tool.getNumErrors()).toBe(0);
+        expect(g.getRule("e")).toBeInstanceOf(LeftRecursiveRule);
     });
 
 });

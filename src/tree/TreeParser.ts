@@ -95,6 +95,23 @@ export class TreeParser {
     }
 
     /**
+     * Match `.*` in a tree grammar: skip all nodes (each with its subtree) up to the Up node of the current level.
+     * `.` matches any node type above Up. ANTLR3 generated `ACTION..WILDCARD` for that, which was the full token
+     * range there, but not in the ANTLRv4 token numbering (e.g. ID is above WILDCARD).
+     *
+     * @returns The number of skipped nodes, so callers can enforce `.+`.
+     */
+    public matchAnyUntilUp(): number {
+        let count = 0;
+        while (this.input.lookahead(1) > Constants.Up) {
+            this.matchAny();
+            ++count;
+        }
+
+        return count;
+    }
+
+    /**
      * Check if current node in input has a context.  Context means sequence of nodes towards root of tree. For
      * example, you might say context is "MULT" which means my parent must be MULT. "CLASS VARDEF" says current node
      * must be child of a VARDEF and whose parent is a CLASS node. You can use "..." to mean zero-or-more nodes.
