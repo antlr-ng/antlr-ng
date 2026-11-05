@@ -33,7 +33,7 @@ const parserRules = Array.from({ length: ruleCount }, (_, i) => {
     return `r${i} : ${predicates}ID (',' ID)* # A${i} | INT # B${i} ;`;
 });
 const lexerRules = Array.from({ length: ruleCount }, (_, i) => {
-    return `K${i} : 'k${i}' ${actions};`;
+    return `K${i} : 'k${i}' ${predicates.repeat(3)}${actions};`;
 });
 const grammarText = `grammar T;\ns : r0 EOF ;\n${parserRules.join("\n")}\n${lexerRules.join("\n")}\n` +
     "ID : [a-z]+ ;\nINT : [0-9]+ ;\nWS : ' ' -> skip ;\n";
