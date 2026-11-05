@@ -34,6 +34,8 @@
   `--log` file to disk.
 - Fixed Bug #100: the tool hung on a rule reference with a bare element option (e.g. `r <true>`), because the tree
   walkers did not skip option nodes of type ID. Such options also made left-recursive rules fail with error 92.
+- Fixed Bug #98: a label on the wildcard (`x=.`, `x+=.`) was rejected with error 58, because the label check allowed `*`
+  instead of `.`. A list label on the wildcard now also generates an implicit token label, like on a token reference.
 
 ## 1.0.10
 

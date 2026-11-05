@@ -169,6 +169,32 @@ describe.sequential("TestParserExec", () => {
         }
     });
 
+    it("Bug #98 Labels on the wildcard", async () => {
+        const tempDir = mkdtempSync(join(tmpdir(), "AntlrLabeledWildcard"));
+        try {
+            // A label in a non-greedy wildcard loop (as in the Teradata grammar) and a list label on the wildcard.
+            const grammar =
+                "grammar T;\n" +
+                "s : '(' x=.+? ')' y+=. y+=. EOF\n" +
+                "    {console.log($x.text + \" \" + $y.map((t) => t.text).join(\",\"));} ;\n" +
+                "ID : [a-z]+ ;\n" +
+                "WS : [ \\t\\n\\r]+ -> skip ;\n";
+
+            let generationErrors = "";
+            const output = await ToolTestUtils.captureTerminalOutput(async () => {
+                const queue = await ToolTestUtils.execParser("T.g4", grammar, "TParser", "TLexer", "s",
+                    "( a b c ) d e", false, false, tempDir);
+                generationErrors = queue.toString(true);
+            });
+
+            expect(generationErrors).toBe("");
+            expect(output.output).toBe("c d,e\n");
+            expect(output.error).toBe("");
+        } finally {
+            rmSync(tempDir, { recursive: true });
+        }
+    });
+
     it("testLeftRecursiveRuleWithReturnValue", async () => {
         const tempDir = mkdtempSync(join(tmpdir(), "AntlrLeftRecursion"));
         try {
