@@ -104,7 +104,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+    }, 120000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test C++ generator", async () => {
         const cppGenerator: ITargetGenerator = new CppTargetGenerator(false, { exportMacro: "ANTLR4CPP_PUBLIC", });
@@ -169,7 +169,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+    }, 120000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test C# generator", async () => {
         const csharpGenerator: ITargetGenerator = new CSharpTargetGenerator(false);
@@ -235,7 +235,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+    }, 120000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test Go generator", async () => {
         const goGenerator: ITargetGenerator = new GoTargetGenerator(false);
@@ -301,7 +301,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+    }, 120000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test PHP generator", async () => {
         const phpGenerator: ITargetGenerator = new PHPTargetGenerator(false);
@@ -366,7 +366,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+    }, 120000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test Swift generator", async () => {
         const swiftGenerator: ITargetGenerator = new SwiftTargetGenerator(false);
@@ -432,7 +432,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+    }, 120000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test Python3 generator", async () => {
         const pythonGenerator: ITargetGenerator = new Python3TargetGenerator(false);
@@ -498,7 +498,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+    }, 120000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test Java generator", async () => {
         const javaGenerator: ITargetGenerator = new JavaTargetGenerator(false);
@@ -564,7 +564,7 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+    }, 120000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 
     it("test Dart generator", async () => {
         const dartGenerator: ITargetGenerator = new DartTargetGenerator(false);
@@ -630,5 +630,5 @@ describe("Test built-in generators", () => {
         // Tokens files.
         await copyFile("MySQLLexer.tokens", targetDir);
         await copyFile("MySQLParser.tokens", targetDir);
-    }, 60000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
+    }, 120000); // The MySQL parser is large, which can exceed the default timeout when tests run concurrently.
 });
