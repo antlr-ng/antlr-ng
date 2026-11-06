@@ -4,6 +4,7 @@
  */
 
 import { execFile } from "node:child_process";
+import { availableParallelism } from "node:os";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
@@ -41,11 +42,23 @@ describe("Large grammar generation", () => {
     it("renders all files without spread calls that overflow the stack", async () => {
         // `lines.push(...other)` passes every line as a separate argument, which overflows the call stack for large
         // line lists (about 125k lines with the default stack). The test workers have a larger stack than a normal
-        // Node.js process, so the rendering runs in child processes, one per target to keep the test fast. Their
-        // stack is reduced to 100 KB, which lowers the limit to about 12k lines, so a grammar of 600 rules is enough
-        // to exceed it in every file kind.
-        const results = await Promise.all(languages.map((language) => {
-            return render(language);
+        // Node.js process, so the rendering runs in child processes, one per target. Their stack is reduced to
+        // 100 KB, which lowers the limit to about 12k lines, so a grammar of 600 rules is enough to exceed it in every
+        // file kind.
+        // Only half of the CPUs render at the same time, because the other test files run concurrently and slow
+        // tests (like the built-in generator tests) time out otherwise.
+        const results = new Array<Record<string, number | string>>(languages.length);
+        let next = 0;
+        const worker = async (): Promise<void> => {
+            while (next < languages.length) {
+                const index = next++;
+                results[index] = await render(languages[index]);
+            }
+        };
+
+        const workerCount = Math.max(1, Math.floor(availableParallelism() / 2));
+        await Promise.all(Array.from({ length: Math.min(workerCount, languages.length) }, () => {
+            return worker();
         }));
 
         for (const [index, result] of results.entries()) {
@@ -59,5 +72,5 @@ describe("Large grammar generation", () => {
 
         // Make sure the test still produces files that are larger than the spread limit.
         expect(results[0]["TypeScript.parser"]).toBeGreaterThan(50000);
-    }, 60000);
+    }, 180000);
 });
