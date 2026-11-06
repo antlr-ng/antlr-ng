@@ -100,7 +100,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
                 result.push(``);
             }
 
-            result.push(...this.renderParserHeader(parserFile.parser, parserFile.namedActions));
+            this.append(result, this.renderParserHeader(parserFile.parser, parserFile.namedActions));
             result.push(``);
 
             if (options.package) {
@@ -129,7 +129,8 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
             result.push("");
         }
 
-        result.push(...this.renderParser(parserFile, parserFile.namedActions), "");
+        this.append(result, this.renderParser(parserFile, parserFile.namedActions));
+        result.push("");
 
         return result.join("\n");
     };
@@ -158,7 +159,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
                 result.push("");
             }
 
-            result.push(...this.renderLexerHeader(lexerFile.lexer, lexerFile.namedActions));
+            this.append(result, this.renderLexerHeader(lexerFile.lexer, lexerFile.namedActions));
 
             if (options.package) {
                 result.push(`} // namespace ${options.package}`);
@@ -179,7 +180,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push("using namespace antlr4;");
         result.push("");
 
-        result.push(...this.renderLexer(lexerFile.lexer, lexerFile.namedActions, options.package));
+        this.append(result, this.renderLexer(lexerFile.lexer, lexerFile.namedActions, options.package));
 
         return result.join("\n");
     };
@@ -1760,7 +1761,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         const result = this.startRendering("SerializedATN");
 
         result.push(`  static const int32_t serializedATNSegment[] = {`);
-        result.push(...this.renderList(model.serialized, { wrap: 68, indent: 4, separator: "," }));
+        this.append(result, this.renderList(model.serialized, { wrap: 68, indent: 4, separator: "," }));
         result.push(`  };`);
         result.push(`  staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, ` +
             `sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));`);
@@ -2186,7 +2187,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(`    }`);
         result.push(`  );`);
 
-        result.push(... this.renderSerializedATN(parser.atn));
+        this.append(result, this.renderSerializedATN(parser.atn));
 
         result.push(`  ${loweredGrammarName}ParserStaticData = std::move(staticData);`);
         result.push(`}`, "");
@@ -2223,7 +2224,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(`}`, "");
 
         result.push(...this.renderAction(namedActions.get("definitions")), "");
-        result.push(...this.renderRuleFunctions(parserFile.namedActions, parser.funcs));
+        this.append(result, this.renderRuleFunctions(parserFile.namedActions, parser.funcs));
 
         if (parser.sempredFuncs.size > 0) {
             result.push(`bool ${recognizerName}::sempred(RuleContext *context, size_t ruleIndex, ` +
@@ -2313,7 +2314,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         }
 
         result.push(``);
-        result.push(...this.renderRuleFunctions(namedActions, parser.funcs));
+        this.append(result, this.renderRuleFunctions(namedActions, parser.funcs));
 
         if (parser.sempredFuncs.size > 0) {
             result.push(`  bool sempred(antlr4::RuleContext *_localctx, size_t ruleIndex, size_t predicateIndex) ` +
@@ -2423,7 +2424,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(`    }`);
         result.push(`);`);
 
-        result.push(...this.renderSerializedATN(lexer.atn));
+        this.append(result, this.renderSerializedATN(lexer.atn));
         result.push(`  ${loweredGrammarName}LexerStaticData = std::move(staticData);`);
         result.push(`}`, ``);
         result.push(`}`);

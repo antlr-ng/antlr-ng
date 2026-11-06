@@ -1845,8 +1845,8 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
             `\toverride ${this.openLevel}`,
             `\tfunc getATN() -> ATN { return ${lexerName}._ATN }`,
             ``,
-            ...this.indent(this.renderActionHandlers(lexer)),
         );
+        this.append(result, this.indent(this.renderActionHandlers(lexer)));
 
         this.append(result, this.renderSerializedATN(lexer.atn));
         result.push(
@@ -1911,11 +1911,11 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
                 `\tdefault: break`,
                 `\t}`,
                 `}`,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
-        result.push(...this.renderSempredDispatch(lexer.sempredFuncs.values()));
+        this.append(result, this.renderSempredDispatch(lexer.sempredFuncs.values()));
 
         return this.endRendering("actionHandlers", result);
     }
@@ -2260,18 +2260,6 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
         result.push(line);
 
         return result;
-    }
-
-    /**
-     * Appends all lines to the target list. Unlike the spread operator this works for very large lists too.
-     *
-     * @param target The list to append to.
-     * @param lines The lines to append.
-     */
-    private append(target: Lines, lines: Lines): void {
-        for (const line of lines) {
-            target.push(line);
-        }
     }
 
     /**

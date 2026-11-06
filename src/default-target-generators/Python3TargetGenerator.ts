@@ -1441,8 +1441,8 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             result.push(...this.renderSuperClassImport(superClass));
         }
 
+        this.append(result, this.renderSerializedATN(parser.atn));
         result.push(
-            ...this.renderSerializedATN(parser.atn),
             ``,
             `class ${parserName} ( ${superClass ?? "Parser"} ):`,
             ``,
@@ -1534,8 +1534,8 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             result.push(...this.renderSuperClassImport(superClass));
         }
 
+        this.append(result, this.renderSerializedATN(lexer.atn));
         result.push(
-            ...this.renderSerializedATN(lexer.atn),
             ``,
             `class ${lexerName}(${superClass ?? "Lexer"}):`,
             ``,
@@ -1642,8 +1642,8 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
                 `    else:`,
                 `        raise Exception("No registered action for:" + str(ruleIndex))`,
                 ``,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
         if (lexer.sempredFuncs.size > 0) {
@@ -1667,8 +1667,8 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
                 `    else:`,
                 `        raise Exception("No registered predicate for:" + str(ruleIndex))`,
                 ``,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
         return this.endRendering("actionHandlers", result);
@@ -2087,18 +2087,6 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         }
 
         return indentation + line.substring(match.length);
-    }
-
-    /**
-     * Appends all lines to the target list. Unlike the spread operator this works for very large lists too.
-     *
-     * @param target The list to append to.
-     * @param lines The lines to append.
-     */
-    private append(target: Lines, lines: Lines): void {
-        for (const line of lines) {
-            target.push(line);
-        }
     }
 
     /**

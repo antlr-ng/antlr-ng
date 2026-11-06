@@ -2126,18 +2126,6 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
     }
 
     /**
-     * Appends all lines to the target list. Unlike the spread operator this works for very large lists too.
-     *
-     * @param target The list to append to.
-     * @param lines The lines to append.
-     */
-    private append(target: Lines, lines: Lines): void {
-        for (const line of lines) {
-            target.push(line);
-        }
-    }
-
-    /**
      * Prefixes all non-empty lines with the given number of tabs. Undefined lines are removed.
      *
      * @param lines The lines to indent.

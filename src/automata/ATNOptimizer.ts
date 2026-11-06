@@ -129,7 +129,11 @@ export class ATNOptimizer {
             }
         }
 
-        atn.states.splice(0, atn.states.length, ...compressed); // Clear and add all.
+        // Clear and add all. Not with a spread call, which overflows the call stack for very large ATNs.
+        atn.states.length = 0;
+        for (const s of compressed) {
+            atn.states.push(s);
+        }
     }
 
 }
