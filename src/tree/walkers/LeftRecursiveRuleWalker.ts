@@ -15,6 +15,7 @@ import { FailedPredicateException } from "../exceptions/FailedPredicateException
 import { MismatchedSetException } from "../exceptions/MismatchedSetException.js";
 import { NoViableAltException } from "../exceptions/NoViableAltException.js";
 import { TreeParser } from "../TreeParser.js";
+import { isRuleModifier } from "./GrammarTreeVisitor.js";
 
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 
@@ -72,9 +73,27 @@ export class LeftRecursiveRuleWalker extends TreeParser {
             this.ruleName = id.getText()!;
         }
 
-        const lookahead = this.input.lookahead(1);
-        if ((lookahead >= ANTLRv4Lexer.PRIVATE && lookahead <= ANTLRv4Lexer.PUBLIC)) {
-            this.ruleModifier();
+        // The modifiers are children of a RULEMODIFIERS node (see GrammarTreeVisitor.ruleSpec), not direct children
+        // of the rule like in the original tree grammar.
+        if (this.input.lookahead(1) === ANTLRv4Lexer.RULEMODIFIERS) {
+            this.match(this.input, ANTLRv4Lexer.RULEMODIFIERS);
+            if (this.failed) {
+                return isLeftRec;
+            }
+
+            this.match(this.input, Constants.Down);
+            if (this.failed) {
+                return isLeftRec;
+            }
+
+            do {
+                this.ruleModifier();
+                if (this.failed) {
+                    return isLeftRec;
+                }
+            } while (isRuleModifier(this.input.lookahead(1)));
+
+            this.match(this.input, Constants.Up);
             if (this.failed) {
                 return isLeftRec;
             }
@@ -278,7 +297,7 @@ export class LeftRecursiveRuleWalker extends TreeParser {
 
     private ruleModifier(): void {
         const lookahead = this.input.lookahead(1);
-        if (lookahead >= ANTLRv4Lexer.PRIVATE && lookahead <= ANTLRv4Lexer.PUBLIC) {
+        if (isRuleModifier(lookahead)) {
             this.input.consume();
             this.errorRecovery = false;
             this.failed = false;
