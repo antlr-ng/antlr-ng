@@ -46,6 +46,9 @@ export class Tool implements ITool {
     private readonly logMgr = new LogManager();
     private readonly importedGrammars = new Map<string, Grammar>();
 
+    /** Grammars imported by path, keyed by their normalized file path. */
+    private readonly importedGrammarFiles = new Map<string, Grammar>();
+
     /**
      * Initiates a full generation process with the given parameters.
      *
@@ -389,6 +392,47 @@ export class Tool implements ITool {
             imported = this.createGrammar(result);
             imported.fileName = importedFile;
             this.importedGrammars.set(result.getGrammarName()!, imported);
+        }
+
+        return imported;
+    }
+
+    /**
+     * Loads a grammar that is imported by its file path (`import 'path/to/Grammar.g4';`). Unlike imports by name, the
+     * file is not searched for: the path is relative to the importing grammar (or absolute). Grammars are cached by
+     * their normalized path, so a file that is imported more than once is loaded only once, and two files that
+     * declare the same grammar name don't replace each other.
+     *
+     * @param g The importing grammar.
+     * @param pathNode The string literal node with the path.
+     * @param fileName The normalized path of the grammar file.
+     *
+     * @returns The imported grammar or null if it could not be loaded.
+     */
+    public loadImportedGrammarFile(g: Grammar, pathNode: GrammarAST, fileName: string): Grammar | null {
+        let imported = this.importedGrammarFiles.get(fileName);
+        if (!imported) {
+            g.tool.logInfo({ component: "grammar", msg: `load ${fileName} from ${g.fileName}` });
+
+            if (!fileSystem.existsSync(fileName)) {
+                this.errorManager.grammarError(IssueCode.CannotFindImportedGrammar, g.fileName, pathNode.token!,
+                    fileName);
+
+                return null;
+            }
+
+            const content = fileSystem.readFileSync(fileName, { encoding: "utf-8" });
+            const input = CharStream.fromString(content as string);
+            input.name = basename(fileName);
+
+            const result = this.parse(input);
+            if (!result) {
+                return null;
+            }
+
+            imported = this.createGrammar(result);
+            imported.fileName = fileName;
+            this.importedGrammarFiles.set(fileName, imported);
         }
 
         return imported;

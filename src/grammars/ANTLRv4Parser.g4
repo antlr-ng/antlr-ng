@@ -100,9 +100,11 @@ delegateGrammars
     : IMPORT delegateGrammar (COMMA delegateGrammar)* SEMI
     ;
 
+// A string literal is the path of the grammar file, relative to the importing grammar (antlr-ng extension).
 delegateGrammar
     : identifier ASSIGN identifier
     | identifier
+    | STRING_LITERAL
     ;
 
 // ------------

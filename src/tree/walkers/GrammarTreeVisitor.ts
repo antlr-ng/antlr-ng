@@ -377,7 +377,8 @@ export class GrammarTreeVisitor extends TreeParser {
             let grammarCount = 0;
             while (true) {
                 const lookahead = this.input.lookahead(1);
-                if (lookahead === ANTLRv4Parser.ASSIGN || lookahead === ANTLRv4Parser.ID) {
+                if (lookahead === ANTLRv4Parser.ASSIGN || lookahead === ANTLRv4Parser.ID
+                    || lookahead === ANTLRv4Parser.STRING_LITERAL) {
                     this.delegateGrammar();
                 } else {
                     if (grammarCount >= 1) {
@@ -414,6 +415,9 @@ export class GrammarTreeVisitor extends TreeParser {
             } else if (lookahead === ANTLRv4Parser.ID) {
                 const id = this.match(this.input, ANTLRv4Parser.ID)!;
                 this.importGrammar(null, id);
+            } else if (lookahead === ANTLRv4Parser.STRING_LITERAL) {
+                const path = this.match(this.input, ANTLRv4Parser.STRING_LITERAL)!;
+                this.importGrammar(null, path);
             } else {
                 throw new NoViableAltException(7, 0);
             }

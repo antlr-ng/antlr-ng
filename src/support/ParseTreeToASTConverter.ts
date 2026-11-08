@@ -176,6 +176,8 @@ export class ParseTreeToASTConverter {
 
                 assign.addChild(this.createASTNode(ANTLRv4Parser.ID, dg.identifier()[0]));
                 assign.addChild(this.createASTNode(ANTLRv4Parser.ID, dg.identifier()[1]));
+            } else if (dg.STRING_LITERAL()) {
+                delegate.addChild(this.createASTNode(ANTLRv4Parser.STRING_LITERAL, dg.STRING_LITERAL()!));
             } else {
                 const id = this.createASTNode(ANTLRv4Parser.ID, dg.identifier()[0]);
                 delegate.addChild(id);

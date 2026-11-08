@@ -25,6 +25,37 @@ export const dirname = (path: string): string => {
 };
 
 /**
+ * Joins a path to a base folder and removes `.` and `..` segments. Both use `/` as separator, backslashes are
+ * accepted too. Unlike `path.resolve` this does not depend on the current working directory, so it works the same
+ * with any file system.
+ *
+ * @param base The folder the path is relative to. Ignored if `path` is absolute.
+ * @param path The path to resolve.
+ *
+ * @returns The normalized path.
+ */
+export const resolvePath = (base: string, path: string): string => {
+    const absolute = /^([a-zA-Z]:)?[\\/]/.test(path);
+    const full = absolute ? path : `${base}/${path}`;
+    const isRooted = full.startsWith("/");
+
+    const segments: string[] = [];
+    for (const segment of full.split(/[\\/]/)) {
+        if (segment === "" || segment === ".") {
+            continue;
+        }
+
+        if (segment === ".." && segments.length > 0 && segments[segments.length - 1] !== "..") {
+            segments.pop();
+        } else {
+            segments.push(segment);
+        }
+    }
+
+    return (isRooted ? "/" : "") + segments.join("/");
+};
+
+/**
  * Copies the entire folder from the physical file system to the virtual one.
  *
  * @param fs The target file system.

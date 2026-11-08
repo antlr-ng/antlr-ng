@@ -29,7 +29,7 @@ import type { IGrammar, ITool } from "../types.js";
 
 import type { IGenerationOptions } from "../config/config.js";
 import { Utils } from "../misc/Utils.js";
-import { basename } from "../support/fs-helpers.js";
+import { basename, dirname, resolvePath } from "../support/fs-helpers.js";
 import type { Constructor } from "../support/helpers.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import type { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
@@ -413,8 +413,15 @@ export class Grammar implements IGrammar, IAttributeResolver {
         }
 
         visited.add(this.name);
+        visited.add(resolvePath(".", this.fileName));
         for (const c of i.children) {
             let t = c as GrammarAST;
+            if (t.getType() === ANTLRv4Parser.STRING_LITERAL) {
+                this.loadImportedGrammarFile(t, visited);
+
+                continue;
+            }
+
             let importedGrammarName = null;
             if (t.getType() === ANTLRv4Parser.ASSIGN) {
                 t = t.children[1] as GrammarAST;
@@ -448,6 +455,25 @@ export class Grammar implements IGrammar, IAttributeResolver {
             // Recursively pursue any imports in this import.
             g.loadImportedGrammars(visited);
         }
+    }
+
+    /**
+     * Resolves the path of an import by file path.
+     *
+     * @param pathNode The string literal node of the import.
+     * @param reportErrors Whether to report invalid escape sequences in the literal.
+     *
+     * @returns The normalized path of the imported grammar file, or undefined if the literal is invalid.
+     */
+    public resolveImportPath(pathNode: GrammarAST, reportErrors = true): string | undefined {
+        const path = reportErrors
+            ? CharSupport.getStringFromGrammarStringLiteral(pathNode.getText(), this, pathNode.token)
+            : CharSupport.getStringFromGrammarStringLiteral(pathNode.getText());
+        if (!path) {
+            return undefined;
+        }
+
+        return resolvePath(dirname(this.fileName), path);
     }
 
     public defineAction(atAST: GrammarAST): void {
@@ -622,6 +648,26 @@ export class Grammar implements IGrammar, IAttributeResolver {
     public getImportedGrammar(name: string): Grammar | null {
         for (const g of this.importedGrammars) {
             if (g.name === name) {
+                return g;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param node The node of an import statement: a grammar name or a file path.
+     *
+     * @returns The grammar loaded for that import, if any.
+     */
+    public getImportedGrammarForNode(node: GrammarAST): Grammar | null {
+        if (node.getType() !== ANTLRv4Parser.STRING_LITERAL) {
+            return this.getImportedGrammar(node.getText());
+        }
+
+        const fileName = this.resolveImportPath(node, false);
+        for (const g of this.importedGrammars) {
+            if (g.fileName === fileName) {
                 return g;
             }
         }
@@ -1254,6 +1300,40 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
         // reserve a spot for the INVALID token
         this.typeToTokenList.push(null);
+    }
+
+    /**
+     * Loads a grammar imported by file path and its imports.
+     *
+     * @param pathNode The string literal node with the path.
+     * @param visited The names and paths of the grammars loaded so far.
+     */
+    private loadImportedGrammarFile(pathNode: GrammarAST, visited: Set<string>): void {
+        const fileName = this.resolveImportPath(pathNode);
+        if (!fileName || visited.has(fileName)) { // Ignore circular refs.
+            return;
+        }
+
+        let g: Grammar | null;
+        try {
+            g = this.tool.loadImportedGrammarFile(this, pathNode, fileName);
+            if (!g) {
+                return;
+            }
+        } catch {
+            this.tool.errorManager.grammarError(IssueCode.ErrorReadingImportedGrammar, this.fileName,
+                pathNode.token!, fileName, this.name);
+
+            return;
+        }
+
+        if (this.importedGrammars.includes(g)) {
+            return;
+        }
+
+        g.parent = this;
+        this.importedGrammars.push(g);
+        g.loadImportedGrammars(visited);
     }
 
     static {

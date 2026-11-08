@@ -8,6 +8,11 @@
 
 ## Unreleased
 
+- Grammars can import other grammars by file path: `import '../shared/Unicode.g4';`. The path is relative to the
+  importing grammar, so imported grammars no longer have to be in the same folder or the `lib` folder. A file that is
+  reached through several imports is loaded only once, and two files that declare the same grammar name no longer
+  replace each other. Name imports (`import A;`) work as before. The `-depend` output lists imported grammars that were
+  found in a folder with their path instead of adding the `lib` folder again (#51).
 - Added the Go target generator (`GoTargetGenerator`), which replaces the StringTemplate based Go target. It
   produces the same code as the ANTLR4 Go target, formatted for `gofmt`, and marks generated files with the
   `// Code generated ... DO NOT EDIT.` line.

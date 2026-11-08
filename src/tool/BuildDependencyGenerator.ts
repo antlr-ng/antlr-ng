@@ -158,8 +158,12 @@ export class BuildDependencyGenerator {
         const imports = this.g.getAllImportedGrammars();
         const libDirectory = this.libDir ?? ".";
         for (const g of imports) {
-            const fileName = this.groomQualifiedFileName(libDirectory, g.fileName);
-            files.push(fileName);
+            // Imported grammars that were found in a folder, or imported by path, already have their location.
+            if (/[\\/]/.test(g.fileName)) {
+                files.push(g.fileName);
+            } else {
+                files.push(this.groomQualifiedFileName(libDirectory, g.fileName));
+            }
         }
 
         return files;
