@@ -24,6 +24,20 @@ import type { TerminalAST } from "../../tool/ast/TerminalAST.js";
 import type { ErrorManager } from "../../tool/ErrorManager.js";
 import { ANTLRv4Lexer } from "../../generated/ANTLRv4Lexer.js";
 
+/**
+ * Checks for the access modifiers of a parser rule.
+ *
+ * The ANTLR3 tree grammars tested this with the token range `PRIVATE..PUBLIC`, which relied on the ANTLR3 token
+ * numbering. In the ANTLRv4 lexer `PUBLIC` comes before `PRIVATE`, so the range is empty. List them explicitly.
+ *
+ * @param type The token type to check.
+ *
+ * @returns True if the token type is `public`, `private` or `protected`.
+ */
+export const isRuleModifier = (type: number): boolean => {
+    return type === ANTLRv4Lexer.PUBLIC || type === ANTLRv4Lexer.PRIVATE || type === ANTLRv4Lexer.PROTECTED;
+};
+
 /** The tree grammar visitor to walk the AST created from a parsed grammar. */
 export class GrammarTreeVisitor extends TreeParser {
     protected currentRuleName?: string;
@@ -670,7 +684,7 @@ export class GrammarTreeVisitor extends TreeParser {
                 while (true) {
                     const lookahead = this.input.lookahead(1);
                     if (lookahead === ANTLRv4Parser.FRAGMENT
-                        || (lookahead >= ANTLRv4Parser.PRIVATE && lookahead <= ANTLRv4Parser.PUBLIC)) {
+                        || isRuleModifier(lookahead)) {
                         const modifier = this.ruleModifier();
                         mods.push(modifier);
                     } else {
@@ -887,7 +901,7 @@ export class GrammarTreeVisitor extends TreeParser {
         try {
             const lookahead = this.input.lookahead(1);
             if (lookahead === ANTLRv4Parser.FRAGMENT
-                || (lookahead >= ANTLRv4Parser.PRIVATE && lookahead <= ANTLRv4Parser.PUBLIC)) {
+                || isRuleModifier(lookahead)) {
                 this.input.consume();
                 this.errorRecovery = false;
             } else {
