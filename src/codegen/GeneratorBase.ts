@@ -1013,6 +1013,20 @@ export abstract class GeneratorBase implements ITargetGenerator {
         return lines;
     }
 
+    /**
+     * Appends all lines to the target list. Unlike `target.push(...lines)` this works for very large lists too:
+     * the spread passes each line as a separate argument, which exceeds the call stack for about 125k lines.
+     * Use it for everything whose size grows with the grammar (whole files, all rule functions, serialized ATN).
+     *
+     * @param target The list to append to.
+     * @param lines The lines to append.
+     */
+    protected append(target: Lines, lines: Lines): void {
+        for (const line of lines) {
+            target.push(line);
+        }
+    }
+
     protected renderSourceOps(srcOps: Array<SrcOp | null> | undefined): Lines {
         const result: Lines = this.startRendering("SourceOps");
 

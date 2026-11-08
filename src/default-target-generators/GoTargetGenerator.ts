@@ -1690,7 +1690,10 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
         result.push(
             `[]int32{`,
-            ...this.indent(this.renderList(model.serialized, { wrap: 70, separator: ", ", finalSeparator: "," })),
+        );
+        this.append(result,
+            this.indent(this.renderList(model.serialized, { wrap: 70, separator: ", ", finalSeparator: "," })));
+        result.push(
             `}`,
         );
 
@@ -1995,7 +1998,9 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
             ...this.renderStaticNames("SymbolicNames", parser.symbolicNames),
             ...this.renderStaticNames("RuleNames", parser.ruleNames, '"'),
             `\tstaticData.PredictionContextCache = antlr.NewPredictionContextCache()`,
-            ...this.renderStaticATN(parser.atn),
+        );
+        this.append(result, this.renderStaticATN(parser.atn));
+        result.push(
             `\tdeserializer := antlr.NewATNDeserializer(nil)`,
             `\tstaticData.atn = deserializer.Deserialize(staticData.serializedATN)`,
             `\tatn := staticData.atn`,
@@ -2167,7 +2172,9 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
             ...this.renderStaticNames("SymbolicNames", lexer.symbolicNames),
             ...this.renderStaticNames("RuleNames", lexer.ruleNames, '"'),
             `\tstaticData.PredictionContextCache = antlr.NewPredictionContextCache()`,
-            ...this.renderStaticATN(lexer.atn),
+        );
+        this.append(result, this.renderStaticATN(lexer.atn));
+        result.push(
             `\tdeserializer := antlr.NewATNDeserializer(nil)`,
             `\tstaticData.atn = deserializer.Deserialize(staticData.serializedATN)`,
             `\tatn := staticData.atn`,
@@ -2280,8 +2287,8 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
                 `\t}`,
                 `}`,
                 ``,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
         if (lexer.sempredFuncs.size > 0) {
@@ -2307,8 +2314,8 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
                 `\t}`,
                 `}`,
                 ``,
-                ...funcs,
             );
+            this.append(result, funcs);
         }
 
         return this.endRendering("actionHandlers", result);
@@ -2731,18 +2738,6 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
         if (index >= 0) {
             lines[index] = prefix + lines[index];
-        }
-    }
-
-    /**
-     * Appends all lines to the target list. Unlike the spread operator this works for very large lists too.
-     *
-     * @param target The list to append to.
-     * @param lines The lines to append.
-     */
-    private append(target: Lines, lines: Lines): void {
-        for (const line of lines) {
-            target.push(line);
         }
     }
 

@@ -75,7 +75,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         );
 
         result.push(...this.renderAction(parserFile.namedActions.get("header")));
-        result.push(...this.renderParser(parserFile));
+        this.append(result, this.renderParser(parserFile));
 
         return result.join("\n");
     };
@@ -95,7 +95,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         result.push("");
 
         result.push(...this.renderAction(lexerFile.namedActions.get("header")));
-        result.push(...this.renderLexer(lexerFile.lexer, lexerFile.namedActions));
+        this.append(result, this.renderLexer(lexerFile.lexer, lexerFile.namedActions));
 
         return result.join("\n");
     };
@@ -187,7 +187,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
             block.push(...this.renderAction(afterListener));
         }
 
-        result.push(...this.formatLines(block, 4));
+        this.append(result, this.formatLines(block, 4));
         result.push("}");
         result.push("");
 
@@ -1611,7 +1611,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
                 cases.push("");
             });
 
-            block.push(...this.formatLines(cases, 8));
+            this.append(block, this.formatLines(cases, 8));
             block.push(`        default:`);
             block.push(`    }`);
             block.push("");
@@ -1619,11 +1619,11 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
             block.push(`}`);
             block.push("");
 
-            block.push(...funcs);
+            this.append(block, funcs);
         }
 
         block.push("");
-        block.push(...this.renderSerializedATN(parser.atn));
+        this.append(block, this.renderSerializedATN(parser.atn));
 
         block.push("");
         block.push(`private static readonly vocabulary = new antlr.Vocabulary(${parser.name}.literalNames, ` +
@@ -1635,7 +1635,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         block.push(`private static readonly decisionsToDFA = ${parser.name}._ATN.decisionToState.map((ds: ` +
             `antlr.DecisionState, index: number) => { return new antlr.DFA(ds, index); });`);
 
-        result.push(...this.formatLines(block, 4));
+        this.append(result, this.formatLines(block, 4));
         result.push("}");
         result.push("");
 
@@ -1716,8 +1716,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         block.push(`public get modeNames(): string[] { return ${lexer.name}.modeNames; }`);
         block.push("");
 
-        block.push(...this.renderActionHandlers(lexer));
-        block.push(...this.renderSerializedATN(lexer.atn));
+        this.append(block, this.renderActionHandlers(lexer));
+        this.append(block, this.renderSerializedATN(lexer.atn));
         block.push("");
         block.push(`private static readonly vocabulary = new antlr.Vocabulary(${lexer.name}.literalNames, ` +
             `${lexer.name}.symbolicNames, []);`);
@@ -1731,7 +1731,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         block.push(`    index: number) => { return new antlr.DFA(ds, index); })`);
         block.push(`;`);
 
-        result.push(...this.formatLines(block, 4));
+        this.append(result, this.formatLines(block, 4));
         result.push(`}`);
 
         return result;
@@ -1757,7 +1757,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
 
             block.push(`}`);
 
-            result.push(...this.formatLines(block, 4));
+            this.append(result, this.formatLines(block, 4));
             result.push("}");
 
             for (const [_, func] of lexer.actionFuncs) {
@@ -1787,7 +1787,7 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
             result.push(`    return true;`);
             result.push(`}`);
             result.push("");
-            result.push(...funcs);
+            this.append(result, funcs);
         }
 
         return this.endRendering("actionHandlers", result);
