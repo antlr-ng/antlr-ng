@@ -82,7 +82,7 @@ describe("Tool coverage", () => {
             const root = new Grammar("grammar Root;\nimport Imported;\na : b ;");
             root.fileName = "Root.g4";
             const imported = new Grammar("parser grammar Imported;\nb : B ;");
-            imported.fileName = "Imported.g4";
+            imported.fileName = "/lib/Imported.g4"; // The path the import was loaded from.
             root.importedGrammars.push(imported);
 
             const options = defineConfig({ generationOptions: { outputDirectory: "file:///tmp/out/" } })
@@ -91,7 +91,10 @@ describe("Tool coverage", () => {
 
             expect(generator.getDependenciesFileList()).toEqual(["/lib/Imported.g4"]);
             expect(generator.getGeneratedFileList().map((url) => { return url.toString(); }))
-                .toContain("file:///tmp/out/Imported.g4");
+                .toContain("file:///lib/Imported.g4");
+
+            imported.fileName = "/my lib/Imported.g4";
+            expect(generator.getDependenciesFileList()).toEqual(["/my\\ lib/Imported.g4"]);
         });
 
         it("is used by the tool when dependency generation is requested", () => {

@@ -11,7 +11,9 @@ import { createFsFromVolume, Volume } from "memfs";
 import { resolve } from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { Tool } from "../src/Tool.js";
-import { copyFolderFromMemFs, copyFolderToMemFs, dirname } from "../src/support/fs-helpers.js";
+import {
+    copyFolderFromMemFs, copyFolderToMemFs, copyImportedGrammarsToMemFs, dirname
+} from "../src/support/fs-helpers.js";
 import { parseToolParameters, useFileSystem } from "../src/tool-parameters.js";
 import { defineConfig, type IToolConfiguration } from "../src/config/config.js";
 
@@ -68,6 +70,9 @@ for (const grammarFile of configuration.grammarFiles) {
     fs.mkdirSync(parentDir, { recursive: true });
     copyFolderToMemFs(fs, parentDir, parentDir, false, /\.g4/);
     copyFolderToMemFs(fs, parentDir, parentDir, false, /\.tokens/);
+
+    // Grammars imported by path can be anywhere.
+    copyImportedGrammarsToMemFs(fs, grammarFile);
 }
 
 // The log file is written to the current directory of the virtual file system.

@@ -17,6 +17,7 @@ import { ParserATNFactory } from "./automata/ParserATNFactory.js";
 import { CodeGenPipeline } from "./codegen/CodeGenPipeline.js";
 import { CodeGenerator } from "./codegen/CodeGenerator.js";
 import type { IToolConfiguration } from "./config/config.js";
+import { CharSupport } from "./misc/CharSupport.js";
 import { Graph } from "./misc/Graph.js";
 import { ToolANTLRLexer } from "./parse/ToolANTLRLexer.js";
 import { ToolANTLRParser } from "./parse/ToolANTLRParser.js";
@@ -24,7 +25,7 @@ import { SemanticPipeline } from "./semantics/SemanticPipeline.js";
 import { GrammarType } from "./support/GrammarType.js";
 import { LogManager } from "./support/LogManager.js";
 import { ParseTreeToASTConverter } from "./support/ParseTreeToASTConverter.js";
-import { basename, dirname } from "./support/fs-helpers.js";
+import { basename, dirname, resolvePath } from "./support/fs-helpers.js";
 import { fileSystem } from "./tool-parameters.js";
 import { BuildDependencyGenerator } from "./tool/BuildDependencyGenerator.js";
 import { ErrorManager } from "./tool/ErrorManager.js";
@@ -44,10 +45,8 @@ export class Tool implements ITool {
     public toolConfiguration: IToolConfiguration;
 
     private readonly logMgr = new LogManager();
+    /** Imported grammars, keyed by their normalized file path. */
     private readonly importedGrammars = new Map<string, Grammar>();
-
-    /** Grammars imported by path, keyed by their normalized file path. */
-    private readonly importedGrammarFiles = new Map<string, Grammar>();
 
     /**
      * Initiates a full generation process with the given parameters.
@@ -353,73 +352,77 @@ export class Tool implements ITool {
     }
 
     /**
-     * Try current dir then dir of g then lib dir.
+     * Finds and loads a grammar imported by name or by path.
      *
-     * @param g The grammar to import.
-     * @param nameNode The node associated with the imported grammar name.
+     * @param g The importing grammar.
+     * @param importNode The node of the import: the grammar name or the string literal with the path.
      *
-     * @returns The imported grammar or null if not found.
+     * @returns The imported grammar or null if it could not be found or loaded.
      */
-    public loadImportedGrammar(g: Grammar, nameNode: GrammarAST): Grammar | null {
-        const name = nameNode.getText();
-        let imported = this.importedGrammars.get(name);
-        if (!imported) {
-            g.tool.logInfo({ component: "grammar", msg: `load ${name} from ${g.fileName}` });
+    public loadImportedGrammar(g: Grammar, importNode: GrammarAST): Grammar | null {
+        const fileName = this.findImportedGrammarFile(g, importNode);
 
-            let importedFile;
-            for (const extension of Constants.AllGrammarExtensions) {
-                importedFile = this.getImportedGrammarFile(g, name + extension);
-                if (importedFile) {
-                    break;
-                }
-            }
-
-            if (!importedFile) {
-                this.errorManager.grammarError(IssueCode.CannotFindImportedGrammar, g.fileName, nameNode.token!, name);
-
-                return null;
-            }
-
-            const content = fileSystem.readFileSync(importedFile, { encoding: "utf-8" });
-            const input = CharStream.fromString(content as string);
-            input.name = basename(importedFile);
-
-            const result = this.parse(input);
-            if (!result) {
-                return null;
-            }
-
-            imported = this.createGrammar(result);
-            imported.fileName = importedFile;
-            this.importedGrammars.set(result.getGrammarName()!, imported);
-        }
-
-        return imported;
+        return fileName ? this.loadImportedGrammarFile(g, importNode, fileName) : null;
     }
 
     /**
-     * Loads a grammar that is imported by its file path (`import 'path/to/Grammar.g4';`). Unlike imports by name, the
-     * file is not searched for: the path is relative to the importing grammar (or absolute). Grammars are cached by
-     * their normalized path, so a file that is imported more than once is loaded only once, and two files that
-     * declare the same grammar name don't replace each other.
+     * Determines the file of an imported grammar and reports an error if there is none.
+     *
+     * A name (`import A;`) is searched for in the current directory, the directory of the importing grammar and the
+     * lib directory, with all grammar file extensions. A string literal (`import '../shared/A.g4';`) is the path of
+     * the file, relative to the importing grammar (or absolute). It is not searched for.
      *
      * @param g The importing grammar.
-     * @param pathNode The string literal node with the path.
-     * @param fileName The normalized path of the grammar file.
+     * @param importNode The node of the import: the grammar name or the string literal with the path.
      *
-     * @returns The imported grammar or null if it could not be loaded.
+     * @returns The normalized path of the grammar file, or undefined if it doesn't exist.
      */
-    public loadImportedGrammarFile(g: Grammar, pathNode: GrammarAST, fileName: string): Grammar | null {
-        let imported = this.importedGrammarFiles.get(fileName);
+    public findImportedGrammarFile(g: Grammar, importNode: GrammarAST): string | undefined {
+        if (importNode.getType() === ANTLRv4Parser.STRING_LITERAL) {
+            const path = CharSupport.getStringFromGrammarStringLiteral(importNode.getText(), g, importNode.token);
+            if (path === null) {
+                return undefined; // Invalid escape sequences were already reported.
+            }
+
+            const fileName = path === "" ? "" : resolvePath(dirname(g.fileName), path);
+            if (fileName === "" || !fileSystem.existsSync(fileName)) {
+                this.errorManager.grammarError(IssueCode.CannotFindImportedGrammar, g.fileName, importNode.token!,
+                    path === "" ? importNode.getText() : fileName);
+
+                return undefined;
+            }
+
+            return fileName;
+        }
+
+        const name = importNode.getText();
+        for (const extension of Constants.AllGrammarExtensions) {
+            const candidate = this.getImportedGrammarFile(g, name + extension);
+            if (candidate) {
+                return resolvePath(".", candidate);
+            }
+        }
+
+        this.errorManager.grammarError(IssueCode.CannotFindImportedGrammar, g.fileName, importNode.token!, name);
+
+        return undefined;
+    }
+
+    /**
+     * Loads an imported grammar file. Grammars are cached by their path, so a file that is imported more than once
+     * (also by name and by path) is loaded only once, and two files that declare the same grammar name don't replace
+     * each other.
+     *
+     * @param g The importing grammar.
+     * @param importNode The node of the import.
+     * @param fileName The normalized path of the grammar file, as returned by {@link findImportedGrammarFile}.
+     *
+     * @returns The imported grammar or null if it could not be parsed.
+     */
+    public loadImportedGrammarFile(g: Grammar, importNode: GrammarAST, fileName: string): Grammar | null {
+        let imported = this.importedGrammars.get(fileName);
         if (!imported) {
             g.tool.logInfo({ component: "grammar", msg: `load ${fileName} from ${g.fileName}` });
-
-            if (!fileSystem.existsSync(fileName)) {
-                this.errorManager.grammarError(IssueCode.CannotFindImportedGrammar, g.fileName, pathNode.token!,
-                    fileName);
-
-                return null;
-            }
 
             const content = fileSystem.readFileSync(fileName, { encoding: "utf-8" });
             const input = CharStream.fromString(content as string);
@@ -432,7 +435,7 @@ export class Tool implements ITool {
 
             imported = this.createGrammar(result);
             imported.fileName = fileName;
-            this.importedGrammarFiles.set(fileName, imported);
+            this.importedGrammars.set(fileName, imported);
         }
 
         return imported;
@@ -529,6 +532,7 @@ export class Tool implements ITool {
 
             for (const targetGenerator of this.toolConfiguration.generators) {
                 if (this.toolConfiguration.generationOptions.generateDependencies) {
+                    g.loadImportedGrammars(new Set());
                     const dep = new BuildDependencyGenerator(this, g, this.toolConfiguration.generationOptions,
                         targetGenerator, this.toolConfiguration.lib);
                     console.log(dep.getDependencies());

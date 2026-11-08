@@ -24,35 +24,43 @@ export const dirname = (path: string): string => {
     return parts.slice(0, parts.length - 1).join("/");
 };
 
+/** Matches the root of an absolute path: a drive (`C:/`), a UNC prefix (`//server`) or a single slash. */
+const rootPattern = /^(?:[a-zA-Z]:[\\/]|[\\/]{2}|[\\/])/;
+
 /**
- * Joins a path to a base folder and removes `.` and `..` segments. Both use `/` as separator, backslashes are
- * accepted too. Unlike `path.resolve` this does not depend on the current working directory, so it works the same
- * with any file system.
+ * Joins a path to a base folder and removes `.` and `..` segments. The result uses `/` as separator, backslashes
+ * are accepted in the input. Unlike `path.resolve` this does not depend on the current working directory or on
+ * `node:path`, so it works the same with any file system, also in a browser.
  *
  * @param base The folder the path is relative to. Ignored if `path` is absolute.
  * @param path The path to resolve.
  *
- * @returns The normalized path.
+ * @returns The normalized path. `..` segments that would go above the root of an absolute path are dropped.
  */
 export const resolvePath = (base: string, path: string): string => {
-    const absolute = /^([a-zA-Z]:)?[\\/]/.test(path);
-    const full = absolute ? path : `${base}/${path}`;
-    const isRooted = full.startsWith("/");
+    const full = rootPattern.test(path) ? path : `${base}/${path}`;
+    const root = rootPattern.exec(full)?.[0] ?? "";
 
     const segments: string[] = [];
-    for (const segment of full.split(/[\\/]/)) {
+    for (const segment of full.substring(root.length).split(/[\\/]/)) {
         if (segment === "" || segment === ".") {
             continue;
         }
 
-        if (segment === ".." && segments.length > 0 && segments[segments.length - 1] !== "..") {
-            segments.pop();
+        if (segment === "..") {
+            if (segments.length > 0 && segments[segments.length - 1] !== "..") {
+                segments.pop();
+            } else if (root === "") {
+                segments.push(segment);
+            }
         } else {
             segments.push(segment);
         }
     }
 
-    return (isRooted ? "/" : "") + segments.join("/");
+    const result = root.replaceAll("\\", "/") + segments.join("/");
+
+    return result === "" ? "." : result;
 };
 
 /**
@@ -90,6 +98,38 @@ export const copyFolderToMemFs = (fs: IFs, source: string, target: string, recur
         }
     }
     dir.closeSync();
+};
+
+/**
+ * Copies the grammar files that a grammar imports by path (`import '../shared/A.g4';`) from the physical file system
+ * to the virtual one, and recursively the files these import by path. Such files can be outside the folders that are
+ * copied for the grammar itself. Name imports are not handled here: they are only searched for in those folders.
+ *
+ * The import statements are found with a simple scan of the grammar text. A path that doesn't exist is skipped; the
+ * tool reports it when it processes the grammar.
+ *
+ * @param fs The target file system.
+ * @param grammarFile The path of the grammar file in the physical file system (the same path is used in the virtual
+ *                    file system).
+ * @param visited The files handled so far.
+ */
+export const copyImportedGrammarsToMemFs = (fs: IFs, grammarFile: string, visited = new Set<string>()): void => {
+    if (visited.has(grammarFile) || !nodeFs.existsSync(grammarFile)) {
+        return;
+    }
+
+    visited.add(grammarFile);
+    const content = nodeFs.readFileSync(grammarFile, "utf-8");
+    for (const statement of content.matchAll(/\bimport\s+([^;]+);/g)) {
+        for (const literal of statement[1].matchAll(/'((?:[^'\\]|\\.)*)'/g)) {
+            const fileName = resolvePath(dirname(grammarFile), literal[1]);
+            if (!visited.has(fileName) && nodeFs.existsSync(fileName)) {
+                fs.mkdirSync(dirname(fileName), { recursive: true });
+                fs.writeFileSync(fileName, nodeFs.readFileSync(fileName));
+                copyImportedGrammarsToMemFs(fs, fileName, visited);
+            }
+        }
+    }
 };
 
 /**
