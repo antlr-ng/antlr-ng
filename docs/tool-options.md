@@ -19,8 +19,6 @@ ANTLR Parser Generator  Version 4.7.1
  -depend             generate file dependencies
  -D<option>=value    set/override a grammar-level option
  -Werror             treat warnings as errors
- -XdbgST             launch StringTemplate visualizer on generated code
- -XdbgSTWait         wait for STViz to close before continuing
  -Xforce-atn         use the ATN simulator for all predictions
  -Xlog               dump lots of logging info to antlr-timestamp.log
  -Xexact-output-dir  all output goes into -o dir regardless of paths/package
@@ -143,10 +141,6 @@ There are also some extended options that are useful mainly for debugging ANTLR 
 ## `-Xsave-lexer`
 
 ANTLR generates both a parser and a lexer from a combined grammar. To create the lexer, ANTLR extracts a lexer grammar from the combined grammar. Sometimes it’s useful to see what that looks like if it’s not clear what token rules ANTLR is creating. This does not affect the generated parsers or lexers.
-
-## `-XdbgST`
-
-For those building a code generation target, this option brings up a window showing the generated code and the templates used to generate that code. It invokes the StringTemplate inspector window.
 
 ## `-Xforce-atn`
 

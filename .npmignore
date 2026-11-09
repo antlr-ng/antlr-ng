@@ -10,8 +10,6 @@ src/
 !dist/src
 build/
 package/
-templates/
-!dist/templates/
 
 eslint.config.mjs
 .project

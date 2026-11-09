@@ -16,7 +16,6 @@ import { antlrVersion } from "./version.js";
  * @param fs The file system to use.
  */
 export const useFileSystem = (fs: IFs): void => {
-    // antlr-ng and ST4TS share the same virtual file system.
     fileSystem = fs;
 };
 

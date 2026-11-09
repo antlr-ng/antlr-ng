@@ -31,7 +31,6 @@
         "antlr4ng": "3.0.16",
         "commander": "13.1.0",
         "memfs": "4.17.0",
-        "stringtemplate4ts": "2.0.1",
         "unicode-properties": "1.4.1"
     },
     "devDependencies": {
@@ -60,10 +59,9 @@
         "vitest": "3.2.4"
     },
     "scripts": {
-        "prepublishOnly": "npm run build && npm run copy-templates && npm run test",
+        "prepublishOnly": "npm run build && npm run test",
         "build": "npm run generate-version-file && npm run generate-action-splitter && npm run generate-antlr-parser && npm run generate-test-parsers && npm run generate-unicode-data && npm run esbuild && tsc -p tsconfig.json",
         "esbuild": "tsx build/build.ts",
-        "copy-templates": "tsx build/copy-templates.ts",
         "test": "npm run generate-version-file && vitest --no-watch --no-coverage",
         "coverage": "vitest --no-watch --coverage --testTimeout=120000",
         "generate-action-splitter": "npm run generate-parser -- -o ./src/generated ./src/grammars/ActionSplitter.g4",

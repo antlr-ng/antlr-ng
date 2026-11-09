@@ -20,7 +20,7 @@ import { LexerGrammar } from "../tool/LexerGrammar.js";
 import type { ITargetGenerator } from "./ITargetGenerator.js";
 
 export const targetLanguages = [
-    "Cpp", "CSharp", "Dart", "Go", "JavaScript", "Java", "PHP", "Python3", "Swift", "TypeScript"
+    "Cpp", "CSharp", "Dart", "Go", "Java", "PHP", "Python3", "Swift", "TypeScript"
 ] as const;
 
 export type SupportedLanguage = typeof targetLanguages[number];

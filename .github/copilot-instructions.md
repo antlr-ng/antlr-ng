@@ -26,7 +26,7 @@ The codebase is organized into several key directories:
 - **src/support/**: Support functions and interfaces
 - **src/tree/**: Parse tree representations and walkers
 - **tests/**: Test suite using Vitest
-- **templates/**: Code generation templates for target languages
+- **src/default-target-generators/**: The TypeScript based code generators for the default target languages
 
 ## Code Style and Standards
 
@@ -159,14 +159,13 @@ When working with grammars:
 - Issue codes defined in `src/tool/Issues.ts`
 - Use `ANTLRMessage` class for creating error messages
 - Error formatting supports verbose mode for detailed stack traces
-- Message templates use StringTemplate4 syntax
+- Message and location formats use `<placeholder>` strings (see `messageFormatOptions` in `src/config/config.ts`)
 
 ### Code Generation for Target Languages
 
-- Each target language has its own class in `src/codegen/target/`
-- Extend `Target` base class for new language support
-- Use template files from `templates/` directory
-- Follow existing patterns in `JavaTarget`, `TypeScriptTarget`, etc.
+- Each target language has a generator class in `src/default-target-generators/` that implements `ITargetGenerator`
+- Extend `GeneratorBase` for new language support
+- Follow existing patterns in `JavaTargetGenerator`, `TypeScriptTargetGenerator`, etc.
 
 ### ATN (Augmented Transition Network) Operations
 
@@ -206,7 +205,6 @@ Currently supported target languages:
 - CSharp (C#)
 - Dart
 - Go
-- JavaScript
 - Java
 - PHP
 - Python3
@@ -215,7 +213,7 @@ Currently supported target languages:
 
 When adding or modifying target language support:
 - Update `targetLanguages` array in `src/codegen/CodeGenerator.ts`
-- Ensure templates exist in `templates/codegen/Target/` directory
+- Add the generator class to `src/default-target-generators/`
 - Test with representative grammars from grammars-v4 repository
 
 ## Unicode Support

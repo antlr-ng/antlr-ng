@@ -9,7 +9,7 @@ import * as nodeFs from "fs";
 import { createFsFromVolume, Volume } from "memfs";
 
 import { resolve } from "path";
-import { fileURLToPath, pathToFileURL } from "url";
+import { pathToFileURL } from "url";
 import { Tool } from "../src/Tool.js";
 import { copyFolderFromMemFs, copyFolderToMemFs, dirname } from "../src/support/fs-helpers.js";
 import { parseToolParameters, useFileSystem } from "../src/tool-parameters.js";
@@ -50,10 +50,6 @@ if (parameters.config) {
         log: parameters.log,
     });
 }
-
-// Provide the templates in the virtual file system.
-fs.mkdirSync("/templates", { recursive: true });
-copyFolderToMemFs(fs, fileURLToPath(dirname(import.meta.url) + "/../templates"), "/templates", true);
 
 // Copy all files to the memfs file system. We use the same files for all files. It doesn't matter for memfs.
 if (configuration.lib) {

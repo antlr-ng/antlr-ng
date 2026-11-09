@@ -9,7 +9,6 @@ import { Option, program } from "commander";
 import { memfs } from "memfs";
 import * as nodeFs from "node:fs";
 import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { CharStream, CommonToken, CommonTokenStream, DecisionInfo, ParseInfo } from "antlr4ng";
 
@@ -233,10 +232,6 @@ export class Interpreter {
         writer.close();
     }
 }
-
-// Provide the templates in the virtual file system.
-fs.mkdirSync("/templates", { recursive: true });
-copyFolderToMemFs(fs, fileURLToPath(dirname(import.meta.url) + "/../templates"), "/templates", true);
 
 // Copy all files to the memfs file system. We use the same path in both file systems. It doesn't matter for memfs.
 for (const grammarFile of interpreterOptions.grammars) {
