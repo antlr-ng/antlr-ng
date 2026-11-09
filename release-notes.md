@@ -28,6 +28,9 @@
   show an issue at its exact range instead of parsing the rendered string. `ErrorManager.syntaxError` takes the
   offending token as a new optional last parameter.
 - Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
+- Fixed generation with a target generator that was created in a config file: the tool never called the
+  generator's `setUp` method, so code generation failed with an internal error (`Cannot read properties of
+  undefined (reading 'get')`). The tool now sets up each generator once before using it.
 - Fixed loading a config file with `-c`/`--config` when it is given as a relative or a Windows path, and running the
   CLI with the default `lib` folder (`.`).
 - Fixed importing the `antlr-ng` package as a library: interface re-exports failed at runtime (`does not provide an

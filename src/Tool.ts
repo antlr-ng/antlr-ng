@@ -16,6 +16,7 @@ import { LexerATNFactory } from "./automata/LexerATNFactory.js";
 import { ParserATNFactory } from "./automata/ParserATNFactory.js";
 import { CodeGenPipeline } from "./codegen/CodeGenPipeline.js";
 import { CodeGenerator } from "./codegen/CodeGenerator.js";
+import type { ITargetGenerator } from "./codegen/ITargetGenerator.js";
 import type { IToolConfiguration } from "./config/config.js";
 import { Graph } from "./misc/Graph.js";
 import { ToolANTLRLexer } from "./parse/ToolANTLRLexer.js";
@@ -36,6 +37,9 @@ import { GrammarAST } from "./tool/ast/GrammarAST.js";
 import { GrammarRootAST } from "./tool/ast/GrammarRootAST.js";
 import type { RuleAST } from "./tool/ast/RuleAST.js";
 import type { IGrammar, ITool } from "./types.js";
+
+/** The target generators whose `setUp` method was called already. */
+const initializedGenerators = new WeakSet<ITargetGenerator>();
 
 /** The main class in antlr-ng, which is used to do full grammar processing and output generation. */
 export class Tool implements ITool {
@@ -72,6 +76,7 @@ export class Tool implements ITool {
                 return false;
             }
 
+            this.setUpGenerators();
             this.processGrammarsOnCommandLine();
         } catch (e) {
             const error = e instanceof Error ? e : new Error(String(e));
@@ -107,6 +112,7 @@ export class Tool implements ITool {
 
         // Reset and (re)configure the error manager.
         this.errorManager.configure(configuration.messageFormatOptions);
+        this.setUpGenerators();
 
         g.loadImportedGrammars(new Set());
 
@@ -496,6 +502,19 @@ export class Tool implements ITool {
             }
         }
     };
+
+    /**
+     * Initializes the configured target generators that have not been initialized yet. A generator must be set up
+     * once before its first use, because its render lookup maps are created there.
+     */
+    private setUpGenerators(): void {
+        for (const generator of this.toolConfiguration.generators) {
+            if (!initializedGenerators.has(generator)) {
+                generator.setUp();
+                initializedGenerators.add(generator);
+            }
+        }
+    }
 
     static {
         ClassFactory.createTool = () => {
