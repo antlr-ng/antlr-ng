@@ -572,6 +572,23 @@ describe("Tool coverage", () => {
             expect(result.queue.errors[0].toString()).toContain("no target generators configured");
         });
 
+        it("sets up the target generators", () => {
+            // A config file creates the generator, but doesn't call its setUp method.
+            const generator = new TypeScriptTargetGenerator(false);
+            const setUp = vi.spyOn(generator, "setUp");
+
+            for (let i = 0; i < 2; ++i) {
+                const result = generate(grammar, undefined, (config) => {
+                    config.generators = [generator];
+                });
+                expect(result.queue.all).toEqual([]);
+                expect(result.files.get("GenParser.ts")).toContain("public a(): AContext {");
+            }
+
+            // Only once, even when the generator is used for several runs.
+            expect(setUp).toHaveBeenCalledOnce();
+        });
+
         it("reports exceptions thrown during generation", () => {
             const generator = new TypeScriptTargetGenerator(false);
             generator.setUp();
