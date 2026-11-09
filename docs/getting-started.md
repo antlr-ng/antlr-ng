@@ -81,9 +81,7 @@ const { fs } = memfs();
 // Tell the tool to use this file system.
 useFileSystem(fs);
 
-// Provide the templates in the virtual file system.
-fs.mkdirSync("/templates", { recursive: true });
-// ... read the files and store them in the virtual fs ...
+// ... store the grammar files in the virtual fs ...
 
 // A helper function to exectute the paser interpreter using grammar objects.
 const testInterp = (lg: LexerGrammar, g: Grammar, startRule: string, input: string,

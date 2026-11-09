@@ -13,7 +13,6 @@ export default defineConfig({
             concurrent: true,
         },
         testTimeout: 10000,
-        setupFiles: ["./tests/setup.ts"],
         coverage: {
             provider: "v8",
             include: ["src/**/*.ts"],

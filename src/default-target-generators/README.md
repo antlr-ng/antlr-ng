@@ -201,10 +201,6 @@ Dart specifics:
 
 The generated code is compatible with the current Dart ANTLR4 runtime (`antlr4` on pub.dev).
 
-## Template Files
-
-The generators are TypeScript implementations based on the StringTemplate4 files located in `templates/codegen/`. Once all languages are done these templates will be removed.
-
 ## Creating a New Target Generator
 
 To create a new target generator:

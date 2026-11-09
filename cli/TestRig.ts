@@ -6,7 +6,6 @@
  */
 
 import * as nodeFs from "fs";
-import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
 import { program } from "commander";
@@ -18,7 +17,6 @@ import {
 
 import { memfs } from "memfs";
 import type { IndexedObject } from "src/support/helpers.js";
-import { copyFolderToMemFs, dirname } from "../src/support/fs-helpers.js";
 import { useFileSystem } from "../src/tool-parameters.js";
 import { parseBoolean } from "./cli-options.js";
 
@@ -191,10 +189,6 @@ export class TestRig {
         }
     }
 }
-
-// Provide the templates in the virtual file system.
-fs.mkdirSync("/templates", { recursive: true });
-copyFolderToMemFs(fs, fileURLToPath(dirname(import.meta.url) + "/../templates"), "/templates", true);
 
 const testRig = new TestRig();
 await testRig.run();
