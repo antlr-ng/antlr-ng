@@ -281,6 +281,11 @@ export class ParserFactory implements IOutputModelFactory {
 
         }
 
+        if (this.forceAtn && c) {
+            // The forced-ATN mode must keep predicting every decision through the ATN simulator.
+            c.predictionGuard = undefined;
+        }
+
         return c;
     }
 

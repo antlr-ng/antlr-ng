@@ -23,6 +23,10 @@ export class PlusBlock extends Loop {
         this.blockStartStateNumber = blkStart.stateNumber;
         this.loopBackStateNumber = loop.stateNumber;
         this.decision = loop.decision;
+
+        // Only the loopback decision is guarded. The mandatory first iteration always runs.
+        const lookIndex = this.exitAlt === 1 ? 1 : 0;
+        this.predictionGuard = this.createPredictionGuard(lookIndex, this.exitAlt);
     }
 
 }

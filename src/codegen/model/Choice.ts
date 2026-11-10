@@ -3,7 +3,7 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { IntervalSet } from "antlr4ng";
+import { BlockStartState, IntervalSet, LL1Analyzer, Token } from "antlr4ng";
 
 import type { Grammar } from "../../tool/Grammar.js";
 import type { GrammarAST } from "../../tool/ast/GrammarAST.js";
@@ -11,6 +11,7 @@ import type { IOutputModelFactory } from "../IOutputModelFactory.js";
 import { CaptureNextTokenType } from "./CaptureNextTokenType.js";
 import type { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import type { ITokenInfo } from "./ITokenInfo.js";
+import { PredictionGuard } from "./PredictionGuard.js";
 import { RuleElement } from "./RuleElement.js";
 import type { SrcOp } from "./SrcOp.js";
 import { TestSetInline } from "./TestSetInline.js";
@@ -32,6 +33,9 @@ export abstract class Choice extends RuleElement {
 
     public alts: CodeBlockForAlt[] = [];
     public preamble: SrcOp[] = [];
+
+    /** An optional rejection guard used by complex single-alternative EBNF decisions. */
+    public predictionGuard?: PredictionGuard;
 
     public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[]) {
         super(factory, blkOrEbnfRootAST);
@@ -78,6 +82,50 @@ export abstract class Choice extends RuleElement {
     public getThrowNoViableAlt(factory: IOutputModelFactory, blkAST: GrammarAST,
         grammarFileName: string): ThrowNoViableAlt {
         return new ThrowNoViableAlt(factory, blkAST, grammarFileName);
+    }
+
+    /**
+     * Creates the rejection guard for this decision, if its consuming alternative has a known FIRST set.
+     *
+     * @param lookIndex The index of the consuming alternative in the decision lookahead list.
+     * @param exitAlt The alternative to select when the lookahead token is outside the FIRST set.
+     *
+     * @returns The guard, or `undefined` when no safe guard can be generated.
+     */
+    protected createPredictionGuard(lookIndex: number, exitAlt: number): PredictionGuard | undefined {
+        // The grammar type guarantees a lookahead entry per decision, but analysis can omit a decision or an
+        // alternative (for example after an opaque predicate), so the runtime shape is weaker.
+        const decisionLookahead = this.factory!.grammar.decisionLookahead as
+            Array<Array<IntervalSet | undefined> | undefined>;
+        const lookaheads = decisionLookahead[this.decision];
+        const firstSet = lookaheads?.[lookIndex];
+        if (!firstSet || this.alts.length !== 1) {
+            return undefined;
+        }
+
+        // A nullable consuming alternative cannot decide entering versus exiting. The analysis reports a
+        // missing set when it encountered an opaque semantic predicate, and a null set means unknown lookahead.
+        const tokens = firstSet.toArray();
+        if (tokens.length === 0 || tokens.includes(Token.EPSILON)) {
+            return undefined;
+        }
+
+        const atn = this.factory!.grammar.atn;
+        const decisionState = atn?.decisionToState[this.decision];
+        const target = decisionState?.transitions[lookIndex]?.target;
+        if (!atn || !target) {
+            return undefined;
+        }
+
+        // Checking the ATN for an epsilon path within the alternative block detects nullable alternatives
+        // that the decision lookahead alone cannot express.
+        const stopState = target instanceof BlockStartState ? target.endState : undefined;
+        const look = new LL1Analyzer(atn).look(target, stopState);
+        if (look.contains(Token.EPSILON)) {
+            return undefined;
+        }
+
+        return new PredictionGuard(this.factory!, this.ast, firstSet, exitAlt);
     }
 
 }
