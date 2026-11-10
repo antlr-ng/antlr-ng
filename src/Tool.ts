@@ -110,7 +110,7 @@ export class Tool implements ITool {
         // Reset and (re)configure the error manager.
         this.errorManager.configure(configuration.messageFormatOptions);
 
-        g.loadImportedGrammars(new Set());
+        g.loadImportedGrammars();
 
         const transform = new GrammarTransformPipeline(g, this);
         transform.process();
@@ -375,7 +375,7 @@ export class Tool implements ITool {
      * @param g The importing grammar.
      * @param importNode The node of the import: the grammar name or the string literal with the path.
      *
-     * @returns The normalized path of the grammar file, or undefined if it doesn't exist.
+     * @returns The canonical path of the grammar file (see {@link getCanonicalPath}), or undefined if it doesn't exist.
      */
     public findImportedGrammarFile(g: Grammar, importNode: GrammarAST): string | undefined {
         if (importNode.getType() === ANTLRv4Parser.STRING_LITERAL) {
@@ -392,14 +392,14 @@ export class Tool implements ITool {
                 return undefined;
             }
 
-            return fileName;
+            return this.getCanonicalPath(fileName);
         }
 
         const name = importNode.getText();
         for (const extension of Constants.AllGrammarExtensions) {
             const candidate = this.getImportedGrammarFile(g, name + extension);
             if (candidate) {
-                return resolvePath(".", candidate);
+                return this.getCanonicalPath(candidate);
             }
         }
 
@@ -409,13 +409,30 @@ export class Tool implements ITool {
     }
 
     /**
+     * Determines the path that identifies a file: the same file always gets the same path, whether it was found by
+     * name (possibly relative to the current directory), by a relative or by an absolute path, or through a symbolic
+     * link. Grammar files are cached and checked for import cycles by this path.
+     *
+     * @param fileName The path of a file.
+     *
+     * @returns The absolute path of the file without symbolic links, or the normalized path if the file doesn't exist.
+     */
+    public getCanonicalPath(fileName: string): string {
+        try {
+            return fileSystem.realpathSync(fileName, { encoding: "utf8" }) as string;
+        } catch {
+            return resolvePath(".", fileName);
+        }
+    }
+
+    /**
      * Loads an imported grammar file. Grammars are cached by their path, so a file that is imported more than once
      * (also by name and by path) is loaded only once, and two files that declare the same grammar name don't replace
      * each other.
      *
      * @param g The importing grammar.
      * @param importNode The node of the import.
-     * @param fileName The normalized path of the grammar file, as returned by {@link findImportedGrammarFile}.
+     * @param fileName The canonical path of the grammar file, as returned by {@link findImportedGrammarFile}.
      *
      * @returns The imported grammar or null if it could not be parsed.
      */
@@ -532,7 +549,7 @@ export class Tool implements ITool {
 
             for (const targetGenerator of this.toolConfiguration.generators) {
                 if (this.toolConfiguration.generationOptions.generateDependencies) {
-                    g.loadImportedGrammars(new Set());
+                    g.loadImportedGrammars();
                     const dep = new BuildDependencyGenerator(this, g, this.toolConfiguration.generationOptions,
                         targetGenerator, this.toolConfiguration.lib);
                     console.log(dep.getDependencies());

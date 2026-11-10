@@ -14,7 +14,8 @@
   through several imports, or imported both by name and by path, is loaded only once, and two files that declare the
   same grammar name no longer replace each other. Import cycles are detected by file path (#51).
 - Dependency generation (`generateDependencies`) now loads the imported grammars, so they are listed, and lists them
-  with the path they were loaded from instead of adding the `lib` folder again.
+  with the path they were loaded from instead of adding the `lib` folder again. Imported grammars are no longer
+  listed as generated files.
 - Added the Go target generator (`GoTargetGenerator`), which replaces the StringTemplate based Go target. It
   produces the same code as the ANTLR4 Go target, formatted for `gofmt`, and marks generated files with the
   `// Code generated ... DO NOT EDIT.` line.

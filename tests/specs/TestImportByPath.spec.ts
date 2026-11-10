@@ -10,10 +10,10 @@ import { createFsFromVolume, Volume } from "memfs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { defineConfig } from "../../src/config/config.js";
-import {
-    copyImportedGrammarsToMemFs, generateRandomFilename, resolvePath
-} from "../../src/support/fs-helpers.js";
+import { generateRandomFilename, resolvePath } from "../../src/support/fs-helpers.js";
+import { copyImportedGrammarsToMemFs, findGrammarImports } from "../../src/support/grammar-imports.js";
 import { fileSystem } from "../../src/tool-parameters.js";
+import { Grammar } from "../../src/tool/Grammar.js";
 import { IssueCode } from "../../src/tool/Issues.js";
 import type { ErrorQueue } from "../support/ErrorQueue.js";
 import { tsGenerator } from "../support/GenerationHelper.js";
@@ -179,7 +179,13 @@ describe("Imports by path", () => {
 
             expect(queue.all).toEqual([]);
             expect(log).toHaveBeenCalledOnce();
-            expect((log.mock.calls[0][0] as string).split("\n")[0]).toBe(`${dir}/shared/S.g4`);
+            const lines = (log.mock.calls[0][0] as string).split("\n");
+            expect(lines[0]).toBe(`${dir}/shared/S.g4`);
+
+            // The imported grammar is an input only, never a generated file.
+            expect(lines.slice(1).filter((line) => {
+                return line.includes("S.g4 :");
+            })).toEqual([]);
         } finally {
             log.mockRestore();
         }
@@ -215,6 +221,91 @@ describe("Imports by path", () => {
         expect(parser).toContain("public c()");
     });
 
+    it("loads the imports of a shared grammar again for each root grammar", () => {
+        // X loads A -> B, and B's import of A is circular there. Y imports B only and still needs A's rules.
+        write({
+            "X.g4": "grammar X;\nimport 'A.g4';\ns : a ;\nT : 't' ;\n",
+            "Y.g4": "grammar Y;\nimport 'B.g4';\ns : b ;\nT : 't' ;\n",
+            "A.g4": "parser grammar A;\nimport 'B.g4';\na : T ;\n",
+            "B.g4": "parser grammar B;\nimport 'A.g4';\nb : a ;\n",
+        });
+
+        const queue = ToolTestUtils.antlrOnFile(defineConfig({
+            generators: [tsGenerator],
+            generationOptions: { outputDirectory: `${dir}/out` },
+            grammarFiles: [`${dir}/X.g4`, `${dir}/Y.g4`],
+        }), false);
+        expect(queue.all).toEqual([]);
+        expect(generated("YParser.ts")).toContain("public a()");
+    });
+
+    it("identifies a file found by name relative to the current directory", () => {
+        // The name import finds lib/S.g4 through a relative lib folder, the path import through an absolute path.
+        const relativeDir = `AntlrImportCwd-${Date.now()}`;
+        const absoluteDir = `${process.cwd()}/${relativeDir}`;
+        fileSystem.mkdirSync(`${absoluteDir}/lib`, { recursive: true });
+        try {
+            fileSystem.writeFileSync(`${absoluteDir}/M.g4`, "grammar M;\nimport S, './lib/S.g4';\ns : a ;\n");
+            fileSystem.writeFileSync(`${absoluteDir}/lib/S.g4`,
+                "grammar S;\n@members {/* S members */}\na : X ;\nX : 'x' ;\n");
+
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
+                generationOptions: { outputDirectory: `${dir}/out` },
+                grammarFiles: [`${absoluteDir}/M.g4`],
+                lib: `${relativeDir}/lib`,
+            }), false);
+            expect(queue.all).toEqual([]);
+            expect(generated("MParser.ts").split("/* S members */")).toHaveLength(2);
+        } finally {
+            fileSystem.rmSync(absoluteDir, { recursive: true, force: true });
+        }
+    });
+
+    it("checks each import against the grammar it loaded", () => {
+        // Both files declare a grammar named Common. Only the name import is a parser grammar.
+        write({
+            "L.g4": "lexer grammar L;\nimport 'x/Common.g4', Common;\nX : 'x' ;\n",
+            "x/Common.g4": "lexer grammar Common;\nY : 'y' ;\n",
+            "Common.g4": "parser grammar Common;\na : X ;\n",
+        });
+
+        const queue = run("L.g4");
+        const invalid = queue.errors.filter((issue) => {
+            return issue.code === IssueCode.InvalidImport;
+        });
+        expect(invalid).toHaveLength(1);
+        expect(invalid[0].line).toBe(2);
+        expect(invalid[0].column).toBe(22); // The name import.
+    });
+
+    it("lists each grammar of layered diamond imports once", () => {
+        // Every layer imports both grammars of the next layer, which gives 2^n import paths to the last one.
+        const layers = 12;
+        const files: Record<string, string> = {
+            "M.g4": "grammar M;\nimport L0a, L0b;\ns : r0a ;\nX : 'x' ;\n",
+        };
+        for (let i = 0; i < layers; ++i) {
+            for (const side of ["a", "b"]) {
+                const imports = i + 1 < layers ? `import L${i + 1}a, L${i + 1}b;\n` : "";
+                files[`L${i}${side}.g4`] = `parser grammar L${i}${side};\n${imports}r${i}${side} : X ;\n`;
+            }
+        }
+        write(files);
+
+        const getAll = vi.spyOn(Grammar.prototype, "getAllImportedGrammars");
+        try {
+            const queue = run("M.g4");
+            expect(queue.all).toEqual([]);
+            expect(generated("MParser.ts")).toContain(`public r${layers - 1}b()`);
+
+            // Called a few times for the root grammar, not once per import path.
+            expect(getAll.mock.calls.length).toBeLessThan(layers);
+        } finally {
+            getAll.mockRestore();
+        }
+    });
+
     it("reports an empty path", () => {
         write({ "M.g4": "grammar M;\nimport '';\ns : X ;\nX : 'x' ;\n" });
 
@@ -245,6 +336,12 @@ describe("resolvePath", () => {
         expect(resolvePath("C:/a", "../../x.g4")).toBe("C:/x.g4");
         expect(resolvePath("/a", "../../x.g4")).toBe("/x.g4");
     });
+
+    it("keeps the server and share of UNC paths", () => {
+        expect(resolvePath("//server/share/grammars", "../../Other.g4")).toBe("//server/share/Other.g4");
+        expect(resolvePath("\\\\server\\share", "..\\x.g4")).toBe("//server/share/x.g4");
+        expect(resolvePath("//server/share", ".")).toBe("//server/share");
+    });
 });
 
 describe("copyImportedGrammarsToMemFs", () => {
@@ -270,5 +367,50 @@ describe("copyImportedGrammarsToMemFs", () => {
         } finally {
             rmSync(dir, { recursive: true, force: true });
         }
+    });
+
+    it("follows name imports and decodes escapes", () => {
+        const dir = mkdtempSync(tmpdir() + "/AntlrImportCopy-");
+        try {
+            mkdirSync(dir + "/main");
+            mkdirSync(dir + "/lib");
+            mkdirSync(dir + "/shared");
+
+            // A directory named like an import in a comment must not be read.
+            writeFileSync(dir + "/main/M.g4", "grammar M;\n// import '../shared';\nimport A, L;\ns : X ;\n");
+            writeFileSync(dir + "/main/A.g4", "parser grammar A;\nimport '../shared/O\\'Brien.g4';\na : X ;\n");
+            writeFileSync(dir + "/lib/L.g4", "parser grammar L;\nimport '../shared/\\u0053.g4';\nl : X ;\n");
+            writeFileSync(dir + "/shared/O'Brien.g4", "lexer grammar OBrien;\nX : 'x' ;\n");
+            writeFileSync(dir + "/shared/S.g4", "lexer grammar S;\nY : 'y' ;\n");
+
+            const volume = new Volume();
+            copyImportedGrammarsToMemFs(createFsFromVolume(volume), dir + "/main/M.g4", dir + "/lib");
+
+            expect(Object.keys(volume.toJSON()).sort()).toEqual([
+                dir + "/lib/L.g4",
+                dir + "/main/A.g4",
+                dir + "/shared/O'Brien.g4",
+                dir + "/shared/S.g4",
+            ]);
+        } finally {
+            rmSync(dir, { recursive: true, force: true });
+        }
+    });
+});
+
+describe("findGrammarImports", () => {
+    it("finds only real import statements", () => {
+        const grammar = "grammar M;\n" +
+            "/* import 'a.g4'; */\n" +
+            "// import 'b.g4';\n" +
+            "import X = A, 'c;d.g4', B /* , 'e.g4' */;\n" +
+            "@members { import 'f.g4'; }\n" +
+            "s : 'import' ;\n";
+
+        expect(findGrammarImports(grammar)).toEqual([
+            { isPath: false, text: "A" },
+            { isPath: true, text: "'c;d.g4'" },
+            { isPath: false, text: "B" },
+        ]);
     });
 });

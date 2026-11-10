@@ -123,11 +123,7 @@ export class BuildDependencyGenerator {
             files.push(this.getOutputFile(this.generator.getBaseVisitorFileName(false)));
         }
 
-        // Handle generated files for imported grammars.
-        const imports = this.g.getAllImportedGrammars();
-        for (const g of imports) {
-            files.push(this.getOutputFile(g.fileName));
-        }
+        // Imported grammars are inputs (see getDependenciesFileList). Their rules are generated into the files above.
 
         return files;
     }

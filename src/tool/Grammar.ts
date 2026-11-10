@@ -29,7 +29,7 @@ import type { IGrammar, ITool } from "../types.js";
 
 import type { IGenerationOptions } from "../config/config.js";
 import { Utils } from "../misc/Utils.js";
-import { basename, dirname, resolvePath } from "../support/fs-helpers.js";
+import { basename } from "../support/fs-helpers.js";
 import type { Constructor } from "../support/helpers.js";
 import type { CommonTree } from "../tree/CommonTree.js";
 import type { CommonTreeNodeStream } from "../tree/CommonTreeNodeStream.js";
@@ -183,7 +183,9 @@ export class Grammar implements IGrammar, IAttributeResolver {
     public sempreds = new Map<PredAST, number>();
 
     private importedGrammars: Grammar[] = [];
-    private importsLoaded = false;
+
+    /** The grammar loaded for each import node (a grammar name or a file path) of this grammar. */
+    private readonly importNodeToGrammar = new Map<GrammarAST, Grammar>();
 
     /** Used to invent rule names for 'keyword', ';', ... (0..n - 1). */
     private indexToRule = new Array<Rule>();
@@ -408,32 +410,34 @@ export class Grammar implements IGrammar, IAttributeResolver {
     }
 
     /**
-     * Loads the grammars imported by this grammar, and recursively their imports. Calling it again does nothing.
+     * Loads the grammars imported by this grammar, and recursively their imports.
      *
-     * @param visited The paths of the grammars in the current import chain. Imports of these grammars are circular
-     *                and are ignored.
+     * Grammar files are parsed only once and cached by their path (see `Tool.loadImportedGrammarFile`), but the import
+     * links are determined again for each root grammar: an import back into the current import chain is circular and
+     * is skipped, and which imports these are depends on where the traversal started.
+     *
+     * @param chain The paths of the grammars in the current import chain. Omit it for the root grammar.
+     * @param expanded The grammars whose imports were loaded in this traversal already. Omit it for the root grammar.
      */
-    public loadImportedGrammars(visited: Set<string>): void {
-        if (this.importsLoaded) {
-            return;
-        }
+    public loadImportedGrammars(chain = new Set<string>(), expanded = new Set<Grammar>()): void {
+        expanded.add(this);
+        this.importedGrammars = [];
+        this.importNodeToGrammar.clear();
 
         const i = this.ast.getFirstChildWithType(ANTLRv4Parser.IMPORT) as GrammarAST | null;
         if (i === null) {
-            this.importsLoaded = true;
-
             return;
         }
 
-        const fileName = resolvePath(".", this.fileName);
-        visited.add(fileName);
+        const fileName = this.tool.getCanonicalPath(this.fileName);
+        chain.add(fileName);
         try {
             for (const c of i.children) {
                 // For `import X = A;` the grammar is A.
                 const node = (c.getType() === ANTLRv4Parser.ASSIGN ? c.children[1] : c) as GrammarAST;
 
                 const importedFile = this.tool.findImportedGrammarFile(this, node);
-                if (!importedFile || visited.has(importedFile)) { // Ignore circular refs.
+                if (!importedFile || chain.has(importedFile)) { // Ignore circular refs.
                     continue;
                 }
 
@@ -450,38 +454,21 @@ export class Grammar implements IGrammar, IAttributeResolver {
                     continue;
                 }
 
+                this.importNodeToGrammar.set(node, g);
+
                 // A grammar imported by several grammars is the same object. It keeps the first importer as parent.
                 if (!this.importedGrammars.includes(g)) {
                     g.parent ??= this;
                     this.importedGrammars.push(g);
                 }
 
-                g.loadImportedGrammars(visited);
+                if (!expanded.has(g)) {
+                    g.loadImportedGrammars(chain, expanded);
+                }
             }
         } finally {
-            visited.delete(fileName);
+            chain.delete(fileName);
         }
-
-        this.importsLoaded = true;
-    }
-
-    /**
-     * Resolves the path of an import by file path.
-     *
-     * @param pathNode The string literal node of the import.
-     * @param reportErrors Whether to report invalid escape sequences in the literal.
-     *
-     * @returns The normalized path of the imported grammar file, or undefined if the literal is invalid.
-     */
-    public resolveImportPath(pathNode: GrammarAST, reportErrors = true): string | undefined {
-        const path = reportErrors
-            ? CharSupport.getStringFromGrammarStringLiteral(pathNode.getText(), this, pathNode.token)
-            : CharSupport.getStringFromGrammarStringLiteral(pathNode.getText());
-        if (!path) {
-            return undefined;
-        }
-
-        return resolvePath(dirname(this.fileName), path);
     }
 
     public defineAction(atAST: GrammarAST): void {
@@ -575,16 +562,19 @@ export class Grammar implements IGrammar, IAttributeResolver {
      * preorder. Don't include ourselves in list as we're not a delegate of ourselves.
      */
     public getAllImportedGrammars(): Grammar[] {
-        const delegates = new Map<string, Grammar>();
-        for (const d of this.importedGrammars) {
-            delegates.set(d.fileName, d);
-            const ds = d.getAllImportedGrammars();
-            for (const imported of ds) {
-                delegates.set(imported.fileName, imported);
+        // A grammar imported through several paths is listed (and its imports are visited) only once.
+        const delegates = new Set<Grammar>();
+        const collect = (g: Grammar): void => {
+            for (const d of g.importedGrammars) {
+                if (d !== this && !delegates.has(d)) {
+                    delegates.add(d);
+                    collect(d);
+                }
             }
-        }
+        };
+        collect(this);
 
-        return Array.from(delegates.values());
+        return Array.from(delegates);
     }
 
     public getImportedGrammars(): Grammar[] {
@@ -669,18 +659,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
      * @returns The grammar loaded for that import, if any.
      */
     public getImportedGrammarForNode(node: GrammarAST): Grammar | null {
-        if (node.getType() !== ANTLRv4Parser.STRING_LITERAL) {
-            return this.getImportedGrammar(node.getText());
-        }
-
-        const fileName = this.resolveImportPath(node, false);
-        for (const g of this.importedGrammars) {
-            if (g.fileName === fileName) {
-                return g;
-            }
-        }
-
-        return null;
+        return this.importNodeToGrammar.get(node) ?? null;
     }
 
     public getTokenType(token: string): number {

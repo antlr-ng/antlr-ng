@@ -24,8 +24,11 @@ export const dirname = (path: string): string => {
     return parts.slice(0, parts.length - 1).join("/");
 };
 
-/** Matches the root of an absolute path: a drive (`C:/`), a UNC prefix (`//server`) or a single slash. */
-const rootPattern = /^(?:[a-zA-Z]:[\\/]|[\\/]{2}|[\\/])/;
+/**
+ * Matches the root of an absolute path: a drive (`C:/`), a UNC share (`//server/share/`), a bare UNC prefix (`//`)
+ * or a single slash.
+ */
+const rootPattern = /^(?:[a-zA-Z]:[\\/]|[\\/]{2}[^\\/]+[\\/][^\\/]+(?:[\\/]|$)|[\\/]{2}|[\\/])/;
 
 /**
  * Joins a path to a base folder and removes `.` and `..` segments. The result uses `/` as separator, backslashes
@@ -58,7 +61,15 @@ export const resolvePath = (base: string, path: string): string => {
         }
     }
 
-    const result = root.replaceAll("\\", "/") + segments.join("/");
+    let normalizedRoot = root.replaceAll("\\", "/");
+    if (/^\/\/[^/]+\/[^/]+/.test(normalizedRoot)) {
+        // A UNC share is separated from the following segments like a folder.
+        normalizedRoot = normalizedRoot.replace(/\/$/, "");
+        if (segments.length > 0) {
+            normalizedRoot += "/";
+        }
+    }
+    const result = normalizedRoot + segments.join("/");
 
     return result === "" ? "." : result;
 };
@@ -98,38 +109,6 @@ export const copyFolderToMemFs = (fs: IFs, source: string, target: string, recur
         }
     }
     dir.closeSync();
-};
-
-/**
- * Copies the grammar files that a grammar imports by path (`import '../shared/A.g4';`) from the physical file system
- * to the virtual one, and recursively the files these import by path. Such files can be outside the folders that are
- * copied for the grammar itself. Name imports are not handled here: they are only searched for in those folders.
- *
- * The import statements are found with a simple scan of the grammar text. A path that doesn't exist is skipped; the
- * tool reports it when it processes the grammar.
- *
- * @param fs The target file system.
- * @param grammarFile The path of the grammar file in the physical file system (the same path is used in the virtual
- *                    file system).
- * @param visited The files handled so far.
- */
-export const copyImportedGrammarsToMemFs = (fs: IFs, grammarFile: string, visited = new Set<string>()): void => {
-    if (visited.has(grammarFile) || !nodeFs.existsSync(grammarFile)) {
-        return;
-    }
-
-    visited.add(grammarFile);
-    const content = nodeFs.readFileSync(grammarFile, "utf-8");
-    for (const statement of content.matchAll(/\bimport\s+([^;]+);/g)) {
-        for (const literal of statement[1].matchAll(/'((?:[^'\\]|\\.)*)'/g)) {
-            const fileName = resolvePath(dirname(grammarFile), literal[1]);
-            if (!visited.has(fileName) && nodeFs.existsSync(fileName)) {
-                fs.mkdirSync(dirname(fileName), { recursive: true });
-                fs.writeFileSync(fileName, nodeFs.readFileSync(fileName));
-                copyImportedGrammarsToMemFs(fs, fileName, visited);
-            }
-        }
-    }
 };
 
 /**

@@ -90,8 +90,9 @@ describe("Tool coverage", () => {
             const generator = new BuildDependencyGenerator(tool, root, options, tsGenerator, "/lib");
 
             expect(generator.getDependenciesFileList()).toEqual(["/lib/Imported.g4"]);
+            // An imported grammar is an input, not a generated file.
             expect(generator.getGeneratedFileList().map((url) => { return url.toString(); }))
-                .toContain("file:///lib/Imported.g4");
+                .not.toContain("file:///lib/Imported.g4");
 
             imported.fileName = "/my lib/Imported.g4";
             expect(generator.getDependenciesFileList()).toEqual(["/my\\ lib/Imported.g4"]);
