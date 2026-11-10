@@ -83,6 +83,7 @@ import type { OutputFile } from "./model/OutputFile.js";
 import type { OutputModelObject } from "./model/OutputModelObject.js";
 import type { ParserFile } from "./model/ParserFile.js";
 import { PlusBlock } from "./model/PlusBlock.js";
+import type { PredictionGuard } from "./model/PredictionGuard.js";
 import type { RuleFunction } from "./model/RuleFunction.js";
 import type { RuleSempredFunction } from "./model/RuleSempredFunction.js";
 import { SemPred } from "./model/SemPred.js";
@@ -287,6 +288,15 @@ export abstract class GeneratorBase implements ITargetGenerator {
     protected abstract renderPlusBlock: (t: PlusBlock) => Lines;
 
     protected abstract renderOptionalBlock: (t: OptionalBlock) => Lines;
+
+    /** Renders the statement that captures the lookahead token before testing a prediction guard. */
+    protected abstract renderPredictionGuardCapture: (guard: PredictionGuard) => Lines;
+
+    /**
+     * Renders the condition that indicates whether adaptive prediction must still run. It is true when a
+     * syntax error was already reported or when the lookahead token can start the consuming alternative.
+     */
+    protected abstract renderPredictionGuardTest: (guard: PredictionGuard) => string;
 
     protected abstract renderAltBlock: (t: AltBlock) => Lines;
 

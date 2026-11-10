@@ -40,7 +40,8 @@ export class TestSetInline extends SrcOp {
     public readonly varName: string;
     public readonly bitsets: Bitset[];
 
-    public constructor(factory: IOutputModelFactory, ast: GrammarAST | undefined, set: IntervalSet, wordSize: number) {
+    public constructor(factory: IOutputModelFactory, ast: GrammarAST | undefined, set: IntervalSet, wordSize: number,
+        varName = "_la") {
         super(factory, ast);
 
         this.bitsetWordSize = wordSize;
@@ -48,7 +49,7 @@ export class TestSetInline extends SrcOp {
         const withoutZeroOffset = this.createBitsets(factory, set, wordSize, false);
         this.bitsets = withZeroOffset.length <= withoutZeroOffset.length ? withZeroOffset : withoutZeroOffset;
 
-        this.varName = "_la";
+        this.varName = varName;
     }
 
     private createBitsets(factory: IOutputModelFactory, set: IntervalSet, wordSize: number,

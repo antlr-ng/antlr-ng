@@ -945,7 +945,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
         result.push(
             ...this.renderSync(choice.stateNumber),
-            `_alt = ${predict}`,
+            ...this.renderLoopPrediction(choice, predict),
             `while _alt!=${choice.exitAlt} and _alt!=ATN.INVALID_ALT_NUMBER:`,
             `    if _alt==1${!blockAST.greedy ? "+1" : ""}:`,
         );
@@ -958,7 +958,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         result.push(
             ...this.formatLines(this.renderBlockBody(body), 8),
             ...this.formatLines(this.renderSync(choice.loopBackStateNumber), 4),
-            `    _alt = ${predict}`,
+            ...this.formatLines(this.renderLoopPrediction(choice, predict), 4),
             ``,
         );
 
@@ -991,7 +991,7 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
             `    else:`,
             ...this.formatLines(this.renderThrowNoViableAlt(noViableAltObject), 8),
             ...this.formatLines(this.renderSync(choice.loopBackStateNumber), 4), // Loop back/exit decision.
-            `    _alt = ${this.renderAdaptivePredict(choice.decision)}`,
+            ...this.formatLines(this.renderLoopPrediction(choice, this.renderAdaptivePredict(choice.decision)), 4),
             ``,
         );
 
@@ -1002,16 +1002,23 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         const result: Lines = this.startRendering("OptionalBlock");
 
         const blockAST = choice.ast as OptionalBlockAST;
-        result.push(
-            ...this.renderSync(choice.stateNumber),
-            `la_ = ${this.renderAdaptivePredict(choice.decision)}`,
-        );
+        const guard = choice.predictionGuard;
+        result.push(...this.renderSync(choice.stateNumber));
 
+        if (guard) {
+            result.push(...this.renderPredictionGuardCapture(guard), `if ${this.renderPredictionGuardTest(guard)}:`);
+            result.push(`    la_ = ${this.renderAdaptivePredict(choice.decision)}`);
+        } else {
+            result.push(`la_ = ${this.renderAdaptivePredict(choice.decision)}`);
+        }
+
+        const indent = guard ? 4 : 0;
         choice.alts.forEach((alt, index) => {
             // Alt numbers are 1-based, so we add 1 to the index.
             result.push(
-                `${index === 0 ? "if" : "elif"} la_ == ${index + 1}${!blockAST.greedy ? "+1" : ""}:`,
-                ...this.formatLines(this.renderBlockBody(this.renderAlt(alt)), 4),
+                `${" ".repeat(indent)}${index === 0 ? "if" : "elif"} la_ == ` +
+                `${index + 1}${!blockAST.greedy ? "+1" : ""}:`,
+                ...this.formatLines(this.renderBlockBody(this.renderAlt(alt)), indent + 4),
             );
         });
 
@@ -1046,6 +1053,16 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
         result.push(``);
 
         return this.endRendering("AltBlock", result);
+    };
+
+    protected override renderPredictionGuardCapture = (guard: OutputModelObjects.PredictionGuard): Lines => {
+        return [`${guard.test.varName} = self._input.LA(1)`];
+    };
+
+    protected override renderPredictionGuardTest = (guard: OutputModelObjects.PredictionGuard): string => {
+        const test = this.renderTestSetInline(guard.test).join("");
+
+        return `self.getNumberOfSyntaxErrors() > 0 or ${test}`;
     };
 
     protected override renderInvokeRule = (r: OutputModelObjects.InvokeRule): Lines => {
@@ -2105,4 +2122,29 @@ export class Python3TargetGenerator extends GeneratorBase implements ITargetGene
 
         return text + "\n";
     }
+
+    /**
+     * Renders the prediction of a loop iteration, guarded when the loop has a usable FIRST-set rejection
+     * guard.
+     *
+     * @param choice The loop choice.
+     * @param prediction The target-specific adaptive prediction expression.
+     *
+     * @returns The rendered prediction lines.
+     */
+    private renderLoopPrediction(choice: OutputModelObjects.StarBlock | OutputModelObjects.PlusBlock,
+        prediction: string): Lines {
+        const guard = choice.predictionGuard;
+        if (!guard) {
+            return [`_alt = ${prediction}`];
+        }
+
+        return [
+            ...this.renderPredictionGuardCapture(guard),
+            `if ${this.renderPredictionGuardTest(guard)}:`,
+            `    _alt = ${prediction}`,
+            `else:`,
+            `    _alt = ${guard.exitAlt}`,
+        ];
+    };
 }

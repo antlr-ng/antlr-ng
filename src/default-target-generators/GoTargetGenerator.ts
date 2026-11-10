@@ -1428,7 +1428,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
         result.push(
             ...this.renderSyncWithErrorCheck(choice.stateNumber),
-            `_alt = ${predict}`,
+            ...this.renderLoopPrediction(choice, predict),
             ...this.renderErrorCheck(),
             `for _alt != ${choice.exitAlt} && _alt != antlr.ATNInvalidAltNumber {`,
             `\tif _alt == 1${!blockAST.greedy ? "+1" : ""} {`,
@@ -1442,7 +1442,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
         result.push(
             `\t}`,
             ...this.indent(this.renderSyncWithErrorCheck(choice.loopBackStateNumber)),
-            `\t_alt = ${predict}`,
+            ...this.indent(this.renderLoopPrediction(choice, predict)),
             ...this.indent(this.renderErrorCheck()),
             `}`,
         );
@@ -1481,7 +1481,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
             ``,
             `\tp.SetState(${choice.loopBackStateNumber})`, // Loop back/exit decision.
             `\tp.GetErrorHandler().Sync(p)`,
-            `\t_alt = ${this.renderAdaptivePredict(choice.decision)}`,
+            ...this.indent(this.renderLoopPrediction(choice, this.renderAdaptivePredict(choice.decision))),
             ...this.indent(this.renderErrorCheck()),
             `}`,
         );
@@ -1500,11 +1500,19 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
         const blockAST = choice.ast as OptionalBlockAST;
         const predict = this.renderAdaptivePredict(choice.decision);
+        const guard = choice.predictionGuard;
+        if (guard) {
+            // The guard short-circuits prediction when the consuming alternative cannot start. An existing
+            // error still forces prediction to keep the recovery behavior unchanged.
+            result.push(...this.renderPredictionGuardCapture(guard));
+        }
+
         choice.alts.forEach((alt, index) => {
             // Alt numbers are 1-based, so we add 1 to the index.
             const prefix = index === 0 ? "" : "} else ";
+            const condition = guard ? `(${this.renderPredictionGuardTest(guard)}) && ${predict}` : predict;
             result.push(
-                `${prefix}if ${predict} == ${index + 1}${!blockAST.greedy ? "+1" : ""} {`,
+                `${prefix}if ${condition} == ${index + 1}${!blockAST.greedy ? "+1" : ""} {`,
                 ...this.indent(this.renderAlt(alt)),
                 `} else if p.HasError() { // JIM`,
                 `\tgoto errorExit`,
@@ -1547,6 +1555,18 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
         );
 
         return this.endRendering("AltBlock", result);
+    };
+
+    protected override renderPredictionGuardCapture = (guard: OutputModelObjects.PredictionGuard): Lines => {
+        return [`${guard.test.varName} = p.GetTokenStream().LA(1)`];
+    };
+
+    protected override renderPredictionGuardTest = (guard: OutputModelObjects.PredictionGuard): string => {
+        const test = this.renderTestSetInline(guard.test).join("");
+
+        // The Go runtime does not expose a cumulative syntax-error count. HasError and the active recovery
+        // state are the strongest signals available without changing the runtime.
+        return `p.HasError() || p.GetErrorHandler().InErrorRecoveryMode(p) || ${test}`;
     };
 
     protected override renderInvokeRule = (r: OutputModelObjects.InvokeRule): Lines => {
@@ -2780,4 +2800,29 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
 
         return text + "\n";
     }
+
+    /**
+     * Renders the prediction of a loop iteration, guarded when the loop has a usable FIRST-set rejection
+     * guard.
+     *
+     * @param choice The loop choice.
+     * @param prediction The target-specific adaptive prediction expression.
+     *
+     * @returns The rendered prediction lines.
+     */
+    private renderLoopPrediction(choice: OutputModelObjects.StarBlock | OutputModelObjects.PlusBlock,
+        prediction: string): Lines {
+        const guard = choice.predictionGuard;
+        if (!guard) {
+            return [`_alt = ${prediction}`];
+        }
+
+        return [
+            ...this.renderPredictionGuardCapture(guard),
+            `_alt = ${guard.exitAlt}`,
+            `if ${this.renderPredictionGuardTest(guard)} {`,
+            `\t_alt = ${prediction}`,
+            `}`,
+        ];
+    };
 }

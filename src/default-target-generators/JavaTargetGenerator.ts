@@ -1035,11 +1035,11 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
         const result: Lines = this.startRendering("StarBlock");
 
         const blockAST = choice.ast as OptionalBlockAST;
-        const predict = `_alt = getInterpreter().adaptivePredict(_input,${choice.decision},_ctx);`;
+        const prediction = `getInterpreter().adaptivePredict(_input,${choice.decision},_ctx)`;
         result.push(
             `setState(${choice.stateNumber});`,
             `_errHandler.sync(this);`,
-            predict,
+            ...this.renderLoopPrediction(choice, prediction),
             `while ( _alt!=${choice.exitAlt} && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {`,
             `	if ( _alt==1${blockAST.greedy ? "" : "+1"} ) {`,
         );
@@ -1052,7 +1052,7 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
             `	}`,
             `	setState(${choice.loopBackStateNumber});`,
             `	_errHandler.sync(this);`,
-            `	${predict}`,
+            ...this.indent(this.renderLoopPrediction(choice, prediction), 1),
             `}`,
         );
 
@@ -1087,7 +1087,8 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
             `	}`,
             `	setState(${choice.loopBackStateNumber});`, // Loopback/exit decision.
             `	_errHandler.sync(this);`,
-            `	_alt = getInterpreter().adaptivePredict(_input,${choice.decision},_ctx);`,
+            ...this.indent(this.renderLoopPrediction(choice,
+                `getInterpreter().adaptivePredict(_input,${choice.decision},_ctx)`), 1),
             `} while ( _alt!=${choice.exitAlt} && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER );`,
         );
 
@@ -1099,20 +1100,32 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
 
         const blockAST = choice.ast as OptionalBlockAST;
         const nonGreedy = blockAST.greedy ? "" : "+1";
+        const guard = choice.predictionGuard;
         result.push(
             `setState(${choice.stateNumber});`,
             `_errHandler.sync(this);`,
-            `switch ( getInterpreter().adaptivePredict(_input,${choice.decision},_ctx) ) {`,
         );
+
+        if (guard) {
+            result.push(...this.renderPredictionGuardCapture(guard));
+            result.push(`if (${this.renderPredictionGuardTest(guard)}) {`);
+        }
+
+        const predict = `getInterpreter().adaptivePredict(_input,${choice.decision},_ctx)`;
+        result.push(`${guard ? "	" : ""}switch ( ${predict} ) {`);
 
         choice.alts.forEach((alt, index) => {
             // Alt numbers are 1-based, so we add 1 to the index.
-            result.push(`case ${index + 1}${nonGreedy}:`);
-            this.append(result, this.indent(this.renderAlt(alt)));
-            result.push(`	break;`);
+            result.push(`${guard ? "	" : ""}case ${index + 1}${nonGreedy}:`);
+            this.append(result, this.indent(this.renderAlt(alt), guard ? 2 : 1));
+            result.push(`${guard ? "	" : ""}	break;`);
         });
 
-        result.push(`}`);
+        result.push(`${guard ? "	" : ""}}`);
+
+        if (guard) {
+            result.push(`}`);
+        }
 
         return this.endRendering("OptionalBlock", result);
     };
@@ -1142,6 +1155,16 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
         result.push(`}`);
 
         return this.endRendering("AltBlock", result);
+    };
+
+    protected override renderPredictionGuardCapture = (guard: OutputModelObjects.PredictionGuard): Lines => {
+        return [`${guard.test.varName} = _input.LA(1);`];
+    };
+
+    protected override renderPredictionGuardTest = (guard: OutputModelObjects.PredictionGuard): string => {
+        const test = this.renderTestSetInline(guard.test).join("");
+
+        return `getNumberOfSyntaxErrors() > 0 || ${test}`;
     };
 
     protected override renderInvokeRule = (r: OutputModelObjects.InvokeRule): Lines => {
@@ -2164,4 +2187,29 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
 
         return text + "\n";
     }
+
+    /**
+     * Renders the prediction of a loop iteration, guarded when the loop has a usable FIRST-set rejection
+     * guard.
+     *
+     * @param choice The loop choice.
+     * @param prediction The target-specific adaptive prediction expression.
+     *
+     * @returns The rendered prediction lines.
+     */
+    private renderLoopPrediction(choice: OutputModelObjects.StarBlock | OutputModelObjects.PlusBlock,
+        prediction: string): Lines {
+        const guard = choice.predictionGuard;
+        if (!guard) {
+            return [`_alt = ${prediction};`];
+        }
+
+        return [
+            ...this.renderPredictionGuardCapture(guard),
+            `_alt = ${guard.exitAlt};`,
+            `if (${this.renderPredictionGuardTest(guard)}) {`,
+            `	_alt = ${prediction};`,
+            `}`,
+        ];
+    };
 }

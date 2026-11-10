@@ -1000,12 +1000,31 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         return this.endRendering("AltBlock", result);
     };
 
+    protected override renderPredictionGuardCapture = (guard: OutputModelObjects.PredictionGuard): Lines => {
+        return [`${guard.test.varName} = this.tokenStream.LA(1);`];
+    };
+
+    protected override renderPredictionGuardTest = (guard: OutputModelObjects.PredictionGuard): string => {
+        const test = this.renderTestSetInline(guard.test).join("");
+
+        return `this.numberOfSyntaxErrors > 0 || ${test}`;
+    };
+
     protected override renderOptionalBlock = (choice: OutputModelObjects.OptionalBlock): Lines => {
         const result: Lines = this.startRendering("OptionalBlock");
 
         result.push(`this.state = ${choice.stateNumber};`);
         result.push(`this.errorHandler.sync(this);`);
-        result.push(`switch (this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, this.context) ) {`);
+
+        const guard = choice.predictionGuard;
+        if (guard) {
+            result.push(...this.renderPredictionGuardCapture(guard));
+            result.push(`if (${this.renderPredictionGuardTest(guard)}) {`);
+        }
+
+        const indent = guard ? 8 : 4;
+        result.push(`${guard ? "    " : ""}switch (this.interpreter.adaptivePredict(this.tokenStream, ` +
+            `${choice.decision}, this.context) ) {`);
 
         const block: Lines = [];
         const blockAST = choice.ast as OptionalBlockAST;
@@ -1023,8 +1042,12 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
             block.push(`}`);
         });
 
-        result.push(...this.formatLines(block, 4));
-        result.push(`}`);
+        result.push(...this.formatLines(block, indent));
+        result.push(`${guard ? "    " : ""}}`);
+
+        if (guard) {
+            result.push(`}`);
+        }
 
         return this.endRendering("OptionalBlock", result);
     };
@@ -1035,8 +1058,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         const blockAST = choice.ast as OptionalBlockAST;
         result.push(`this.state = ${choice.stateNumber};`);
         result.push(`this.errorHandler.sync(this);`);
-        result.push(`alternative = this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, ` +
-            `this.context);`);
+        result.push(...this.renderLoopPrediction(choice, `this.interpreter.adaptivePredict(this.tokenStream, ` +
+            `${choice.decision}, this.context)`, "alternative"));
         result.push(`while (alternative !== ${choice.exitAlt} && alternative !== antlr.ATN.INVALID_ALT_NUMBER) {`);
 
         const block: Lines = [];
@@ -1055,8 +1078,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         block.push(`}`);
         block.push(`this.state = ${choice.loopBackStateNumber};`);
         block.push(`this.errorHandler.sync(this);`);
-        block.push(`alternative = this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, ` +
-            `this.context);`);
+        block.push(...this.renderLoopPrediction(choice, `this.interpreter.adaptivePredict(this.tokenStream, ` +
+            `${choice.decision}, this.context)`, "alternative"));
 
         result.push(...this.formatLines(block, 4));
         result.push(`}`);
@@ -1107,8 +1130,8 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
 
         switchBlock.push(`this.state = ${choice.loopBackStateNumber};`); // Loopback/exit decision.
         switchBlock.push(`this.errorHandler.sync(this);`);
-        switchBlock.push(`alternative = this.interpreter.adaptivePredict(this.tokenStream, ${choice.decision}, ` +
-            `this.context);`);
+        switchBlock.push(...this.renderLoopPrediction(choice, `this.interpreter.adaptivePredict(this.tokenStream, ` +
+            `${choice.decision}, this.context)`, "alternative"));
 
         result.push(...this.formatLines(switchBlock, 4));
         result.push(`} while (alternative !== ${choice.exitAlt} && alternative !== antlr.ATN.INVALID_ALT_NUMBER);`);
@@ -1890,4 +1913,29 @@ export class TypeScriptTargetGenerator extends GeneratorBase {
         return this.endRendering("CommonSetStuff", result);
     }
 
+    /**
+     * Renders the prediction of a loop iteration, guarded when the loop has a usable FIRST-set rejection
+     * guard.
+     *
+     * @param choice The loop choice.
+     * @param prediction The target-specific adaptive prediction expression.
+     * @param altVar The variable which stores the selected alternative.
+     *
+     * @returns The rendered prediction lines.
+     */
+    private renderLoopPrediction(choice: OutputModelObjects.StarBlock | OutputModelObjects.PlusBlock,
+        prediction: string, altVar: string): Lines {
+        const guard = choice.predictionGuard;
+        if (!guard) {
+            return [`${altVar} = ${prediction};`];
+        }
+
+        return [
+            ...this.renderPredictionGuardCapture(guard),
+            `${altVar} = ${guard.exitAlt};`,
+            `if (${this.renderPredictionGuardTest(guard)}) {`,
+            `    ${altVar} = ${prediction};`,
+            `}`,
+        ];
+    };
 }

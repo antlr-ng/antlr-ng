@@ -1184,7 +1184,7 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(
             ...this.renderSync(choice.stateNumber),
             ``,
-            `$alt = ${predict};`,
+            ...this.renderLoopPrediction(choice, predict),
             ``,
             `while ($alt !== ${choice.exitAlt} && $alt !== ATN::INVALID_ALT_NUMBER) {`,
             `    if ($alt === 1${!blockAST.greedy ? "+1" : ""}) {`,
@@ -1200,7 +1200,7 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
             ``,
             ...this.indent(this.renderSync(choice.loopBackStateNumber)),
             ``,
-            `    $alt = ${predict};`,
+            ...this.indent(this.renderLoopPrediction(choice, predict), 2),
             `}`,
         );
 
@@ -1241,7 +1241,7 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
             ``,
             ...this.indent(this.renderSync(choice.loopBackStateNumber)), // Loop back/exit decision.
             ``,
-            `    $alt = ${this.renderAdaptivePredict(choice.decision)};`,
+            ...this.indent(this.renderLoopPrediction(choice, this.renderAdaptivePredict(choice.decision)), 2),
             `} while ($alt !== ${choice.exitAlt} && $alt !== ATN::INVALID_ALT_NUMBER);`,
         );
 
@@ -1252,23 +1252,31 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         const result: Lines = this.startRendering("OptionalBlock");
 
         const blockAST = choice.ast as OptionalBlockAST;
-        result.push(
-            ...this.renderSync(choice.stateNumber),
-            ``,
-            `switch (${this.renderAdaptivePredict(choice.decision)}) {`,
-        );
+        const guard = choice.predictionGuard;
+        result.push(...this.renderSync(choice.stateNumber), ``);
+
+        if (guard) {
+            result.push(...this.renderPredictionGuardCapture(guard));
+            result.push(`if (${this.renderPredictionGuardTest(guard)}) {`);
+        }
+
+        result.push(`${guard ? "    " : ""}switch (${this.renderAdaptivePredict(choice.decision)}) {`);
 
         choice.alts.forEach((alt, index) => {
             // Alt numbers are 1-based, so we add 1 to the index.
             result.push(
-                `    case ${index + 1}${!blockAST.greedy ? "+1" : ""}:`,
-                ...this.indent(this.renderAlt(alt), 2),
-                `        break;`,
+                `${guard ? "        " : "    "}case ${index + 1}${!blockAST.greedy ? "+1" : ""}:`,
+                ...this.indent(this.renderAlt(alt), guard ? 3 : 2),
+                `${guard ? "            " : "        "}break;`,
                 ``,
             );
         });
 
-        result.push(`}`);
+        result.push(`${guard ? "    " : ""}}`);
+
+        if (guard) {
+            result.push(`}`);
+        }
 
         return this.endRendering("OptionalBlock", result);
     };
@@ -1301,6 +1309,16 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(`}`);
 
         return this.endRendering("AltBlock", result);
+    };
+
+    protected override renderPredictionGuardCapture = (guard: OutputModelObjects.PredictionGuard): Lines => {
+        return [`$${guard.test.varName} = $this->input->LA(1);`];
+    };
+
+    protected override renderPredictionGuardTest = (guard: OutputModelObjects.PredictionGuard): string => {
+        const test = this.renderTestSetInline(guard.test).join("");
+
+        return `$this->getNumberOfSyntaxErrors() > 0 || ${test}`;
     };
 
     protected override renderInvokeRule = (r: OutputModelObjects.InvokeRule): Lines => {
@@ -2469,4 +2487,29 @@ export class PHPTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         return text + "\n";
     }
+
+    /**
+     * Renders the prediction of a loop iteration, guarded when the loop has a usable FIRST-set rejection
+     * guard.
+     *
+     * @param choice The loop choice.
+     * @param prediction The target-specific adaptive prediction expression.
+     *
+     * @returns The rendered prediction lines.
+     */
+    private renderLoopPrediction(choice: OutputModelObjects.StarBlock | OutputModelObjects.PlusBlock,
+        prediction: string): Lines {
+        const guard = choice.predictionGuard;
+        if (!guard) {
+            return [`$alt = ${prediction};`];
+        }
+
+        return [
+            ...this.renderPredictionGuardCapture(guard),
+            `$alt = ${guard.exitAlt};`,
+            `if (${this.renderPredictionGuardTest(guard)}) {`,
+            `    $alt = ${prediction};`,
+            `}`,
+        ];
+    };
 }

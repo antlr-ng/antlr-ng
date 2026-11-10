@@ -76,6 +76,7 @@ export { MatchSet } from "./MatchSet.js";
 export { MatchToken } from "./MatchToken.js";
 export { OptionalBlock } from "./OptionalBlock.js";
 export { OutputFile } from "./OutputFile.js";
+export { PredictionGuard, PredictionGuardTest, predictionGuardLookahead } from "./PredictionGuard.js";
 export { Recognizer } from "./Recognizer.js";
 export { Parser } from "./Parser.js";
 export { ParserFile } from "./ParserFile.js";
