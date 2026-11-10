@@ -1646,10 +1646,11 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         const result: Lines = this.startRendering("StarBlock");
 
         const blockAST = choice.ast as OptionalBlockAST;
+        const prediction = `Interpreter.AdaptivePredict(TokenStream,${choice.decision},Context)`;
         result.push(
             `State = ${choice.stateNumber};`,
             `ErrorHandler.Sync(this);`,
-            `_alt = Interpreter.AdaptivePredict(TokenStream,${choice.decision},Context);`,
+            ...this.renderLoopPrediction(choice, prediction),
             `while ( _alt!=${choice.exitAlt} && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER ) {`
         );
 
@@ -1675,7 +1676,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `}`,
             `State = ${choice.loopBackStateNumber};`,
             `ErrorHandler.Sync(this);`,
-            `_alt = Interpreter.AdaptivePredict(TokenStream,${choice.decision},Context);`
+            ...this.renderLoopPrediction(choice, prediction),
         );
 
         result.push(
@@ -1741,7 +1742,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
             `}`,
             `State = ${choice.loopBackStateNumber};`, // Loopback/exit decision.
             `ErrorHandler.Sync(this);`,
-            `_alt = Interpreter.AdaptivePredict(TokenStream,${choice.decision},Context);`
+            ...this.renderLoopPrediction(choice, `Interpreter.AdaptivePredict(TokenStream,${choice.decision},Context)`),
         );
 
         result.push(
@@ -1755,11 +1756,19 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     protected override renderOptionalBlock = (choice: OutputModelObjects.OptionalBlock): Lines => {
         const result: Lines = this.startRendering("OptionalBlock");
 
+        const guard = choice.predictionGuard;
         result.push(
             `State = ${choice.stateNumber};`,
             `ErrorHandler.Sync(this);`,
-            `switch ( Interpreter.AdaptivePredict(TokenStream,${choice.decision},Context) ) {`
         );
+
+        if (guard) {
+            result.push(...this.renderPredictionGuardCapture(guard));
+            result.push(`if (${this.renderPredictionGuardTest(guard)}) {`);
+        }
+
+        result.push(`${guard ? "    " : ""}switch ( Interpreter.AdaptivePredict(TokenStream,` +
+            `${choice.decision},Context) ) {`);
 
         const block: Lines = [];
         const blockAST = choice.ast as OptionalBlockAST;
@@ -1784,9 +1793,13 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         });
 
         result.push(
-            ...block,
-            `}`
+            ...(guard ? this.formatLines(block, 4) : block),
+            `${guard ? "    " : ""}}`
         );
+
+        if (guard) {
+            result.push(`}`);
+        }
 
         return this.endRendering("OptionalBlock", result);
     };
@@ -1837,6 +1850,16 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
         );
 
         return this.endRendering("AltBlock", result);
+    };
+
+    protected override renderPredictionGuardCapture = (guard: OutputModelObjects.PredictionGuard): Lines => {
+        return [`${guard.test.varName} = TokenStream.LA(1);`];
+    };
+
+    protected override renderPredictionGuardTest = (guard: OutputModelObjects.PredictionGuard): string => {
+        const test = this.renderTestSetInline(guard.test).join("");
+
+        return `NumberOfSyntaxErrors > 0 || ${test}`;
     };
 
     protected override renderInvokeRule = (r: OutputModelObjects.InvokeRule): Lines => {
@@ -2688,4 +2711,29 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
     private renderTokenTypeName(name: string): string {
         return name === "EOF" ? "Eof" : name;
     }
+
+    /**
+     * Renders the prediction of a loop iteration, guarded when the loop has a usable FIRST-set rejection
+     * guard.
+     *
+     * @param choice The loop choice.
+     * @param prediction The target-specific adaptive prediction expression.
+     *
+     * @returns The rendered prediction lines.
+     */
+    private renderLoopPrediction(choice: OutputModelObjects.StarBlock | OutputModelObjects.PlusBlock,
+        prediction: string): Lines {
+        const guard = choice.predictionGuard;
+        if (!guard) {
+            return [`_alt = ${prediction};`];
+        }
+
+        return [
+            ...this.renderPredictionGuardCapture(guard),
+            `_alt = ${guard.exitAlt};`,
+            `if (${this.renderPredictionGuardTest(guard)}) {`,
+            `    _alt = ${prediction};`,
+            `}`,
+        ];
+    };
 }

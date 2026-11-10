@@ -21,5 +21,9 @@ export class StarBlock extends Loop {
         const star = blkOrEbnfRootAST.atnState as StarLoopEntryState;
         this.loopBackStateNumber = star.loopBackState.stateNumber;
         this.decision = star.decision;
+
+        // The consuming alternative is the only real alternative. The exit alternative is the implicit one.
+        const lookIndex = this.exitAlt === 1 ? 1 : 0;
+        this.predictionGuard = this.createPredictionGuard(lookIndex, this.exitAlt);
     }
 }

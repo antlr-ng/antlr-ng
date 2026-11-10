@@ -1165,7 +1165,7 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
 
         result.push(
             ...this.renderSync(choice.stateNumber),
-            `_alt = ${predict}`,
+            ...this.renderLoopPrediction(choice, predict),
             `while (_alt != ${choice.exitAlt} && _alt != ATN.INVALID_ALT_NUMBER) {`,
             `\tif (_alt == 1${!blockAST.greedy ? " + 1" : ""}) {`,
             ...this.indent(this.renderSourceOps(choice.iteration), 2),
@@ -1178,7 +1178,7 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
         result.push(
             `\t}`,
             ...this.indent(this.renderSync(choice.loopBackStateNumber)),
-            `\t_alt = ${predict}`,
+            ...this.indent(this.renderLoopPrediction(choice, predict)),
             `}`,
         );
 
@@ -1214,7 +1214,7 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
             ...this.indent(this.renderThrowNoViableAlt(noViableAltObject), 2),
             `\t}`,
             ...this.indent(this.renderSync(choice.loopBackStateNumber)), // Loop back/exit decision.
-            `\t_alt = ${this.renderAdaptivePredict(choice.decision)}`,
+            ...this.indent(this.renderLoopPrediction(choice, this.renderAdaptivePredict(choice.decision))),
             `} while (_alt != ${choice.exitAlt} && _alt != ATN.INVALID_ALT_NUMBER)`,
         );
 
@@ -1225,24 +1225,33 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
         const result: Lines = this.startRendering("OptionalBlock");
 
         const blockAST = choice.ast as OptionalBlockAST;
-        result.push(
-            ...this.renderSync(choice.stateNumber),
-            `switch (${this.renderAdaptivePredict(choice.decision)}) {`,
-        );
+        const guard = choice.predictionGuard;
+        result.push(...this.renderSync(choice.stateNumber));
+
+        if (guard) {
+            result.push(...this.renderPredictionGuardCapture(guard));
+            result.push(`if ${this.renderPredictionGuardTest(guard)} {`);
+        }
+
+        result.push(`${guard ? "\t" : ""}switch (${this.renderAdaptivePredict(choice.decision)}) {`);
 
         choice.alts.forEach((alt, index) => {
             // Alt numbers are 1-based, so we add 1 to the index.
             result.push(
-                `case ${index + 1}${!blockAST.greedy ? " + 1" : ""}:`,
-                ...this.indent(this.renderAlt(alt)),
-                `\tbreak`,
+                `${guard ? "\t" : ""}case ${index + 1}${!blockAST.greedy ? " + 1" : ""}:`,
+                ...this.indent(this.renderAlt(alt), guard ? 2 : 1),
+                `${guard ? "\t\t" : "\t"}break`,
             );
         });
 
         result.push(
-            `default: break`,
-            `}`,
+            `${guard ? "\t" : ""}default: break`,
+            `${guard ? "\t" : ""}}`,
         );
+
+        if (guard) {
+            result.push(`}`);
+        }
 
         return this.endRendering("OptionalBlock", result);
     };
@@ -1276,6 +1285,16 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
         );
 
         return this.endRendering("AltBlock", result);
+    };
+
+    protected override renderPredictionGuardCapture = (guard: OutputModelObjects.PredictionGuard): Lines => {
+        return [`${guard.test.varName} = try _input.LA(1)`];
+    };
+
+    protected override renderPredictionGuardTest = (guard: OutputModelObjects.PredictionGuard): string => {
+        const test = this.renderTestSetInline(guard.test).join("");
+
+        return `getNumberOfSyntaxErrors() > 0 || ${test}`;
     };
 
     protected override renderInvokeRule = (r: OutputModelObjects.InvokeRule): Lines => {
@@ -2301,4 +2320,29 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
 
         return text + "\n";
     }
+
+    /**
+     * Renders the prediction of a loop iteration, guarded when the loop has a usable FIRST-set rejection
+     * guard.
+     *
+     * @param choice The loop choice.
+     * @param prediction The target-specific adaptive prediction expression.
+     *
+     * @returns The rendered prediction lines.
+     */
+    private renderLoopPrediction(choice: OutputModelObjects.StarBlock | OutputModelObjects.PlusBlock,
+        prediction: string): Lines {
+        const guard = choice.predictionGuard;
+        if (!guard) {
+            return [`_alt = ${prediction}`];
+        }
+
+        return [
+            ...this.renderPredictionGuardCapture(guard),
+            `_alt = ${guard.exitAlt}`,
+            `if ${this.renderPredictionGuardTest(guard)} {`,
+            `\t_alt = ${prediction}`,
+            `}`,
+        ];
+    };
 }

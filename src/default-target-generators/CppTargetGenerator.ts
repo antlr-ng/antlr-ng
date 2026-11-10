@@ -1515,10 +1515,11 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         const result: Lines = this.startRendering("StarBlock");
 
         const blockAST = choice.ast as OptionalBlockAST;
+        const prediction = `getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ` +
+            `${choice.decision}, _ctx)`;
         result.push(`setState(${choice.stateNumber});`);
         result.push(`_errHandler->sync(this);`);
-        result.push(`alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ${choice.decision}, ` +
-            `_ctx);`);
+        result.push(...this.renderLoopPrediction(choice, prediction));
         result.push(`while (alt != ${choice.exitAlt} && alt != atn::ATN::INVALID_ALT_NUMBER) {`);
 
         const block: Lines = [];
@@ -1536,8 +1537,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         block.push(`}`);
         block.push(`setState(${choice.loopBackStateNumber});`);
         block.push(`_errHandler->sync(this);`);
-        block.push(`alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ${choice.decision}, ` +
-            `_ctx);`);
+        block.push(...this.renderLoopPrediction(choice, prediction));
 
         result.push(...this.formatLines(block, 2));
         result.push(`}`);
@@ -1585,8 +1585,8 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
         switchBlock.push(`setState(${choice.loopBackStateNumber});`); // Loopback/exit decision.
         switchBlock.push(`_errHandler->sync(this);`);
-        switchBlock.push(`alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ` +
-            `${choice.decision}, _ctx);`);
+        switchBlock.push(...this.renderLoopPrediction(choice,
+            `getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ${choice.decision}, _ctx)`));
 
         result.push(...this.formatLines(switchBlock, 4));
         result.push(`} while (alt != ${choice.exitAlt} && alt != atn::ATN::INVALID_ALT_NUMBER);`);
@@ -1597,10 +1597,17 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
     protected override renderOptionalBlock = (choice: OutputModelObjects.OptionalBlock): Lines => {
         const result: Lines = this.startRendering("OptionalBlock");
 
+        const guard = choice.predictionGuard;
         result.push(`setState(${choice.stateNumber});`);
         result.push(`_errHandler->sync(this);`, ``);
-        result.push(`switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ${choice.decision}, ` +
-            `_ctx)) {`);
+
+        if (guard) {
+            result.push(...this.renderPredictionGuardCapture(guard));
+            result.push(`if (${this.renderPredictionGuardTest(guard)}) {`);
+        }
+
+        result.push(`${guard ? "  " : ""}switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, ` +
+            `${choice.decision}, _ctx)) {`);
 
         const block: Lines = [];
         const blockAST = choice.ast as OptionalBlockAST;
@@ -1617,8 +1624,13 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
             block.push(`}`);
         });
 
-        result.push(...this.formatLines(block, 2));
-        result.push(`default:`, `  break;`, `}`);
+        result.push(...this.formatLines(block, guard ? 4 : 2));
+        result.push(`${guard ? "  " : ""}default:`, `${guard ? "    " : "  "}break;`,
+            `${guard ? "  " : ""}}`);
+
+        if (guard) {
+            result.push(`}`);
+        }
 
         return this.endRendering("OptionalBlock", result);
     };
@@ -1656,6 +1668,16 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         result.push(`}`);
 
         return this.endRendering("AltBlock", result);
+    };
+
+    protected override renderPredictionGuardCapture = (guard: OutputModelObjects.PredictionGuard): Lines => {
+        return [`${guard.test.varName} = _input->LA(1);`];
+    };
+
+    protected override renderPredictionGuardTest = (guard: OutputModelObjects.PredictionGuard): string => {
+        const test = this.renderTestSetInline(guard.test).join("");
+
+        return `getNumberOfSyntaxErrors() > 0 || ${test}`;
     };
 
     protected override renderInvokeRule = (r: OutputModelObjects.InvokeRule): Lines => {
@@ -2708,4 +2730,28 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
         return this.endRendering("CommonSetStuff", result);
     };
 
+    /**
+     * Renders the prediction of a loop iteration, guarded when the loop has a usable FIRST-set rejection
+     * guard.
+     *
+     * @param choice The loop choice.
+     * @param prediction The target-specific adaptive prediction expression.
+     *
+     * @returns The rendered prediction lines.
+     */
+    private renderLoopPrediction(choice: OutputModelObjects.StarBlock | OutputModelObjects.PlusBlock,
+        prediction: string): Lines {
+        const guard = choice.predictionGuard;
+        if (!guard) {
+            return [`alt = ${prediction};`];
+        }
+
+        return [
+            ...this.renderPredictionGuardCapture(guard),
+            `alt = ${guard.exitAlt};`,
+            `if (${this.renderPredictionGuardTest(guard)}) {`,
+            `  alt = ${prediction};`,
+            `}`,
+        ];
+    };
 }
