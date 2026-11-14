@@ -53,6 +53,10 @@
   PHP, Python 3 and Swift generators had the same problem in the serialized ATN and in the lexer action and predicate
   functions. `GeneratorBase` now has a protected `append()` helper for appending large line lists. A custom generator which declares its own
   private `append` member has to rename or remove it.
+- Fixed the `interpreter` CLI, which failed for every grammar with "The ATN must be created before creating a lexer
+  interpreter", because it configured no target generator and the tool only builds the ATN per generator. Its
+  `--profile` option now takes the name of the CSV file. Before, profiling was always on and wrote `filename.csv`, and
+  `--profile x.csv` treated `x.csv` as a grammar file. The profile's time column is now in milliseconds, as labeled.
 
 ## 1.0.10
 

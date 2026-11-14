@@ -108,7 +108,7 @@ Options:
   --trace                 Print out tracing information (rule enter/exit etc.). (default: false)
   --encoding [string]     The input file encoding (default: utf-8) (choices: "ascii", "utf8", "utf-8", "utf16le", "utf-16le", "ucs2", "ucs-2",
                           "base64", "base64url", "latin1", "binary", "hex", default: "utf-8")
-  --profile filename.csv  Profile the parser and generate profiling information.
+  --profile <filename>    Profile the parser and write the profiling information to this CSV file.
   -h, --help              display help for command
 ```
 
