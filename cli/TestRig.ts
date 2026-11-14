@@ -16,7 +16,7 @@ import {
 } from "antlr4ng";
 
 import { memfs } from "memfs";
-import type { IndexedObject } from "src/support/helpers.js";
+import type { IndexedObject } from "../src/support/helpers.js";
 import { useFileSystem } from "../src/tool-parameters.js";
 import { pathToFileURL } from "node:url";
 import { parseBoolean } from "./cli-options.js";

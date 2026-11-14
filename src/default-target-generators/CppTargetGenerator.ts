@@ -10,14 +10,10 @@
 // cspell: ignore listenerdeclarations, listenermembers, visitorpreinclude, visitorpostinclude, visitordefinitions
 // cspell: ignore visitordeclarations, visitormembers, cout, cplusplus, endl, labelref, stoi
 
-import * as OutputModelObjects from "../codegen/model/index.js";
-
-import { GeneratorBase, type NamedActions } from "../codegen/GeneratorBase.js";
-import type { CodePoint, ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
-import type { IGenerationOptions } from "../config/config.js";
-import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
-import type { OptionalBlockAST } from "../tool/ast/OptionalBlockAST.js";
-import type { Rule } from "../tool/Rule.js";
+import {
+    type CodePoint, GeneratorBase, type GrammarASTWithOptions, type IGenerationOptions, type ITargetGenerator,
+    type Lines, type NamedActions, type OptionalBlockAST, OutputModelObjects, type Rule,
+} from "../index.js";
 
 export class CppTargetGenerator extends GeneratorBase implements ITargetGenerator {
     public readonly id = "generator.default.cpp";
