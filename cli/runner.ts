@@ -66,6 +66,12 @@ for (const grammarFile of configuration.grammarFiles) {
     copyFolderToMemFs(fs, parentDir, parentDir, false, /\.tokens/);
 }
 
+const outputDirectory = configuration.generationOptions.outputDirectory;
+if (outputDirectory && nodeFs.existsSync(outputDirectory)) {
+    fs.mkdirSync(outputDirectory, { recursive: true });
+    copyFolderToMemFs(fs, outputDirectory, outputDirectory, false, /\.tokens$/);
+}
+
 // The log file is written to the current directory of the virtual file system.
 if (configuration.log) {
     fs.mkdirSync(".", { recursive: true });
