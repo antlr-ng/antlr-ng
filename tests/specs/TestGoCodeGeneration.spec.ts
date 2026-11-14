@@ -82,6 +82,15 @@ describe("TestGoCodeGeneration", () => {
         expect(goGenerator.getRecognizerFileName(false, "MySQLParser")).toBe("mysql_parser.go");
         expect(goGenerator.getRecognizerFileName(false, "MySQLLexer")).toBe("mysql_lexer.go");
         expect(goGenerator.getRecognizerFileName(false, "ExprParser")).toBe("expr_parser.go");
+
+        // The recognizer names of lexer and parser grammars have no suffix. The kind decides, like in ANTLR4, and only
+        // the matching suffix is removed.
+        expect(goGenerator.getRecognizerFileName(false, "Expr", true)).toBe("expr_lexer.go");
+        expect(goGenerator.getRecognizerFileName(false, "Expr", false)).toBe("expr_parser.go");
+        expect(goGenerator.getRecognizerFileName(false, "ExprLexer", true)).toBe("expr_lexer.go");
+        expect(goGenerator.getRecognizerFileName(false, "ExprParser", false)).toBe("expr_parser.go");
+        expect(goGenerator.getRecognizerFileName(false, "TokensParser", true)).toBe("tokensparser_lexer.go");
+
         expect(goGenerator.getListenerFileName(false, "MySQLParser")).toBe("mysqlparser_listener.go");
         expect(goGenerator.getBaseListenerFileName(false, "MySQLParser")).toBe("mysqlparser_base_listener.go");
         expect(goGenerator.getVisitorFileName(false, "Expr")).toBe("expr_visitor.go");

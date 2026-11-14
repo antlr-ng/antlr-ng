@@ -12,6 +12,7 @@ import { CharStream, CommonTokenStream, LexerInterpreter, SemanticContext } from
 import type { ITargetGenerator } from "../../src/codegen/ITargetGenerator.js";
 import { defineConfig, type IGenerationOptions, type IToolConfiguration } from "../../src/config/config.js";
 import { CppTargetGenerator } from "../../src/default-target-generators/CppTargetGenerator.js";
+import { GoTargetGenerator } from "../../src/default-target-generators/GoTargetGenerator.js";
 import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { BuildDependencyGenerator } from "../../src/tool/BuildDependencyGenerator.js";
 import { ErrorManager } from "../../src/tool/ErrorManager.js";
@@ -222,6 +223,10 @@ describe("Tool coverage", () => {
             const cpp = new CppTargetGenerator(false);
             cpp.setUp();
 
+            // Go names the files by the kind of recognizer.
+            const go = new GoTargetGenerator();
+            go.setUp();
+
             const cases: Array<[typeof combined, Partial<IGenerationOptions>, ITargetGenerator]> = [
                 [combined, {}, tsGenerator],
                 [combined, { generateListener: true, generateVisitor: true }, tsGenerator],
@@ -233,6 +238,8 @@ describe("Tool coverage", () => {
                 [overriddenLiteral, {}, tsGenerator],
                 [combined, { generateDeclarationFile: true, generateListener: true, generateBaseListener: true }, cpp],
                 [split, { generateVisitor: true, generateBaseVisitor: true }, cpp],
+                [split, { generateListener: true }, go],
+                [combined, {}, go],
             ];
 
             for (const [grammars, options, targetGenerator] of cases) {

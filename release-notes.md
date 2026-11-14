@@ -96,6 +96,11 @@
 - The `CSharpTargetGenerator` and `CppTargetGenerator` constructors no longer require the `logRendering` argument
   (default: `false`), like the other default generators. `new CSharpTargetGenerator()` in a config file failed to
   type-check before.
+- `ITargetGenerator.getRecognizerFileName` takes an optional third parameter, `isLexer`, because the recognizer name of
+  a lexer or parser grammar has no `Lexer` or `Parser` suffix. The Go generator uses it to name the files like the
+  ANTLR4 Go target. Before, it guessed the kind of a name without suffix from the last rendered file, so
+  `generateDependencies` listed `pl_parser.go` for `lexer grammar PL`, and a lexer grammar named `TokensParser` got
+  the file name `tokens_parser.go`.
 
 ## 1.0.10
 

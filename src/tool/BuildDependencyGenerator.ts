@@ -68,18 +68,21 @@ export class BuildDependencyGenerator {
         };
 
         // A combined grammar generates the files of its implicit lexer too, e.g. TLexer.ts and TLexer.tokens.
-        const recognizerNames = [this.g.getRecognizerName()];
+        const recognizers = [{ name: this.g.getRecognizerName(), isLexer: this.g.isLexer() }];
         if (this.g.isCombined() && this.hasImplicitLexer()) {
-            recognizerNames.push(this.g.name + Grammar.getGrammarTypeToFileNameSuffix(GrammarType.Lexer));
+            recognizers.push({
+                name: this.g.name + Grammar.getGrammarTypeToFileNameSuffix(GrammarType.Lexer),
+                isLexer: true,
+            });
         }
 
-        for (const recognizerName of recognizerNames) {
+        for (const recognizer of recognizers) {
             // The vocabulary file is named after the grammar, e.g. T.tokens for the parser of T.g4.
-            const baseName = recognizerName === this.g.getRecognizerName() ? this.g.name : recognizerName;
+            const baseName = recognizer.name === this.g.getRecognizerName() ? this.g.name : recognizer.name;
 
             if (!this.g.isCodeGenerationDisabled()) {
                 addCodeFile((declaration) => {
-                    return targetGenerator.getRecognizerFileName(declaration, recognizerName);
+                    return targetGenerator.getRecognizerFileName(declaration, recognizer.name, recognizer.isLexer);
                 });
             }
 
