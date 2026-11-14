@@ -120,7 +120,7 @@ export class TokenVocabParser {
             }
         } catch (error) {
             const e = error instanceof Error ? error : new Error(String(error));
-            this.g.tool.errorManager.toolError(IssueCode.ErrorReadingTokensFile, e, vocabName);
+            this.g.tool.errorManager.toolError(IssueCode.ErrorReadingTokensFile, e, vocabName, e.message);
         }
 
         return "";
