@@ -13,6 +13,7 @@ import { dirname } from "node:path";
 import { CharStream, CommonToken, CommonTokenStream, DecisionInfo, ParseInfo } from "antlr4ng";
 
 import { defineConfig } from "../src/config/config.js";
+import { TypeScriptTargetGenerator } from "../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { copyFolderToMemFs } from "../src/support/fs-helpers.js";
 import { useFileSystem } from "../src/tool-parameters.js";
 import { Tool } from "../src/Tool.js";
@@ -41,7 +42,7 @@ program
     .option<boolean>("--trace", "Print out tracing information (rule enter/exit etc.).", parseBoolean, false)
     .addOption(new Option("--encoding [string]", "The input file encoding (default: utf-8)")
         .choices(encodings).default("utf-8"))
-    .option("--profile filename.csv", "Profile the parser and generate profiling information.", "filename.csv")
+    .option("--profile <filename>", "Profile the parser and write the profiling information to this CSV file.")
     .argument("<input-filename>", "Input file")
     .argument("[grammar...]", "Lexer/Parser/Combined grammar files")
     .parse();
@@ -73,7 +74,7 @@ export class Interpreter {
             }
 
             case 2: {
-                return decisionInfo.timeInPrediction / (1000.0 * 1000.0);
+                return decisionInfo.timeInPrediction; // antlr4ng measures in milliseconds already.
             }
 
             case 3: {
@@ -125,7 +126,9 @@ export class Interpreter {
             forceAtn: false,
             log: false,
             lib: ".",
-            generators: [],
+            // The tool builds the ATN once per target generator. No code is generated, but without a generator
+            // there would be no ATN to interpret.
+            generators: [new TypeScriptTargetGenerator()],
         });
 
         if (interpreterOptions.grammars.length === 1) {
