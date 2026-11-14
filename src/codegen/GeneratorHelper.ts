@@ -3,9 +3,9 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { CharSupport } from "src/misc/CharSupport.js";
-import { Character } from "src/support/Character.js";
-import { Grammar } from "src/tool/Grammar.js";
+import { CharSupport } from "../misc/CharSupport.js";
+import { Character } from "../support/Character.js";
+import { Grammar } from "../tool/Grammar.js";
 import type { CodeGenerator } from "./CodeGenerator.js";
 
 /** Represets a single code point in Unicode. */

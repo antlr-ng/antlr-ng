@@ -7,15 +7,10 @@
 
 // cspell: ignore associatedtype deinit typealias nonmutating castdown precpred sempred
 
-import * as OutputModelObjects from "../codegen/model/index.js";
-
-import { GeneratorBase, type NamedActions } from "../codegen/GeneratorBase.js";
-import type { CodePoint, ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
-import type { TokenPropertyRef } from "../codegen/model/chunk/TokenPropertyRef.js";
-import type { IGenerationOptions } from "../config/config.js";
-import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
-import type { OptionalBlockAST } from "../tool/ast/OptionalBlockAST.js";
-import { antlrVersion } from "../version.js";
+import {
+    antlrVersion, type CodePoint, GeneratorBase, type GrammarASTWithOptions, type IGenerationOptions,
+    type ITargetGenerator, type Lines, type NamedActions, type OptionalBlockAST, OutputModelObjects,
+} from "../index.js";
 
 export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenerator {
     public readonly id = "generator.default.swift";
@@ -2100,7 +2095,8 @@ export class SwiftTargetGenerator extends GeneratorBase implements ITargetGenera
      *
      * @returns The rendered expression.
      */
-    private renderTokenProperty(t: TokenPropertyRef, accessor: string, defaultValue: string): string {
+    private renderTokenProperty(t: OutputModelObjects.TokenPropertyRef, accessor: string,
+        defaultValue: string): string {
         const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return this.renderNilSafeAccess(ref, `${ref}!.${accessor}`, defaultValue);

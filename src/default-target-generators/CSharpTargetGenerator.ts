@@ -5,15 +5,10 @@
 
 // C# target generator - based on CSharp.stg template
 
-import * as OutputModelObjects from "../codegen/model/index.js";
-
-import { GeneratorBase, type NamedActions } from "../codegen/GeneratorBase.js";
-import type { CodePoint, ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
-import type { IGenerationOptions } from "../config/config.js";
-import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
-import type { OptionalBlockAST } from "../tool/ast/OptionalBlockAST.js";
-import type { Rule } from "../tool/Rule.js";
-import { antlrVersion } from "../version.js";
+import {
+    antlrVersion, type CodePoint, GeneratorBase, type GrammarASTWithOptions, type IGenerationOptions,
+    type ITargetGenerator, type Lines, type NamedActions, type OptionalBlockAST, OutputModelObjects, type Rule,
+} from "../index.js";
 
 export class CSharpTargetGenerator extends GeneratorBase implements ITargetGenerator {
     public readonly id = "generator.default.csharp";

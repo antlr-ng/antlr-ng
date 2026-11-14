@@ -3,8 +3,8 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
-import type { IGenerationOptions } from "src/config/config.js";
+import type { ITargetGenerator } from "../codegen/ITargetGenerator.js";
+import type { IGenerationOptions } from "../config/config.js";
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { CodeGenerator } from "../codegen/CodeGenerator.js";

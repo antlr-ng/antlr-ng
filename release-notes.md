@@ -35,6 +35,16 @@
   severity, code and location, and `error` returns the causing exception. This lets tools such as language servers
   show an issue at its exact range instead of parsing the rendered string. `ErrorManager.syntaxError` takes the
   offending token as a new optional last parameter.
+- The package entry now exports `useFileSystem` and `LexerGrammar`, which the documentation already imported from
+  `antlr-ng`. It also exports what config files and target generators need: `defineConfig` with the configuration
+  types (`IToolConfiguration`, `IGenerationOptions`, `IToolMessageOptions`), the generator API (`ITargetGenerator`
+  and its types, `GeneratorBase`, `NamedActions`), the output model as the `OutputModelObjects` namespace, and
+  `Rule`, `GrammarASTWithOptions`, `OptionalBlockAST`, `Character` and `antlrVersion`. A generator outside this
+  package can now be written against `antlr-ng` alone. The built-in generators import only from the package entry.
+- Fixed imports that used `src/...` paths instead of relative ones. The build kept them as they were, so
+  `GeneratorHelper` could not be loaded from the published package, and the declaration files of the configuration
+  and some analysis classes pointed to a missing `src` package. `tsconfig.json` no longer sets `baseUrl`, so the type
+  check now rejects such imports.
 - Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
 - Fixed generation with a target generator that was created in a config file: the tool never called the
   generator's `setUp` method, so code generation failed with an internal error (`Cannot read properties of

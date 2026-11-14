@@ -5,15 +5,10 @@
 
 // Java target generator - based on the Java.stg template of ANTLR4.
 
-import * as OutputModelObjects from "../codegen/model/index.js";
-
-import { GeneratorBase, type NamedActions } from "../codegen/GeneratorBase.js";
-import type { ITargetGenerator, Lines } from "../codegen/ITargetGenerator.js";
-import type { TokenPropertyRef } from "../codegen/model/chunk/TokenPropertyRef.js";
-import type { IGenerationOptions } from "../config/config.js";
-import { Character } from "../support/Character.js";
-import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
-import type { OptionalBlockAST } from "../tool/ast/OptionalBlockAST.js";
+import {
+    Character, GeneratorBase, type GrammarASTWithOptions, type IGenerationOptions, type ITargetGenerator, type Lines,
+    type NamedActions, type OptionalBlockAST, OutputModelObjects,
+} from "../index.js";
 
 export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerator {
     public readonly id = "generator.default.java";
@@ -1916,7 +1911,8 @@ export class JavaTargetGenerator extends GeneratorBase implements ITargetGenerat
         }).join("") ?? "";
     }
 
-    private renderTokenProperty(t: TokenPropertyRef, accessor: string, defaultValue: string): string {
+    private renderTokenProperty(t: OutputModelObjects.TokenPropertyRef, accessor: string,
+        defaultValue: string): string {
         const ref = `${this.renderContext(t)}.${this.escapeIfNeeded(t.label)}`;
 
         return `(${ref}!=null?${ref}.${accessor}:${defaultValue})`;

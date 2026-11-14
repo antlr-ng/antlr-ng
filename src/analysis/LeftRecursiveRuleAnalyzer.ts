@@ -7,7 +7,7 @@
 
 import { CommonToken, IntervalSet, Token, type TokenStream } from "antlr4ng";
 
-import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
+import type { ITargetGenerator } from "../codegen/ITargetGenerator.js";
 import { Constants } from "../Constants.js";
 import type { Tool } from "../Tool.js";
 import type { ToolLanguage } from "../codegen/TargetLanguage.js";

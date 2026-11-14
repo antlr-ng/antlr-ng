@@ -3,12 +3,10 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { GeneratorBase, type NamedActions } from "../codegen/GeneratorBase.js";
-import type { Lines } from "../codegen/ITargetGenerator.js";
-import * as OutputModelObjects from "../codegen/model/index.js";
-import type { IGenerationOptions } from "../config/config.js";
-import type { GrammarASTWithOptions } from "../tool/ast/GrammarASTWithOptions.js";
-import type { OptionalBlockAST } from "../tool/ast/OptionalBlockAST.js";
+import {
+    GeneratorBase, type GrammarASTWithOptions, type IGenerationOptions, type Lines, type NamedActions,
+    type OptionalBlockAST, OutputModelObjects,
+} from "../index.js";
 
 /** The constructor type of OutputModelObject class. Used in the source op lookup map. */
 export type OutputModelObjectConstructor = new (...args: unknown[]) => OutputModelObjects.OutputModelObject;
