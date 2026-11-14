@@ -178,7 +178,8 @@ export class Tool implements ITool {
             }
 
             if (genCode && g.tool.getNumErrors() === 0
-                && this.toolConfiguration.generationOptions.generateInterpreterData) {
+                && (this.toolConfiguration.generationOptions.generateInterpreterData
+                    || g.isCodeGenerationDisabled())) {
                 codeGenerator?.generateInterpreterData(g);
             }
 

@@ -18,7 +18,9 @@ import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
 
 import { ClassFactory } from "../ClassFactory.js";
 
-import type { SupportedLanguage } from "../codegen/CodeGenerator.js";
+import {
+    noTargetLanguage, type ToolLanguage
+} from "../codegen/TargetLanguage.js";
 import { Constants } from "../Constants.js";
 
 import { CharSupport } from "../misc/CharSupport.js";
@@ -1123,10 +1125,14 @@ export class Grammar implements IGrammar, IAttributeResolver {
         return "combined";
     }
 
-    public getLanguage(): SupportedLanguage {
-        const language = this.getOptionString("language") as SupportedLanguage | undefined;
+    public getLanguage(): ToolLanguage {
+        const language = this.getOptionString("language") as ToolLanguage | undefined;
 
         return language ?? "TypeScript";
+    }
+
+    public isCodeGenerationDisabled(): boolean {
+        return this.getLanguage() === noTargetLanguage;
     }
 
     public getOptionString(key: string): string | undefined {

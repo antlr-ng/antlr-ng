@@ -12,7 +12,7 @@ import { CharStream, CommonToken, CommonTokenStream } from "antlr4ng";
 import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
 import { Constants } from "../Constants.js";
 import type { Tool } from "../Tool.js";
-import type { SupportedLanguage } from "../codegen/CodeGenerator.js";
+import type { ToolLanguage } from "../codegen/TargetLanguage.js";
 import { ANTLRv4Lexer } from "../generated/ANTLRv4Lexer.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { DictType } from "../misc/types.js";
@@ -94,7 +94,7 @@ export class LeftRecursiveRuleTransformer {
 
     /** @returns true if successful */
     public translateLeftRecursiveRule(context: GrammarRootAST, r: LeftRecursiveRule,
-        language: SupportedLanguage): boolean {
+        language: ToolLanguage): boolean {
         const prevRuleAST = r.ast;
         const ruleName = prevRuleAST.children[0].getText();
         const leftRecursiveRuleWalker = new LeftRecursiveRuleAnalyzer(prevRuleAST, this.tool, ruleName, language,

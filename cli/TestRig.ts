@@ -18,6 +18,7 @@ import {
 import { memfs } from "memfs";
 import type { IndexedObject } from "src/support/helpers.js";
 import { useFileSystem } from "../src/tool-parameters.js";
+import { pathToFileURL } from "node:url";
 import { parseBoolean } from "./cli-options.js";
 
 type Constructor<T extends Recognizer<ATNSimulator>> = abstract new (...args: unknown[]) => T;
@@ -150,7 +151,8 @@ export class TestRig {
     private async loadClass<T extends Recognizer<ATNSimulator>>(t: Constructor<T>,
         fileName: string): Promise<T & Record<string, unknown>> {
         try {
-            const module = await import(fileName) as ModuleType<T>;
+            // import() takes a URL. A plain Windows path (C:\...) would be taken as a URL with the scheme "c:".
+            const module = await import(pathToFileURL(fileName).href) as ModuleType<T>;
 
             // Helper function to check if a class extends another class (directly or indirectly).
             // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

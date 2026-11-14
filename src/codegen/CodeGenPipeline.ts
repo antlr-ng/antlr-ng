@@ -17,6 +17,13 @@ export class CodeGenPipeline {
     }
 
     public process(): void {
+        // When target code generation is disabled, only language-agnostic artifacts are written.
+        if (this.g.isCodeGenerationDisabled()) {
+            this.codeGenerator.writeVocabFile();
+
+            return;
+        }
+
         // All templates are generated in memory to report the most complete error information possible, but actually
         // writing output files stops after the first error is reported.
         const errorCount = this.g.tool.errorManager.errors;

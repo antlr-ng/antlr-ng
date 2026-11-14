@@ -18,16 +18,20 @@ import { fileSystem } from "../tool-parameters.js";
 import { DOTGenerator } from "../tool/DOTGenerator.js";
 import { LexerGrammar } from "../tool/LexerGrammar.js";
 import type { ITargetGenerator } from "./ITargetGenerator.js";
+import type { ToolLanguage } from "./TargetLanguage.js";
 
-export const targetLanguages = [
-    "Cpp", "CSharp", "Dart", "Go", "Java", "PHP", "Python3", "Swift", "TypeScript"
-] as const;
+export { noTargetLanguage, targetLanguages } from "./TargetLanguage.js";
+export type { NoLanguage, SupportedLanguage, ToolLanguage } from "./TargetLanguage.js";
 
-export type SupportedLanguage = typeof targetLanguages[number];
-
-/**  General controller for code gen. */
+/** Language identifiers are re-exported here for backwards compatibility. */
+/**
+ * The grammar language, which may be set to `None` for metadata-only output.
+ * The `None` value is reserved for runs which only generate language-independent metadata.
+ * The metadata remains target independent, even when a generator is configured for the run.
+ */
+/** General controller for code gen. */
 export class CodeGenerator {
-    public readonly language: SupportedLanguage;
+    public readonly language: ToolLanguage;
 
     public constructor(private g: Grammar, public readonly targetGenerator: ITargetGenerator,
         public readonly generationOptions: IGenerationOptions) {

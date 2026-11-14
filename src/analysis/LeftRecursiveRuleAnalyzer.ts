@@ -10,7 +10,7 @@ import { CommonToken, IntervalSet, Token, type TokenStream } from "antlr4ng";
 import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
 import { Constants } from "../Constants.js";
 import type { Tool } from "../Tool.js";
-import { type SupportedLanguage } from "../codegen/CodeGenerator.js";
+import type { ToolLanguage } from "../codegen/TargetLanguage.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { dupTree } from "../support/helpers.js";
 import { IssueCode } from "../tool/Issues.js";
@@ -46,11 +46,11 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     public readonly tokenStream: TokenStream;
 
     public retvals?: ActionAST;
-    public readonly language: string;
+    public readonly language: ToolLanguage;
 
     public altAssociativity = new Map<number, Associativity>();
 
-    public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: SupportedLanguage,
+    public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: ToolLanguage,
         private targetGenerator: ITargetGenerator) {
         super(new CommonTreeNodeStream(ruleAST), tool.errorManager);
         this.tool = tool;

@@ -57,6 +57,7 @@
   interpreter", because it configured no target generator and the tool only builds the ATN per generator. Its
   `--profile` option now takes the name of the CSV file. Before, profiling was always on and wrote `filename.csv`, and
   `--profile x.csv` treated `x.csv` as a grammar file. The profile's time column is now in milliseconds, as labeled.
+- Fixed Bug #70: the TestRig (`grun`) could not load the generated lexer and parser on Windows.
 
 ## 1.0.10
 
