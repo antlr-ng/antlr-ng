@@ -105,8 +105,11 @@ describe("Tool coverage", () => {
                 expect(result.files.has("DepTParser.ts")).toBe(false);
                 expect(log).toHaveBeenCalledTimes(1);
                 const lines = (log.mock.calls[0][0] as string).split("\n");
+                const normalizedDependency = lines[0].replaceAll("\\", "/");
                 expect(lines).toHaveLength(4);
-                expect(lines[0]).toMatch(/^file:\/\/\/tmp\/out\/DepTParser\.ts : \/tmp\/coverage-[^/]+\/DepT\.g4$/);
+                expect(normalizedDependency).toMatch(
+                    /^file:\/\/\/tmp\/out\/DepTParser\.ts : \/tmp\/coverage-[^/]+\/DepT\.g4$/,
+                );
                 expect(lines[1]).toMatch(/^file:\/\/\/tmp\/out\/DepT\.tokens : /);
                 expect(lines[2]).toMatch(/^file:\/\/\/tmp\/out\/DepTLexer\.ts : /);
                 expect(lines[3]).toMatch(/^file:\/\/\/tmp\/out\/DepTLexer\.tokens : /);
