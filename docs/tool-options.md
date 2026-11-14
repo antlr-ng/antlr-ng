@@ -59,6 +59,8 @@ ID : [a-z]+ ;
  	
 $ antlr4 -lib /tmp A.g4
 
+An import can also name the grammar file by its path, as a string literal: `import '../shared/B.g4';`. The path is relative to the importing grammar (or absolute), so no search is done and this option is not used. A file that is imported more than once, also through other imported grammars, is loaded only once.
+
 ## `-atn`
 
 Generate DOT graph files that represent the internal ATN (augmented transition network) data structures that ANTLR uses to represent grammars. The files come out as Grammar.rule .dot. If the grammar is a combined grammar, the lexer rules are named Grammar Lexer.rule .dot.

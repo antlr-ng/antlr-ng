@@ -123,11 +123,7 @@ export class BuildDependencyGenerator {
             files.push(this.getOutputFile(this.generator.getBaseVisitorFileName(false)));
         }
 
-        // Handle generated files for imported grammars.
-        const imports = this.g.getAllImportedGrammars();
-        for (const g of imports) {
-            files.push(this.getOutputFile(g.fileName));
-        }
+        // Imported grammars are inputs (see getDependenciesFileList). Their rules are generated into the files above.
 
         return files;
     }
@@ -154,12 +150,10 @@ export class BuildDependencyGenerator {
         // Find all the things other than imported grammars.
         const files = this.getNonImportDependenciesFileList();
 
-        // Handle imported grammars.
-        const imports = this.g.getAllImportedGrammars();
-        const libDirectory = this.libDir ?? ".";
-        for (const g of imports) {
-            const fileName = this.groomQualifiedFileName(libDirectory, g.fileName);
-            files.push(fileName);
+        // Handle imported grammars. Their file name is the path they were loaded from (see
+        // `Tool.findImportedGrammarFile`), so the lib directory must not be added again.
+        for (const g of this.g.getAllImportedGrammars()) {
+            files.push(g.fileName.replaceAll(" ", "\\ "));
         }
 
         return files;
@@ -207,17 +201,5 @@ export class BuildDependencyGenerator {
 
     public getGenerator(): CodeGenerator {
         return this.generator;
-    }
-
-    private groomQualifiedFileName(outputDir: string, fileName: string): string {
-        if (outputDir === ".") {
-            return fileName;
-        } else if (outputDir.includes(" ")) { // Has spaces?
-            const escSpaces = outputDir.replaceAll(" ", "\\ ");
-
-            return escSpaces + "/" + fileName;
-        } else {
-            return outputDir + "/" + fileName;
-        }
     }
 }

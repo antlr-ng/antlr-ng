@@ -104,7 +104,7 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
     }
 
     public override importGrammar(label: GrammarAST, id: GrammarAST): void {
-        this.checkImport(id.token!);
+        this.checkImport(id);
     }
 
     public override discoverRules(rules: GrammarAST): void {
@@ -514,8 +514,9 @@ export class BasicSemanticChecks extends GrammarTreeVisitor {
         return true;
     }
 
-    protected checkImport(importID: Token): void {
-        const delegate = this.g.getImportedGrammar(importID.text!);
+    protected checkImport(importNode: GrammarAST): void {
+        const importID = importNode.token!;
+        const delegate = this.g.getImportedGrammarForNode(importNode);
         if (delegate === null) {
             return;
         }

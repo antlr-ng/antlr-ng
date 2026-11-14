@@ -25,6 +25,56 @@ export const dirname = (path: string): string => {
 };
 
 /**
+ * Matches the root of an absolute path: a drive (`C:/`), a UNC share (`//server/share/`), a bare UNC prefix (`//`)
+ * or a single slash.
+ */
+const rootPattern = /^(?:[a-zA-Z]:[\\/]|[\\/]{2}[^\\/]+[\\/][^\\/]+(?:[\\/]|$)|[\\/]{2}|[\\/])/;
+
+/**
+ * Joins a path to a base folder and removes `.` and `..` segments. The result uses `/` as separator, backslashes
+ * are accepted in the input. Unlike `path.resolve` this does not depend on the current working directory or on
+ * `node:path`, so it works the same with any file system, also in a browser.
+ *
+ * @param base The folder the path is relative to. Ignored if `path` is absolute.
+ * @param path The path to resolve.
+ *
+ * @returns The normalized path. `..` segments that would go above the root of an absolute path are dropped.
+ */
+export const resolvePath = (base: string, path: string): string => {
+    const full = rootPattern.test(path) ? path : `${base}/${path}`;
+    const root = rootPattern.exec(full)?.[0] ?? "";
+
+    const segments: string[] = [];
+    for (const segment of full.substring(root.length).split(/[\\/]/)) {
+        if (segment === "" || segment === ".") {
+            continue;
+        }
+
+        if (segment === "..") {
+            if (segments.length > 0 && segments[segments.length - 1] !== "..") {
+                segments.pop();
+            } else if (root === "") {
+                segments.push(segment);
+            }
+        } else {
+            segments.push(segment);
+        }
+    }
+
+    let normalizedRoot = root.replaceAll("\\", "/");
+    if (/^\/\/[^/]+\/[^/]+/.test(normalizedRoot)) {
+        // A UNC share is separated from the following segments like a folder.
+        normalizedRoot = normalizedRoot.replace(/\/$/, "");
+        if (segments.length > 0) {
+            normalizedRoot += "/";
+        }
+    }
+    const result = normalizedRoot + segments.join("/");
+
+    return result === "" ? "." : result;
+};
+
+/**
  * Copies the entire folder from the physical file system to the virtual one.
  *
  * @param fs The target file system.

@@ -186,6 +186,9 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
     private importedGrammars: Grammar[] = [];
 
+    /** The grammar loaded for each import node (a grammar name or a file path) of this grammar. */
+    private readonly importNodeToGrammar = new Map<GrammarAST, Grammar>();
+
     /** Used to invent rule names for 'keyword', ';', ... (0..n - 1). */
     private indexToRule = new Array<Rule>();
 
@@ -408,47 +411,66 @@ export class Grammar implements IGrammar, IAttributeResolver {
         return lexerRuleToStringLiteral;
     }
 
-    public loadImportedGrammars(visited: Set<string>): void {
+    /**
+     * Loads the grammars imported by this grammar, and recursively their imports.
+     *
+     * Grammar files are parsed only once and cached by their path (see `Tool.loadImportedGrammarFile`), but the import
+     * links are determined again for each root grammar: an import back into the current import chain is circular and
+     * is skipped, and which imports these are depends on where the traversal started.
+     *
+     * @param chain The paths of the grammars in the current import chain. Omit it for the root grammar.
+     * @param expanded The grammars whose imports were loaded in this traversal already. Omit it for the root grammar.
+     */
+    public loadImportedGrammars(chain = new Set<string>(), expanded = new Set<Grammar>()): void {
+        expanded.add(this);
+        this.importedGrammars = [];
+        this.importNodeToGrammar.clear();
+
         const i = this.ast.getFirstChildWithType(ANTLRv4Parser.IMPORT) as GrammarAST | null;
         if (i === null) {
             return;
         }
 
-        visited.add(this.name);
-        for (const c of i.children) {
-            let t = c as GrammarAST;
-            let importedGrammarName = null;
-            if (t.getType() === ANTLRv4Parser.ASSIGN) {
-                t = t.children[1] as GrammarAST;
-                importedGrammarName = t.getText();
-            } else {
-                if (t.getType() === ANTLRv4Parser.ID) {
-                    importedGrammarName = t.getText();
-                }
-            }
+        const fileName = this.tool.getCanonicalPath(this.fileName);
+        chain.add(fileName);
+        try {
+            for (const c of i.children) {
+                // For `import X = A;` the grammar is A.
+                const node = (c.getType() === ANTLRv4Parser.ASSIGN ? c.children[1] : c) as GrammarAST;
 
-            if (!importedGrammarName || visited.has(importedGrammarName)) { // Ignore circular refs.
-                continue;
-            }
-
-            let g: Grammar | null;
-            try {
-                g = this.tool.loadImportedGrammar(this, t);
-                if (!g) {
+                const importedFile = this.tool.findImportedGrammarFile(this, node);
+                if (!importedFile || chain.has(importedFile)) { // Ignore circular refs.
                     continue;
                 }
-            } catch {
-                this.tool.errorManager.grammarError(IssueCode.ErrorReadingImportedGrammar, importedGrammarName,
-                    t.token!, importedGrammarName, this.name);
 
-                continue;
+                let g: Grammar | null;
+                try {
+                    g = this.tool.loadImportedGrammarFile(this, node, importedFile);
+                    if (!g) {
+                        continue;
+                    }
+                } catch {
+                    this.tool.errorManager.grammarError(IssueCode.ErrorReadingImportedGrammar, this.fileName,
+                        node.token!, importedFile, this.name);
+
+                    continue;
+                }
+
+                this.importNodeToGrammar.set(node, g);
+
+                if (!this.importedGrammars.includes(g)) {
+                    this.importedGrammars.push(g);
+                }
+
+                // Imported grammars are cached across root grammars. The parent (used to resolve literals and to find
+                // the root) is the first importer in this traversal, not the one from an earlier root.
+                if (!expanded.has(g)) {
+                    g.parent = this;
+                    g.loadImportedGrammars(chain, expanded);
+                }
             }
-
-            g.parent = this;
-            this.importedGrammars.push(g);
-
-            // Recursively pursue any imports in this import.
-            g.loadImportedGrammars(visited);
+        } finally {
+            chain.delete(fileName);
         }
     }
 
@@ -543,16 +565,19 @@ export class Grammar implements IGrammar, IAttributeResolver {
      * preorder. Don't include ourselves in list as we're not a delegate of ourselves.
      */
     public getAllImportedGrammars(): Grammar[] {
-        const delegates = new Map<string, Grammar>();
-        for (const d of this.importedGrammars) {
-            delegates.set(d.fileName, d);
-            const ds = d.getAllImportedGrammars();
-            for (const imported of ds) {
-                delegates.set(imported.fileName, imported);
+        // A grammar imported through several paths is listed (and its imports are visited) only once.
+        const delegates = new Set<Grammar>();
+        const collect = (g: Grammar): void => {
+            for (const d of g.importedGrammars) {
+                if (d !== this && !delegates.has(d)) {
+                    delegates.add(d);
+                    collect(d);
+                }
             }
-        }
+        };
+        collect(this);
 
-        return Array.from(delegates.values());
+        return Array.from(delegates);
     }
 
     public getImportedGrammars(): Grammar[] {
@@ -629,6 +654,15 @@ export class Grammar implements IGrammar, IAttributeResolver {
         }
 
         return null;
+    }
+
+    /**
+     * @param node The node of an import statement: a grammar name or a file path.
+     *
+     * @returns The grammar loaded for that import, if any.
+     */
+    public getImportedGrammarForNode(node: GrammarAST): Grammar | null {
+        return this.importNodeToGrammar.get(node) ?? null;
     }
 
     public getTokenType(token: string): number {
