@@ -9,7 +9,7 @@ import { Token } from "antlr4ng";
 
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 
-import type { ITargetGenerator } from "src/codegen/ITargetGenerator.js";
+import type { ITargetGenerator } from "../codegen/ITargetGenerator.js";
 import { Constants } from "../Constants.js";
 import { LeftRecursiveRuleTransformer } from "../analysis/LeftRecursiveRuleTransformer.js";
 import type { IGenerationOptions } from "../config/config.js";
