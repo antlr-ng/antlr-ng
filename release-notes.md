@@ -58,6 +58,13 @@
   `--profile` option now takes the name of the CSV file. Before, profiling was always on and wrote `filename.csv`, and
   `--profile x.csv` treated `x.csv` as a grammar file. The profile's time column is now in milliseconds, as labeled.
 - Fixed Bug #70: the TestRig (`grun`) could not load the generated lexer and parser on Windows.
+- Fixed `generateDependencies`, which failed for every grammar with "internal error: Invalid URL": the file names were
+  built with `new URL()` from plain paths. The generated file list now names the files the code generation writes:
+  base listeners and visitors only with `generateBaseListener`/`generateBaseVisitor`, no listener or visitor for
+  lexer grammars, declaration files only with `generateDeclarationFile`, and interpreter data files with
+  `generateInterpreterData`. Imported grammars are only listed as dependencies. The dependency line has the make
+  format `T.g4: A.tokens`, and spaces in the output directory are escaped. The CLI no longer fails after listing the
+  dependencies because of the missing output directory.
 
 ## 1.0.10
 

@@ -88,9 +88,11 @@ if (!success) {
     process.exit(1);
 }
 
-// Copy the generated files to the physical output directory.
-nodeFs.mkdirSync(configuration.generationOptions.outputDirectory, { recursive: true });
-copyFolderFromMemFs(fs, configuration.generationOptions.outputDirectory,
-    configuration.generationOptions.outputDirectory, false);
+// Copy the generated files to the physical output directory. When only dependencies are listed, nothing is generated.
+if (!configuration.generationOptions.generateDependencies) {
+    nodeFs.mkdirSync(configuration.generationOptions.outputDirectory, { recursive: true });
+    copyFolderFromMemFs(fs, configuration.generationOptions.outputDirectory,
+        configuration.generationOptions.outputDirectory, false);
+}
 
 process.exit(0);
