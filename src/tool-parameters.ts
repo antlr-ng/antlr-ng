@@ -94,17 +94,25 @@ export const parseToolParameters = (args: string[]): IToolParameters => {
         .option<boolean>("--log [boolean]", "Dump lots of logging info to antlrng-timestamp.log.", parseBoolean)
         .option<boolean>("--exact-output-dir <boolean>", "All output goes into -o dir regardless of paths/package",
             parseBoolean)
-        .argument("<grammar...>", "A list of grammar files.")
+        // Optional, because a config file lists the grammar files itself.
+        .argument("[grammar...]", "A list of grammar files (only without a config file).")
         .version(`antlr-ng ${antlrVersion}`)
-        .action((_, parameters: IToolParameters) => {
-            // Make sure we only have a config file or other options, but not both.
-            if (parameters.config && Object.values(parameters).length > 1) {
+        .action((grammarFiles: string[], parameters: IToolParameters) => {
+            // Make sure we only have a config file or other options, but not both. Grammar files given here would be
+            // ignored in favor of those in the config file.
+            if (parameters.config && (Object.values(parameters).length > 1 || grammarFiles.length > 0)) {
                 console.error("Cannot use a config file together with other options.");
 
                 process.exit(1);
             }
 
             if (!parameters.config) {
+                if (grammarFiles.length === 0) {
+                    console.error("No grammar files given. Use a config file or list the grammar files.");
+
+                    process.exit(1);
+                }
+
                 console.warn("Command line parameters are deprecated. Use a config file instead.");
             }
         });

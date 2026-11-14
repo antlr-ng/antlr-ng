@@ -45,6 +45,10 @@
   `GeneratorHelper` could not be loaded from the published package, and the declaration files of the configuration
   and some analysis classes pointed to a missing `src` package. `tsconfig.json` no longer sets `baseUrl`, so the type
   check now rejects such imports.
+- Fixed the CLI rejecting a config file given on its own: `antlr-ng -c antlr-ng.config.ts` failed with
+  "missing required argument 'grammar'", because the grammar argument was required even though the config file lists
+  the grammar files. Grammar files given together with a config file are now rejected like other options, instead of
+  being ignored. Without a config file at least one grammar file is still required.
 - Fixed the rendering of `$token.channel` references in actions, which was not handled by the generator base class.
 - Fixed generation with a target generator that was created in a config file: the tool never called the
   generator's `setUp` method, so code generation failed with an internal error (`Cannot read properties of
