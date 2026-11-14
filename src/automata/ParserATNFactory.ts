@@ -13,7 +13,7 @@ import {
     StarLoopbackState, Token, WildcardTransition
 } from "antlr4ng";
 
-import type { Constructor } from "src/support/helpers.js";
+import type { Constructor } from "../support/helpers.js";
 import { ClassFactory } from "../ClassFactory.js";
 import { Constants } from "../Constants.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
