@@ -48,10 +48,22 @@ WS: [ \t\r\n]+ -> skip;
 ```
 
 saved in a file called `expr.g4`. For more details about the grammar syntax check the grammar [railroad diagrams](/grammar-syntax) and the grammar description for [parser](/parser-rules) and [lexers](/lexer-rules).
+Create a configuration file `antlr-ng.config.mjs` next to it, which generates TypeScript code in the same folder:
+
+```javascript
+import { defineConfig } from "antlr-ng";
+import { TypeScriptTargetGenerator } from "antlr-ng-generators";
+
+export default defineConfig({
+    grammarFiles: ["expr.g4"],
+    generators: [new TypeScriptTargetGenerator()],
+});
+```
+
 Now run:
 
 ```bash
-antlr-ng -Dlanguage=TypeScript expr.g4
+antlr-ng -c antlr-ng.config.mjs
 ```
 
 Create an input file with a single line in it `1 + 2 * 3` (save as input.txt). Then run the test rig using:

@@ -4,86 +4,87 @@ The <span className="antlrng">antlr-ng</span> node package can be used in two wa
 
 ## Using the Tool On the Command Line
 
-This is probably the most common use case, especially when switching from ANTLR4
-to <span className="antlrng">antlr-ng</span>. First install the tool globally via NPM:
-
-```bash
-npm i -g antlr-ng</code></pre>
-```
-
-If you don't have NPM installed, you can download Node.js from https://www.nodejs.org which includes NPM. This is all you need to run the tool.
-
-The installation command puts the package in the global NPM cache and creates a link to it in a folder which is in your system PATH. Hence you can directly execute it:
-
-```bash
-> antlr-ng -h
-Usage: program [options] <grammar...>
-
-Arguments:
-  grammar                                A list of grammar files.
-
-Options:
-  -o, --output-directory <path>          specify output directory where all output is generated
-  --lib <path>                           specify location of grammars, tokens files
-  --atn [boolean]                        Generate rule augmented transition network diagrams. (default: false)
-  -e, --encoding <string>                Specify grammar file encoding; e.g., ucs-2. (default: "utf-8")
-  --message-format [string]              Specify output style for messages in antlr, gnu, vs2005. (choices: "antlr", "gnu", "vs2005", default: "antlr")
-  --long-messages [boolean].             Show exception details when available for errors and warnings. (default: false)
-  -l, --generate-listener [boolean]      Generate parse tree listener. (default: true)
-  -v, --generate-visitor [boolean]       Generate parse tree visitor. (default: false)
-  -p, --package <name>                   Specify a package/namespace for the generated code.
-  -d, --generate-dependencies [boolean]  Generate file dependencies. (default: false)
-  -D, --define <key=value...>            Set/override a grammar-level option.
-  -w, --warnings-are-errors [boolean]    Treat warnings as errors. (default: false)
-  -f, --force-atn [boolean]              Use the ATN simulator for all predictions. (default: false)
-  --log [boolean]                        Dump lots of logging info to antlrng-timestamp.log. (default: false)
-  --exact-output-dir [boolean]           All output goes into -o dir regardless of paths/package (default: false)
-  -V, --version                          output the version number
-  -h, --help                             display help for command
-```
-
-Now you can start using the tool to generate parsers and lexers for your grammars, for example:
-
-```bash
-antlr-ng -Dlanguage=Java -l -v -o output MyGrammar.g4
-```
-
-Pretty much the same as with ANTLR4, with only very few differences in the options. For example there are no separate options that disable a feature like `-no-visitor`. Instead use `-v false` to disable the listener generation (or just don't specify
-`-v` at all).
-
-> [!NOTE]
-Avoid placing options that accept optional boolean values directly before grammar file names. For example, the `-l` option can take an optional boolean. If you omit the boolean value and write `-l MyGrammar.g4`, the tool may interpret `MyGrammar.g4` as the boolean value for `-l`, leading to unexpected behavior. To prevent this, either order your parameters so that options with values (such as output paths) appear immediately before the grammar file names, or use `--` to clearly separate options from positional arguments.
-
-Another pretty common use case is to generate parsers and lexer as part of a TypeScript project. You can still use the global installation of <span className="antlrng">antlr-ng</span> for that, but you can also install it locally in your project:
+Install <span className="antlrng">antlr-ng</span> in your project:
 
 ```bash
 npm i --save-dev antlr-ng
 ```
 
+If you don't have NPM installed, you can download Node.js from https://www.nodejs.org which includes NPM.
+
+<span className="antlrng">antlr-ng</span> itself only processes grammars. The code for a target language is produced by a target generator, which is listed in a configuration file together with the grammars and the options. Create an `antlr-ng.config.mjs` in the root of your project:
+
+```javascript
+import { defineConfig } from "antlr-ng";
+import { JavaTargetGenerator } from "antlr-ng-generators";
+
+export default defineConfig({
+    grammarFiles: ["grammars/MyGrammar.g4"],
+    generationOptions: {
+        outputDirectory: "output",
+        generateListener: true,
+        generateVisitor: true,
+    },
+    generators: [new JavaTargetGenerator()],
+});
+```
+
+> [!NOTE]
+> The default target generators will be published as a separate package. `antlr-ng-generators` is the proposed name; it is not published yet.
+
+Then run the tool with it:
+
+```bash
+npx antlr-ng -c antlr-ng.config.mjs
+```
+
+This replaces `antlr4 -Dlanguage=Java -listener -visitor -o output grammars/MyGrammar.g4` from ANTLR4. Note that listeners are not generated by default. See [Tool Configuration](/tool-options) for all options, how to write the configuration in TypeScript, and how the old command line options map to the configuration.
+
 ## Using the Tool Code in Your TypeScript Project
 
 For specialized handling it is useful to run the tool directly. You can load a grammar and process it, to get its ATN or just do a syntax check. Other options are running unit tests or generate files in memory. The tool pipeline is running on a virtual filesystem (memfs) which allows to work independent of Node.js. This fs must be setup to contain all files needed for processing and will receive generated files. This allows to run <span className="antlrng">antlr-ng</span> in a browser environment as well. This is the setup used for the <span className="antlrng">antlr-ng</span> playground on this website.
 
-A typcial approach looks like shown below. We setup a new virtual filesystem. A grammar object is created from a grammar string and processed.
+### Generating Code in Memory
+
+`Tool.generate` takes the same configuration as the configuration file. It reads the grammars from the virtual file system and writes the generated files to it:
 
 ```typescript
-
-import * as nodeFs from "fs";
-import { fileURLToPath } from "node:url";
-import { resolve } from "node:path";
-
 import { memfs } from "memfs";
-import { useFileSystem, Tool } from "antlr-ng";
+import { defineConfig, Tool, useFileSystem } from "antlr-ng";
+import { TypeScriptTargetGenerator } from "antlr-ng-generators";
 
-// Prepare a fresh virtual file system.
+// Prepare a fresh virtual file system and tell the tool to use it.
 const { fs } = memfs();
-
-// Tell the tool to use this file system.
 useFileSystem(fs);
 
-// ... store the grammar files in the virtual fs ...
+fs.mkdirSync("/grammars", { recursive: true });
+fs.writeFileSync("/grammars/Expr.g4", "grammar Expr;\ns : ID+ EOF ;\nID : [a-z]+ ;\nWS : [ \\n]+ -> skip ;\n");
 
-// A helper function to exectute the paser interpreter using grammar objects.
+const tool = new Tool();
+const success = tool.generate(defineConfig({
+    grammarFiles: ["/grammars/Expr.g4"],
+    generationOptions: { outputDirectory: "/generated" },
+    generators: [new TypeScriptTargetGenerator()],
+}));
+
+// ExprLexer.ts, ExprParser.ts and the token files are now in /generated.
+const parserCode = fs.readFileSync("/generated/ExprParser.ts", "utf8");
+```
+
+Errors and warnings are printed to the console. `tool.getNumErrors()` returns the number of errors, and listeners added with `tool.errorManager.addListener()` receive each issue.
+
+### Processing Grammar Objects
+
+A grammar object can also be created directly from a grammar string. `process` checks the grammar and builds its ATN. The ATN is built for a target generator, so the configuration needs one even when no code is generated. With `false` as the last argument nothing is written.
+
+```typescript
+import { CharStream, CommonTokenStream, type ParseTree } from "antlr4ng";
+import { defineConfig, Grammar, LexerGrammar } from "antlr-ng";
+import { TypeScriptTargetGenerator } from "antlr-ng-generators";
+
+const configuration = defineConfig({ generators: [new TypeScriptTargetGenerator()] });
+
+// A helper function to execute the parser interpreter using grammar objects.
 const testInterp = (lg: LexerGrammar, g: Grammar, startRule: string, input: string,
     expectedParseTree: string): ParseTree => {
     const lexEngine = lg.createLexerInterpreter(CharStream.fromString(input));
@@ -91,24 +92,24 @@ const testInterp = (lg: LexerGrammar, g: Grammar, startRule: string, input: stri
     const parser = g.createParserInterpreter(tokens);
     const t = parser.parse(g.rules.get(startRule)!.index);
 
-    expect(t.toStringTree(parser), expectedParseTree);
+    expect(t.toStringTree(parser)).toBe(expectedParseTree);
 
     return t;
 };
 
 const lg = new LexerGrammar(
-    "lexer grammar L;\\n" +
-    "A : 'a' ;\\n");
-lg.tool.process(lg, {} as IToolParameters, false);
+    "lexer grammar L;\n" +
+    "A : 'a' ;\n");
+lg.tool.process(lg, configuration, false);
 
 const g = new Grammar(
-    "parser grammar T;\\n" +
-    "s :  ;",
+    "parser grammar T;\n" +
+    "s : A* ;",
     lg);
-g.tool.process(g, {} as IToolParameters, false);
+g.tool.process(g, configuration, false);
 
 testInterp(lg, g, "s", "", "s");
-testInterp(lg, g, "s", "a", "s");
+testInterp(lg, g, "s", "a", "(s a)");
 ```
 
-This example (apart from the memfs setup) is taken from the <a href="https://github.com/antlr-ng/antlr-ng/blob/main/tests/TestParserInterpreter.spec.ts#L27" target="_blank">TestParserInterpreter.spec.ts</a> file which is part of the unit test suite.
+This example is based on the <a href="https://github.com/antlr-ng/antlr-ng/blob/main/tests/specs/TestParserInterpreter.spec.ts" target="_blank">TestParserInterpreter.spec.ts</a> file which is part of the unit test suite. See [Interpreters](/interpreters) for more about the interpreters.

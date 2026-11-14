@@ -1,328 +1,149 @@
-# ANTLR Tool Command Line Options
+# Tool Configuration
 
-If you invoke the ANTLR tool without command line arguments, you’ll get a help message:
+Starting with version 2.0, <span className="antlrng">antlr-ng</span> is configured with a configuration file. The file lists the grammars to process, the target generators that produce the code and the options for both. Command line options are still accepted, but they are deprecated (see [below](#command-line-options)).
 
-```bash
-$ antlr4
-ANTLR Parser Generator  Version 4.7.1
- -o ___              specify output directory where all output is generated
- -lib ___            specify location of grammars, tokens files
- -atn                generate rule augmented transition network diagrams
- -encoding ___       specify grammar file encoding; e.g., euc-jp
- -message-format ___ specify output style for messages in antlr, gnu, vs2005
- -long-messages      show exception details when available for errors and warnings
- -listener           generate parse tree listener (default)
- -no-listener        don't generate parse tree listener
- -visitor            generate parse tree visitor
- -no-visitor         don't generate parse tree visitor (default)
- -package ___        specify a package/namespace for the generated code
- -depend             generate file dependencies
- -D<option>=value    set/override a grammar-level option
- -Werror             treat warnings as errors
- -Xforce-atn         use the ATN simulator for all predictions
- -Xlog               dump lots of logging info to antlr-timestamp.log
- -Xexact-output-dir  all output goes into -o dir regardless of paths/package
+## The Configuration File
+
+A configuration file is a JavaScript or TypeScript module whose default export is the configuration. The `defineConfig` function fills in default values for everything you don't specify:
+
+```typescript
+// antlr-ng.config.ts
+import { defineConfig } from "antlr-ng";
+import { TypeScriptTargetGenerator } from "antlr-ng-generators";
+
+export default defineConfig({
+    grammarFiles: ["src/grammars/ExprLexer.g4", "src/grammars/ExprParser.g4"],
+    generationOptions: {
+        outputDirectory: "src/generated",
+        generateVisitor: true,
+    },
+    generators: [new TypeScriptTargetGenerator()],
+});
 ```
 
-Here are more details on the options:
+> [!NOTE]
+> The default target generators will be published as a separate package. `antlr-ng-generators` is the proposed name; it is not published yet.
 
-## `-o outdir`
-
-ANTLR generates output files in the current directory by default. This option specifies the output directory where ANTLR should generate parsers, listeners, visitors, and tokens files.
- 	
-```bash
-$ antlr4 -o /tmp T.g4
-$ ls /tmp/T*
-/tmp/T.tokens /tmp/TListener.java
-/tmp/TBaseListener.java /tmp/TParser.java
-```
-
-## `-lib libdir`
-
-When looking for tokens files and imported grammars, ANTLR normally looks in the current directory. This option specifies which directory to look in instead. It is only used for resolving grammar references for the import statement and the tokenVocab option. The path to the primary grammar must always be fully specified.
- 	
-$ cat /tmp/B.g4
- 	
-parser grammar B;
- 	
-x : ID ;
- 	
-$ cat A.g4
- 	
-grammar A;
- 	
-import B;
- 	
-s : x ;
- 	
-ID : [a-z]+ ;
- 	
-$ antlr4 -lib /tmp A.g4
-
-## `-atn`
-
-Generate DOT graph files that represent the internal ATN (augmented transition network) data structures that ANTLR uses to represent grammars. The files come out as Grammar.rule .dot. If the grammar is a combined grammar, the lexer rules are named Grammar Lexer.rule .dot.
- 	
-$ cat A.g4
- 	
-grammar A;
- 	
-s : b ;
- 	
-b : ID ;
- 	
-ID : [a-z]+ ;
- 	
-$ antlr4 -atn A.g4
- 	
-$ ls *.dot
- 	
-A.b.dot A.s.dot ALexer.ID.dot
-
-## `-encoding encodingname`
-
-By default ANTLR loads grammar files using the UTF-8 encoding, which is a very common character file encoding that degenerates to ASCII for characters that fit in one byte. There are many character file encodings from around the world. If that grammar file is not the default encoding for your locale, you need this option so that ANTLR can properly interpret grammar files. This does not affect the input to the generated parsers, just the encoding of the grammars themselves.
-
-## `-message-format format`
-
-ANTLR generates warning and error messages using templates from directory tool/resources/org/antlr/v4/tool/templates/messages/formats. By default, ANTLR uses the antlr.stg (StringTemplate group) file. You can change this to gnu or vs2005 to have ANTLR generate messages appropriate for Emacs or Visual Studio. To make your own called X, create resource org/antlr/v4/tool/templates/messages/formats/ X and place it in the CLASSPATH.
-
-## `-listener`
-
-This option tells ANTLR to generate a parse tree listener and is the default.
-
-## `-no-listener`
-
-This option tells ANTLR not to generate a parse tree listener.
-
-## `-visitor`
-
-ANTLR does not generate parse tree visitors by default. This option turns that feature on. ANTLR can generate both parse tree listeners and visitors; this option and -listener aren’t mutually exclusive.
-
-## `-no-visitor`
-
-Tell ANTLR not to generate a parse tree visitor; this is the default.
-
-## `-package`
-
-Use this option to specify a package or namespace for ANTLR-generated files. Alternatively, you can add a @header {...} action but that ties the grammar to a specific language. If you use this option and @header, make sure that the header action does not contain a package specification otherwise the generated code will have two of them.
-
-## `-depend`
-
-Instead of generating a parser and/or lexer, generate a list of file dependencies, one per line. The output shows what each grammar depends on and what it generates. This is useful for build tools that need to know ANTLR grammar dependencies. Here’s an example:
- 	
-```bash
-$ antlr4 -depend T.g	
-T.g: A.tokens
-TParser.java : T.g
-T.tokens : T.g
-TLexer.java : T.g
-TListener.java : T.g
-TBaseListener.java : T.g
-```
-
-If you use -lib libdir with -depend and grammar option tokenVocab=A, then the dependencies include the library path as well: T.g: libdir/A.tokens. The output is also sensitive to the -o outdir option: outdir/TParser.java : T.g.
-
-## `-D<option>=value`
-
-Use this option to override or set a grammar-level option in the specified grammar or grammars. This option is useful for generating parsers in different languages without altering the grammar itself. (I expect to have other targets in the near future.)
- 	
-```bash
-$ antlr4 -Dlanguage=Java T.g4 # default
-$ antlr4 -Dlanguage=C T.g4
-error(31): ANTLR cannot generate C code as of version 4.0b3
-```
-
-## `-Werror`
-
-As part of a large build, ANTLR warning messages could go unnoticed. Turn on this option to have warnings treated as errors, causing the ANTLR tool to report failure back to the invoking commandline shell.
-There are also some extended options that are useful mainly for debugging ANTLR itself:
-
-## `-Xsave-lexer`
-
-ANTLR generates both a parser and a lexer from a combined grammar. To create the lexer, ANTLR extracts a lexer grammar from the combined grammar. Sometimes it’s useful to see what that looks like if it’s not clear what token rules ANTLR is creating. This does not affect the generated parsers or lexers.
-
-## `-Xforce-atn`
-
-ANTLR normally builds traditional “switch on token type” decisions where possible (one token of lookahead is sufficient to distinguish between all alternatives in a decision). To force even these simple decisions into the adaptive LL(*) mechanism, use this option.
-
-## `-Xlog`
-
-This option creates a log file containing lots of information messages from ANTLR as it processes your grammar. If you would like to see how ANTLR translates your left-recursive rules, turn on this option and look in the resulting log file.
- 	
-```bash
-$ antlr4 -Xlog T.g4 	
-wrote ./antlr-2012-09-06-17.56.19.log
-```
-
-## `-Xexact-output-dir`
-
-(*See the [discussion](https://github.com/antlr/antlr4/pull/2065)*).
-
-All output goes into `-o` dir regardless of paths/package.
-
-* Output `-o` directory specifier is the exact directory containing the output. Previously it would include the relative path specified on the grammar itself for the purposes of packages.
-
-**new**: `-o /tmp subdir/T.g4` => `/tmp/subdir/T.java`
-**old**: `-o /tmp subdir/T.g4` => `/tmp/T.java`
-
-*  Previously we looked for the tokens vocab file in the `-lib` dir or in the output dir. **New**: also look in the directory containing the grammar, particularly if it it is specified with a path.
-
-### Example for the output directory (4.7)
-
-Here is the existing 4.7 functionality.
-
-(For these examples, assume a4.7 and a4.7.1 are aliases to the right version of ANTLR's `org.antlr.v4.Tool`.)
+Pass the file with `-c` (or `--config`):
 
 ```bash
-$ cd /tmp/parrt
-$ tree
-.
-├── B.g4
-└── src
-    └── pkg
-        └── A.g4
-$ a4.7 -o /tmp/build src/pkg/A.g4
-$ tree /tmp/build
-/tmp/build/
-└── src
-    └── pkg
-        ├── A.tokens
-        ├── ABaseListener.java
-        ├── ALexer.java
-        ├── ALexer.tokens
-        ├── AListener.java
-        └── AParser.java
+npx antlr-ng -c antlr-ng.config.ts
 ```
 
-Now, let's build a grammar that sits in the current directory:
+The configuration file is loaded with `import()`, so it must be an ES module:
 
-```bash
-$ a4.7 -o /tmp/build B.g4
-$ tree /tmp/build
-/tmp/build
-├── B.tokens
-├── BBaseListener.java
-├── BLexer.java
-├── BLexer.tokens
-├── BListener.java
-├── BParser.java
-└── src
-    └── pkg
-        ├── A.tokens
-        ├── ABaseListener.java
-        ├── ALexer.java
-        ├── ALexer.tokens
-        ├── AListener.java
-        └── AParser.java
+- Use `.mjs` or `.mts` as the file extension, or put `"type": "module"` in the `package.json` next to it. Otherwise a `.js` or `.ts` file is loaded as CommonJS. A TypeScript config loaded as CommonJS gets its own copy of the <span className="antlrng">antlr-ng</span> classes, and code generation fails with an error like `internal error: Unhandled source op type: CodeBlockForOuterMostAlt`.
+- A TypeScript configuration file needs a Node.js version that can load TypeScript, or a loader like [tsx](https://tsx.is) (`node --import tsx node_modules/antlr-ng/dist/cli/runner.js -c antlr-ng.config.ts`). Otherwise use a JavaScript file.
+
+A configuration file cannot be combined with other command line options or with grammar files on the command line. Everything goes into the file.
+
+Relative paths in the configuration are resolved against the current working directory, not against the location of the configuration file.
+
+## Configuration Reference
+
+The configuration has this structure. All fields are optional for `defineConfig`. The defaults are given in parentheses.
+
+```typescript
+interface IToolConfiguration {
+    grammarFiles: string[];
+    generators: ITargetGenerator[];
+    generationOptions: IGenerationOptions;
+    messageFormatOptions: IToolMessageOptions;
+    forceAtn: boolean;
+    log: boolean;
+    lib: string;
+}
 ```
 
-Finally, if we don't specify the output directory, it paid attention to the relative path specified on the input grammar:
+### `grammarFiles` (`[]`)
 
-```bash
-$ a4.7 src/pkg/A.g4
-$ tree
-.
-├── B.g4
-└── src
-    └── pkg
-        ├── A.g4
-        ├── A.tokens
-        ├── ABaseListener.java
-        ├── ALexer.java
-        ├── ALexer.tokens
-        ├── AListener.java
-        └── AParser.java
+The grammar files to process. Only list files that belong together, e.g. a lexer and a parser grammar. <span className="antlrng">antlr-ng</span> sorts them so that a grammar is processed after the grammar whose tokens it imports with the `tokenVocab` option. The tool reports an error if the list is empty.
+
+### `generators` (`[]`)
+
+The target generators that produce the code. Each grammar is processed once for each generator, so a single run can produce, for example, a TypeScript and a Java parser. All generators write to the same output directory. Files which are the same for all targets (`.tokens`, `.interp`) are written once per generator, with the same content.
+
+The tool reports an error if no generator is configured. This is also true for the `language = None` grammar option (see [below](#generating-no-code)), because the generator determines how the grammar is analyzed.
+
+See [Writing a Target Generator](/customizing-code-generation) for how to adjust a generator or write your own.
+
+### `generationOptions`
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `outputDirectory` | `"."` | The folder for all generated files. Generated files go directly into this folder, regardless of the folder of the grammar or the `package` option. Without it, they go into the current working directory, not next to the grammar. |
+| `generateListener` | `false` | Generate a parse tree listener. Note the different default: ANTLR4 generated a listener by default. |
+| `generateVisitor` | `false` | Generate a parse tree visitor. |
+| `generateBaseListener` | `false` | Also generate a base listener class with empty methods (e.g. `TBaseListener.java`). Only used together with `generateListener`. Targets whose listeners have optional methods, like TypeScript, don't need it. |
+| `generateBaseVisitor` | `false` | Also generate a base visitor class. Only used together with `generateVisitor`. |
+| `generateDeclarationFile` | `false` | Generate declaration files for targets which use them, e.g. C++ header files. |
+| `generateInterpreterData` | `false` | Generate interpreter data files (`.interp`). See [Interpreters](/interpreters). |
+| `package` | `""` | A package or namespace for the generated code. How it is used depends on the target. For example, the Java generator writes a `package` statement, the C# generator a namespace. Some targets ignore it. |
+| `atn` | `false` | Write a DOT graph file for the ATN of each rule (`<grammar>.<rule>.dot`). |
+| `generateDependencies` | `false` | Instead of generating code, print the files each grammar reads and writes, one per line. Build tools can use this to find out when to regenerate. |
+
+### `messageFormatOptions`
+
+These options control how errors and warnings are printed.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `warningsAreErrors` | `false` | Treat warnings as errors, so that the tool fails when a grammar has warnings. |
+| `messageFormat` | `"<severity>(<issueCode>): <location> <message>"` | The format of a message. The placeholders in angle brackets are replaced with the values of the issue. |
+| `locationFormat` | `"<file>:<line>:<column>:"` | The format of the `<location>` placeholder. |
+| `singleLine` | `true` | Print each message on a single line. |
+| `longMessages` | `false` | Currently not used. |
+
+For example, to get messages in the format many editors understand:
+
+```typescript
+messageFormatOptions: {
+    messageFormat: "<location> <severity>: <message> [<issueCode>]",
+    locationFormat: "<file>(<line>,<column>):",
+},
 ```
 
-### Example for the output directory (4.7.1 with -Xexact-output-dir)
+### `forceAtn` (`false`)
 
-Now, the output directory is the exact directory where output is generated regardless of relative paths on the grammar
+<span className="antlrng">antlr-ng</span> normally generates simple `switch` statements for decisions where one token of lookahead is enough. With this option all decisions use the adaptive LL(*) prediction instead. This is mostly useful for testing the prediction.
 
-```bash
-$ cd /tmp/parrt
-$ a4.7.1 -Xexact-output-dir  -o /tmp/build src/pkg/A.g4
-$ tree /tmp/build
-/tmp/build
-├── A.tokens
-├── ABaseListener.java
-├── ALexer.java
-├── ALexer.tokens
-├── AListener.java
-└── AParser.java
+### `log` (`false`)
+
+Write a log file with internal processing details to the current working directory (`antlr-ng-<timestamp>.log`). For example, it shows how left-recursive rules are rewritten.
+
+### `lib` (`"."`, deprecated)
+
+A folder to search for imported grammars and `.tokens` files. This will be removed once grammar imports can take paths.
+
+## Generating No Code
+
+The grammar option `language` no longer selects the target language; the configured generators do that. The only value that still has an effect is `None`: with `options { language = None; }` in a grammar, <span className="antlrng">antlr-ng</span> processes it and writes the interpreter data and token files, but no code.
+
+## Command Line Options
+
+The command line options from version 1 are still accepted when no configuration file is given, but they are deprecated. Since there is no option to select a target generator, a run without a configuration file currently stops with this error:
+
+```
+fatal(110): no target generators configured; use a config file which lists at least one generator
 ```
 
-If you use the package option, it still does not change where the output is generated if you use `-o`
+Here is how the old options map to the configuration:
 
-```bash
-$ a4.7.1 -Xexact-output-dir -package pkg -o /tmp/build src/pkg/A.g4
-$ tree /tmp/build
-/tmp/build
-├── A.tokens
-├── ABaseListener.java
-├── ALexer.java
-├── ALexer.tokens
-├── AListener.java
-└── AParser.java
-```
-
-4.7.1 does however add the package specification into the generated files:
-
-```bash
-$ grep package /tmp/build/A*.java
-/tmp/build/ABaseListener.java:package pkg;
-/tmp/build/ALexer.java:package pkg;
-/tmp/build/AListener.java:package pkg;
-/tmp/build/AParser.java:package pkg;
-```
-
-Compare this to 4.7:
-
-```bash
-$ a4.7 -package pkg -o /tmp/build src/pkg/A.g4
-beast:/tmp/parrt $ tree /tmp/build
-/tmp/build
-└── src
-    └── pkg
-        ├── A.tokens
-        ├── ABaseListener.java
-        ├── ALexer.java
-        ├── ALexer.tokens
-        ├── AListener.java
-        └── AParser.java
-```
-
-### Example of where it looks for tokens vocab
-
-In 4.7, we got an error for an obvious case that should work:
-
-```bash
-$ cd /tmp/parrt
-$ tree
-.
-└── src
-    └── pkg
-        ├── L.g4
-        └── P.g4
-$ a4.7 -o /tmp/build src/pkg/*.g4
-error(160): P.g4:2:21: cannot find tokens file /tmp/build/L.tokens
-warning(125): P.g4:3:4: implicit definition of token A in parser
-```
-
-In 4.7.1 it looks in the directory containing the grammars as well:
-
-```bash
-$ a4.7.1 -o /tmp/build src/pkg/*.g4
-$ tree /tmp/build
-/tmp/build
-├── L.java
-├── L.tokens
-├── P.java
-├── P.tokens
-├── PBaseListener.java
-├── PListener.java
-└── src
-    └── pkg
-        ├── L.java
-        └── L.tokens
-```
+| Command line option | Configuration |
+| --- | --- |
+| `<grammar...>` | `grammarFiles` |
+| `-o`, `--output-directory` | `generationOptions.outputDirectory` |
+| `-l`, `--generate-listener` | `generationOptions.generateListener` |
+| `-v`, `--generate-visitor` | `generationOptions.generateVisitor` |
+| `-p`, `--package` | `generationOptions.package` |
+| `--atn` | `generationOptions.atn` |
+| `-d`, `--generate-dependencies` | `generationOptions.generateDependencies` |
+| `-w`, `--warnings-are-errors` | `messageFormatOptions.warningsAreErrors` |
+| `--long-messages` | `messageFormatOptions.longMessages` |
+| `-f`, `--force-atn` | `forceAtn` |
+| `--log` | `log` |
+| `--lib` | `lib` |
+| `-Dlanguage=<target>` | `generators` |
+| `-D<option>=<value>` | No replacement. Set grammar options in the grammar. |
+| `-e`, `--encoding` | No replacement. Grammar files are read as UTF-8. |
+| `--exact-output-dir` | No replacement. Output always goes directly into the output directory. |
