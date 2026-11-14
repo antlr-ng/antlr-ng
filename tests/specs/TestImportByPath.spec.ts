@@ -3,14 +3,14 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import { createFsFromVolume, Volume } from "memfs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { defineConfig } from "../../src/config/config.js";
-import { generateRandomFilename, resolvePath } from "../../src/support/fs-helpers.js";
+import { copyFolderToMemFs, generateRandomFilename, resolvePath } from "../../src/support/fs-helpers.js";
 import { copyImportedGrammarsToMemFs, findGrammarImports } from "../../src/support/grammar-imports.js";
 import { fileSystem } from "../../src/tool-parameters.js";
 import { Grammar } from "../../src/tool/Grammar.js";
@@ -239,6 +239,41 @@ describe("Imports by path", () => {
         expect(generated("YParser.ts")).toContain("public a()");
     });
 
+    it("makes the current root grammar the root of a shared grammar", () => {
+        // S is loaded once and shared by X and Y. While Y is processed, S belongs to Y, not to X.
+        write({
+            "X.g4": "grammar X;\nimport S;\nr : s ;\nOLD : 'x' ;\n",
+            "Y.g4": "grammar Y;\nimport S;\nr : s ;\nNEW : 'x' ;\n",
+            "S.g4": "parser grammar S;\ns : 'x' ;\n",
+        });
+
+        // Records the root of each imported grammar right after a grammar loaded its imports.
+        const roots = new Map<string, string>();
+        const descriptor = Object.getOwnPropertyDescriptor(Grammar.prototype, "loadImportedGrammars")!;
+        const load = descriptor.value as Grammar["loadImportedGrammars"];
+        vi.spyOn(Grammar.prototype, "loadImportedGrammars").mockImplementation(function (this: Grammar, ...args) {
+            load.apply(this, args);
+            for (const g of this.getAllImportedGrammars()) {
+                roots.set(`${this.name}:${g.name}`, g.getOutermostGrammar().name);
+            }
+        });
+
+        try {
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
+                generationOptions: { outputDirectory: `${dir}/out` },
+                grammarFiles: [`${dir}/X.g4`, `${dir}/Y.g4`],
+            }), false);
+            expect(queue.all).toEqual([]);
+        } finally {
+            vi.restoreAllMocks();
+        }
+
+        expect(roots.get("X:S")).toBe("X");
+        expect(roots.get("Y:S")).toBe("Y");
+        expect(generated("YParser.ts")).toContain("YParser.NEW");
+    });
+
     it("identifies a file found by name relative to the current directory", () => {
         // The name import finds lib/S.g4 through a relative lib folder, the path import through an absolute path.
         const relativeDir = `AntlrImportCwd-${Date.now()}`;
@@ -394,6 +429,53 @@ describe("copyImportedGrammarsToMemFs", () => {
             ]);
         } finally {
             rmSync(dir, { recursive: true, force: true });
+        }
+    });
+    it("copies a file imported through a symbolic link once and follows linked folders", () => {
+        const dir = mkdtempSync(tmpdir() + "/AntlrImportCopy-");
+        try {
+            // link -> . makes link/A.g4, link/link/A.g4 and so on the same file.
+            symlinkSync(".", dir + "/link", "dir");
+            writeFileSync(dir + "/M.g4", "grammar M;\nimport 'A.g4', 'link/A.g4';\ns : a ;\n");
+            writeFileSync(dir + "/A.g4", "parser grammar A;\nimport 'link/B.g4';\na : B ;\n");
+            writeFileSync(dir + "/B.g4", "lexer grammar B;\nimport 'link/A.g4';\nB : 'b' ;\n");
+
+            const volume = new Volume();
+            const fs = createFsFromVolume(volume);
+            copyImportedGrammarsToMemFs(fs, dir + "/M.g4");
+
+            expect(Object.keys(volume.toJSON()).sort()).toEqual([dir + "/A.g4", dir + "/B.g4"]);
+            expect(fs.lstatSync(dir + "/link/A.g4").isSymbolicLink()).toBe(true);
+            expect(fs.realpathSync(dir + "/link/A.g4")).toBe(dir + "/A.g4");
+            expect(fs.realpathSync(dir + "/link/B.g4")).toBe(dir + "/B.g4");
+        } finally {
+            rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    it("lets the tool load a grammar and its alias once", () => {
+        // Like the CLI: copy the grammar's folder and its imports into the virtual file system, then run the tool.
+        const dir = realpathSync(mkdtempSync(tmpdir() + "/AntlrImportAlias-"));
+        try {
+            writeFileSync(dir + "/M.g4", "grammar M;\nimport 'S.g4', 'Alias.g4';\ns : a ;\n");
+            writeFileSync(dir + "/S.g4", "grammar S;\n@members {/* S members */}\na : X ;\nX : 'x' ;\n");
+            symlinkSync("S.g4", dir + "/Alias.g4");
+
+            fileSystem.mkdirSync(dir, { recursive: true });
+            copyFolderToMemFs(fileSystem, dir, dir, false, /\.g4/);
+            copyImportedGrammarsToMemFs(fileSystem, dir + "/M.g4");
+
+            const queue = ToolTestUtils.antlrOnFile(defineConfig({
+                generators: [tsGenerator],
+                generationOptions: { outputDirectory: `${dir}/out` },
+                grammarFiles: [`${dir}/M.g4`],
+            }), false);
+            expect(queue.all).toEqual([]);
+            const parser = fileSystem.readFileSync(`${dir}/out/MParser.ts`, "utf-8") as string;
+            expect(parser.split("/* S members */")).toHaveLength(2);
+        } finally {
+            rmSync(dir, { recursive: true, force: true });
+            fileSystem.rmSync(dir, { recursive: true, force: true });
         }
     });
 });

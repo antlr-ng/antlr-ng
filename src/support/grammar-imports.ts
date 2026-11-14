@@ -116,28 +116,46 @@ const findImportedFile = (grammarFile: string, grammarImport: IGrammarImport, li
  * the files these import. Imports by path can be anywhere, and grammars imported by name can import other grammars
  * by path, so the files can be outside the folders that are copied for the grammar itself.
  *
+ * Each file is copied once, to its real path (without symbolic links), and its imports are resolved from there, as the
+ * tool does. An import through a symbolic link becomes a symbolic link to that copy, so the tool sees the same file
+ * under both paths.
+ *
  * Imports that cannot be found are skipped. The tool reports them when it processes the grammar.
  *
  * @param fs The target file system.
  * @param grammarFile The path of the grammar file in the physical file system (the same path is used in the virtual
  *                    file system).
  * @param lib The lib folder, if any.
- * @param visited The files handled so far.
+ * @param visited The real paths of the files handled so far.
  */
 export const copyImportedGrammarsToMemFs = (fs: IFs, grammarFile: string, lib?: string,
     visited = new Set<string>()): void => {
-    const key = resolvePath(".", grammarFile);
-    if (visited.has(key) || !nodeFs.existsSync(grammarFile)) {
+    if (!nodeFs.existsSync(grammarFile)) {
         return;
     }
 
-    visited.add(key);
+    visited.add(nodeFs.realpathSync(grammarFile));
     for (const grammarImport of findGrammarImports(nodeFs.readFileSync(grammarFile, "utf-8"))) {
         const fileName = findImportedFile(grammarFile, grammarImport, lib);
-        if (fileName) {
+        if (!fileName) {
+            continue;
+        }
+
+        const realPath = nodeFs.realpathSync(fileName);
+        const isAlias = resolvePath(".", fileName) !== realPath;
+        if (isAlias) {
+            // The folder copies of the CLI may already contain the alias as a separate file.
             fs.mkdirSync(dirname(fileName), { recursive: true });
-            fs.writeFileSync(fileName, nodeFs.readFileSync(fileName));
-            copyImportedGrammarsToMemFs(fs, fileName, lib, visited);
+            if (fs.lstatSync(fileName, { throwIfNoEntry: false })?.isSymbolicLink() !== true) {
+                fs.rmSync(fileName, { force: true });
+                fs.symlinkSync(realPath, fileName);
+            }
+        }
+
+        if (!visited.has(realPath)) {
+            fs.mkdirSync(dirname(realPath), { recursive: true });
+            fs.writeFileSync(realPath, nodeFs.readFileSync(realPath));
+            copyImportedGrammarsToMemFs(fs, realPath, lib, visited);
         }
     }
 };

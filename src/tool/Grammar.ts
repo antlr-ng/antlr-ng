@@ -456,13 +456,14 @@ export class Grammar implements IGrammar, IAttributeResolver {
 
                 this.importNodeToGrammar.set(node, g);
 
-                // A grammar imported by several grammars is the same object. It keeps the first importer as parent.
                 if (!this.importedGrammars.includes(g)) {
-                    g.parent ??= this;
                     this.importedGrammars.push(g);
                 }
 
+                // Imported grammars are cached across root grammars. The parent (used to resolve literals and to find
+                // the root) is the first importer in this traversal, not the one from an earlier root.
                 if (!expanded.has(g)) {
+                    g.parent = this;
                     g.loadImportedGrammars(chain, expanded);
                 }
             }
