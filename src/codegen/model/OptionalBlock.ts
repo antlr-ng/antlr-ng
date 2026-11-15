@@ -10,13 +10,16 @@ import { AltBlock } from "./AltBlock.js";
 import type { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 
 export class OptionalBlock extends AltBlock {
-    public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[]) {
+    public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: GrammarAST, alts: CodeBlockForAlt[],
+        enablePredictionGuard = true) {
         super(factory, blkOrEbnfRootAST, alts);
 
         // The consuming alternative is the only real alternative. The exit alternative is the implicit one.
         const nonGreedy = !(blkOrEbnfRootAST as IQuantifierAST).isGreedy();
         const lookIndex = nonGreedy ? 1 : 0;
         const exitAlt = nonGreedy ? 1 : alts.length + 1;
-        this.predictionGuard = this.createPredictionGuard(lookIndex, exitAlt);
+        if (enablePredictionGuard) {
+            this.predictionGuard = this.createPredictionGuard(lookIndex, exitAlt);
+        }
     }
 }

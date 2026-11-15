@@ -263,27 +263,22 @@ export class ParserFactory implements IOutputModelFactory {
         let c;
         switch (ebnf) {
             case ANTLRv4Parser.OPTIONAL: {
-                c = new OptionalBlock(this, ebnfRoot, alts);
+                c = new OptionalBlock(this, ebnfRoot, alts, !this.forceAtn);
                 break;
             }
 
             case ANTLRv4Parser.CLOSURE: {
-                c = new StarBlock(this, ebnfRoot as IQuantifierAST, alts);
+                c = new StarBlock(this, ebnfRoot as IQuantifierAST, alts, !this.forceAtn);
                 break;
             }
 
             case ANTLRv4Parser.POSITIVE_CLOSURE: {
-                c = new PlusBlock(this, ebnfRoot as IQuantifierAST, alts);
+                c = new PlusBlock(this, ebnfRoot as IQuantifierAST, alts, !this.forceAtn);
                 break;
             }
 
             default:
 
-        }
-
-        if (this.forceAtn && c) {
-            // The forced-ATN mode must keep predicting every decision through the ATN simulator.
-            c.predictionGuard = undefined;
         }
 
         return c;

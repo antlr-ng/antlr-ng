@@ -117,9 +117,19 @@ export abstract class Choice extends RuleElement {
             return undefined;
         }
 
+        // Loop output models contain one synthetic alternative even when the quantified ATN block contains several
+        // grammar alternatives. Such blocks still require prediction within the consuming branch.
+        if (target instanceof BlockStartState && target.transitions.length !== 1) {
+            return undefined;
+        }
+
         // Checking the ATN for an epsilon path within the alternative block detects nullable alternatives
         // that the decision lookahead alone cannot express.
-        const stopState = target instanceof BlockStartState ? target.endState : undefined;
+        const stopState = target instanceof BlockStartState
+            ? target.endState
+            : decisionState instanceof BlockStartState
+                ? decisionState.endState
+                : undefined;
         const look = new LL1Analyzer(atn).look(target, stopState);
         if (look.contains(Token.EPSILON)) {
             return undefined;

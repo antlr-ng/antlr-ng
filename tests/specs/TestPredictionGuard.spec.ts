@@ -9,7 +9,7 @@ import { join } from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
 
-import { CharStream, CommonTokenStream, type Parser, type ParserRuleContext } from "antlr4ng";
+import { CharStream, CommonTokenStream, type Lexer, type Parser, type ParserRuleContext } from "antlr4ng";
 
 await import("../../src/Tool.js"); // To kick off the loading of the tool
 
@@ -27,7 +27,6 @@ import { Python3TargetGenerator } from "../../src/default-target-generators/Pyth
 import { SwiftTargetGenerator } from "../../src/default-target-generators/SwiftTargetGenerator.js";
 import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { Grammar } from "../../src/tool/index.js";
-import { dummyConfiguration } from "../support/GenerationHelper.js";
 import { ToolTestUtils } from "../ToolTestUtils.js";
 
 const guardGrammar = `grammar T;
@@ -46,12 +45,14 @@ WS: [ \\t\\r\\n]+ -> skip;
  *
  * @param generator The target generator to use.
  * @param grammarText The grammar to process.
+ * @param forceAtn Whether every decision must use ATN prediction.
  *
  * @returns The generated parser code.
  */
-const generateParser = (generator: ITargetGenerator, grammarText: string): string => {
+const generateParser = (generator: ITargetGenerator, grammarText: string, forceAtn = false): string => {
     generator.setUp();
     const config = defineConfig({
+        forceAtn,
         grammarFiles: [],
         generators: [generator],
         generationOptions: {
@@ -166,23 +167,43 @@ describe("TestPredictionGuard", () => {
         expect(guardCount).toBe(4);
     });
 
-    it("does not guard a decision with multiple consuming alternatives", () => {
+    it.each(expectations)("$name preserves forced-ATN prediction", ({ generator, guardTest, adaptivePredict }) => {
+        const code = generateParser(generator, guardGrammar, true);
+
+        expect(code).toContain(adaptivePredict);
+        expect(code).not.toContain(guardTest);
+    });
+
+    it("does not declare an unused Go guard local in forced-ATN mode", () => {
         const grammar = `grammar T;
-            s: ID (ID | ID A)*;
-            ID: 'i'; A: 'a'; WS: [ \\t\\r\\n]+ -> skip;
+            s: A? EOF;
+            A: 'a';
+        `;
+
+        const code = generateParser(new GoTargetGenerator(false), grammar, true);
+        expect(code).toContain("AdaptivePredict");
+        expect(code).not.toContain("var _la int");
+    });
+
+    it.each(["*", "+"])("does not guard a %s decision with multiple consuming alternatives", (quantifier) => {
+        const grammar = `grammar T;
+            s: (A | A B)${quantifier} A EOF;
+            A: 'a'; B: 'b'; WS: [ \\t\\r\\n]+ -> skip;
         `;
 
         const code = generateParser(new TypeScriptTargetGenerator(false), grammar);
+        expect(code).toContain("adaptivePredict");
         expect(code).not.toContain("numberOfSyntaxErrors");
     });
 
     it("does not guard a decision with an opaque semantic predicate", () => {
         const grammar = `grammar T;
-            s: ID (A {true}? | B)*;
-            ID: 'i'; A: 'a'; B: 'b'; WS: [ \\t\\r\\n]+ -> skip;
+            s: ({true}? A)* A EOF;
+            A: 'a'; WS: [ \\t\\r\\n]+ -> skip;
         `;
 
         const code = generateParser(new TypeScriptTargetGenerator(false), grammar);
+        expect(code).toContain("adaptivePredict");
         expect(code).not.toContain("numberOfSyntaxErrors");
     });
 
@@ -199,13 +220,15 @@ describe("TestPredictionGuard", () => {
         expect(code).not.toContain("numberOfSyntaxErrors");
     });
 
-    it("does not guard a nullable consuming alternative", () => {
+    it("does not guard a nullable rule-reference optional body", () => {
         const grammar = `grammar T;
-            s: (A?)?;
-            A: 'a'; WS: [ \\t\\r\\n]+ -> skip;
+            s: r? B EOF;
+            r: A?;
+            A: 'a'; B: 'b'; WS: [ \\t\\r\\n]+ -> skip;
         `;
 
         const code = generateParser(new TypeScriptTargetGenerator(false), grammar);
+        expect(code).toContain("adaptivePredict");
         expect(code).not.toContain("numberOfSyntaxErrors");
     });
 
@@ -226,12 +249,16 @@ describe("TestPredictionGuard", () => {
                 },
             });
 
-            const parse = (input: string): { predictions: number; diagnostics: string[]; } => {
+            const parse = (input: string, reportPreviousError = false):
+            { predictions: number; diagnostics: string[]; } => {
                 diagnostics.length = 0;
                 predictSpy.mockClear();
 
                 lexer.inputStream = CharStream.fromString(input);
                 parser.tokenStream = new CommonTokenStream(lexer);
+                if (reportPreviousError) {
+                    parser.notifyErrorListeners("previous error");
+                }
 
                 const typedParser = parser as Parser & { start: () => ParserRuleContext; };
                 typedParser.start();
@@ -254,69 +281,68 @@ describe("TestPredictionGuard", () => {
             const starWithTwoArguments = parse("i;i(a)(a);i(a);");
             expect(starWithTwoArguments.predictions).toBe(2);
             expect(starWithTwoArguments.diagnostics).toEqual([]);
+
+            // Once an error has been reported, every guard retains adaptive prediction even outside FIRST.
+            const afterReportedError = parse("i;i;i(a);", true);
+            expect(afterReportedError.predictions).toBe(3);
+            expect(afterReportedError.diagnostics).toEqual(["previous error"]);
         } finally {
             rmSync(tempDir, { recursive: true });
         }
     });
 
-    it("keeps diagnostics and parse trees unchanged for invalid input", async () => {
+    it("keeps diagnostics and recovered parse trees unchanged", async () => {
         const grammar = `grammar T;
-            start: atom EOF;
-            atom: ID argument*;
-            argument: LP ID RP;
-            ID: 'i'; LP: '('; RP: ')'; WS: [ \\t\\r\\n]+ -> skip;
+            start: A item* A EOF;
+            item: A B C;
+            A: 'a'; B: 'b'; C: 'c'; D: 'd'; WS: [ \\t\\r\\n]+ -> skip;
         `;
 
-        const parsed = new Grammar(grammar);
-        parsed.tool.process(parsed, dummyConfiguration(), false);
-        parsed.atn = new ParserATNFactory(parsed).createATN();
+        const code = generateParser(new TypeScriptTargetGenerator(false), grammar);
+        expect(code).toContain("numberOfSyntaxErrors");
+        expect(code).toContain("adaptivePredict");
 
         const normalizeTree = (tree: string): string => {
             return tree.replace(/:\d+/g, "");
         };
 
-        const parseWithInterpreter = (input: string): { tree: string; diagnostics: string[]; } => {
-            const lexer = parsed.createLexerInterpreter(CharStream.fromString(input));
-            lexer.removeErrorListeners();
-            const tokens = new CommonTokenStream(lexer);
-            const parser = parsed.createGrammarParserInterpreter(tokens);
+        const parse = (lexer: Lexer, parser: Parser,
+            input: string): { tree: string; diagnostics: string[]; } => {
+            lexer.inputStream = CharStream.fromString(input);
+            parser.tokenStream = new CommonTokenStream(lexer);
             const diagnostics = collectDiagnostics(parser);
-            const tree = parser.parse(parsed.getRule("start")!.index);
+            const typedParser = parser as Parser & { start: () => ParserRuleContext; };
+            const tree = typedParser.start();
 
             return { tree: normalizeTree(tree.toStringTree(parser)), diagnostics };
         };
 
         const tempDir = mkdtempSync(join(tmpdir(), "AntlrPredictionGuardInvalid-"));
         try {
-            const options = ToolTestUtils.createOptionsForToolTests("T.g4", grammar, "TParser", "TLexer",
+            const guardedOptions = ToolTestUtils.createOptionsForToolTests("T.g4", grammar, "TParser", "TLexer",
                 false, false, "start", "", false, false);
-            const [lexer, parser] = await ToolTestUtils.setupRecognizers(options, tempDir);
-            lexer.removeErrorListeners();
+            const forcedOptions = { ...guardedOptions, forceAtn: true };
+            const [guardedLexer, guardedParser] = await ToolTestUtils.setupRecognizers(guardedOptions,
+                join(tempDir, "guarded"));
+            const [forcedLexer, forcedParser] = await ToolTestUtils.setupRecognizers(forcedOptions,
+                join(tempDir, "forced"));
+            guardedLexer.removeErrorListeners();
+            forcedLexer.removeErrorListeners();
 
-            for (const input of ["i;", "i(a);", "i(;", "i(a", "i(a));"]) {
-                const expected = parseWithInterpreter(input);
+            const cases = [
+                { input: "aa", hasDiagnostics: false },
+                { input: "aabca", hasDiagnostics: false },
+                { input: "aaca", hasDiagnostics: true },
+                { input: "aabcaabc", hasDiagnostics: true },
+                { input: "ad", hasDiagnostics: true },
+            ];
+            for (const { input, hasDiagnostics } of cases) {
+                const expected = parse(forcedLexer, forcedParser, input);
+                const actual = parse(guardedLexer, guardedParser, input);
 
-                const diagnostics: string[] = [];
-                parser.removeErrorListeners();
-                parser.addErrorListener({
-                    syntaxError: (_recognizer, _offendingSymbol, _line, _column, message) => {
-                        diagnostics.push(message);
-                    },
-                });
-
-                lexer.inputStream = CharStream.fromString(input);
-                parser.tokenStream = new CommonTokenStream(lexer);
-
-                const typedParser = parser as Parser & { start: () => ParserRuleContext; };
-                const tree = normalizeTree(typedParser.start().toStringTree(parser));
-
-                expect(diagnostics, input).toEqual(expected.diagnostics);
-
-                // Parse-tree shape is compared only for valid input. Error recovery inserts different synthetic
-                // nodes in generated parsers and interpreters, which is unrelated to prediction.
-                if (expected.diagnostics.length === 0) {
-                    expect(tree, input).toBe(expected.tree);
-                }
+                expect(actual.diagnostics.length > 0, input).toBe(hasDiagnostics);
+                expect(actual.diagnostics, input).toEqual(expected.diagnostics);
+                expect(actual.tree, input).toBe(expected.tree);
             }
         } finally {
             rmSync(tempDir, { recursive: true });

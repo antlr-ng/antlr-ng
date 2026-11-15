@@ -52,7 +52,8 @@ export class CodeGenerator {
         this.ensureAtnExists();
         declaration ??= false;
 
-        const model = this.createController().buildParserOutputModel(declaration, options);
+        const model = this.createController(this.g.tool.toolConfiguration.forceAtn)
+            .buildParserOutputModel(declaration, options);
 
         return this.targetGenerator.renderParserFile(model, declaration, options);
     }
