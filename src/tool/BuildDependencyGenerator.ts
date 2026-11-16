@@ -8,7 +8,9 @@ import type { IGenerationOptions } from "../config/config.js";
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { CodeGenerator } from "../codegen/CodeGenerator.js";
+import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { GrammarType } from "../support/GrammarType.js";
+import { isTokenName } from "../support/helpers.js";
 import { Grammar } from "./Grammar.js";
 
 /**
@@ -62,7 +64,7 @@ export class BuildDependencyGenerator {
 
         // A combined grammar generates the files of its implicit lexer too, e.g. TLexer.ts and TLexer.tokens.
         const recognizerNames = [this.g.getRecognizerName()];
-        if (this.g.isCombined()) {
+        if (this.g.isCombined() && this.hasImplicitLexer()) {
             recognizerNames.push(this.g.name + Grammar.getGrammarTypeToFileNameSuffix(GrammarType.Lexer));
         }
 
@@ -90,7 +92,7 @@ export class BuildDependencyGenerator {
                     return this.generator.getListenerFileName(declaration);
                 });
 
-                if (this.options.generateBaseListener) {
+                if (this.options.generateBaseListener && targetGenerator.wantsBaseListener) {
                     addCodeFile((declaration) => {
                         return this.generator.getBaseListenerFileName(declaration);
                     });
@@ -102,7 +104,7 @@ export class BuildDependencyGenerator {
                     return this.generator.getVisitorFileName(declaration);
                 });
 
-                if (this.options.generateBaseVisitor) {
+                if (this.options.generateBaseVisitor && targetGenerator.wantsBaseVisitor) {
                     addCodeFile((declaration) => {
                         return this.generator.getBaseVisitorFileName(declaration);
                     });
@@ -151,13 +153,7 @@ export class BuildDependencyGenerator {
         // Handle token vocabulary loads.
         const tokenVocab = this.g.getOptionString("tokenVocab");
         if (tokenVocab !== undefined) {
-            const fileName = tokenVocab + Constants.VocabFileExtension;
-            const libDirectory = this.libDir ?? ".";
-            if (libDirectory === ".") {
-                files.push(fileName);
-            } else {
-                files.push(libDirectory + "/" + fileName);
-            }
+            files.push(this.groomQualifiedFileName(this.libDir ?? ".", tokenVocab + Constants.VocabFileExtension));
         }
 
         return files;
@@ -169,7 +165,7 @@ export class BuildDependencyGenerator {
 
         // Make syntax: the grammar depends on these files.
         if (inputFiles.length > 0) {
-            result.push(`${this.g.fileName}: ${inputFiles.join(", ")}`);
+            result.push(`${this.g.fileName}: ${inputFiles.join(" ")}`);
         }
 
         const outputFiles = this.getGeneratedFileList();
@@ -182,6 +178,28 @@ export class BuildDependencyGenerator {
 
     public getGenerator(): CodeGenerator {
         return this.generator;
+    }
+
+    /**
+     * Determines whether a combined grammar gets an implicit lexer, without transforming it. This is the condition
+     * of `GrammarTransformPipeline.extractImplicitLexer`: the lexer exists if there is a lexer rule or a string
+     * literal (which becomes a lexer rule), in the grammar or in one of the grammars it imports.
+     *
+     * @returns True if code generation writes a lexer for the grammar.
+     */
+    private hasImplicitLexer(): boolean {
+        for (const g of [this.g, ...this.g.getAllImportedGrammars()]) {
+            const rules = g.ast.getFirstChildWithType(ANTLRv4Parser.RULES);
+            if (rules?.children.some((rule) => { return isTokenName(rule.children[0].getText()); })) {
+                return true;
+            }
+
+            if (g.getStringLiterals().size > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private groomQualifiedFileName(outputDir: string, fileName: string): string {

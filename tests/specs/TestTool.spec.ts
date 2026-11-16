@@ -43,8 +43,8 @@ describe("Tool coverage", () => {
             const generator = new BuildDependencyGenerator(tool, g, options, tsGenerator, "my lib");
             expect(generator.getGenerator().targetGenerator).toBe(tsGenerator);
 
-            // The trailing slash of the output directory is not repeated, and there is no base listener without
-            // generateBaseListener.
+            // The trailing slash of the output directory is not repeated. TypeScript has no base visitor, so
+            // generateBaseVisitor adds nothing.
             expect(generator.getGeneratedFileList()).toEqual([
                 "/tmp/out/DepParser.ts",
                 "/tmp/out/Dep.tokens",
@@ -52,16 +52,16 @@ describe("Tool coverage", () => {
                 "/tmp/out/DepLexer.tokens",
                 "/tmp/out/DepListener.ts",
                 "/tmp/out/DepVisitor.ts",
-                "/tmp/out/DepBaseVisitor.ts",
             ]);
 
-            expect(generator.getNonImportDependenciesFileList()).toEqual(["my lib/Other.tokens"]);
-            expect(generator.getDependenciesFileList()).toEqual(["my lib/Other.tokens"]);
+            // Make separates prerequisites with spaces, so spaces in the lib directory are escaped too.
+            expect(generator.getNonImportDependenciesFileList()).toEqual(["my\\ lib/Other.tokens"]);
+            expect(generator.getDependenciesFileList()).toEqual(["my\\ lib/Other.tokens"]);
 
             const dependencies = generator.getDependencies().split("\n");
-            expect(dependencies[0]).toBe("Dep.g4: my lib/Other.tokens");
+            expect(dependencies[0]).toBe("Dep.g4: my\\ lib/Other.tokens");
             expect(dependencies[1]).toBe("/tmp/out/DepParser.ts : Dep.g4");
-            expect(dependencies).toHaveLength(8);
+            expect(dependencies).toHaveLength(7);
         });
 
         it("uses the current directory for token vocabularies without lib directory", () => {
@@ -157,6 +157,18 @@ describe("Tool coverage", () => {
                 { name: "DepN.g4", content: "grammar DepN;\noptions { language = None; }\na : A ;\nA : 'a' ;" },
             ];
 
+            // A combined grammar without lexer rules and literals has no implicit lexer. With literals, or with
+            // lexer rules from an imported grammar, it has one.
+            const noLexer = [
+                { name: "DepVL.g4", content: "lexer grammar DepVL;\nID : [a-z]+ ;" },
+                { name: "DepV.g4", content: "grammar DepV;\noptions { tokenVocab = DepVL; }\na : ID ;" },
+            ];
+            const literalsOnly = [{ name: "DepLit.g4", content: "grammar DepLit;\na : 'x' 'y' ;" }];
+            const importedLexerRules = [
+                { name: "DepImpRules.g4", content: "lexer grammar DepImpRules;\nID : [a-z]+ ;" },
+                { name: "DepImp.g4", content: "grammar DepImp;\nimport DepImpRules;\na : ID ;" },
+            ];
+
             const cpp = new CppTargetGenerator(false);
             cpp.setUp();
 
@@ -165,6 +177,9 @@ describe("Tool coverage", () => {
                 [combined, { generateListener: true, generateVisitor: true }, tsGenerator],
                 [split, { generateListener: true, generateVisitor: true, generateInterpreterData: true }, tsGenerator],
                 [noCode, { generateListener: true }, tsGenerator],
+                [noLexer, {}, tsGenerator],
+                [literalsOnly, {}, tsGenerator],
+                [importedLexerRules, {}, tsGenerator],
                 [combined, { generateDeclarationFile: true, generateListener: true, generateBaseListener: true }, cpp],
                 [split, { generateVisitor: true, generateBaseVisitor: true }, cpp],
             ];

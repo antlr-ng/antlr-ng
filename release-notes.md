@@ -78,11 +78,12 @@
 - Fixed Bug #70: the TestRig (`grun`) could not load the generated lexer and parser on Windows.
 - Fixed `generateDependencies`, which failed for every grammar with "internal error: Invalid URL": the file names were
   built with `new URL()` from plain paths. The generated file list now names the files the code generation writes:
-  base listeners and visitors only with `generateBaseListener`/`generateBaseVisitor`, no listener or visitor for
-  lexer grammars, declaration files only with `generateDeclarationFile`, and interpreter data files with
-  `generateInterpreterData`. Imported grammars are only listed as dependencies. The dependency line has the make
-  format `T.g4: A.tokens`, and spaces in the output directory are escaped. The CLI no longer fails after listing the
-  dependencies because of the missing output directory.
+  base listeners and visitors only with `generateBaseListener`/`generateBaseVisitor` and for targets which have them,
+  no listener or visitor for lexer grammars, no lexer for a combined grammar without lexer rules and literals,
+  declaration files only with `generateDeclarationFile`, and interpreter data files with `generateInterpreterData`.
+  Imported grammars are only listed as dependencies. The dependency line has the make
+  format `T.g4: A.tokens B.g4` (prerequisites separated by spaces), and spaces in the output and lib directories are
+  escaped. The CLI no longer fails after listing the dependencies because of the missing output directory.
 
 ## 1.0.10
 
