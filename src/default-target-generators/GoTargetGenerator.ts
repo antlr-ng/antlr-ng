@@ -565,7 +565,7 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
      * @param recognizerName The name of the recognizer (e.g. `MySQLParser`, or `MySQL` for a lexer grammar named
      *        so).
      * @param isLexer True for a lexer, false for a parser. If not given, the kind is taken from the suffix of the
-     *        name, or for a name without suffix from the current generation run.
+     *        name. A name without suffix is then taken as a parser, so pass it for lexer and parser grammars.
      *
      * @returns The file name for the recognizer.
      */
@@ -588,10 +588,8 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
             return recognizerName.substring(0, recognizerName.length - 5).toLowerCase() + "_lexer.go";
         }
 
-        // No suffix. Use what we know about the current generation run.
-        const suffix = this.invariants.isLexer ? "_lexer.go" : "_parser.go";
-
-        return recognizerName.toLowerCase() + suffix;
+        // No suffix and no kind given. Don't guess from the render state, which belongs to whatever was rendered last.
+        return recognizerName.toLowerCase() + "_parser.go";
     }
 
     public override getListenerFileName(forDeclarationFile: boolean, grammarName: string): string {

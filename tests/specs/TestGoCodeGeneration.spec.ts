@@ -91,6 +91,10 @@ describe("TestGoCodeGeneration", () => {
         expect(goGenerator.getRecognizerFileName(false, "ExprParser", false)).toBe("expr_parser.go");
         expect(goGenerator.getRecognizerFileName(false, "TokensParser", true)).toBe("tokensparser_lexer.go");
 
+        // Without the kind, a name without suffix is a parser, also right after rendering a lexer.
+        generateLexer("lexer grammar Expr;\nID : [a-z]+ ;");
+        expect(goGenerator.getRecognizerFileName(false, "Expr")).toBe("expr_parser.go");
+
         expect(goGenerator.getListenerFileName(false, "MySQLParser")).toBe("mysqlparser_listener.go");
         expect(goGenerator.getBaseListenerFileName(false, "MySQLParser")).toBe("mysqlparser_base_listener.go");
         expect(goGenerator.getVisitorFileName(false, "Expr")).toBe("expr_visitor.go");
