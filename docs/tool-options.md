@@ -7,7 +7,7 @@ Starting with version 2.0, <span className="antlrng">antlr-ng</span> is configur
 A configuration file is a JavaScript or TypeScript module whose default export is the configuration. The `defineConfig` function fills in default values for everything you don't specify:
 
 ```typescript
-// antlr-ng.config.ts
+// antlr-ng.config.mts
 import { defineConfig } from "antlr-ng";
 import { TypeScriptTargetGenerator } from "antlr-ng-generators";
 
@@ -27,13 +27,13 @@ export default defineConfig({
 Pass the file with `-c` (or `--config`):
 
 ```bash
-npx antlr-ng -c antlr-ng.config.ts
+npx antlr-ng -c antlr-ng.config.mts
 ```
 
 The configuration file is loaded with `import()`, so it must be an ES module:
 
 - Use `.mjs` or `.mts` as the file extension, or put `"type": "module"` in the `package.json` next to it. Otherwise a `.js` or `.ts` file is loaded as CommonJS. A TypeScript config loaded as CommonJS gets its own copy of the <span className="antlrng">antlr-ng</span> classes, and code generation fails with an error like `internal error: Unhandled source op type: CodeBlockForOuterMostAlt`.
-- A TypeScript configuration file needs a Node.js version that can load TypeScript, or a loader like [tsx](https://tsx.is) (`node --import tsx node_modules/antlr-ng/dist/cli/runner.js -c antlr-ng.config.ts`). Otherwise use a JavaScript file.
+- A TypeScript configuration file needs a Node.js version that can load TypeScript, or a loader like [tsx](https://tsx.is) (`node --import tsx node_modules/antlr-ng/dist/cli/runner.js -c antlr-ng.config.mts`). Otherwise use a JavaScript file.
 
 A configuration file cannot be combined with other command line options or with grammar files on the command line. Everything goes into the file.
 
