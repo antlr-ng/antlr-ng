@@ -86,6 +86,9 @@
 - The `CSharpTargetGenerator` and `CppTargetGenerator` constructors no longer require the `logRendering` argument
   (default: `false`), like the other default generators. `new CSharpTargetGenerator()` in a config file failed to
   type-check before.
+- Fixed Bug #131: the `.interp` file of a lexer with custom `channels` had empty lines in its channel names and no
+  empty line before the mode names, so `InterpreterDataReader` (antlr4ng and Java) failed with "Unexpected data
+  entry". Unused channel values are now written as `null`, as ANTLR4 does.
 
 ## 1.0.10
 

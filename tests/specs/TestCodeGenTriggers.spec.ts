@@ -5,6 +5,8 @@
 
 import { describe, expect, it } from "vitest";
 
+import { InterpreterDataReader } from "antlr4ng";
+
 import { CppTargetGenerator } from "../../src/default-target-generators/CppTargetGenerator.js";
 import { CSharpTargetGenerator } from "../../src/default-target-generators/CSharpTargetGenerator.js";
 import { Python3TargetGenerator } from "../../src/default-target-generators/Python3TargetGenerator.js";
@@ -214,9 +216,13 @@ describe("Code generation triggers coverage", () => {
         const interp = result.files.get("CGL.interp")!;
         expect(interp).toContain("rule names:\nID\nINT\nWS\nCOMMENT\nSKIPME\nMOREME\nPUSH\nTYPED\nACT\nPRED\n" +
             "MULTI\nDIGIT\nHEX\nHEXDIGIT\nCS\nRANGE\nUNI\nNOTSET\nEOFRULE\nPOP\nINNER_TEXT\n");
-        expect(interp).toContain("channel names:\nDEFAULT_TOKEN_CHANNEL\nHIDDEN\n");
-        expect(interp).toContain("COMMENTS\nmode names:\nDEFAULT_MODE\nINNER\n");
-        expect(interp).toContain("atn:\n");
+        // Custom channels start at value 2. The unused values 0 and 1 are written as "null", as in ANTLR4 (#131).
+        expect(interp).toContain("channel names:\nDEFAULT_TOKEN_CHANNEL\nHIDDEN\nnull\nnull\nCOMMENTS\n\n" +
+            "mode names:\nDEFAULT_MODE\nINNER\n\natn:\n");
+
+        const data = InterpreterDataReader.parseInterpreterData(interp);
+        expect(data.channels).toEqual(["DEFAULT_TOKEN_CHANNEL", "HIDDEN", "null", "null", "COMMENTS"]);
+        expect(data.modes).toEqual(["DEFAULT_MODE", "INNER"]);
     });
 
     it("base listener and base visitor generation", () => {
