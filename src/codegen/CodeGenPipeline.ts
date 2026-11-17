@@ -28,6 +28,12 @@ export class CodeGenPipeline {
         // writing output files stops after the first error is reported.
         const errorCount = this.g.tool.errorManager.errors;
 
+        // Base listeners and visitors are only generated for targets which have them. In languages like TypeScript
+        // the listener and visitor classes already have empty default implementations.
+        const targetGenerator = this.codeGenerator.targetGenerator;
+        const generateBaseListener = this.options.generateBaseListener && targetGenerator.wantsBaseListener;
+        const generateBaseVisitor = this.options.generateBaseVisitor && targetGenerator.wantsBaseVisitor;
+
         if (this.g.isLexer()) {
             if (this.options.generateDeclarationFile) {
                 const lexer = this.codeGenerator.generateLexer(this.options, true); // Header file if needed.
@@ -66,7 +72,7 @@ export class CodeGenPipeline {
                     this.codeGenerator.writeListener(listener, false);
                 }
 
-                if (this.options.generateBaseListener) {
+                if (generateBaseListener) {
                     if (this.options.generateDeclarationFile) {
                         const baseListener = this.codeGenerator.generateBaseListener(this.options, true);
                         if (this.g.tool.errorManager.errors === errorCount) {
@@ -94,7 +100,7 @@ export class CodeGenPipeline {
                     this.codeGenerator.writeVisitor(visitor, false);
                 }
 
-                if (this.options.generateBaseVisitor) {
+                if (generateBaseVisitor) {
                     if (this.options.generateDeclarationFile) {
                         const baseVisitor = this.codeGenerator.generateBaseVisitor(this.options, true);
                         if (this.g.tool.errorManager.errors === errorCount) {

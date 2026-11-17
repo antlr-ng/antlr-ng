@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 
 import { CppTargetGenerator } from "../../src/default-target-generators/CppTargetGenerator.js";
 import { CSharpTargetGenerator } from "../../src/default-target-generators/CSharpTargetGenerator.js";
+import { Python3TargetGenerator } from "../../src/default-target-generators/Python3TargetGenerator.js";
 import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { IssueCode } from "../../src/tool/Issues.js";
 import { generate, lexerOf, parserOf } from "../support/GenerationHelper.js";
@@ -234,18 +235,47 @@ describe("Code generation triggers coverage", () => {
             package: "my.pkg",
         });
         expect(result.queue.errors).toHaveLength(0);
-        expect([...result.files.keys()].sort()).toEqual([
-            "Base.g4", "Base.interp", "Base.tokens", "BaseBaseListener.ts", "BaseBaseVisitor.ts", "BaseLexer.interp",
-            "BaseLexer.tokens", "BaseLexer.ts", "BaseListener.ts", "BaseParser.ts", "BaseVisitor.ts",
-        ]);
 
-        // The TypeScript target has no content for base listeners/visitors (listener methods are optional).
-        expect(result.files.get("BaseBaseListener.ts")).toBe("");
-        expect(result.files.get("BaseBaseVisitor.ts")).toBe("");
+        // The TypeScript target has no base listener/visitor (listener methods are optional), so none are written.
+        expect([...result.files.keys()].sort()).toEqual([
+            "Base.g4", "Base.interp", "Base.tokens", "BaseLexer.interp", "BaseLexer.tokens", "BaseLexer.ts",
+            "BaseListener.ts", "BaseParser.ts", "BaseVisitor.ts",
+        ]);
         expect(result.files.get("BaseListener.ts")).toContain("enterOne?: (ctx: OneContext) => void;");
         expect(result.files.get("BaseVisitor.ts")).toContain("visitTwo?: (ctx: TwoContext) => Result;");
         expect(result.files.get("Base.interp")).toContain("rule names:\na\nb\n");
         expect(result.files.get("Base.interp")).not.toContain("channel names:");
+    });
+
+    it("base listener and base visitor files only for targets which want them", () => {
+        const grammar = "grammar Expr;\na : ID ;\nID : [a-z]+ ;\n";
+        const options = {
+            generateListener: true,
+            generateVisitor: true,
+            generateBaseListener: true,
+            generateBaseVisitor: true,
+        };
+
+        // Python has no base classes either.
+        const python = new Python3TargetGenerator(false);
+        python.setUp();
+        let result = generate(grammar, options, (config) => {
+            config.generators = [python];
+        });
+        expect(result.queue.errors).toHaveLength(0);
+        expect([...result.files.keys()].sort()).toEqual([
+            "Expr.g4", "Expr.tokens", "ExprLexer.py", "ExprLexer.tokens", "ExprListener.py", "ExprParser.py",
+            "ExprVisitor.py",
+        ]);
+
+        const cpp = new CppTargetGenerator(false);
+        cpp.setUp();
+        result = generate(grammar, options, (config) => {
+            config.generators = [cpp];
+        });
+        expect(result.queue.errors).toHaveLength(0);
+        expect(result.files.get("ExprBaseListener.cpp")).toContain("ExprBaseListener");
+        expect(result.files.get("ExprBaseVisitor.cpp")).toContain("ExprBaseVisitor");
     });
 
     it("ATN dot files are generated for all rules when requested", () => {
