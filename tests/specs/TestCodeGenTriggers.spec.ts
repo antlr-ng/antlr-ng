@@ -216,6 +216,7 @@ describe("Code generation triggers coverage", () => {
         const interp = result.files.get("CGL.interp")!;
         expect(interp).toContain("rule names:\nID\nINT\nWS\nCOMMENT\nSKIPME\nMOREME\nPUSH\nTYPED\nACT\nPRED\n" +
             "MULTI\nDIGIT\nHEX\nHEXDIGIT\nCS\nRANGE\nUNI\nNOTSET\nEOFRULE\nPOP\nINNER_TEXT\n");
+
         // Custom channels start at value 2. The unused values 0 and 1 are written as "null", as in ANTLR4 (#131).
         expect(interp).toContain("channel names:\nDEFAULT_TOKEN_CHANNEL\nHIDDEN\nnull\nnull\nCOMMENTS\n\n" +
             "mode names:\nDEFAULT_MODE\nINNER\n\natn:\n");
