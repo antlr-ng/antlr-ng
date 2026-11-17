@@ -79,6 +79,9 @@
 - `generateBaseListener` and `generateBaseVisitor` now only take effect for targets which have base classes
   (`wantsBaseListener`/`wantsBaseVisitor` of the target generator). The TypeScript and Python 3 generators wrote empty
   base listener and visitor files before.
+- The `CSharpTargetGenerator` and `CppTargetGenerator` constructors no longer require the `logRendering` argument
+  (default: `false`), like the other default generators. `new CSharpTargetGenerator()` in a config file failed to
+  type-check before.
 
 ## 1.0.10
 

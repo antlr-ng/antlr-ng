@@ -56,7 +56,7 @@ export class CppTargetGenerator extends GeneratorBase implements ITargetGenerato
 
     private escapeMap: Map<CodePoint, string>;
 
-    public constructor(logRendering: boolean, protected defines?: Record<string, string>) {
+    public constructor(logRendering = false, protected defines?: Record<string, string>) {
         super(logRendering);
 
         this.escapeMap = new Map(GeneratorBase.defaultCharValueEscape);
