@@ -25,10 +25,16 @@ export interface IGenerationOptions {
     /** Set this to true to generate a declaration file (header file etc.). */
     generateDeclarationFile: boolean,
 
-    /** Generate a base listener class (default: false). */
+    /**
+     * Generate a base listener class (default: false). Only for targets which use one (`wantsBaseListener` of the
+     * target generator), and only together with `generateListener`.
+     */
     generateBaseListener: boolean,
 
-    /** Generate a base visitor class (default: false). */
+    /**
+     * Generate a base visitor class (default: false). Only for targets which use one (`wantsBaseVisitor` of the
+     * target generator), and only together with `generateVisitor`.
+     */
     generateBaseVisitor: boolean,
 
     /** Specify a package/namespace for the generated code. */

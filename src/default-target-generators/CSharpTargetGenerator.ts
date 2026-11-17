@@ -42,7 +42,7 @@ export class CSharpTargetGenerator extends GeneratorBase implements ITargetGener
 
     private escapeMap: Map<CodePoint, string>;
 
-    public constructor(logRendering: boolean) {
+    public constructor(logRendering = false) {
         super(logRendering);
 
         // C# character escape sequences
