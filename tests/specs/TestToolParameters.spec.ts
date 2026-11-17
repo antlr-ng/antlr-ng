@@ -94,31 +94,54 @@ describe("Tool parameters coverage", () => {
     it("accepts a config file alone without deprecation warning", () => {
         const warn = vi.spyOn(console, "warn").mockImplementation(() => { /**/ });
         try {
-            const parameters = parseToolParameters(["-c", "antlr-ng.config.json", "D.g4"]);
+            // The config file lists the grammar files, so none are needed here.
+            const parameters = parseToolParameters(["-c", "antlr-ng.config.json"]);
             expect(parameters.config).toBe("antlr-ng.config.json");
-            expect(parameters.grammarFiles).toEqual(["D.g4"]);
+            expect(parameters.grammarFiles).toEqual([]);
             expect(warn).not.toHaveBeenCalled();
         } finally {
             warn.mockRestore();
         }
     });
 
-    it("rejects a config file together with other options", () => {
+    /**
+     * Parses the arguments and expects the parser to fail with the given error message.
+     *
+     * @param args The command line arguments.
+     * @param message The expected error message.
+     */
+    const expectFailure = (args: string[], message: string): void => {
         const error = vi.spyOn(console, "error").mockImplementation(() => { /**/ });
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => { /**/ });
         const exit = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
             throw new Error(`exit ${code}`);
         }) as (code?: number) => never);
 
         try {
             expect(() => {
-                parseToolParameters(["--config", "cfg.json", "-o", "out", "E.g4"]);
+                parseToolParameters(args);
             }).toThrow("exit 1");
-            expect(error).toHaveBeenCalledWith("Cannot use a config file together with other options.");
+            expect(error).toHaveBeenCalledWith(message);
             expect(exit).toHaveBeenCalledWith(1);
         } finally {
             error.mockRestore();
+            warn.mockRestore();
             exit.mockRestore();
         }
+    };
+
+    it("rejects a config file together with other options", () => {
+        expectFailure(["--config", "cfg.json", "-o", "out", "E.g4"],
+            "Cannot use a config file together with other options.");
+    });
+
+    it("rejects a config file together with grammar files, which would be ignored", () => {
+        expectFailure(["-c", "cfg.json", "E.g4"], "Cannot use a config file together with other options.");
+    });
+
+    it("requires grammar files without a config file", () => {
+        expectFailure([], "No grammar files given. Use a config file or list the grammar files.");
+        expectFailure(["-o", "out"], "No grammar files given. Use a config file or list the grammar files.");
     });
 
     it("allows switching the virtual file system", () => {
