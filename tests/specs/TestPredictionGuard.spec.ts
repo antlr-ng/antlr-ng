@@ -155,6 +155,14 @@ const collectDiagnostics = (parser: Parser): string[] => {
     return messages;
 };
 
+const parseStart = (parser: Parser): { tree: string; diagnostics: string[]; } => {
+    const diagnostics = collectDiagnostics(parser);
+    const typedParser = parser as Parser & { start: () => ParserRuleContext; };
+    const tree = typedParser.start().toStringTree(parser).replace(/:\d+/g, "");
+
+    return { tree, diagnostics };
+};
+
 describe("TestPredictionGuard", () => {
     it.each(expectations)("$name generates FIRST-set rejection guards", ({ generator, guardTest,
         adaptivePredict }) => {
@@ -205,6 +213,32 @@ describe("TestPredictionGuard", () => {
         const code = generateParser(new TypeScriptTargetGenerator(false), grammar);
         expect(code).toContain("adaptivePredict");
         expect(code).not.toContain("numberOfSyntaxErrors");
+    });
+
+    it.each([
+        { quantifier: "?", input: "b" },
+        { quantifier: "*", input: "b" },
+        { quantifier: "+", input: "ab" },
+    ])("preserves $quantifier diagnostics when a predicate hides exit lookahead", async ({ quantifier, input }) => {
+        const grammar = `grammar T;
+            start: A${quantifier} {false}? B EOF;
+            A: 'a'; B: 'b';
+        `;
+
+        const tempDir = mkdtempSync(join(tmpdir(), "AntlrPredictionGuardPredicate-"));
+        try {
+            const options = ToolTestUtils.createOptionsForToolTests("T.g4", grammar, "TParser", "TLexer",
+                false, false, "start", input, false, false);
+            const [, parser] = await ToolTestUtils.setupRecognizers(options, join(tempDir, "normal"));
+            const [, forcedParser] = await ToolTestUtils.setupRecognizers({ ...options, forceAtn: true },
+                join(tempDir, "forced"));
+
+            const expected = parseStart(forcedParser);
+            expect(expected.diagnostics).toEqual(["no viable alternative at input 'b'"]);
+            expect(parseStart(parser)).toEqual(expected);
+        } finally {
+            rmSync(tempDir, { recursive: true });
+        }
     });
 
     it("does not guard a non-greedy decision without LL(1) lookahead data", () => {
@@ -302,19 +336,12 @@ describe("TestPredictionGuard", () => {
         expect(code).toContain("numberOfSyntaxErrors");
         expect(code).toContain("adaptivePredict");
 
-        const normalizeTree = (tree: string): string => {
-            return tree.replace(/:\d+/g, "");
-        };
-
         const parse = (lexer: Lexer, parser: Parser,
             input: string): { tree: string; diagnostics: string[]; } => {
             lexer.inputStream = CharStream.fromString(input);
             parser.tokenStream = new CommonTokenStream(lexer);
-            const diagnostics = collectDiagnostics(parser);
-            const typedParser = parser as Parser & { start: () => ParserRuleContext; };
-            const tree = typedParser.start();
 
-            return { tree: normalizeTree(tree.toStringTree(parser)), diagnostics };
+            return parseStart(parser);
         };
 
         const tempDir = mkdtempSync(join(tmpdir(), "AntlrPredictionGuardInvalid-"));

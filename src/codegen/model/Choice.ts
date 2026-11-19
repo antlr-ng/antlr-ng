@@ -85,10 +85,10 @@ export abstract class Choice extends RuleElement {
     }
 
     /**
-     * Creates the rejection guard for this decision, if its consuming alternative has a known FIRST set.
+     * Creates the rejection guard when both the consuming and exit alternatives have known lookahead.
      *
      * @param lookIndex The index of the consuming alternative in the decision lookahead list.
-     * @param exitAlt The alternative to select when the lookahead token is outside the FIRST set.
+     * @param exitAlt The one-based exit alternative to select when the lookahead token is outside the FIRST set.
      *
      * @returns The guard, or `undefined` when no safe guard can be generated.
      */
@@ -99,12 +99,13 @@ export abstract class Choice extends RuleElement {
             Array<Array<IntervalSet | undefined> | undefined>;
         const lookaheads = decisionLookahead[this.decision];
         const firstSet = lookaheads?.[lookIndex];
-        if (!firstSet || this.alts.length !== 1) {
+        const exitLookahead = lookaheads?.[exitAlt - 1];
+        // An opaque predicate can make exit nonviable even when the token cannot start the consuming alternative.
+        if (!firstSet || !exitLookahead || this.alts.length !== 1) {
             return undefined;
         }
 
-        // A nullable consuming alternative cannot decide entering versus exiting. The analysis reports a
-        // missing set when it encountered an opaque semantic predicate, and a null set means unknown lookahead.
+        // A nullable consuming alternative cannot decide entering versus exiting.
         const tokens = firstSet.toArray();
         if (tokens.length === 0 || tokens.includes(Token.EPSILON)) {
             return undefined;
