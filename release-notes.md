@@ -112,6 +112,13 @@
   errors, and `--exact-output-dir` is reported as ignored. `-D` now takes one value per option, so
   `-D language=Cpp T.g4` no longer takes `T.g4` as another option.
 - New configuration field `grammarOptions`, which overrides grammar options like `-D` on the command line.
+- Fixed #140: grammars are processed without a target generator. Without one, the tool still builds the ATN, so
+  interpreters work and grammars with the language `None` write their `.interp` and `.tokens` files. Other grammars
+  report "no target generators configured". The interpreter CLI no longer configures a generator.
+- Fixed processing with several target generators: each grammar was processed once per generator on the same
+  grammar object, so even a simple combined grammar failed with errors like "cannot create implicit token for string
+  literal in non-combined grammar", and left-recursive rules kept the code of the first generator. Each generator now
+  processes its own copy of the grammars.
 
 ## 1.0.10
 

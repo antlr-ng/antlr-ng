@@ -38,6 +38,12 @@ interface ICharactersDataCheckStatus {
 
 export class LexerATNFactory extends ParserATNFactory {
 
+    /** Lexer commands without argument, as `GeneratorBase` renders them. Used when there is no target generator. */
+    private static readonly commands = new Set(["skip", "more", "popMode"]);
+
+    /** Lexer commands with an argument, as `GeneratorBase` renders them. Used when there is no target generator. */
+    private static readonly callCommands = new Set(["type", "channel", "mode", "pushMode"]);
+
     /** Maps from an action index to a {@link LexerAction} object. */
     private indexToActionMap = new Map<number, LexerAction>();
 
@@ -46,7 +52,7 @@ export class LexerATNFactory extends ParserATNFactory {
 
     private readonly ruleCommands = new Array<string>();
 
-    public constructor(g: LexerGrammar, private targetGenerator: ITargetGenerator) {
+    public constructor(g: LexerGrammar, private targetGenerator?: ITargetGenerator) {
         super(g);
     }
 
@@ -388,6 +394,29 @@ export class LexerATNFactory extends ParserATNFactory {
         return true;
     }
 
+    /**
+     * Gets the renderer for a lexer command. Without a target generator, the code of the command is not needed (it is
+     * not part of the ATN), so a placeholder is rendered for the known commands.
+     *
+     * @param name The name of the command.
+     * @param arg The argument of the command, if it is a call command.
+     *
+     * @returns The renderer, or undefined if the command does not exist (with or without argument).
+     */
+    private getLexerCommandRenderer(name: string, arg?: string): ((arg: string) => Lines) | (() => Lines) | undefined {
+        if (this.targetGenerator) {
+            return this.targetGenerator.getLexerCommandRenderer(name, arg);
+        }
+
+        if (arg !== undefined) {
+            return LexerATNFactory.callCommands.has(name)
+                ? (value: string): Lines => { return [`${name}(${value})`]; }
+                : undefined;
+        }
+
+        return LexerATNFactory.commands.has(name) ? (): Lines => { return [`${name}()`]; } : undefined;
+    }
+
     private lexerCallCommandOrCommand(id: GrammarAST, arg?: GrammarAST): IStatePair {
         const lexerAction = this.createLexerAction(id, arg);
         if (lexerAction) {
@@ -397,10 +426,10 @@ export class LexerATNFactory extends ParserATNFactory {
         // Fall back to standard action generation for the command.
         const callCommand = arg !== undefined;
         if (callCommand) {
-            const method = this.targetGenerator.getLexerCommandRenderer(id.getText(), arg.getText());
+            const method = this.getLexerCommandRenderer(id.getText(), arg.getText());
             if (!method) {
                 // Check if the command just doesn't expect parameters (i.e. is not a call command).
-                const temp = this.targetGenerator.getLexerCommandRenderer(id.getText());
+                const temp = this.getLexerCommandRenderer(id.getText());
                 if (temp) {
                     this.g.tool.errorManager.grammarError(IssueCode.UnwantedLexerCommandArgument, this.g.fileName,
                         id.token!, id.getText());
@@ -414,10 +443,10 @@ export class LexerATNFactory extends ParserATNFactory {
 
             return this.action(method(arg.getText()).join("\n"));
         } else {
-            const method = this.targetGenerator.getLexerCommandRenderer(id.getText()) as (() => Lines) | undefined;
+            const method = this.getLexerCommandRenderer(id.getText()) as (() => Lines) | undefined;
             if (!method) {
                 // Check if the command is a call command (i.e. expects an argument).
-                const temp = this.targetGenerator.getLexerCommandRenderer(id.getText(), "");
+                const temp = this.getLexerCommandRenderer(id.getText(), "");
                 if (temp) {
                     this.g.tool.errorManager.grammarError(IssueCode.MissingLexerCommandArgument, this.g.fileName,
                         id.token!, id.getText());
