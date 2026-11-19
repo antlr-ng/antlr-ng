@@ -88,7 +88,8 @@ export const parseToolParameters = (args: string[]): IToolParameters => {
         .option<boolean>("-v, --generate-visitor <boolean>", "Generate parse tree visitor.", parseBoolean)
         .option("-p, --package <name>", "Specify a package/namespace for the generated code.")
         .option<boolean>("-d, --generate-dependencies <boolean>", "Generate file dependencies.", parseBoolean)
-        .option("-D, --define <key=value...>", "Set/override a grammar-level option.", parseKeyValuePair)
+        // One value per -D (repeat it for more), so that a grammar file after it is not taken as another value.
+        .option("-D, --define <key=value>", "Set/override a grammar-level option.", parseKeyValuePair)
         .option<boolean>("-w, --warnings-are-errors <boolean>", "Treat warnings as errors.", parseBoolean)
         .option<boolean>("-f, --force-atn <boolean>", "Use the ATN simulator for all predictions.", parseBoolean)
         .option<boolean>("--log [boolean]", "Dump lots of logging info to antlrng-timestamp.log.", parseBoolean)

@@ -100,6 +100,12 @@ export class GrammarRootAST extends GrammarASTWithOptions implements IGrammarRoo
                     return value;
                 }
             }
+
+            // Grammar options set in the configuration (-D on the command line) override those in the grammar.
+            const override = this.toolConfiguration.grammarOptions?.[key];
+            if (override !== undefined) {
+                return override;
+            }
         }
 
         return super.getOptionString(key);
