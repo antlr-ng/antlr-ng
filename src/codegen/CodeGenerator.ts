@@ -33,10 +33,32 @@ export type { NoLanguage, SupportedLanguage, ToolLanguage } from "./TargetLangua
 export class CodeGenerator {
     public readonly language: ToolLanguage;
 
-    public constructor(private g: Grammar, public readonly targetGenerator: ITargetGenerator,
+    private readonly generator?: ITargetGenerator;
+
+    /**
+     * @param g The grammar to generate code for.
+     * @param targetGenerator The generator for the target code. Without one, only the language independent files
+     *                        (interpreter data, token vocabulary, ATN diagrams) can be written.
+     * @param generationOptions The generation options.
+     */
+    public constructor(private g: Grammar, targetGenerator: ITargetGenerator | undefined,
         public readonly generationOptions: IGenerationOptions) {
 
+        this.generator = targetGenerator;
         this.language = this.g.getLanguage();
+    }
+
+    /**
+     * @returns The generator for the target code.
+     *
+     * @throws Error if no generator was given.
+     */
+    public get targetGenerator(): ITargetGenerator {
+        if (!this.generator) {
+            throw new Error("Target code can only be generated with a target generator.");
+        }
+
+        return this.generator;
     }
 
     public generateLexer(options: IGenerationOptions, declaration?: boolean): string {

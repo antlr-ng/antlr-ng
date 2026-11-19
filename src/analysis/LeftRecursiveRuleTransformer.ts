@@ -48,7 +48,7 @@ export class LeftRecursiveRuleTransformer {
     private tool: Tool;
 
     public constructor(private ast: GrammarRootAST, private rules: Rule[], private g: Grammar,
-        private targetGenerator: ITargetGenerator) {
+        private targetGenerator?: ITargetGenerator) {
         this.tool = g.tool;
     }
 
