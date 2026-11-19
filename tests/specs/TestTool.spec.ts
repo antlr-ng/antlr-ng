@@ -54,14 +54,54 @@ describe("Tool coverage", () => {
                 "/tmp/out/DepVisitor.ts",
             ]);
 
-            // Make separates prerequisites with spaces, so spaces in the lib directory are escaped too.
-            expect(generator.getNonImportDependenciesFileList()).toEqual(["my\\ lib/Other.tokens"]);
-            expect(generator.getDependenciesFileList()).toEqual(["my\\ lib/Other.tokens"]);
-
             const dependencies = generator.getDependencies().split("\n");
-            expect(dependencies[0]).toBe("Dep.g4: my\\ lib/Other.tokens");
             expect(dependencies[1]).toBe("/tmp/out/DepParser.ts : Dep.g4");
             expect(dependencies).toHaveLength(7);
+        });
+
+        it("finds the token vocabulary where the tool reads it", () => {
+            const dir = generateRandomFilename("/tmp/deps-");
+            const lib = `${dir}/my lib`;
+            const out = `${dir}/out`;
+            const source = `${dir}/my src`;
+            for (const folder of [lib, out, source]) {
+                fileSystem.mkdirSync(folder, { recursive: true });
+            }
+
+            try {
+                const tool = new Tool();
+                const g = new Grammar("parser grammar Dep;\noptions { tokenVocab = Other; }\na : A ;");
+                g.fileName = `${source}/Dep.g4`;
+
+                const options = defineConfig({ generationOptions: { outputDirectory: out } }).generationOptions;
+                const generator = new BuildDependencyGenerator(tool, g, options, tsGenerator, lib);
+                const escaped = (path: string): string => { return path.replaceAll(" ", "\\ "); };
+
+                // Not generated yet (e.g. by the lexer of a lexer/parser pair in the same build): the vocabulary
+                // will be in the output directory.
+                expect(generator.getNonImportDependenciesFileList()).toEqual([`${out}/Other.tokens`]);
+
+                // Otherwise the folders are searched in the order of the tool: lib, output and grammar folder.
+                fileSystem.writeFileSync(`${source}/Other.tokens`, "A=1\n");
+                expect(generator.getNonImportDependenciesFileList()).toEqual([`${escaped(source)}/Other.tokens`]);
+
+                fileSystem.writeFileSync(`${out}/Other.tokens`, "A=1\n");
+                expect(generator.getNonImportDependenciesFileList()).toEqual([`${out}/Other.tokens`]);
+
+                fileSystem.writeFileSync(`${lib}/Other.tokens`, "A=1\n");
+                expect(generator.getNonImportDependenciesFileList()).toEqual([`${escaped(lib)}/Other.tokens`]);
+
+                // Make separates targets and prerequisites with spaces, so the spaces in the grammar's path and in
+                // the lib directory are escaped.
+                const dependencies = generator.getDependencies().split("\n");
+                expect(dependencies).toEqual([
+                    `${escaped(source)}/Dep.g4: ${escaped(lib)}/Other.tokens`,
+                    `${out}/Dep.ts : ${escaped(source)}/Dep.g4`,
+                    `${out}/Dep.tokens : ${escaped(source)}/Dep.g4`,
+                ]);
+            } finally {
+                fileSystem.rmSync(dir, { recursive: true, force: true });
+            }
         });
 
         it("uses the current directory for token vocabularies without lib directory", () => {
@@ -169,6 +209,16 @@ describe("Tool coverage", () => {
                 { name: "DepImp.g4", content: "grammar DepImp;\nimport DepImpRules;\na : ID ;" },
             ];
 
+            // The root grammar overrides the only rule of the imported grammar, so its literal is not used.
+            const overriddenLiteral = [
+                { name: "DepOvL.g4", content: "lexer grammar DepOvL;\nID : [a-z]+ ;" },
+                { name: "DepOvS.g4", content: "grammar DepOvS;\na : 'x' ;" },
+                {
+                    name: "DepOv.g4",
+                    content: "grammar DepOv;\noptions { tokenVocab = DepOvL; }\nimport DepOvS;\ns : a ;\na : ID ;",
+                },
+            ];
+
             const cpp = new CppTargetGenerator(false);
             cpp.setUp();
 
@@ -180,6 +230,7 @@ describe("Tool coverage", () => {
                 [noLexer, {}, tsGenerator],
                 [literalsOnly, {}, tsGenerator],
                 [importedLexerRules, {}, tsGenerator],
+                [overriddenLiteral, {}, tsGenerator],
                 [combined, { generateDeclarationFile: true, generateListener: true, generateBaseListener: true }, cpp],
                 [split, { generateVisitor: true, generateBaseVisitor: true }, cpp],
             ];

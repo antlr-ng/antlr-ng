@@ -83,11 +83,13 @@
 - Fixed `generateDependencies`, which failed for every grammar with "internal error: Invalid URL": the file names were
   built with `new URL()` from plain paths. The generated file list now names the files the code generation writes:
   base listeners and visitors only with `generateBaseListener`/`generateBaseVisitor` and for targets which have them,
-  no listener or visitor for lexer grammars, no lexer for a combined grammar without lexer rules and literals,
-  declaration files only with `generateDeclarationFile`, and interpreter data files with `generateInterpreterData`.
-  Imported grammars are only listed as dependencies. The dependency line has the make
-  format `T.g4: A.tokens B.g4` (prerequisites separated by spaces), and spaces in the output and lib directories are
-  escaped. The CLI no longer fails after listing the dependencies because of the missing output directory.
+  no listener or visitor for lexer grammars, no lexer for a combined grammar without lexer rules and literals (rules
+  overridden by the importing grammar don't count), declaration files only with `generateDeclarationFile`, and
+  interpreter data files with `generateInterpreterData`. Imported grammars are only listed as dependencies. The
+  `tokenVocab` file is searched like the tool searches it (lib, output and grammar directory), and a vocabulary that
+  is generated in the same build is expected in the output directory. The dependency line has the make format
+  `T.g4: A.tokens B.g4` (prerequisites separated by spaces), and spaces in all paths are escaped. The CLI no longer
+  fails after listing the dependencies because of the missing output directory.
 - `generateBaseListener` and `generateBaseVisitor` now only take effect for targets which have base classes
   (`wantsBaseListener`/`wantsBaseVisitor` of the target generator). The TypeScript and Python 3 generators wrote empty
   base listener and visitor files before.

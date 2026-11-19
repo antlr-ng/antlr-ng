@@ -9,8 +9,12 @@ import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { CodeGenerator } from "../codegen/CodeGenerator.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
+import { dirname } from "../support/fs-helpers.js";
 import { GrammarType } from "../support/GrammarType.js";
 import { isTokenName } from "../support/helpers.js";
+import { fileSystem } from "../tool-parameters.js";
+import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
+import type { GrammarAST } from "./ast/GrammarAST.js";
 import { Grammar } from "./Grammar.js";
 
 /**
@@ -25,8 +29,9 @@ import { Grammar } from "./Grammar.js";
  * The listener, visitor, base listener and base visitor files, declaration files (e.g. C++ headers) and interpreter
  * data files are added when the generation options ask for them, just like the code generation does.
  *
- * If the grammar uses option tokenVocab=A or imports other grammars, the first line lists them, with the lib
- * directory when one is configured:
+ * If the grammar uses option tokenVocab=A or imports other grammars, the first line lists them. The vocabulary file is
+ * searched like the tool searches it (lib directory, output directory, grammar directory). If it does not exist yet,
+ * it is expected in the output directory, where it is generated:
  *
  *    T.g4: libDir/A.tokens
  *
@@ -135,7 +140,7 @@ export class BuildDependencyGenerator {
         // Handle imported grammars. Their file name is the path they were loaded from (see
         // `Tool.findImportedGrammarFile`), so the lib directory must not be added again.
         for (const g of this.g.getAllImportedGrammars()) {
-            files.push(g.fileName.replaceAll(" ", "\\ "));
+            files.push(BuildDependencyGenerator.escapeSpaces(g.fileName));
         }
 
         return files;
@@ -153,7 +158,8 @@ export class BuildDependencyGenerator {
         // Handle token vocabulary loads.
         const tokenVocab = this.g.getOptionString("tokenVocab");
         if (tokenVocab !== undefined) {
-            files.push(this.groomQualifiedFileName(this.libDir ?? ".", tokenVocab + Constants.VocabFileExtension));
+            files.push(this.groomQualifiedFileName(this.getVocabDirectory(tokenVocab),
+                tokenVocab + Constants.VocabFileExtension));
         }
 
         return files;
@@ -163,14 +169,17 @@ export class BuildDependencyGenerator {
         const inputFiles = this.getDependenciesFileList();
         const result: string[] = [];
 
+        // Make separates targets and prerequisites with spaces, so spaces in the grammar's path are escaped too.
+        const grammarFile = BuildDependencyGenerator.escapeSpaces(this.g.fileName);
+
         // Make syntax: the grammar depends on these files.
         if (inputFiles.length > 0) {
-            result.push(`${this.g.fileName}: ${inputFiles.join(" ")}`);
+            result.push(`${grammarFile}: ${inputFiles.join(" ")}`);
         }
 
         const outputFiles = this.getGeneratedFileList();
         outputFiles.forEach((file) => {
-            result.push(`${file} : ${this.g.fileName}`);
+            result.push(`${file} : ${grammarFile}`);
         });
 
         return result.join("\n");
@@ -181,20 +190,81 @@ export class BuildDependencyGenerator {
     }
 
     /**
+     * Escapes spaces in a file name for make, which separates targets and prerequisites with spaces.
+     *
+     * @param fileName The file name to escape.
+     *
+     * @returns The file name with each space preceded by a backslash.
+     */
+    private static escapeSpaces(fileName: string): string {
+        return fileName.replaceAll(" ", "\\ ");
+    }
+
+    /**
+     * Determines the folder of a token vocabulary file. The folders are searched in the order of
+     * `TokenVocabParser.getImportedVocabFile`: the lib directory (or the current directory without one), the output
+     * directory and the grammar's folder. A vocabulary that does not exist yet is generated in this build, so it is
+     * expected in the output directory.
+     *
+     * @param vocabName The value of the tokenVocab option.
+     *
+     * @returns The folder that contains (or will contain) the vocabulary file.
+     */
+    private getVocabDirectory(vocabName: string): string {
+        const fileName = vocabName + Constants.VocabFileExtension;
+        const candidates = [this.libDir ?? "."];
+        if (this.options.outputDirectory) {
+            candidates.push(this.options.outputDirectory);
+        }
+
+        const grammarDir = dirname(this.g.fileName);
+        if (grammarDir) {
+            candidates.push(grammarDir);
+        }
+
+        const found = candidates.find((dir) => {
+            return fileSystem.existsSync(dir + "/" + fileName);
+        });
+
+        return found ?? this.generator.getOutputDirectory(this.g.fileName);
+    }
+
+    /**
      * Determines whether a combined grammar gets an implicit lexer, without transforming it. This is the condition
      * of `GrammarTransformPipeline.extractImplicitLexer`: the lexer exists if there is a lexer rule or a string
-     * literal (which becomes a lexer rule), in the grammar or in one of the grammars it imports.
+     * literal (which becomes a lexer rule) in the rules of the merged grammar.
      *
      * @returns True if code generation writes a lexer for the grammar.
      */
     private hasImplicitLexer(): boolean {
+        // Merge the rules like `GrammarTransformPipeline.integrateImportedGrammars`: a rule of an imported grammar is
+        // only used if neither the root grammar nor a grammar imported before it has a rule with the same name.
+        const rules = new Map<string, GrammarAST>();
         for (const g of [this.g, ...this.g.getAllImportedGrammars()]) {
-            const rules = g.ast.getFirstChildWithType(ANTLRv4Parser.RULES);
-            if (rules?.children.some((rule) => { return isTokenName(rule.children[0].getText()); })) {
-                return true;
+            for (const rule of g.ast.getNodesWithType(ANTLRv4Parser.RULE)) {
+                const name = rule.children[0].getText();
+                if (!rules.has(name)) {
+                    rules.set(name, rule);
+                }
             }
+        }
 
-            if (g.getStringLiterals().size > 0) {
+        if ([...rules.keys()].some((name) => { return isTokenName(name); })) {
+            return true;
+        }
+
+        // All remaining rules are parser rules. Look for string literals in them.
+        const collector = new class extends GrammarTreeVisitor {
+            public hasLiterals = false;
+
+            public override stringRef(): void {
+                this.hasLiterals = true;
+            }
+        }(this.g.tool.errorManager);
+
+        for (const rule of rules.values()) {
+            collector.visit(rule, ANTLRv4Parser.RULE_ruleSpec);
+            if (collector.hasLiterals) {
                 return true;
             }
         }
@@ -206,12 +276,8 @@ export class BuildDependencyGenerator {
         outputDir = outputDir.replace(/(?<=.)\/+$/, "");
         if (outputDir === ".") {
             return fileName;
-        } else if (outputDir.includes(" ")) { // Has spaces?
-            const escSpaces = outputDir.replaceAll(" ", "\\ ");
-
-            return escSpaces + "/" + fileName;
-        } else {
-            return outputDir + "/" + fileName;
         }
+
+        return BuildDependencyGenerator.escapeSpaces(outputDir) + "/" + fileName;
     }
 }
