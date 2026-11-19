@@ -55,6 +55,7 @@ export interface IRunOptions {
     superClass?: string;
     predictionMode: PredictionMode;
     buildParseTree: boolean;
+    forceAtn: boolean;
 }
 
 export interface ICapturedOutput {
@@ -162,7 +163,8 @@ export class ToolTestUtils {
             traceATN: false,
             showDFA: false,
             predictionMode: PredictionMode.LL,
-            buildParseTree: true
+            buildParseTree: true,
+            forceAtn: false,
         };
     }
 
@@ -220,6 +222,7 @@ export class ToolTestUtils {
 
         try {
             const parameters = defineConfig({
+                forceAtn: runOptions.forceAtn,
                 grammarFiles: [workDir + "/" + runOptions.grammarFileName],
                 generationOptions: {
                     outputDirectory: workDir,
