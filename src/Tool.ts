@@ -109,7 +109,16 @@ export class Tool implements ITool {
             content += "channel names:\n";
             content += "DEFAULT_TOKEN_CHANNEL\n";
             content += "HIDDEN\n";
-            content += g.channelValueToNameList.join("\n") + "\n";
+
+            // Custom channels start at value 2, so the list has empty slots for the two predefined channels. Write
+            // them as "null", like ANTLR4 does, because an empty line ends the section. As in ANTLR4, the section is
+            // not indexed by channel value: the predefined names come first, so the first custom channel is at index 4.
+            const channelNames: Array<string | undefined> = g.channelValueToNameList;
+            for (const name of channelNames) {
+                content += (name ?? "null") + "\n";
+            }
+            content += "\n";
+
             content += "mode names:\n";
             content += [...(g as LexerGrammar).modes.keys()].join("\n") + "\n";
         }

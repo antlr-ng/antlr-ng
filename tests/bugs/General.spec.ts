@@ -8,9 +8,10 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { ATNSerializer } from "antlr4ng";
+import { ATNSerializer, InterpreterDataReader } from "antlr4ng";
 
 import { CodeGenerator } from "../../src/codegen/CodeGenerator.js";
+import { Tool } from "../../src/Tool.js";
 import { DOTGenerator } from "../../src/tool/DOTGenerator.js";
 import { Grammar, LexerGrammar } from "../../src/tool/index.js";
 
@@ -43,6 +44,33 @@ describe("General", () => {
         const result = dotGenerator.getDOTFromState(startState, true);
         expect(result.indexOf(`s833 -> s835 [fontsize=11, fontname="Courier", arrowsize=.7, label = "EOF", ` +
             `arrowhead = normal];`)).toBeGreaterThan(-1);
+    });
+
+    it("Bug #131 Malformed channel names in the interpreter data of a lexer with custom channels", () => {
+        const lexerGrammar = new LexerGrammar(`lexer grammar L;
+            channels { COMMENTS }
+            A : [a-z]+ ;
+            C : '#' ~[\\n]* -> channel(COMMENTS) ;
+            WS : [ \\t\\n]+ -> skip ;`);
+        lexerGrammar.tool.process(lexerGrammar, false);
+
+        // Custom channels start at value 2. The unused values 0 and 1 are written as "null", as in ANTLR4.
+        const content = Tool.generateInterpreterData(lexerGrammar);
+        expect(content).toContain("channel names:\nDEFAULT_TOKEN_CHANNEL\nHIDDEN\nnull\nnull\nCOMMENTS\n\n" +
+            "mode names:\nDEFAULT_MODE\n\natn:\n");
+
+        const data = InterpreterDataReader.parseInterpreterData(content);
+        expect(data.channels).toEqual(["DEFAULT_TOKEN_CHANNEL", "HIDDEN", "null", "null", "COMMENTS"]);
+        expect(data.modes).toEqual(["DEFAULT_MODE"]);
+
+        // Without custom channels the output doesn't change.
+        const plainGrammar = new LexerGrammar("lexer grammar P;\nA : [a-z]+ ;");
+        plainGrammar.tool.process(plainGrammar, false);
+        const plainContent = Tool.generateInterpreterData(plainGrammar);
+        expect(plainContent).toContain("channel names:\nDEFAULT_TOKEN_CHANNEL\nHIDDEN\n\n" +
+            "mode names:\nDEFAULT_MODE\n\natn:\n");
+        expect(InterpreterDataReader.parseInterpreterData(plainContent).channels)
+            .toEqual(["DEFAULT_TOKEN_CHANNEL", "HIDDEN"]);
     });
 
     it("Grammar with element options", () => {
