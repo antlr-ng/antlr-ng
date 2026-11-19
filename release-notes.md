@@ -101,6 +101,9 @@
   ANTLR4 Go target. Before, it guessed the kind of a name without suffix from the last rendered file, so
   `generateDependencies` listed `pl_parser.go` for `lexer grammar PL`, and a lexer grammar named `TokensParser` got
   the file name `tokens_parser.go`. Without `isLexer`, a name without suffix is now always taken as a parser.
+- Fixed the `antlr-ng` CLI, which failed with "EISDIR: illegal operation on a directory" when the `lib` folder (by
+  default the current folder) or the grammar's folder contained a symbolic link to a folder. Links to folders are now
+  skipped like folders, links to files are copied as files and dangling links are ignored.
 
 ## 1.0.10
 

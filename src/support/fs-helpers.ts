@@ -75,7 +75,26 @@ export const resolvePath = (base: string, path: string): string => {
 };
 
 /**
+ * Determines the status of a file in the physical file system, following symbolic links.
+ *
+ * @param path The path of the file.
+ *
+ * @returns The status of the file or `undefined` if it cannot be determined (e.g. a dangling link or a link cycle).
+ */
+const statOrUndefined = (path: string): nodeFs.Stats | undefined => {
+    try {
+        return nodeFs.statSync(path);
+    } catch {
+        return undefined;
+    }
+};
+
+/**
  * Copies the entire folder from the physical file system to the virtual one.
+ *
+ * Symbolic links are followed: a link to a file is copied as a file, a link to a folder is handled like a folder.
+ * Links that cannot be resolved are skipped. In recursive mode a folder that is already being copied (a link to
+ * the folder itself or to one of its parents) is skipped, to avoid endless recursion.
  *
  * @param fs The target file system.
  * @param source The source folder in the physical file system.
@@ -84,6 +103,24 @@ export const resolvePath = (base: string, path: string): string => {
  * @param filter An optional filter to apply to the file names to copy.
  */
 export const copyFolderToMemFs = (fs: IFs, source: string, target: string, recursive: boolean, filter?: RegExp) => {
+    copyFolder(fs, source, target, recursive, new Set<string>(), filter);
+};
+
+/**
+ * Implements `copyFolderToMemFs`.
+ *
+ * @param fs The target file system.
+ * @param source The source folder in the physical file system.
+ * @param target The target folder in the virtual file system.
+ * @param recursive If true, the copy operation is done recursively.
+ * @param ancestors The real paths of the folders being copied, from the top level folder to the parent of `source`.
+ * @param filter An optional filter to apply to the file names to copy.
+ */
+const copyFolder = (fs: IFs, source: string, target: string, recursive: boolean, ancestors: Set<string>,
+    filter?: RegExp): void => {
+    const realSource = nodeFs.realpathSync(source);
+    ancestors.add(realSource);
+
     const dir = nodeFs.opendirSync(source);
     let entry: nodeFs.Dirent | null;
     while ((entry = dir.readSync()) !== null) {
@@ -93,13 +130,23 @@ export const copyFolderToMemFs = (fs: IFs, source: string, target: string, recur
 
         const sourcePath = source + "/" + entry.name;
         const targetPath = target + "/" + entry.name;
-        if (entry.isDirectory()) {
-            if (!recursive) {
+        let isDirectory = entry.isDirectory();
+        if (entry.isSymbolicLink()) {
+            const stats = statOrUndefined(sourcePath);
+            if (!stats) {
+                continue;
+            }
+
+            isDirectory = stats.isDirectory();
+        }
+
+        if (isDirectory) {
+            if (!recursive || ancestors.has(nodeFs.realpathSync(sourcePath))) {
                 continue;
             }
 
             fs.mkdirSync(targetPath);
-            copyFolderToMemFs(fs, sourcePath, targetPath, true, filter);
+            copyFolder(fs, sourcePath, targetPath, true, ancestors, filter);
         } else {
             if (filter && !filter.test(entry.name)) {
                 continue;
@@ -109,6 +156,7 @@ export const copyFolderToMemFs = (fs: IFs, source: string, target: string, recur
         }
     }
     dir.closeSync();
+    ancestors.delete(realSource);
 };
 
 /**
