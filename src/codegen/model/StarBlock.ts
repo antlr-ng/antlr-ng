@@ -13,7 +13,8 @@ import { Loop } from "./Loop.js";
 export class StarBlock extends Loop {
     public readonly loopLabel: string;
 
-    public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: IQuantifierAST, alts: CodeBlockForAlt[]) {
+    public constructor(factory: IOutputModelFactory, blkOrEbnfRootAST: IQuantifierAST, alts: CodeBlockForAlt[],
+        enablePredictionGuard = true) {
         super(factory, blkOrEbnfRootAST, alts);
 
         this.loopLabel = factory.getGenerator()!.targetGenerator.getLoopLabel(blkOrEbnfRootAST);
@@ -21,5 +22,11 @@ export class StarBlock extends Loop {
         const star = blkOrEbnfRootAST.atnState as StarLoopEntryState;
         this.loopBackStateNumber = star.loopBackState.stateNumber;
         this.decision = star.decision;
+
+        // The consuming alternative is the only real alternative. The exit alternative is the implicit one.
+        const lookIndex = this.exitAlt === 1 ? 1 : 0;
+        if (enablePredictionGuard) {
+            this.predictionGuard = this.createPredictionGuard(lookIndex, this.exitAlt);
+        }
     }
 }

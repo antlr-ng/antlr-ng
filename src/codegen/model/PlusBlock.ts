@@ -12,7 +12,8 @@ import { CodeBlockForAlt } from "./CodeBlockForAlt.js";
 import { Loop } from "./Loop.js";
 
 export class PlusBlock extends Loop {
-    public constructor(factory: IOutputModelFactory, plusRoot: IQuantifierAST, alts: CodeBlockForAlt[]) {
+    public constructor(factory: IOutputModelFactory, plusRoot: IQuantifierAST, alts: CodeBlockForAlt[],
+        enablePredictionGuard = true) {
         super(factory, plusRoot, alts);
 
         const blkAST = plusRoot.children[0] as BlockAST;
@@ -23,6 +24,12 @@ export class PlusBlock extends Loop {
         this.blockStartStateNumber = blkStart.stateNumber;
         this.loopBackStateNumber = loop.stateNumber;
         this.decision = loop.decision;
+
+        // Only the loopback decision is guarded. The mandatory first iteration always runs.
+        const lookIndex = this.exitAlt === 1 ? 1 : 0;
+        if (enablePredictionGuard) {
+            this.predictionGuard = this.createPredictionGuard(lookIndex, this.exitAlt);
+        }
     }
 
 }
