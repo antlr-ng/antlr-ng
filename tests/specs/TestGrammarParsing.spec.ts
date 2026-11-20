@@ -144,6 +144,25 @@ describe("Parse coverage", () => {
             }
         });
 
+        it("copies a vocabulary from the grammar's directory to the output directory", () => {
+            const dir = generateRandomFilename("/tmp/vocab-");
+            fileSystem.mkdirSync(dir + "/src", { recursive: true });
+            try {
+                fileSystem.writeFileSync(dir + "/src/RCVocab.tokens", "X=5\n");
+
+                const g = createGrammar("RC");
+                g.fileName = dir + "/src/RC.g4";
+                expect(new TokenVocabParser(g, dir + "/out", "/nonexistent").load().get("X")).toBe(5);
+                expect(fileSystem.readFileSync(dir + "/out/RCVocab.tokens", "utf8")).toBe("X=5\n");
+
+                // From now on the copy is used, like a vocabulary generated in the output directory.
+                fileSystem.writeFileSync(dir + "/out/RCVocab.tokens", "X=6\n");
+                expect(new TokenVocabParser(g, dir + "/out", "/nonexistent").load().get("X")).toBe(6);
+            } finally {
+                fileSystem.rmSync(dir, { recursive: true, force: true });
+            }
+        });
+
         it("reports a missing tokens file referenced in the grammar", () => {
             const g = createGrammar("S");
             const queue = new ErrorQueue(g.tool.errorManager);
