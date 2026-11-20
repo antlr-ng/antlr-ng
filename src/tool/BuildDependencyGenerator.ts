@@ -278,9 +278,9 @@ export class BuildDependencyGenerator {
     private groomQualifiedFileName(outputDir: string, fileName: string): string {
         outputDir = outputDir.replace(/(?<=.)\/+$/, "");
         if (outputDir === ".") {
-            return fileName;
+            return BuildDependencyGenerator.escapeSpaces(fileName);
         }
 
-        return BuildDependencyGenerator.escapeSpaces(outputDir) + "/" + fileName;
+        return BuildDependencyGenerator.escapeSpaces(outputDir + "/" + fileName);
     }
 }
