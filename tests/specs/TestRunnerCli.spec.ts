@@ -48,7 +48,7 @@ describe("antlr-ng CLI with legacy parameters", () => {
     it("generates TypeScript without a language", () => {
         const result = run("-o", "out", "L.g4");
         expect(result.status).toBe(0);
-        expect(result.files).toEqual(["L.tokens", "L.ts"]);
+        expect(result.files).toEqual(["L.interp", "L.tokens", "L.ts"]);
     }, 30000);
 
     it("generates metadata only with -Dlanguage=None", () => {
@@ -60,7 +60,7 @@ describe("antlr-ng CLI with legacy parameters", () => {
     it("selects the generator with -D language", () => {
         const result = run("-o", "out", "-D", "language=Cpp", "L.g4");
         expect(result.status).toBe(0);
-        expect(result.files).toEqual(["L.cpp", "L.h", "L.tokens"]);
+        expect(result.files).toEqual(["L.cpp", "L.h", "L.interp", "L.tokens"]);
     }, 30000);
 
     it("fails for an unknown language", () => {

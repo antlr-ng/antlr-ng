@@ -93,10 +93,16 @@ export const createLegacyConfiguration = (parameters: IToolParameters): IToolCon
         generationOptions: {
             atn: parameters.atn,
             outputDirectory: parameters.outputDirectory,
-            generateListener: parameters.generateListener,
-            generateVisitor: parameters.generateVisitor,
             package: parameters.package,
             generateDependencies: parameters.generateDependencies,
+
+            // The defaults of the legacy command line: a listener but no visitor, the base classes for targets which
+            // have them, and the interpreter data.
+            generateListener: parameters.generateListener ?? true,
+            generateVisitor: parameters.generateVisitor ?? false,
+            generateBaseListener: true,
+            generateBaseVisitor: true,
+            generateInterpreterData: true,
 
             // Declaration files (e.g. C++ headers) were always generated for targets which use them.
             generateDeclarationFile: generator.needsDeclarationFile === true,

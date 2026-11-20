@@ -34,6 +34,30 @@ describe("Legacy command line configuration", () => {
         expect(config.generationOptions.generateDeclarationFile).toBe(false);
     });
 
+    it("uses the defaults of the legacy command line", () => {
+        expect(configure("T.g4").generationOptions).toMatchObject({
+            generateListener: true,
+            generateVisitor: false,
+            generateBaseListener: true,
+            generateBaseVisitor: true,
+            generateInterpreterData: true,
+        });
+        expect(configure("-l", "false", "-v", "true", "T.g4").generationOptions).toMatchObject({
+            generateListener: false,
+            generateVisitor: true,
+        });
+    });
+
+    it("generates the base visitor which a parser with visitor uses", () => {
+        // The Swift parser refers to the base visitor, so both must be generated.
+        const config = configure("-Dlanguage=Swift", "-v", "true", "-o", "out", "T.g4");
+        const result = generate("grammar T;\ns : ID ;\nID : [a-z]+ ;\n", config.generationOptions, (c) => {
+            c.generators = config.generators;
+        });
+        expect(result.files.get("TParser.swift")).toContain("TBaseVisitor");
+        expect(result.files.has("TBaseVisitor.swift")).toBe(true);
+    });
+
     it("selects the generator with -Dlanguage", () => {
         // Names and specifiers are matched without case.
         for (const [language, expected] of [["Cpp", "Cpp"], ["c++", "Cpp"], ["CSharp", "CSharp"], ["ts", "TypeScript"],
