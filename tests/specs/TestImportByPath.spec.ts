@@ -180,7 +180,9 @@ describe("Imports by path", () => {
             expect(queue.all).toEqual([]);
             expect(log).toHaveBeenCalledOnce();
             const lines = (log.mock.calls[0][0] as string).split("\n");
-            expect(lines[0]).toBe(`${dir}/shared/S.g4`);
+
+            // Make format: the grammar depends on the imported file.
+            expect(lines[0]).toBe(`${dir}/main/M.g4: ${dir}/shared/S.g4`);
 
             // The imported grammar is an input only, never a generated file.
             expect(lines.slice(1).filter((line) => {

@@ -3,11 +3,16 @@
  * Licensed under the BSD 3-clause License. See License.txt in the project root for license information.
  */
 
+import { basename } from "node:path";
+
 import { describe, expect, it, vi } from "vitest";
 
 import { CharStream, CommonTokenStream, LexerInterpreter, SemanticContext } from "antlr4ng";
 
-import { defineConfig } from "../../src/config/config.js";
+import type { ITargetGenerator } from "../../src/codegen/ITargetGenerator.js";
+import { defineConfig, type IGenerationOptions, type IToolConfiguration } from "../../src/config/config.js";
+import { CppTargetGenerator } from "../../src/default-target-generators/CppTargetGenerator.js";
+import { GoTargetGenerator } from "../../src/default-target-generators/GoTargetGenerator.js";
 import { TypeScriptTargetGenerator } from "../../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { BuildDependencyGenerator } from "../../src/tool/BuildDependencyGenerator.js";
 import { ErrorManager } from "../../src/tool/ErrorManager.js";
@@ -29,34 +34,75 @@ describe("Tool coverage", () => {
 
             const options = defineConfig({
                 generationOptions: {
-                    outputDirectory: "file:///tmp/out/",
+                    outputDirectory: "/tmp/out/",
                     generateListener: true,
                     generateVisitor: true,
+                    generateBaseVisitor: true,
                 },
             }).generationOptions;
 
             const generator = new BuildDependencyGenerator(tool, g, options, tsGenerator, "my lib");
             expect(generator.getGenerator().targetGenerator).toBe(tsGenerator);
 
-            const generated = generator.getGeneratedFileList().map((url) => { return url.toString(); });
-            expect(generated).toEqual([
-                "file:///tmp/out/DepParser.ts",
-                "file:///tmp/out/Dep.tokens",
-                "file:///tmp/out/DepLexer.ts",
-                "file:///tmp/out/DepLexer.tokens",
-                "file:///tmp/out/DepListener.ts",
-                "file:///tmp/out/DepBaseListener.ts",
-                "file:///tmp/out/DepVisitor.ts",
-                "file:///tmp/out/DepBaseVisitor.ts",
+            // The trailing slash of the output directory is not repeated. TypeScript has no base visitor, so
+            // generateBaseVisitor adds nothing.
+            expect(generator.getGeneratedFileList()).toEqual([
+                "/tmp/out/DepParser.ts",
+                "/tmp/out/Dep.tokens",
+                "/tmp/out/DepLexer.ts",
+                "/tmp/out/DepLexer.tokens",
+                "/tmp/out/DepListener.ts",
+                "/tmp/out/DepVisitor.ts",
             ]);
 
-            expect(generator.getNonImportDependenciesFileList()).toEqual(["my lib/Other.tokens"]);
-            expect(generator.getDependenciesFileList()).toEqual(["my lib/Other.tokens"]);
+            const dependencies = generator.getDependencies().split("\n");
+            expect(dependencies[1]).toBe("/tmp/out/DepParser.ts : Dep.g4");
+            expect(dependencies).toHaveLength(7);
+        });
 
-            const dependencies = generator.getDependencies();
-            expect(dependencies.split("\n")[0]).toBe("my lib/Other.tokens");
-            expect(dependencies).toContain("file:///tmp/out/DepParser.ts : Dep.g4");
-            expect(dependencies).toContain("file:///tmp/out/DepBaseVisitor.ts : Dep.g4");
+        it("finds the token vocabulary where the tool reads it", () => {
+            const dir = generateRandomFilename("/tmp/deps-");
+            const lib = `${dir}/my lib`;
+            const out = `${dir}/out`;
+            const source = `${dir}/my src`;
+            for (const folder of [lib, out, source]) {
+                fileSystem.mkdirSync(folder, { recursive: true });
+            }
+
+            try {
+                const tool = new Tool();
+                const g = new Grammar("parser grammar Dep;\noptions { tokenVocab = Other; }\na : A ;");
+                g.fileName = `${source}/Dep.g4`;
+
+                const options = defineConfig({ generationOptions: { outputDirectory: out } }).generationOptions;
+                const generator = new BuildDependencyGenerator(tool, g, options, tsGenerator, lib);
+                const escaped = (path: string): string => { return path.replaceAll(" ", "\\ "); };
+
+                // Not generated yet (e.g. by the lexer of a lexer/parser pair in the same build): the vocabulary
+                // will be in the output directory.
+                expect(generator.getNonImportDependenciesFileList()).toEqual([`${out}/Other.tokens`]);
+
+                // Otherwise the folders are searched in the order of the tool: lib, output and grammar folder.
+                fileSystem.writeFileSync(`${source}/Other.tokens`, "A=1\n");
+                expect(generator.getNonImportDependenciesFileList()).toEqual([`${escaped(source)}/Other.tokens`]);
+
+                fileSystem.writeFileSync(`${out}/Other.tokens`, "A=1\n");
+                expect(generator.getNonImportDependenciesFileList()).toEqual([`${out}/Other.tokens`]);
+
+                fileSystem.writeFileSync(`${lib}/Other.tokens`, "A=1\n");
+                expect(generator.getNonImportDependenciesFileList()).toEqual([`${escaped(lib)}/Other.tokens`]);
+
+                // Make separates targets and prerequisites with spaces, so the spaces in the grammar's path and in
+                // the lib directory are escaped.
+                const dependencies = generator.getDependencies().split("\n");
+                expect(dependencies).toEqual([
+                    `${escaped(source)}/Dep.g4: ${escaped(lib)}/Other.tokens`,
+                    `${out}/Dep.ts : ${escaped(source)}/Dep.g4`,
+                    `${out}/Dep.tokens : ${escaped(source)}/Dep.g4`,
+                ]);
+            } finally {
+                fileSystem.rmSync(dir, { recursive: true, force: true });
+            }
         });
 
         it("uses the current directory for token vocabularies without lib directory", () => {
@@ -64,17 +110,23 @@ describe("Tool coverage", () => {
             const g = new LexerGrammar("lexer grammar DepL;\noptions { tokenVocab = Other; }\nA : 'a' ;");
             g.fileName = "DepL.g4";
 
-            const options = defineConfig({ generationOptions: { outputDirectory: "file:///tmp/out/" } })
-                .generationOptions;
+            const options = defineConfig({ generationOptions: { generateListener: true } }).generationOptions;
 
+            // Lexers have no listener, and without an output directory the files go to the current directory.
             const generator = new BuildDependencyGenerator(tool, g, options, tsGenerator);
             expect(generator.getNonImportDependenciesFileList()).toEqual(["Other.tokens"]);
-            expect(generator.getGeneratedFileList().map((url) => { return url.toString(); })).toEqual([
-                "file:///tmp/out/DepL.ts",
-                "file:///tmp/out/DepL.tokens",
-            ]);
-            expect(generator.getDependencies()).toBe("Other.tokens\nfile:///tmp/out/DepL.ts : DepL.g4\n" +
-                "file:///tmp/out/DepL.tokens : DepL.g4");
+            expect(generator.getGeneratedFileList()).toEqual(["DepL.ts", "DepL.tokens"]);
+            expect(generator.getDependencies()).toBe("DepL.g4: Other.tokens\nDepL.ts : DepL.g4\nDepL.tokens : DepL.g4");
+        });
+
+        it("escapes spaces in the output directory", () => {
+            const tool = new Tool();
+            const g = new LexerGrammar("lexer grammar DepS;\nA : 'a' ;");
+            g.fileName = "DepS.g4";
+
+            const options = defineConfig({ generationOptions: { outputDirectory: "my out" } }).generationOptions;
+            const generator = new BuildDependencyGenerator(tool, g, options, tsGenerator);
+            expect(generator.getGeneratedFileList()).toEqual(["my\\ out/DepS.ts", "my\\ out/DepS.tokens"]);
         });
 
         it("includes imported grammars", () => {
@@ -85,40 +137,115 @@ describe("Tool coverage", () => {
             imported.fileName = "/lib/Imported.g4"; // The path the import was loaded from.
             root.importedGrammars.push(imported);
 
-            const options = defineConfig({ generationOptions: { outputDirectory: "file:///tmp/out/" } })
-                .generationOptions;
+            const options = defineConfig({ generationOptions: { outputDirectory: "/tmp/out" } }).generationOptions;
             const generator = new BuildDependencyGenerator(tool, root, options, tsGenerator, "/lib");
 
+            // An imported grammar is read, but no file is generated for it.
             expect(generator.getDependenciesFileList()).toEqual(["/lib/Imported.g4"]);
-            // An imported grammar is an input, not a generated file.
-            expect(generator.getGeneratedFileList().map((url) => { return url.toString(); }))
-                .not.toContain("file:///lib/Imported.g4");
+            expect(generator.getGeneratedFileList()).not.toContain("/tmp/out/Imported.g4");
 
             imported.fileName = "/my lib/Imported.g4";
             expect(generator.getDependenciesFileList()).toEqual(["/my\\ lib/Imported.g4"]);
         });
 
-        it("is used by the tool when dependency generation is requested", () => {
+        /**
+         * Generates code for the grammars and lists their dependencies with the same options.
+         *
+         * @param grammars The grammars to process.
+         * @param options The generation options.
+         * @param targetGenerator The target generator to use.
+         *
+         * @returns The names of the generated files and of the files listed as generated, sorted.
+         */
+        const generateAndList = (grammars: Array<{ name: string, content: string; }>,
+            options: Partial<IGenerationOptions>,
+            targetGenerator: ITargetGenerator): { generated: string[], listed: string[]; } => {
+            const configure = (config: IToolConfiguration) => {
+                config.generators = [targetGenerator];
+            };
+
+            const generated = [...generate(grammars, options, configure).files.keys()]
+                .filter((name) => { return !name.endsWith(".g4"); })
+                .sort();
+
             const log = vi.spyOn(console, "log").mockImplementation(() => { /**/ });
             try {
-                const result = generate("grammar DepT;\na : A ;\nA : 'a' ;", { generateDependencies: true },
-                    (config) => {
-                        config.generationOptions.outputDirectory = "file:///tmp/out/";
-                    });
+                const result = generate(grammars, { ...options, generateDependencies: true }, configure);
                 expect(result.queue.errors).toHaveLength(0);
-                expect(result.files.has("DepTParser.ts")).toBe(false);
-                expect(log).toHaveBeenCalledTimes(1);
-                const lines = (log.mock.calls[0][0] as string).split("\n");
-                const normalizedDependency = lines[0].replaceAll("\\", "/");
-                expect(lines).toHaveLength(4);
-                expect(normalizedDependency).toMatch(
-                    /^file:\/\/\/tmp\/out\/DepTParser\.ts : \/tmp\/coverage-[^/]+\/DepT\.g4$/,
-                );
-                expect(lines[1]).toMatch(/^file:\/\/\/tmp\/out\/DepT\.tokens : /);
-                expect(lines[2]).toMatch(/^file:\/\/\/tmp\/out\/DepTLexer\.ts : /);
-                expect(lines[3]).toMatch(/^file:\/\/\/tmp\/out\/DepTLexer\.tokens : /);
+
+                // Nothing is generated in this mode.
+                expect([...result.files.keys()].filter((name) => { return !name.endsWith(".g4"); })).toEqual([]);
+
+                const listed = log.mock.calls
+                    .flatMap((call) => { return (call[0] as string).split("\n"); })
+                    .filter((line) => { return line.includes(" : "); })
+                    .map((line) => { return basename(line.substring(0, line.indexOf(" : "))); })
+                    .sort();
+
+                return { generated, listed };
             } finally {
                 log.mockRestore();
+            }
+        };
+
+        it("lists the files the generation writes", () => {
+            const combined = [{ name: "DepT.g4", content: "grammar DepT;\na : A ;\nA : 'a' ;" }];
+            const split = [
+                { name: "DepTL.g4", content: "lexer grammar DepTL;\nA : 'a' ;" },
+                { name: "DepTP.g4", content: "parser grammar DepTP;\noptions { tokenVocab = DepTL; }\na : A ;" },
+            ];
+            const noCode = [
+                { name: "DepN.g4", content: "grammar DepN;\noptions { language = None; }\na : A ;\nA : 'a' ;" },
+            ];
+
+            // A combined grammar without lexer rules and literals has no implicit lexer. With literals, or with
+            // lexer rules from an imported grammar, it has one.
+            const noLexer = [
+                { name: "DepVL.g4", content: "lexer grammar DepVL;\nID : [a-z]+ ;" },
+                { name: "DepV.g4", content: "grammar DepV;\noptions { tokenVocab = DepVL; }\na : ID ;" },
+            ];
+            const literalsOnly = [{ name: "DepLit.g4", content: "grammar DepLit;\na : 'x' 'y' ;" }];
+            const importedLexerRules = [
+                { name: "DepImpRules.g4", content: "lexer grammar DepImpRules;\nID : [a-z]+ ;" },
+                { name: "DepImp.g4", content: "grammar DepImp;\nimport DepImpRules;\na : ID ;" },
+            ];
+
+            // The root grammar overrides the only rule of the imported grammar, so its literal is not used.
+            const overriddenLiteral = [
+                { name: "DepOvL.g4", content: "lexer grammar DepOvL;\nID : [a-z]+ ;" },
+                { name: "DepOvS.g4", content: "grammar DepOvS;\na : 'x' ;" },
+                {
+                    name: "DepOv.g4",
+                    content: "grammar DepOv;\noptions { tokenVocab = DepOvL; }\nimport DepOvS;\ns : a ;\na : ID ;",
+                },
+            ];
+
+            const cpp = new CppTargetGenerator(false);
+            cpp.setUp();
+
+            // Go names the files by the kind of recognizer.
+            const go = new GoTargetGenerator();
+            go.setUp();
+
+            const cases: Array<[typeof combined, Partial<IGenerationOptions>, ITargetGenerator]> = [
+                [combined, {}, tsGenerator],
+                [combined, { generateListener: true, generateVisitor: true }, tsGenerator],
+                [split, { generateListener: true, generateVisitor: true, generateInterpreterData: true }, tsGenerator],
+                [noCode, { generateListener: true }, tsGenerator],
+                [noLexer, {}, tsGenerator],
+                [literalsOnly, {}, tsGenerator],
+                [importedLexerRules, {}, tsGenerator],
+                [overriddenLiteral, {}, tsGenerator],
+                [combined, { generateDeclarationFile: true, generateListener: true, generateBaseListener: true }, cpp],
+                [split, { generateVisitor: true, generateBaseVisitor: true }, cpp],
+                [split, { generateListener: true }, go],
+                [combined, {}, go],
+            ];
+
+            for (const [grammars, options, targetGenerator] of cases) {
+                const { generated, listed } = generateAndList(grammars, options, targetGenerator);
+                expect(generated.length).toBeGreaterThan(0);
+                expect(listed).toEqual(generated);
             }
         });
     });

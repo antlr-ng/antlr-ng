@@ -213,7 +213,8 @@ export class CodeGenerator {
     }
 
     public getRecognizerFileName(declarationFile?: boolean): string {
-        return this.targetGenerator.getRecognizerFileName(declarationFile ?? false, this.g.getRecognizerName());
+        return this.targetGenerator.getRecognizerFileName(declarationFile ?? false, this.g.getRecognizerName(),
+            this.g.isLexer());
     }
 
     public getListenerFileName(declarationFile?: boolean): string {

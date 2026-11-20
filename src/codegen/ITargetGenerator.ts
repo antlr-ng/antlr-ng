@@ -270,10 +270,13 @@ export interface ITargetGenerator extends ITargetGeneratorCallables {
      * @param forDeclarationFile If true, the file name will be for a declaration file (e.g. TParser.h), otherwise
      *        it will be for a code file (e.g. TParser.java).
      * @param recognizerName The name of the recognizer, such as TParser or TLexer.
+     * @param isLexer True if the recognizer is a lexer, false if it is a parser. For targets which name the files
+     *        by the kind of recognizer, because the recognizer name of a lexer or parser grammar has no suffix.
+     *        Undefined if not known.
      *
      * @returns The file name for the recognizer, such as TParser.java or TLexer.cpp.
      */
-    getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string): string;
+    getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string, isLexer?: boolean): string;
 
     /**
      * A given grammar T, return the listener name such as TListener.java, if we're using the Java target.

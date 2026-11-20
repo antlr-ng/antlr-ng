@@ -558,15 +558,28 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
     }
 
     /**
-     * Generates file names like `mysql_parser.go` or `mysql_lexer.go`. The recognizer name is used to determine
-     * the file name, with the `Parser` or `Lexer` suffix removed and the rest converted to lower case.
+     * Generates file names like `mysql_parser.go` or `mysql_lexer.go`, like the ANTLR4 Go target: the `Lexer` suffix
+     * is removed from a lexer name and the `Parser` suffix from a parser name, and the rest is converted to lower case.
      *
      * @param forDeclarationFile Not used for Go.
-     * @param recognizerName The name of the recognizer (e.g. `MySQLParser`).
+     * @param recognizerName The name of the recognizer (e.g. `MySQLParser`, or `MySQL` for a lexer grammar named
+     *        so).
+     * @param isLexer True for a lexer, false for a parser. If not given, the kind is taken from the suffix of the
+     *        name. A name without suffix is then taken as a parser, so pass it for lexer and parser grammars.
      *
      * @returns The file name for the recognizer.
      */
-    public override getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string): string {
+    public override getRecognizerFileName(forDeclarationFile: boolean, recognizerName: string,
+        isLexer?: boolean): string {
+        if (isLexer !== undefined) {
+            const suffix = isLexer ? "Lexer" : "Parser";
+            const name = recognizerName.endsWith(suffix)
+                ? recognizerName.substring(0, recognizerName.length - suffix.length)
+                : recognizerName;
+
+            return name.toLowerCase() + (isLexer ? "_lexer.go" : "_parser.go");
+        }
+
         if (recognizerName.endsWith("Parser")) {
             return recognizerName.substring(0, recognizerName.length - 6).toLowerCase() + "_parser.go";
         }
@@ -575,10 +588,8 @@ export class GoTargetGenerator extends GeneratorBase implements ITargetGenerator
             return recognizerName.substring(0, recognizerName.length - 5).toLowerCase() + "_lexer.go";
         }
 
-        // No suffix. Use what we know about the current generation run.
-        const suffix = this.invariants.isLexer ? "_lexer.go" : "_parser.go";
-
-        return recognizerName.toLowerCase() + suffix;
+        // No suffix and no kind given. Don't guess from the render state, which belongs to whatever was rendered last.
+        return recognizerName.toLowerCase() + "_parser.go";
     }
 
     public override getListenerFileName(forDeclarationFile: boolean, grammarName: string): string {

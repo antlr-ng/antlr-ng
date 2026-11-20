@@ -80,12 +80,27 @@
   `--profile` option now takes the name of the CSV file. Before, profiling was always on and wrote `filename.csv`, and
   `--profile x.csv` treated `x.csv` as a grammar file. The profile's time column is now in milliseconds, as labeled.
 - Fixed Bug #70: the TestRig (`grun`) could not load the generated lexer and parser on Windows.
+- Fixed `generateDependencies`, which failed for every grammar with "internal error: Invalid URL": the file names were
+  built with `new URL()` from plain paths. The generated file list now names the files the code generation writes:
+  base listeners and visitors only with `generateBaseListener`/`generateBaseVisitor` and for targets which have them,
+  no listener or visitor for lexer grammars, no lexer for a combined grammar without lexer rules and literals (rules
+  overridden by the importing grammar don't count), declaration files only with `generateDeclarationFile`, and
+  interpreter data files with `generateInterpreterData`. Imported grammars are only listed as dependencies. The
+  `tokenVocab` file is searched like the tool searches it (lib, output and grammar directory), and a vocabulary that
+  is generated in the same build is expected in the output directory. The dependency line has the make format
+  `T.g4: A.tokens B.g4` (prerequisites separated by spaces), and spaces in all paths are escaped. The CLI no longer
+  fails after listing the dependencies because of the missing output directory.
 - `generateBaseListener` and `generateBaseVisitor` now only take effect for targets which have base classes
   (`wantsBaseListener`/`wantsBaseVisitor` of the target generator). The TypeScript and Python 3 generators wrote empty
   base listener and visitor files before.
 - The `CSharpTargetGenerator` and `CppTargetGenerator` constructors no longer require the `logRendering` argument
   (default: `false`), like the other default generators. `new CSharpTargetGenerator()` in a config file failed to
   type-check before.
+- `ITargetGenerator.getRecognizerFileName` takes an optional third parameter, `isLexer`, because the recognizer name of
+  a lexer or parser grammar has no `Lexer` or `Parser` suffix. The Go generator uses it to name the files like the
+  ANTLR4 Go target. Before, it guessed the kind of a name without suffix from the last rendered file, so
+  `generateDependencies` listed `pl_parser.go` for `lexer grammar PL`, and a lexer grammar named `TokensParser` got
+  the file name `tokens_parser.go`. Without `isLexer`, a name without suffix is now always taken as a parser.
 
 ## 1.0.10
 

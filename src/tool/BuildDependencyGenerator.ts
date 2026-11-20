@@ -8,41 +8,39 @@ import type { IGenerationOptions } from "../config/config.js";
 import { Constants } from "../Constants.js";
 import { Tool } from "../Tool.js";
 import { CodeGenerator } from "../codegen/CodeGenerator.js";
+import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
+import { dirname } from "../support/fs-helpers.js";
 import { GrammarType } from "../support/GrammarType.js";
+import { isTokenName } from "../support/helpers.js";
+import { fileSystem } from "../tool-parameters.js";
+import { GrammarTreeVisitor } from "../tree/walkers/GrammarTreeVisitor.js";
+import type { GrammarAST } from "./ast/GrammarAST.js";
 import { Grammar } from "./Grammar.js";
 
 /**
- * Given a grammar file, show the dependencies on .tokens etc... Using ST, emit a simple "make compatible" list of
- * dependencies. For example, combined grammar T.g (no token import) generates:
+ * Given a grammar file, lists the files it depends on and the files antlr-ng generates for it, in a simple make
+ * compatible format. For example, combined grammar T.g4 (no token import) with the TypeScript target generates:
  *
- *  	TParser.ts : T.g
- *  	T.tokens : T.g
- *  	TLexer.ts : T.g
+ *    TParser.ts : T.g4
+ *    T.tokens : T.g4
+ *    TLexer.ts : T.g4
+ *    TLexer.tokens : T.g4
  *
- * If we are using the listener pattern (-listener on the command line) then we add:
+ * The listener, visitor, base listener and base visitor files, declaration files (e.g. C++ headers) and interpreter
+ * data files are added when the generation options ask for them, just like the code generation does.
  *
- *    TListener.ts : T.g
- *    TBaseListener.ts : T.g
+ * If the grammar uses option tokenVocab=A or imports other grammars, the first line lists them. The vocabulary file is
+ * searched like the tool searches it (lib directory, output directory, grammar directory). If it does not exist yet,
+ * it is expected in the output directory, where it is generated:
  *
- * If we are using the visitor pattern (-visitor on the command line) then we add:
+ *    T.g4: libDir/A.tokens
  *
- *    TVisitor.ts : T.g
- *    TBaseVisitor.ts : T.g
+ * Generated files are in the output directory:
  *
- * If "-lib libDir" is used on command-line with -depend and option tokenVocab=A in grammar, then include the path
- * like this:
+ *    output-dir/TParser.ts : T.g4
  *
- *    T.g: libDir/A.tokens
- *
- * Pay attention to -o as well:
- *
- *    output-dir/TParser.ts : T.g
- *
- * So this output shows what the grammar depends on *and* what it generates.
- *
- * Operate on one grammar file at a time.  If given a list of .g on the command-line with -depend, just emit the
- * dependencies. The grammars may depend on each other, but the order doesn't matter.  Build tools, reading in this
- * output, will know how to organize it.
+ * Operate on one grammar file at a time. The grammars may depend on each other, but the order doesn't matter. Build
+ * tools, reading in this output, will know how to organize it.
  */
 export class BuildDependencyGenerator {
     protected generator: CodeGenerator;
@@ -54,92 +52,84 @@ export class BuildDependencyGenerator {
     }
 
     /**
-     * @returns a list of URL objects that name files ANTLR will emit from T.g.
+     * @returns the names of the files antlr-ng writes for the grammar, as the code generation pipeline writes them.
      */
-    public getGeneratedFileList(): URL[] {
-        const files = new Array<URL>();
+    public getGeneratedFileList(): string[] {
+        const files: string[] = [];
+        const targetGenerator = this.generator.targetGenerator;
 
-        // Add generated recognizer, e.g., TParser.ts.
-        if (this.generator.targetGenerator.needsDeclarationFile) {
-            files.push(this.getOutputFile(this.generator.getRecognizerFileName(true)));
+        // Declaration files are only separate files for targets which use them (e.g. C++ header files).
+        const declarations = this.options.generateDeclarationFile && targetGenerator.needsDeclarationFile === true;
+        const addCodeFile = (getFileName: (declaration: boolean) => string): void => {
+            if (declarations) {
+                files.push(this.getOutputFile(getFileName(true)));
+            }
+            files.push(this.getOutputFile(getFileName(false)));
+        };
+
+        // A combined grammar generates the files of its implicit lexer too, e.g. TLexer.ts and TLexer.tokens.
+        const recognizers = [{ name: this.g.getRecognizerName(), isLexer: this.g.isLexer() }];
+        if (this.g.isCombined() && this.hasImplicitLexer()) {
+            recognizers.push({
+                name: this.g.name + Grammar.getGrammarTypeToFileNameSuffix(GrammarType.Lexer),
+                isLexer: true,
+            });
         }
 
-        files.push(this.getOutputFile(this.generator.getRecognizerFileName(false)));
+        for (const recognizer of recognizers) {
+            // The vocabulary file is named after the grammar, e.g. T.tokens for the parser of T.g4.
+            const baseName = recognizer.name === this.g.getRecognizerName() ? this.g.name : recognizer.name;
 
-        // Add output vocab file, e.g. T.tokens. This is always generated to the base output directory, which will
-        // be just `.` if there is no -o option.
-        files.push(this.getOutputFile(this.generator.getVocabFileName()!));
+            if (!this.g.isCodeGenerationDisabled()) {
+                addCodeFile((declaration) => {
+                    return targetGenerator.getRecognizerFileName(declaration, recognizer.name, recognizer.isLexer);
+                });
+            }
 
-        // Are we generating a declaration file (e.g. a C++ header file)?
-        let declarationFileExtension = "";
-        if (this.generator.targetGenerator.needsDeclarationFile) {
-            declarationFileExtension = this.generator.targetGenerator.declarationFileExtension ?? "";
-            const suffix = Grammar.getGrammarTypeToFileNameSuffix(this.g.type);
-            const fileName = `${this.g.name}${suffix}${declarationFileExtension}`;
-            files.push(this.getOutputFile(fileName));
-        }
+            files.push(this.getOutputFile(baseName + Constants.VocabFileExtension));
 
-        if (this.g.isCombined()) {
-            // Add autogenerated lexer, e.g., TLexer.ts TLexer.h TLexer.tokens.
-            const suffix = Grammar.getGrammarTypeToFileNameSuffix(GrammarType.Lexer);
-            const lexer = `${this.g.name}${suffix}${this.generator.targetGenerator.codeFileExtension}`;
-            files.push(this.getOutputFile(lexer));
-
-            const lexerTokens = this.g.name + suffix + Constants.VocabFileExtension;
-            files.push(this.getOutputFile(lexerTokens));
-
-            // TLexer.h
-            if (declarationFileExtension) {
-                const header = this.g.name + suffix + declarationFileExtension;
-                files.push(this.getOutputFile(header));
+            if (this.options.generateInterpreterData || this.g.isCodeGenerationDisabled()) {
+                files.push(this.getOutputFile(baseName + ".interp"));
             }
         }
 
-        if (this.options.generateListener) {
-            // Add generated listener, e.g., TListener.ts.
-            if (this.generator.targetGenerator.needsDeclarationFile) {
-                files.push(this.getOutputFile(this.generator.getListenerFileName(true)));
-            }
-            files.push(this.getOutputFile(this.generator.getListenerFileName(false)));
+        // Only parsers have listeners and visitors.
+        if (!this.g.isLexer() && !this.g.isCodeGenerationDisabled()) {
+            if (this.options.generateListener) {
+                addCodeFile((declaration) => {
+                    return this.generator.getListenerFileName(declaration);
+                });
 
-            // Add generated base listener; e.g., TBaseListener.ts.
-            if (this.generator.targetGenerator.needsDeclarationFile) {
-                files.push(this.getOutputFile(this.generator.getBaseListenerFileName(true)));
+                if (this.options.generateBaseListener && targetGenerator.wantsBaseListener) {
+                    addCodeFile((declaration) => {
+                        return this.generator.getBaseListenerFileName(declaration);
+                    });
+                }
             }
-            files.push(this.getOutputFile(this.generator.getBaseListenerFileName(false)));
+
+            if (this.options.generateVisitor) {
+                addCodeFile((declaration) => {
+                    return this.generator.getVisitorFileName(declaration);
+                });
+
+                if (this.options.generateBaseVisitor && targetGenerator.wantsBaseVisitor) {
+                    addCodeFile((declaration) => {
+                        return this.generator.getBaseVisitorFileName(declaration);
+                    });
+                }
+            }
         }
-
-        if (this.options.generateVisitor) {
-            // Add generated visitor, e.g. TVisitor.ts.
-            if (this.generator.targetGenerator.needsDeclarationFile) {
-                files.push(this.getOutputFile(this.generator.getVisitorFileName(true)));
-            }
-            files.push(this.getOutputFile(this.generator.getVisitorFileName(false)));
-
-            // Add generated base visitor, e.g. TBaseVisitor.ts.
-            if (this.generator.targetGenerator.needsDeclarationFile) {
-                files.push(this.getOutputFile(this.generator.getBaseVisitorFileName(true)));
-            }
-            files.push(this.getOutputFile(this.generator.getBaseVisitorFileName(false)));
-        }
-
-        // Imported grammars are inputs (see getDependenciesFileList). Their rules are generated into the files above.
 
         return files;
     }
 
-    public getOutputFile(fileName: string): URL {
-        let outputDir = this.generator.getOutputDirectory(this.g.fileName);
-        if (outputDir === ".") {
-            // Pay attention to -o then.
-            outputDir = this.generator.getOutputDirectory(fileName);
-        }
-
-        if (outputDir === ".") {
-            return new URL(fileName);
-        }
-
-        return new URL(fileName, outputDir);
+    /**
+     * @param fileName The name of a generated file.
+     *
+     * @returns The path of the file in the output directory, with spaces escaped for make.
+     */
+    public getOutputFile(fileName: string): string {
+        return this.groomQualifiedFileName(this.generator.getOutputDirectory(this.g.fileName), fileName);
     }
 
     /**
@@ -153,7 +143,7 @@ export class BuildDependencyGenerator {
         // Handle imported grammars. Their file name is the path they were loaded from (see
         // `Tool.findImportedGrammarFile`), so the lib directory must not be added again.
         for (const g of this.g.getAllImportedGrammars()) {
-            files.push(g.fileName.replaceAll(" ", "\\ "));
+            files.push(BuildDependencyGenerator.escapeSpaces(g.fileName));
         }
 
         return files;
@@ -171,13 +161,8 @@ export class BuildDependencyGenerator {
         // Handle token vocabulary loads.
         const tokenVocab = this.g.getOptionString("tokenVocab");
         if (tokenVocab !== undefined) {
-            const fileName = tokenVocab + Constants.VocabFileExtension;
-            const libDirectory = this.libDir ?? ".";
-            if (libDirectory === ".") {
-                files.push(fileName);
-            } else {
-                files.push(libDirectory + "/" + fileName);
-            }
+            files.push(this.groomQualifiedFileName(this.getVocabDirectory(tokenVocab),
+                tokenVocab + Constants.VocabFileExtension));
         }
 
         return files;
@@ -187,13 +172,17 @@ export class BuildDependencyGenerator {
         const inputFiles = this.getDependenciesFileList();
         const result: string[] = [];
 
+        // Make separates targets and prerequisites with spaces, so spaces in the grammar's path are escaped too.
+        const grammarFile = BuildDependencyGenerator.escapeSpaces(this.g.fileName);
+
+        // Make syntax: the grammar depends on these files.
         if (inputFiles.length > 0) {
-            result.push(inputFiles.join(", "));
+            result.push(`${grammarFile}: ${inputFiles.join(" ")}`);
         }
 
         const outputFiles = this.getGeneratedFileList();
         outputFiles.forEach((file) => {
-            result.push(`${file} : ${this.g.fileName}`);
+            result.push(`${file} : ${grammarFile}`);
         });
 
         return result.join("\n");
@@ -201,5 +190,97 @@ export class BuildDependencyGenerator {
 
     public getGenerator(): CodeGenerator {
         return this.generator;
+    }
+
+    /**
+     * Escapes spaces in a file name for make, which separates targets and prerequisites with spaces.
+     *
+     * @param fileName The file name to escape.
+     *
+     * @returns The file name with each space preceded by a backslash.
+     */
+    private static escapeSpaces(fileName: string): string {
+        return fileName.replaceAll(" ", "\\ ");
+    }
+
+    /**
+     * Determines the folder of a token vocabulary file. The folders are searched in the order of
+     * `TokenVocabParser.getImportedVocabFile`: the lib directory (or the current directory without one), the output
+     * directory and the grammar's folder. A vocabulary that does not exist yet is generated in this build, so it is
+     * expected in the output directory.
+     *
+     * @param vocabName The value of the tokenVocab option.
+     *
+     * @returns The folder that contains (or will contain) the vocabulary file.
+     */
+    private getVocabDirectory(vocabName: string): string {
+        const fileName = vocabName + Constants.VocabFileExtension;
+        const candidates = [this.libDir ?? "."];
+        if (this.options.outputDirectory) {
+            candidates.push(this.options.outputDirectory);
+        }
+
+        const grammarDir = dirname(this.g.fileName);
+        if (grammarDir) {
+            candidates.push(grammarDir);
+        }
+
+        const found = candidates.find((dir) => {
+            return fileSystem.existsSync(dir + "/" + fileName);
+        });
+
+        return found ?? this.generator.getOutputDirectory(this.g.fileName);
+    }
+
+    /**
+     * Determines whether a combined grammar gets an implicit lexer, without transforming it. This is the condition
+     * of `GrammarTransformPipeline.extractImplicitLexer`: the lexer exists if there is a lexer rule or a string
+     * literal (which becomes a lexer rule) in the rules of the merged grammar.
+     *
+     * @returns True if code generation writes a lexer for the grammar.
+     */
+    private hasImplicitLexer(): boolean {
+        // Merge the rules like `GrammarTransformPipeline.integrateImportedGrammars`: a rule of an imported grammar is
+        // only used if neither the root grammar nor a grammar imported before it has a rule with the same name.
+        const rules = new Map<string, GrammarAST>();
+        for (const g of [this.g, ...this.g.getAllImportedGrammars()]) {
+            for (const rule of g.ast.getNodesWithType(ANTLRv4Parser.RULE)) {
+                const name = rule.children[0].getText();
+                if (!rules.has(name)) {
+                    rules.set(name, rule);
+                }
+            }
+        }
+
+        if ([...rules.keys()].some((name) => { return isTokenName(name); })) {
+            return true;
+        }
+
+        // All remaining rules are parser rules. Look for string literals in them.
+        const collector = new class extends GrammarTreeVisitor {
+            public hasLiterals = false;
+
+            public override stringRef(): void {
+                this.hasLiterals = true;
+            }
+        }(this.g.tool.errorManager);
+
+        for (const rule of rules.values()) {
+            collector.visit(rule, ANTLRv4Parser.RULE_ruleSpec);
+            if (collector.hasLiterals) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private groomQualifiedFileName(outputDir: string, fileName: string): string {
+        outputDir = outputDir.replace(/(?<=.)\/+$/, "");
+        if (outputDir === ".") {
+            return BuildDependencyGenerator.escapeSpaces(fileName);
+        }
+
+        return BuildDependencyGenerator.escapeSpaces(outputDir + "/" + fileName);
     }
 }
