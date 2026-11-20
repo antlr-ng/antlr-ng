@@ -30,10 +30,13 @@ import { Grammar } from "./Grammar.js";
  * data files are added when the generation options ask for them, just like the code generation does.
  *
  * If the grammar uses option tokenVocab=A or imports other grammars, the first line lists them. The vocabulary file is
- * searched like the tool searches it (lib directory, output directory, grammar directory). If it does not exist yet,
- * it is expected in the output directory, where it is generated:
+ * used from the lib directory if it is there. Otherwise it is in the output directory: generated there (in this build
+ * or before), or copied there by the tool from the grammar's folder. The copy gets its own line:
  *
  *    T.g4: libDir/A.tokens
+ *
+ *    T.g4: output-dir/A.tokens
+ *    output-dir/A.tokens : grammar-dir/A.tokens
  *
  * Generated files are in the output directory:
  *
@@ -180,6 +183,12 @@ export class BuildDependencyGenerator {
             result.push(`${grammarFile}: ${inputFiles.join(" ")}`);
         }
 
+        // A vocabulary which is only in the grammar's folder is copied to the output directory.
+        const copiedVocab = this.getCopiedVocabFile();
+        if (copiedVocab) {
+            result.push(`${inputFiles[0]} : ${copiedVocab}`);
+        }
+
         const outputFiles = this.getGeneratedFileList();
         outputFiles.forEach((file) => {
             result.push(`${file} : ${grammarFile}`);
@@ -204,32 +213,43 @@ export class BuildDependencyGenerator {
     }
 
     /**
-     * Determines the folder of a token vocabulary file. The folders are searched in the order of
-     * `TokenVocabParser.getImportedVocabFile`: the lib directory (or the current directory without one), the output
-     * directory and the grammar's folder. A vocabulary that does not exist yet is generated in this build, so it is
-     * expected in the output directory.
+     * Determines the folder of a token vocabulary file, like `TokenVocabParser.getImportedVocabFile` does. A
+     * vocabulary in the lib directory (or the current directory without one) is used from there. Otherwise the tool
+     * uses the one in the output directory: it was generated there in this build or before, or the tool copies it
+     * there from the grammar's folder.
      *
      * @param vocabName The value of the tokenVocab option.
      *
      * @returns The folder that contains (or will contain) the vocabulary file.
      */
     private getVocabDirectory(vocabName: string): string {
-        const fileName = vocabName + Constants.VocabFileExtension;
-        const candidates = [this.libDir ?? "."];
-        if (this.options.outputDirectory) {
-            candidates.push(this.options.outputDirectory);
+        const libDir = this.libDir ?? ".";
+        if (fileSystem.existsSync(libDir + "/" + vocabName + Constants.VocabFileExtension)) {
+            return libDir;
         }
 
+        return this.generator.getOutputDirectory(this.g.fileName);
+    }
+
+    /**
+     * @returns The path of the vocabulary in the grammar's folder (escaped for make), if the vocabulary in the output
+     * directory can be a copy of it, otherwise undefined.
+     */
+    private getCopiedVocabFile(): string | undefined {
+        const vocabName = this.g.getOptionString("tokenVocab");
         const grammarDir = dirname(this.g.fileName);
-        if (grammarDir) {
-            candidates.push(grammarDir);
+        if (vocabName === undefined || !grammarDir) {
+            return undefined;
         }
 
-        const found = candidates.find((dir) => {
-            return fileSystem.existsSync(dir + "/" + fileName);
-        });
+        const vocabDir = this.getVocabDirectory(vocabName);
+        const fileName = vocabName + Constants.VocabFileExtension;
+        if (vocabDir !== this.generator.getOutputDirectory(this.g.fileName) || vocabDir === grammarDir
+            || !fileSystem.existsSync(grammarDir + "/" + fileName)) {
+            return undefined;
+        }
 
-        return found ?? this.generator.getOutputDirectory(this.g.fileName);
+        return this.groomQualifiedFileName(grammarDir, fileName);
     }
 
     /**

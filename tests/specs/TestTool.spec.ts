@@ -81,14 +81,23 @@ describe("Tool coverage", () => {
                 // Not generated yet (e.g. by the lexer of a lexer/parser pair in the same build): the vocabulary
                 // will be in the output directory.
                 expect(generator.getNonImportDependenciesFileList()).toEqual([`${out}/Other.tokens`]);
+                expect(generator.getDependencies().split("\n")[0]).toBe(
+                    `${escaped(source)}/Dep.g4: ${out}/Other.tokens`);
 
-                // Otherwise the folders are searched in the order of the tool: lib, output and grammar folder.
+                // A vocabulary in the grammar's folder is copied to the output directory, where the tool reads it.
+                // An existing copy (or a generated vocabulary) in the output directory takes precedence.
                 fileSystem.writeFileSync(`${source}/Other.tokens`, "A=1\n");
-                expect(generator.getNonImportDependenciesFileList()).toEqual([`${escaped(source)}/Other.tokens`]);
+                expect(generator.getNonImportDependenciesFileList()).toEqual([`${out}/Other.tokens`]);
+                expect(generator.getDependencies().split("\n").slice(0, 2)).toEqual([
+                    `${escaped(source)}/Dep.g4: ${out}/Other.tokens`,
+                    `${out}/Other.tokens : ${escaped(source)}/Other.tokens`,
+                ]);
 
+                fileSystem.rmSync(`${source}/Other.tokens`);
                 fileSystem.writeFileSync(`${out}/Other.tokens`, "A=1\n");
                 expect(generator.getNonImportDependenciesFileList()).toEqual([`${out}/Other.tokens`]);
 
+                // The lib directory comes first.
                 fileSystem.writeFileSync(`${lib}/Other.tokens`, "A=1\n");
                 expect(generator.getNonImportDependenciesFileList()).toEqual([`${escaped(lib)}/Other.tokens`]);
 
