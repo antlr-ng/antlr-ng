@@ -55,6 +55,17 @@ describe("Tool parameters coverage", () => {
         }
     });
 
+    it("takes one value per -D, so a grammar file after it is not a define", () => {
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => { /**/ });
+        try {
+            const parameters = parseToolParameters(["-D", "language=Cpp", "-D", "superClass=Base", "T.g4"]);
+            expect(parameters.define).toEqual({ language: "Cpp", superClass: "Base" });
+            expect(parameters.grammarFiles).toEqual(["T.g4"]);
+        } finally {
+            warn.mockRestore();
+        }
+    });
+
     it("uses long option names and leaves unspecified options undefined", () => {
         const warn = vi.spyOn(console, "warn").mockImplementation(() => { /**/ });
         try {
