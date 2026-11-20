@@ -776,6 +776,48 @@ describe("TestToolSyntaxErrors", () => {
         ToolTestUtils.testErrors(pair, true);
     });
 
+    /**
+     * The grammar is not processed, so the lexer command with the undefined channel is not reported.
+     */
+    it("testInvalidLanguageInGrammarWithLexerCommand", () => {
+        const grammar =
+            "grammar T;\n" +
+            "options { language=Foo; }\n" +
+            "start : 'T' EOF;\n" +
+            "Something : 'something' -> channel(CUSTOM);";
+        const expected =
+            "error(" + IssueCode.CannotCreateTargetGenerator + "): T.g4:2:19: no configured target generator " +
+            "supports the language Foo (configured: TypeScript)\n";
+        const pair = [
+            grammar,
+            expected
+        ];
+
+        ToolTestUtils.testErrors(pair, true);
+    });
+
+    /**
+     * This is a regression test for antlr/antlr4#649 "unknown target causes
+     * null ptr exception.".
+     * https://github.com/antlr/antlr4/issues/649
+     */
+    it("testInvalidLanguageInGrammar", () => {
+        const grammar =
+            "grammar T;\n" +
+            "options { language=Foo; }\n" +
+            "start : 'T' EOF;\n";
+        const expected =
+            "error(" + IssueCode.CannotCreateTargetGenerator + "): T.g4:2:19: no configured target generator " +
+            "supports the language Foo (configured: TypeScript)\n";
+
+        const pair = [
+            grammar,
+            expected
+        ];
+
+        ToolTestUtils.testErrors(pair, true);
+    });
+
     it("testChannelDefinitionInLexer", () => {
         const grammar =
             "lexer grammar T;\n" +

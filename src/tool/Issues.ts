@@ -139,6 +139,7 @@ export enum IssueCode {
 
     // Appended here to keep the numbers of the other issues stable.
     NoTargetGenerators,
+    CannotCreateTargetGenerator,
 }
 
 export interface IssueDetails {
@@ -607,5 +608,9 @@ export const issueTypes = new Map<IssueCode, IssueDetails>([
     [IssueCode.NoTargetGenerators, {
         message: "no target generators configured; use a config file which lists at least one generator",
         severity: IssueSeverity.Fatal
+    }],
+    [IssueCode.CannotCreateTargetGenerator, {
+        message: "no configured target generator supports the language <arg> (configured: <arg2>)",
+        severity: IssueSeverity.Error
     }],
 ]);
