@@ -46,7 +46,14 @@ export class SemanticPipeline {
     public constructor(private g: Grammar) {
     }
 
-    public process(targetGenerator: ITargetGenerator, options: IGenerationOptions): void {
+    /**
+     * Runs the semantic checks and transformations.
+     *
+     * @param targetGenerator The generator which renders the code inserted into left-recursive rules. Without one, a
+     *                        neutral placeholder is used, which is enough to build the ATN.
+     * @param options The generation options.
+     */
+    public process(targetGenerator: ITargetGenerator | undefined, options: IGenerationOptions): void {
         // Collect rule objects.
         const ruleCollector = new RuleCollector(this.g);
         ruleCollector.process(this.g.ast);
