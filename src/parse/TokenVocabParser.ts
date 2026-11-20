@@ -75,6 +75,9 @@ export class TokenVocabParser {
      * so that they ALWAYS are generated in the base output directory, which means the current directory for the
      * command line tool if there was no output directory specified.
      *
+     * A vocab file found only in the grammar's folder is copied to the output directory. The tool therefore uses a
+     * vocab file from the lib directory or from the output directory, and build tools can depend on that file.
+     *
      * @returns The content of the vocab file.
      */
     public getImportedVocabFile(): string {
@@ -98,12 +101,22 @@ export class TokenVocabParser {
                 }
             }
 
-            // Still not found? Use the grammar's soruce folder then.
+            // Still not found? Use the grammar's source folder then.
             name = dirname(this.g.fileName);
             if (name) {
                 name = name + "/" + vocabName + Constants.VocabFileExtension;
                 if (fileSystem.existsSync(name)) {
-                    return fileSystem.readFileSync(name, "utf8").toString();
+                    const content = fileSystem.readFileSync(name, "utf8").toString();
+
+                    // Copy the vocabulary to the output directory (which has none, see above), so that all generated
+                    // files and the vocabularies they use are in one place.
+                    if (this.outputDirectory) {
+                        fileSystem.mkdirSync(this.outputDirectory, { recursive: true });
+                        fileSystem.writeFileSync(this.outputDirectory + "/" + vocabName + Constants.VocabFileExtension,
+                            content);
+                    }
+
+                    return content;
                 }
             }
 
