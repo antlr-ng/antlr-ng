@@ -101,6 +101,19 @@
   ANTLR4 Go target. Before, it guessed the kind of a name without suffix from the last rendered file, so
   `generateDependencies` listed `pl_parser.go` for `lexer grammar PL`, and a lexer grammar named `TokensParser` got
   the file name `tokens_parser.go`. Without `isLexer`, a name without suffix is now always taken as a parser.
+- Fixed #140: grammars are processed without a target generator. Without one, the tool still builds the ATN, so
+  interpreters work and grammars with the language `None` write their `.interp` and `.tokens` files. Other grammars
+  report "no target generators configured". The interpreter CLI no longer configures a generator.
+- Fixed processing with several target generators: each grammar was processed once per generator on the same
+  grammar object, so even a simple combined grammar failed with errors like "cannot create implicit token for string
+  literal in non-combined grammar", and left-recursive rules kept the code of the first generator. Each generator now
+  processes its own copy of the grammars.
+- Fixed #138: the `language` grammar option selects the configured target generators again. Without the option, all
+  configured generators generate the grammar. Otherwise only the generators whose language name or language
+  specifiers match the value (without case) generate it, e.g. `language = Cpp` with the TypeScript and C++ generators
+  configured generates C++ only. A language that no configured generator supports (e.g. `language = Foo`) is
+  reported as error `CannotCreateTargetGenerator` and the grammar is not generated. Before, all configured generators
+  ignored the option. `language = None` still writes only the `.interp` and `.tokens` files.
 
 ## 1.0.10
 

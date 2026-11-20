@@ -17,6 +17,7 @@ import { ParserATNFactory } from "./automata/ParserATNFactory.js";
 import { CodeGenPipeline } from "./codegen/CodeGenPipeline.js";
 import { CodeGenerator } from "./codegen/CodeGenerator.js";
 import type { ITargetGenerator } from "./codegen/ITargetGenerator.js";
+import { noTargetLanguage, supportsLanguage } from "./codegen/TargetLanguage.js";
 import type { IToolConfiguration } from "./config/config.js";
 import { CharSupport } from "./misc/CharSupport.js";
 import { Graph } from "./misc/Graph.js";
@@ -72,7 +73,10 @@ export class Tool implements ITool {
                 return false;
             }
 
-            if (this.toolConfiguration.generators.length === 0) {
+            // The file list names the generated files, which only a generator knows. Grammars with the language
+            // None can be processed without a generator, so that is checked per grammar.
+            if (this.toolConfiguration.generators.length === 0
+                && this.toolConfiguration.generationOptions.generateDependencies) {
                 this.errorManager.toolError(IssueCode.NoTargetGenerators);
 
                 return false;
@@ -105,16 +109,30 @@ export class Tool implements ITool {
      * imported rules into the root grammar. If a root grammar is a combined grammar, we have to extract the implicit
      * lexer. Once all this is done, we process the lexer first, if present, and then the parser grammar
      *
+     * Processing changes the grammar (e.g. left-recursive rules are rewritten with code of the target generator), so
+     * a grammar object can only be processed for one target generator. Without a generator the ATN is still built,
+     * which is all that interpreters and grammars with the language `None` need.
+     *
      * @param g The grammar to process.
      * @param configuration Details about the generation process (source + target files, options, etc.).
      * @param genCode Whether to generate code or not.
+     * @param targetGenerator The generator to process the grammar for. Default: the first configured generator which
+     *                        supports the grammar's language, or the first configured generator.
      */
-    public process(g: Grammar, configuration: IToolConfiguration, genCode: boolean): void {
+    public process(g: Grammar, configuration: IToolConfiguration, genCode: boolean,
+        targetGenerator: ITargetGenerator | undefined = Tool.findGenerator(configuration.generators, g)): void {
         this.toolConfiguration = configuration;
 
         // Reset and (re)configure the error manager.
         this.errorManager.configure(configuration.messageFormatOptions);
         this.setUpGenerators();
+
+        // Only grammars with the language None can be generated without a target generator.
+        if (genCode && !targetGenerator && !g.isCodeGenerationDisabled()) {
+            this.errorManager.toolError(IssueCode.NoTargetGenerators);
+
+            return;
+        }
 
         g.loadImportedGrammars();
 
@@ -132,7 +150,7 @@ export class Tool implements ITool {
                 lexerGrammar.originalGrammar = g;
                 g.implicitLexer = lexerGrammar;
                 lexerGrammar.implicitLexerOwner = g;
-                this.processNonCombinedGrammar(lexerGrammar, genCode);
+                this.processNonCombinedGrammar(lexerGrammar, genCode, targetGenerator);
             }
         }
 
@@ -140,10 +158,19 @@ export class Tool implements ITool {
             g.importVocab(g.implicitLexer);
         }
 
-        this.processNonCombinedGrammar(g, genCode);
+        this.processNonCombinedGrammar(g, genCode, targetGenerator);
     }
 
-    public processNonCombinedGrammar(g: Grammar, genCode: boolean): void {
+    /**
+     * Processes a lexer or parser grammar: semantic checks, ATN construction, analysis and (optionally) code
+     * generation.
+     *
+     * @param g The grammar to process.
+     * @param genCode Whether to write the output files or not.
+     * @param targetGenerator The generator to process the grammar for. Without one, no target code can be generated,
+     *                        but the ATN is built and the metadata of a grammar with the language `None` is written.
+     */
+    public processNonCombinedGrammar(g: Grammar, genCode: boolean, targetGenerator?: ITargetGenerator): void {
         const ruleFail = this.checkForRuleIssues(g);
         if (ruleFail) {
             return;
@@ -153,51 +180,55 @@ export class Tool implements ITool {
 
         // Make sure grammar is semantically correct (fill in grammar object).
         const sem = new SemanticPipeline(g);
-        for (const targetGenerator of this.toolConfiguration.generators) {
-            sem.process(targetGenerator, this.toolConfiguration.generationOptions);
+        sem.process(targetGenerator, this.toolConfiguration.generationOptions);
 
-            if (this.errorManager.errors > prevErrors) {
-                return;
-            }
+        if (this.errorManager.errors > prevErrors) {
+            return;
+        }
 
-            // Build atn from AST.
-            let factory: IATNFactory;
-            if (g.isLexer()) {
-                factory = new LexerATNFactory(g as LexerGrammar, targetGenerator);
-            } else {
-                factory = new ParserATNFactory(g);
-            }
+        // Build atn from AST.
+        let factory: IATNFactory;
+        if (g.isLexer()) {
+            factory = new LexerATNFactory(g as LexerGrammar, targetGenerator);
+        } else {
+            factory = new ParserATNFactory(g);
+        }
 
-            g.atn = factory.createATN();
+        g.atn = factory.createATN();
 
-            let codeGenerator;
-            if (genCode) {
-                codeGenerator = new CodeGenerator(g, targetGenerator, this.toolConfiguration.generationOptions);
-            }
+        if (genCode && !targetGenerator && !g.isCodeGenerationDisabled()) {
+            this.errorManager.toolError(IssueCode.NoTargetGenerators);
 
-            if (codeGenerator && this.toolConfiguration.generationOptions.atn) {
-                codeGenerator.generateATNDotFiles(g);
-            }
+            return;
+        }
 
-            if (genCode && g.tool.getNumErrors() === 0
-                && (this.toolConfiguration.generationOptions.generateInterpreterData
-                    || g.isCodeGenerationDisabled())) {
-                codeGenerator?.generateInterpreterData(g);
-            }
+        let codeGenerator;
+        if (genCode) {
+            codeGenerator = new CodeGenerator(g, targetGenerator, this.toolConfiguration.generationOptions);
+        }
 
-            // Perform grammar analysis on ATN: build decision DFAs.
-            const anal = new AnalysisPipeline(g);
-            anal.process();
+        if (codeGenerator && this.toolConfiguration.generationOptions.atn) {
+            codeGenerator.generateATNDotFiles(g);
+        }
 
-            if (g.tool.getNumErrors() > prevErrors) {
-                return;
-            }
+        if (genCode && g.tool.getNumErrors() === 0
+            && (this.toolConfiguration.generationOptions.generateInterpreterData
+                || g.isCodeGenerationDisabled())) {
+            codeGenerator?.generateInterpreterData(g);
+        }
 
-            // Generate code.
-            if (genCode && codeGenerator) {
-                const gen = new CodeGenPipeline(g, codeGenerator, this.toolConfiguration.generationOptions);
-                gen.process();
-            }
+        // Perform grammar analysis on ATN: build decision DFAs.
+        const anal = new AnalysisPipeline(g);
+        anal.process();
+
+        if (g.tool.getNumErrors() > prevErrors) {
+            return;
+        }
+
+        // Generate code.
+        if (genCode && codeGenerator) {
+            const gen = new CodeGenPipeline(g, codeGenerator, this.toolConfiguration.generationOptions);
+            gen.process();
         }
     }
 
@@ -547,27 +578,97 @@ export class Tool implements ITool {
         return null;
     }
 
+    /**
+     * Finds the generator for a grammar, if none is given explicitly.
+     *
+     * @param generators The configured target generators.
+     * @param g The grammar to generate.
+     *
+     * @returns The first generator which supports the language of the grammar, or the first generator if none does
+     *          (or the grammar has no language).
+     */
+    private static findGenerator(generators: ITargetGenerator[], g: Grammar): ITargetGenerator | undefined {
+        const language = g.getOptionString("language");
+        if (language === undefined) {
+            return generators.at(0);
+        }
+
+        return generators.find((generator) => {
+            return supportsLanguage(generator, language);
+        }) ?? generators.at(0);
+    }
+
     private processGrammarsOnCommandLine(): void {
-        const sortedGrammars = this.sortGrammarByTokenVocab(this.toolConfiguration.grammarFiles);
+        // Processing changes the grammars, so each generator gets its own copy of them. Without a generator the
+        // grammars are processed once, which only works for grammars with the language None.
+        const generators = this.toolConfiguration.generators;
+        const runs = generators.length > 0 ? generators : [undefined];
 
-        for (const t of sortedGrammars) {
-            const g = this.createGrammar(t);
-            g.fileName = t.fileName;
+        for (const [run, targetGenerator] of runs.entries()) {
+            // Errors (e.g. syntax errors) would only be reported again for the next generator.
+            if (this.errorManager.errors > 0) {
+                break;
+            }
 
-            for (const targetGenerator of this.toolConfiguration.generators) {
+            const sortedGrammars = this.sortGrammarByTokenVocab(this.toolConfiguration.grammarFiles);
+            for (const t of sortedGrammars) {
+                if (!this.isGeneratedWith(t, targetGenerator, run === 0)) {
+                    continue;
+                }
+
+                const g = this.createGrammar(t);
+                g.fileName = t.fileName;
+
                 if (this.toolConfiguration.generationOptions.generateDependencies) {
                     g.loadImportedGrammars();
                     const dep = new BuildDependencyGenerator(this, g, this.toolConfiguration.generationOptions,
-                        targetGenerator, this.toolConfiguration.lib);
+                        targetGenerator!, this.toolConfiguration.lib);
                     console.log(dep.getDependencies());
-                } else {
-                    if (this.errorManager.errors === 0) {
-                        this.process(g, this.toolConfiguration, true);
-                    }
+                } else if (this.errorManager.errors === 0) {
+                    this.process(g, this.toolConfiguration, true, targetGenerator);
                 }
             }
         }
     };
+
+    /**
+     * Determines whether a grammar is processed with a target generator. The `language` option of the grammar selects
+     * the generators: without the option all configured generators are used, otherwise only those which support the
+     * language. A grammar with the language `None` is processed once, because it only gets the metadata files, which
+     * are the same for all generators.
+     *
+     * @param root The grammar to check.
+     * @param targetGenerator The generator of the current run, or undefined if no generator is configured.
+     * @param firstRun True for the first generator. Errors are reported only once, in the first run.
+     *
+     * @returns True if the grammar is processed with the generator.
+     */
+    private isGeneratedWith(root: GrammarRootAST, targetGenerator: ITargetGenerator | undefined,
+        firstRun: boolean): boolean {
+        const language = root.getOptionString("language");
+
+        // Without a generator, processing reports the missing generator for all grammars that need one.
+        if (language === undefined || !targetGenerator) {
+            return true;
+        }
+
+        if (language === noTargetLanguage) {
+            return firstRun;
+        }
+
+        if (supportsLanguage(targetGenerator, language)) {
+            return true;
+        }
+
+        const generators = this.toolConfiguration.generators;
+        if (firstRun && !generators.some((generator) => { return supportsLanguage(generator, language); })) {
+            const configured = generators.map((generator) => { return generator.language; }).join(", ");
+            this.errorManager.grammarError(IssueCode.CannotCreateTargetGenerator, root.fileName,
+                root.getOptionAST("language")?.token ?? null, language, configured);
+        }
+
+        return false;
+    }
 
     /**
      * Initializes the configured target generators that have not been initialized yet. A generator must be set up

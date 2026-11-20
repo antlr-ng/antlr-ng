@@ -51,7 +51,7 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
     public altAssociativity = new Map<number, Associativity>();
 
     public constructor(ruleAST: GrammarAST, tool: Tool, ruleName: string, language: ToolLanguage,
-        private targetGenerator: ITargetGenerator) {
+        private targetGenerator?: ITargetGenerator) {
         super(new CommonTreeNodeStream(ruleAST), tool.errorManager);
         this.tool = tool;
         this.ruleName = ruleName;
@@ -258,7 +258,10 @@ export class LeftRecursiveRuleAnalyzer extends LeftRecursiveRuleWalker {
         for (const [alt, altInfo] of opPrecRuleAlts) {
             const precedence = this.precedence(alt);
 
-            const predicate = this.targetGenerator.renderRecRuleAltPredicate(this.ruleName, precedence);
+            // The predicate code is not part of the ATN. Without a generator (e.g. for interpreters), use the code of
+            // the ANTLR4 Java target as placeholder.
+            const predicate = this.targetGenerator?.renderRecRuleAltPredicate(this.ruleName, precedence)
+                ?? [`precpred(_ctx, ${precedence})`];
             const altText = `{${predicate}}?<${Constants.PrecedenceOptionName}=${precedence}> ${altInfo.altText}`;
             optAlts.push(altText);
         }
