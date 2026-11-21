@@ -10,7 +10,7 @@ where a value can be an identifier, a qualified identifier (for example, a.b.c),
 
 ## Grammar Options
 
-All grammars can use the following options. In combined grammars, all options except language pertain only to the generated parser. Options may be set either within the grammar file using the options syntax (described above) or when invoking <span className="antlrng">antlr-ng</span> on the command line, using the `-D` option (see the <a href="/getting-started">Getting Started Page</a>.) The following examples demonstrate both mechanisms; note that `-D` overrides options within the grammar.
+All grammars can use the following options. In combined grammars, all options except language pertain only to the generated parser. Options are set within the grammar file using the options syntax described above. Version 1 could also set them on the command line with the `-D` option. A configuration file has no replacement for it, see [Tool Configuration](/tool-options).
 
 ### `superClass`
 
@@ -18,20 +18,22 @@ Set the superclass of the generated parser or lexer. For combined grammars, it s
 
 ```antlr
 grammar Hi;
+options { superClass = XX; }
 a : 'hi' ;
 
-// Run generation: antlr-ng -DsuperClass=XX Hi.g4
-// which produces this:
-class HiParser extends XX {`
+// Generation produces this:
+class HiParser extends XX {
 ```
 
 ### `language`
 
-Generate code in the indicated language, if <span className="antlrng">antlr-ng</span> is able to do so. Otherwise, you will see an error message like this:
+In ANTLR4 and <span className="antlrng">antlr-ng</span> 1.x this option selected the target language. Since version 2.0 the target generators in the [configuration](/tool-options) determine the generated languages, and other values of this option are ignored.
 
-```bash
-$ antlr-ng -Dlanguage=C MyGrammar.g4
-error(31):  antlr-ng cannot generate C code as of version 1.0
+The only value with an effect is `None`. It processes the grammar and writes the interpreter data and token files, but no code:
+
+```antlr
+grammar Expr;
+options { language = None; }
 ```
 
 ### `tokenVocab`
