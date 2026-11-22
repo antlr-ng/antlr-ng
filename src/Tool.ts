@@ -123,7 +123,7 @@ export class Tool implements ITool {
 
         // Reset and (re)configure the error manager.
         this.errorManager.configure(configuration.messageFormatOptions);
-        this.setUpGenerators();
+        this.setUpGenerators(targetGenerator);
 
         // Only grammars with the language None can be generated without a target generator.
         if (genCode && !targetGenerator && !g.isCodeGenerationDisabled()) {
@@ -608,9 +608,12 @@ export class Tool implements ITool {
     /**
      * Initializes the configured target generators that have not been initialized yet. A generator must be set up
      * once before its first use, because its render lookup maps are created there.
+     *
+     * @param extra A generator to initialize too, which need not be in the configuration.
      */
-    private setUpGenerators(): void {
-        for (const generator of this.toolConfiguration.generators) {
+    private setUpGenerators(extra?: ITargetGenerator): void {
+        const generators = extra ? [...this.toolConfiguration.generators, extra] : this.toolConfiguration.generators;
+        for (const generator of generators) {
             if (!initializedGenerators.has(generator)) {
                 generator.setUp();
                 initializedGenerators.add(generator);

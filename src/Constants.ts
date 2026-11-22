@@ -24,6 +24,12 @@ export class Constants {
 
     public static readonly VocabFileExtension = ".tokens";
 
+    /** The lexer commands without an argument, e.g. `-> skip`. */
+    public static readonly LexerCommands = ["skip", "more", "popMode"] as const;
+
+    /** The lexer commands with an argument, e.g. `-> channel(HIDDEN)`. */
+    public static readonly LexerCallCommands = ["type", "channel", "mode", "pushMode"] as const;
+
     public static readonly GrammarFromStringName = "<string>";
 
     public static readonly EorTokenType = 1;
@@ -77,3 +83,9 @@ export class Constants {
         Constants.predefinedTokenDict.add({ name: "int" });
     }
 }
+
+/** The name of a lexer command without an argument. */
+export type LexerCommandName = typeof Constants.LexerCommands[number];
+
+/** The name of a lexer command with an argument. */
+export type LexerCallCommandName = typeof Constants.LexerCallCommands[number];

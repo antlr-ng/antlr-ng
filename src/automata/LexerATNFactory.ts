@@ -38,11 +38,11 @@ interface ICharactersDataCheckStatus {
 
 export class LexerATNFactory extends ParserATNFactory {
 
-    /** Lexer commands without argument, as `GeneratorBase` renders them. Used when there is no target generator. */
-    private static readonly commands = new Set(["skip", "more", "popMode"]);
+    /** Lexer commands without argument. Used when there is no target generator. */
+    private static readonly commands = new Set<string>(Constants.LexerCommands);
 
-    /** Lexer commands with an argument, as `GeneratorBase` renders them. Used when there is no target generator. */
-    private static readonly callCommands = new Set(["type", "channel", "mode", "pushMode"]);
+    /** Lexer commands with an argument. Used when there is no target generator. */
+    private static readonly callCommands = new Set<string>(Constants.LexerCallCommands);
 
     /** Maps from an action index to a {@link LexerAction} object. */
     private indexToActionMap = new Map<number, LexerAction>();

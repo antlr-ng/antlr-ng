@@ -4,6 +4,7 @@
  */
 
 import type { IGenerationOptions } from "../config/config.js";
+import type { LexerCallCommandName, LexerCommandName } from "../Constants.js";
 import { ANTLRv4Parser } from "../generated/ANTLRv4Parser.js";
 import { CharSupport } from "../misc/CharSupport.js";
 import { Character } from "../support/Character.js";
@@ -1198,23 +1199,24 @@ export abstract class GeneratorBase implements ITargetGenerator {
     }
 
     private fillLexerCommandMap(): Map<string, () => Lines> {
-        const map = new Map<string, () => Lines>([
-            ["skip", this.renderLexerSkipCommand],
-            ["more", this.renderLexerMoreCommand],
-            ["popMode", this.renderLexerPopModeCommand],
-        ]);
+        // The record type makes sure that each command in `Constants.LexerCommands` has a renderer.
+        const renderers: Record<LexerCommandName, () => Lines> = {
+            skip: this.renderLexerSkipCommand,
+            more: this.renderLexerMoreCommand,
+            popMode: this.renderLexerPopModeCommand,
+        };
 
-        return map;
+        return new Map(Object.entries(renderers));
     }
 
     private fillLexerCallCommandMap(): Map<string, (arg: string) => Lines> {
-        const map = new Map<string, (arg: string) => Lines>([
-            ["type", this.renderLexerTypeCommand],
-            ["channel", this.renderLexerChannelCommand],
-            ["mode", this.renderLexerModeCommand],
-            ["pushMode", this.renderLexerPushModeCommand],
-        ]);
+        const renderers: Record<LexerCallCommandName, (arg: string) => Lines> = {
+            type: this.renderLexerTypeCommand,
+            channel: this.renderLexerChannelCommand,
+            mode: this.renderLexerModeCommand,
+            pushMode: this.renderLexerPushModeCommand,
+        };
 
-        return map;
+        return new Map(Object.entries(renderers));
     }
 }

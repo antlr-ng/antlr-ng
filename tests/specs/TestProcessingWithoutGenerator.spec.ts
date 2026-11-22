@@ -128,6 +128,18 @@ describe("Processing without target generator", () => {
         expect(errors([ts])).toEqual(expected);
         expect(errors([])).toEqual(expected);
     });
+
+    it("sets up a generator which is only passed to process", () => {
+        const g = new LexerGrammar("lexer grammar L;\nA : 'a' -> skip(1) ;\n");
+        g.fileName = "L.g4";
+        const queue = new ErrorQueue(g.tool.errorManager);
+        g.tool.errorManager.addListener(queue);
+
+        // The generator is not in the configuration and was not set up before.
+        g.tool.process(g, defineConfig({ generationOptions: { outputDirectory: "/tmp/no-gen" } }), false,
+            new TypeScriptTargetGenerator());
+        expect(queue.errors.map((error) => { return error.code; })).toEqual([IssueCode.UnwantedLexerCommandArgument]);
+    });
 });
 
 describe("Processing with several target generators", () => {
