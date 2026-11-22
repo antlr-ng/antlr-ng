@@ -14,6 +14,12 @@ import { fileSystem } from "../tool-parameters.js";
 const linePattern = /\s*(?<tokenID>\w+|'(\\'|[^'])*')\s*=\s*(?<tokenTypeS>\d*)/;
 
 export class TokenVocabParser {
+    /**
+     * The path of the vocab file, if it was found in the grammar's folder. Code generation copies it to the output
+     * directory.
+     */
+    public sourceVocabFile?: string;
+
     protected readonly g: IGrammar;
 
     public constructor(g: IGrammar, private outputDirectory: string, private libDirectory?: string) {
@@ -75,8 +81,9 @@ export class TokenVocabParser {
      * so that they ALWAYS are generated in the base output directory, which means the current directory for the
      * command line tool if there was no output directory specified.
      *
-     * A vocab file found only in the grammar's folder is copied to the output directory. The tool therefore uses a
-     * vocab file from the lib directory or from the output directory, and build tools can depend on that file.
+     * A vocab file found only in the grammar's folder is copied to the output directory by the code generation (see
+     * `sourceVocabFile`). The tool therefore uses a vocab file from the lib directory or from the output directory, and
+     * build tools can depend on that file.
      *
      * @returns The content of the vocab file.
      */
@@ -106,17 +113,9 @@ export class TokenVocabParser {
             if (name) {
                 name = name + "/" + vocabName + Constants.VocabFileExtension;
                 if (fileSystem.existsSync(name)) {
-                    const content = fileSystem.readFileSync(name, "utf8").toString();
+                    this.sourceVocabFile = name;
 
-                    // Copy the vocabulary to the output directory (which has none, see above), so that all generated
-                    // files and the vocabularies they use are in one place.
-                    if (this.outputDirectory) {
-                        fileSystem.mkdirSync(this.outputDirectory, { recursive: true });
-                        fileSystem.writeFileSync(this.outputDirectory + "/" + vocabName + Constants.VocabFileExtension,
-                            content);
-                    }
-
-                    return content;
+                    return fileSystem.readFileSync(name, "utf8").toString();
                 }
             }
 

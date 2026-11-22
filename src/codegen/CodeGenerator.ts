@@ -12,7 +12,7 @@ import { OutputModelController } from "./OutputModelController.js";
 import { ParserFactory } from "./ParserFactory.js";
 
 import type { IGenerationOptions } from "../config/config.js";
-import { dirname } from "../support/fs-helpers.js";
+import { basename, dirname } from "../support/fs-helpers.js";
 import { convertArrayToString } from "../support/helpers.js";
 import { fileSystem } from "../tool-parameters.js";
 import { DOTGenerator } from "../tool/DOTGenerator.js";
@@ -196,6 +196,22 @@ export class CodeGenerator {
         if (fileName) {
             const tokenVocabSerialization = this.getTokenVocabOutput();
             this.writeFile(tokenVocabSerialization, fileName);
+        }
+    }
+
+    /**
+     * Copies the token vocabulary file that the grammar loaded from its folder to the output directory, unless there
+     * is one already. From then on the tool and build tools use that copy (see `BuildDependencyGenerator`).
+     */
+    public copySourceVocabFile(): void {
+        const source = this.g.sourceVocabFile;
+        if (source === undefined || !this.generationOptions.outputDirectory) {
+            return;
+        }
+
+        const fileName = basename(source);
+        if (!fileSystem.existsSync(this.getOutputFile(this.g, fileName))) {
+            this.writeFile(fileSystem.readFileSync(source, "utf8").toString(), fileName);
         }
     }
 

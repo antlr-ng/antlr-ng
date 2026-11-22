@@ -114,6 +114,41 @@ describe("Tool coverage", () => {
             }
         });
 
+        it("copies a vocabulary from the grammar's folder to the output directory when generating code", () => {
+            const dir = generateRandomFilename("/tmp/deps-");
+            fileSystem.mkdirSync(dir + "/src", { recursive: true });
+            try {
+                fileSystem.writeFileSync(dir + "/src/V.tokens", "ID=1\n");
+                const grammar = "parser grammar P;\noptions { tokenVocab = V; }\na : ID ;\n";
+                fileSystem.writeFileSync(dir + "/src/P.g4", grammar);
+                const config = defineConfig({
+                    grammarFiles: [dir + "/src/P.g4"],
+                    lib: dir + "/lib",
+                    generationOptions: { outputDirectory: dir + "/out" },
+                    generators: [tsGenerator],
+                });
+
+                // Processing without code generation (e.g. for an interpreter) writes nothing.
+                const g = new Grammar(grammar);
+                g.fileName = dir + "/src/P.g4";
+                g.tool.process(g, config, false);
+                expect(g.tool.getNumErrors()).toBe(0);
+                expect(fileSystem.existsSync(dir + "/out/V.tokens")).toBe(false);
+
+                const tool = new Tool();
+                expect(tool.generate(config)).toBe(true);
+                expect(fileSystem.readFileSync(dir + "/out/V.tokens", "utf8")).toBe("ID=1\n");
+                expect(fileSystem.existsSync(dir + "/out/P.ts")).toBe(true);
+
+                // An existing vocabulary in the output directory is kept.
+                fileSystem.writeFileSync(dir + "/out/V.tokens", "ID=1\nOTHER=2\n");
+                expect(new Tool().generate(config)).toBe(true);
+                expect(fileSystem.readFileSync(dir + "/out/V.tokens", "utf8")).toBe("ID=1\nOTHER=2\n");
+            } finally {
+                fileSystem.rmSync(dir, { recursive: true, force: true });
+            }
+        });
+
         it("uses the current directory for token vocabularies without lib directory", () => {
             const tool = new Tool();
             const g = new LexerGrammar("lexer grammar DepL;\noptions { tokenVocab = Other; }\nA : 'a' ;");

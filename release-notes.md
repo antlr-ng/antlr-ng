@@ -90,9 +90,9 @@
   reads it. The dependency line has the make format
   `T.g4: A.tokens B.g4` (prerequisites separated by spaces), and spaces in all paths are escaped. The CLI no longer
   fails after listing the dependencies because of the missing output directory.
-- A `tokenVocab` file which is only in the grammar's folder is copied to the output directory (if there is no
-  vocabulary with that name yet), so the tool uses vocabularies from the lib or the output directory only. The
-  dependency list has a line for the copy, e.g. `out/L.tokens : src/L.tokens`.
+- When generating code, a `tokenVocab` file which is only in the grammar's folder is copied to the output
+  directory (if there is no vocabulary with that name yet), so the tool uses vocabularies from the lib or the output
+  directory only. The dependency list has a line for the copy, e.g. `out/L.tokens : src/L.tokens`.
 - `generateBaseListener` and `generateBaseVisitor` now only take effect for targets which have base classes
   (`wantsBaseListener`/`wantsBaseVisitor` of the target generator). The TypeScript and Python 3 generators wrote empty
   base listener and visitor files before.

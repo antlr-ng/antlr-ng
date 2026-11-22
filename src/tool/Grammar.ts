@@ -134,6 +134,12 @@ export class Grammar implements IGrammar, IAttributeResolver {
     /** If this is an extracted/implicit lexer, we point at original grammar. */
     public originalGrammar?: Grammar;
 
+    /**
+     * The token vocabulary file in the grammar's folder, if the vocabulary was loaded from there. Code generation
+     * copies it to the output directory.
+     */
+    public sourceVocabFile?: string;
+
     /** All rules defined in this specific grammar, not imported. Also does not include lexical rules if combined. */
     public rules = new Map<string, Rule>();
 
@@ -933,6 +939,7 @@ export class Grammar implements IGrammar, IAttributeResolver {
             const outputDir = options.outputDirectory;
             const vParser = new TokenVocabParser(this, outputDir, this.tool.toolConfiguration.lib);
             const tokens = vParser.load();
+            this.sourceVocabFile = vParser.sourceVocabFile;
             this.tool.logInfo({ component: "grammar", msg: `tokens=${JSON.stringify(tokens)}` });
 
             for (const t of tokens.keys()) {
