@@ -149,6 +149,63 @@ describe("Tool coverage", () => {
             }
         });
 
+        it("keeps the relative path of a copied vocabulary", () => {
+            const dir = generateRandomFilename("/tmp/deps-");
+            fileSystem.mkdirSync(dir + "/src/sub", { recursive: true });
+            try {
+                fileSystem.writeFileSync(dir + "/src/sub/V.tokens", "ID=1\n");
+                fileSystem.writeFileSync(dir + "/src/P.g4",
+                    "parser grammar P;\noptions { tokenVocab = 'sub/V'; }\na : ID ;\n");
+                const config = defineConfig({
+                    grammarFiles: [dir + "/src/P.g4"],
+                    lib: dir + "/lib",
+                    generationOptions: { outputDirectory: dir + "/out" },
+                    generators: [tsGenerator],
+                });
+
+                expect(new Tool().generate(config)).toBe(true);
+                expect(fileSystem.readFileSync(dir + "/out/sub/V.tokens", "utf8")).toBe("ID=1\n");
+                expect(fileSystem.existsSync(dir + "/out/V.tokens")).toBe(false);
+
+                // The dependency list names the same file.
+                const tool = new Tool();
+                const g = tool.loadGrammar(dir + "/src/P.g4");
+                const generator = new BuildDependencyGenerator(tool, g, config.generationOptions, tsGenerator,
+                    config.lib);
+                expect(generator.getNonImportDependenciesFileList()).toEqual([dir + "/out/sub/V.tokens"]);
+            } finally {
+                fileSystem.rmSync(dir, { recursive: true, force: true });
+            }
+        });
+
+        it("reports a vocabulary which cannot be copied", () => {
+            const dir = generateRandomFilename("/tmp/deps-");
+            fileSystem.mkdirSync(dir + "/src", { recursive: true });
+            try {
+                fileSystem.writeFileSync(dir + "/src/V.tokens", "ID=1\n");
+                fileSystem.writeFileSync(dir + "/src/P.g4",
+                    "parser grammar P;\noptions { tokenVocab = V; }\na : ID ;\n");
+
+                // The parent of the output directory is a file, so the directory cannot be created.
+                fileSystem.writeFileSync(dir + "/file", "");
+                const config = defineConfig({
+                    grammarFiles: [dir + "/src/P.g4"],
+                    lib: dir + "/lib",
+                    generationOptions: { outputDirectory: dir + "/file/out" },
+                    generators: [tsGenerator],
+                });
+
+                const tool = new Tool();
+                const queue = new ErrorQueue(tool.errorManager);
+                tool.errorManager.addListener(queue);
+                expect(tool.generate(config)).toBe(false);
+                expect(queue.errors.map((e) => { return e.code; })).toContain(IssueCode.CannotWriteFile);
+                expect(queue.errors.map((e) => { return e.code; })).not.toContain(IssueCode.InternalError);
+            } finally {
+                fileSystem.rmSync(dir, { recursive: true, force: true });
+            }
+        });
+
         it("uses the current directory for token vocabularies without lib directory", () => {
             const tool = new Tool();
             const g = new LexerGrammar("lexer grammar DepL;\noptions { tokenVocab = Other; }\nA : 'a' ;");

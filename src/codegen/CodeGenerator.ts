@@ -12,7 +12,7 @@ import { OutputModelController } from "./OutputModelController.js";
 import { ParserFactory } from "./ParserFactory.js";
 
 import type { IGenerationOptions } from "../config/config.js";
-import { basename, dirname } from "../support/fs-helpers.js";
+import { dirname } from "../support/fs-helpers.js";
 import { convertArrayToString } from "../support/helpers.js";
 import { fileSystem } from "../tool-parameters.js";
 import { DOTGenerator } from "../tool/DOTGenerator.js";
@@ -205,13 +205,26 @@ export class CodeGenerator {
      */
     public copySourceVocabFile(): void {
         const source = this.g.sourceVocabFile;
-        if (source === undefined || !this.generationOptions.outputDirectory) {
+        const vocabName = this.g.getOptionString("tokenVocab");
+        if (source === undefined || vocabName === undefined || !this.generationOptions.outputDirectory) {
             return;
         }
 
-        const fileName = basename(source);
-        if (!fileSystem.existsSync(this.getOutputFile(this.g, fileName))) {
-            this.writeFile(fileSystem.readFileSync(source, "utf8").toString(), fileName);
+        // The copy keeps the relative path of the vocabulary (e.g. `tokenVocab = 'sub/V'` is copied to
+        // `out/sub/V.tokens`), where the vocabulary lookup and the dependency list expect it.
+        const target = this.generationOptions.outputDirectory + "/" + vocabName + Constants.VocabFileExtension;
+        try {
+            if (!fileSystem.existsSync(target)) {
+                fileSystem.mkdirSync(dirname(target), { recursive: true });
+                fileSystem.writeFileSync(target, fileSystem.readFileSync(source, "utf8").toString(),
+                    { encoding: "utf8" });
+            }
+        } catch (cause) {
+            if (cause instanceof Error) {
+                this.g.tool.errorManager.toolError(IssueCode.CannotWriteFile, cause, target);
+            } else {
+                throw cause;
+            }
         }
     }
 
