@@ -106,7 +106,7 @@
   skipped like folders, links to files are copied as files and dangling links are ignored.
 - Fixed #139: the command line without a config file configured no target generator, so it always failed with "no
   target generators configured", and it ignored `-D`. It now uses the default generator selected with `-Dlanguage`
-  (TypeScript if not given, also for `None`, and with C++ header files as before), and the `-D` values override the
+  (TypeScript if not given, none for `None`, and with C++ header files as before), and the `-D` values override the
   grammar options. As before, it generates a listener (unless `-l false`), the base listener and visitor for targets
   which have them, and the `.interp` files. An unknown language and an encoding other than UTF-8 are reported as
   errors, and `--exact-output-dir` is reported as ignored. `-D` now takes one value per option, so

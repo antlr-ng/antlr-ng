@@ -70,9 +70,9 @@ describe("Legacy command line configuration", () => {
         expect(configure("-Dlanguage=Cpp", "T.g4").generationOptions.generateDeclarationFile).toBe(true);
     });
 
-    it("needs a generator for language None, but generates no code with it", () => {
+    it("configures no generator for language None", () => {
         const config = configure("-Dlanguage=None", "T.g4");
-        expect(config.generators).toHaveLength(1);
+        expect(config.generators).toEqual([]);
         expect(config.grammarOptions).toEqual({ language: "None" });
     });
 
