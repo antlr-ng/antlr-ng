@@ -96,6 +96,12 @@ export interface IToolConfiguration {
     generators: ITargetGenerator[],
 
     generationOptions: IGenerationOptions;
+
+    /**
+     * Grammar-level options which override the options set in the grammars, e.g. `{ superClass: "MyBase" }`. This is
+     * what `-D` does on the command line.
+     */
+    grammarOptions?: Record<string, string>;
 }
 
 /**
@@ -133,6 +139,7 @@ export const defineConfig = (config: DeepPartial<IToolConfiguration>): IToolConf
         log: config.log ?? false,
         generators: (config.generators ?? []) as ITargetGenerator[],
         generationOptions: generationOptions as IGenerationOptions,
+        grammarOptions: config.grammarOptions as Record<string, string> | undefined,
     };
 };
 

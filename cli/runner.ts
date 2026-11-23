@@ -14,7 +14,8 @@ import { Tool } from "../src/Tool.js";
 import { copyFolderFromMemFs, copyFolderToMemFs, dirname } from "../src/support/fs-helpers.js";
 import { copyImportedGrammarsToMemFs } from "../src/support/grammar-imports.js";
 import { parseToolParameters, useFileSystem } from "../src/tool-parameters.js";
-import { defineConfig, type IToolConfiguration } from "../src/config/config.js";
+import { type IToolConfiguration } from "../src/config/config.js";
+import { createLegacyConfiguration } from "./legacy-configuration.js";
 
 // Start with a fresh virtual file system.
 const volume = new Volume();
@@ -31,25 +32,12 @@ if (parameters.config) {
     const { default: config } = await import(pathToFileURL(resolve(parameters.config)).href);
     configuration = config as IToolConfiguration;
 } else {
-    configuration = defineConfig({
-        grammarFiles: parameters.grammarFiles,
-        lib: parameters.lib,
-        generationOptions: {
-            atn: parameters.atn,
-            outputDirectory: parameters.outputDirectory,
-            generateListener: parameters.generateListener,
-            generateVisitor: parameters.generateVisitor,
-            package: parameters.package,
-            generateDependencies: parameters.generateDependencies,
-        },
-        messageFormatOptions: {
-            longMessages: parameters.longMessages,
-            warningsAreErrors: parameters.warningsAreErrors,
-        },
-
-        forceAtn: parameters.forceAtn,
-        log: parameters.log,
-    });
+    try {
+        configuration = createLegacyConfiguration(parameters);
+    } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        process.exit(1);
+    }
 }
 
 // Copy all files to the memfs file system. We use the same files for all files. It doesn't matter for memfs.
