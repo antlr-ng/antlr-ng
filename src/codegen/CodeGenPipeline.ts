@@ -17,6 +17,8 @@ export class CodeGenPipeline {
     }
 
     public process(): void {
+        this.codeGenerator.copySourceVocabFile();
+
         // When target code generation is disabled, only language-agnostic artifacts are written.
         if (this.g.isCodeGenerationDisabled()) {
             this.codeGenerator.writeVocabFile();

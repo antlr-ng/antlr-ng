@@ -144,6 +144,32 @@ describe("Parse coverage", () => {
             }
         });
 
+        it("remembers a vocabulary from the grammar's directory, without copying it", () => {
+            const dir = generateRandomFilename("/tmp/vocab-");
+            fileSystem.mkdirSync(dir + "/src", { recursive: true });
+            try {
+                fileSystem.writeFileSync(dir + "/src/RCVocab.tokens", "X=5\n");
+
+                const g = createGrammar("RC");
+                g.fileName = dir + "/src/RC.g4";
+                const parser = new TokenVocabParser(g, dir + "/out", "/nonexistent");
+                expect(parser.load().get("X")).toBe(5);
+                expect(parser.sourceVocabFile).toBe(dir + "/src/RCVocab.tokens");
+
+                // Loading is read-only. The code generation copies the file.
+                expect(fileSystem.existsSync(dir + "/out")).toBe(false);
+
+                // A vocabulary in the output directory takes precedence and is not copied.
+                fileSystem.mkdirSync(dir + "/out");
+                fileSystem.writeFileSync(dir + "/out/RCVocab.tokens", "X=6\n");
+                const outParser = new TokenVocabParser(g, dir + "/out", "/nonexistent");
+                expect(outParser.load().get("X")).toBe(6);
+                expect(outParser.sourceVocabFile).toBeUndefined();
+            } finally {
+                fileSystem.rmSync(dir, { recursive: true, force: true });
+            }
+        });
+
         it("reports a missing tokens file referenced in the grammar", () => {
             const g = createGrammar("S");
             const queue = new ErrorQueue(g.tool.errorManager);

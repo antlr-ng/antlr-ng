@@ -14,6 +14,12 @@ import { fileSystem } from "../tool-parameters.js";
 const linePattern = /\s*(?<tokenID>\w+|'(\\'|[^'])*')\s*=\s*(?<tokenTypeS>\d*)/;
 
 export class TokenVocabParser {
+    /**
+     * The path of the vocab file, if it was found in the grammar's folder. Code generation copies it to the output
+     * directory.
+     */
+    public sourceVocabFile?: string;
+
     protected readonly g: IGrammar;
 
     public constructor(g: IGrammar, private outputDirectory: string, private libDirectory?: string) {
@@ -75,6 +81,10 @@ export class TokenVocabParser {
      * so that they ALWAYS are generated in the base output directory, which means the current directory for the
      * command line tool if there was no output directory specified.
      *
+     * A vocab file found only in the grammar's folder is copied to the output directory by the code generation (see
+     * `sourceVocabFile`). The tool therefore uses a vocab file from the lib directory or from the output directory, and
+     * build tools can depend on that file.
+     *
      * @returns The content of the vocab file.
      */
     public getImportedVocabFile(): string {
@@ -98,11 +108,13 @@ export class TokenVocabParser {
                 }
             }
 
-            // Still not found? Use the grammar's soruce folder then.
+            // Still not found? Use the grammar's source folder then.
             name = dirname(this.g.fileName);
             if (name) {
                 name = name + "/" + vocabName + Constants.VocabFileExtension;
                 if (fileSystem.existsSync(name)) {
+                    this.sourceVocabFile = name;
+
                     return fileSystem.readFileSync(name, "utf8").toString();
                 }
             }

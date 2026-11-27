@@ -221,6 +221,35 @@ export class CodeGenerator {
         }
     }
 
+    /**
+     * Copies the token vocabulary file that the grammar loaded from its folder to the output directory, unless there
+     * is one already. From then on the tool and build tools use that copy (see `BuildDependencyGenerator`).
+     */
+    public copySourceVocabFile(): void {
+        const source = this.g.sourceVocabFile;
+        const vocabName = this.g.getOptionString("tokenVocab");
+        if (source === undefined || vocabName === undefined || !this.generationOptions.outputDirectory) {
+            return;
+        }
+
+        // The copy keeps the relative path of the vocabulary (e.g. `tokenVocab = 'sub/V'` is copied to
+        // `out/sub/V.tokens`), where the vocabulary lookup and the dependency list expect it.
+        const target = this.generationOptions.outputDirectory + "/" + vocabName + Constants.VocabFileExtension;
+        try {
+            if (!fileSystem.existsSync(target)) {
+                fileSystem.mkdirSync(dirname(target), { recursive: true });
+                fileSystem.writeFileSync(target, fileSystem.readFileSync(source, "utf8").toString(),
+                    { encoding: "utf8" });
+            }
+        } catch (cause) {
+            if (cause instanceof Error) {
+                this.g.tool.errorManager.toolError(IssueCode.CannotWriteFile, cause, target);
+            } else {
+                throw cause;
+            }
+        }
+    }
+
     public writeFile(code: string, fileName: string): void {
         try {
             fileName = this.getOutputFile(this.g, fileName);
