@@ -12,26 +12,38 @@ Since interpreters don't use generated parsers + lexers they cannot execute any 
 
 ## TypeScript Interpreter Setup
 
+The grammars must be processed before the interpreters can be created, because processing builds the ATNs the interpreters run on. The ATN is built for a target generator, so the configuration needs one, even though no code is generated.
+
 ```typescript
-import { LexerGrammar, Grammar } from "antlr-ng";
+import { defineConfig, LexerGrammar, Grammar } from "antlr-ng";
+import { TypeScriptTargetGenerator } from "antlr-ng-generators";
 import { CharStream, CommonTokenStream } from "antlr4ng";
+
+const configuration = defineConfig({ generators: [new TypeScriptTargetGenerator()] });
 
 const lg = new LexerGrammar(
     "lexer grammar L;\n" +
     "A : 'a' ;\n" +
     "B : 'b' ;\n" +
     "C : 'c' ;\n");
+lg.tool.process(lg, configuration, false);
 
 const g = new Grammar(
     "parser grammar T;\n" +
     "s : (A|B)* C ;\n",
     lg);
+g.tool.process(g, configuration, false);
 
-const lexEngine = lg.createLexerInterpreter(CharStream.fromString(input));
+const lexEngine = lg.createLexerInterpreter(CharStream.fromString("abac"));
 const tokens = new CommonTokenStream(lexEngine);
 const parser = g.createParserInterpreter(tokens);
-const t = parser.parse(g.rules.get(startRule).index);
+const t = parser.parse(g.rules.get("s")!.index);
+
+console.log(t.toStringTree(parser)); // (s a b a c)
 ```
+
+> [!NOTE]
+> The default target generators will be published as a separate package. `antlr-ng-generators` is the proposed name; it is not published yet.
 
 ## Non-TypeScript Target Interpreter Setup
 
