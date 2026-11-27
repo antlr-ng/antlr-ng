@@ -13,7 +13,6 @@ import { dirname } from "node:path";
 import { CharStream, CommonToken, CommonTokenStream, DecisionInfo, ParseInfo } from "antlr4ng";
 
 import { defineConfig } from "../src/config/config.js";
-import { TypeScriptTargetGenerator } from "../src/default-target-generators/TypeScriptTargetGenerator.js";
 import { copyFolderToMemFs } from "../src/support/fs-helpers.js";
 import { useFileSystem } from "../src/tool-parameters.js";
 import { Tool } from "../src/Tool.js";
@@ -126,9 +125,9 @@ export class Interpreter {
             forceAtn: false,
             log: false,
             lib: ".",
-            // The tool builds the ATN once per target generator. No code is generated, but without a generator
-            // there would be no ATN to interpret.
-            generators: [new TypeScriptTargetGenerator()],
+
+            // No code is generated, so no target generator is needed. The tool builds the ATN without one.
+            generators: [],
         });
 
         if (interpreterOptions.grammars.length === 1) {

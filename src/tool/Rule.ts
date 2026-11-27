@@ -5,6 +5,7 @@
 
 import { type IComparable } from "antlr4ng";
 
+import { Constants } from "../Constants.js";
 import { MurmurHash } from "../support/MurmurHash.js";
 import type { IRule } from "../types.js";
 import { Alternative } from "./Alternative.js";
@@ -22,7 +23,7 @@ import type { RuleAST } from "./ast/RuleAST.js";
 
 export class Rule implements IAttributeResolver, IComparable, IRule {
     public static readonly validLexerCommands = new Set<string>([
-        "mode", "pushMode", "type", "channel", "popMode", "skip", "more"
+        ...Constants.LexerCommands, ...Constants.LexerCallCommands,
     ]);
 
     public readonly name: string;

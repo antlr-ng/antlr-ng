@@ -35,14 +35,16 @@ const defaultGenerators = (): ITargetGenerator[] => {
  *
  * @param language The language name, or undefined if not given.
  *
- * @returns The generator for the language.
+ * @returns The generator for the language, or undefined for `None`, which needs no generator.
  */
-const selectGenerator = (language: string | undefined): ITargetGenerator => {
-    const generators = defaultGenerators();
+const selectGenerator = (language: string | undefined): ITargetGenerator | undefined => {
+    if (language === noTargetLanguage) {
+        return undefined;
+    }
 
-    // Without a language the TypeScript generator is used, as for grammars without a language option. For `None` a
-    // generator is still needed to build the ATN, even though it generates no code.
-    if (language === undefined || language === noTargetLanguage) {
+    // Without a language the TypeScript generator is used, as for grammars without a language option.
+    const generators = defaultGenerators();
+    if (language === undefined) {
         return generators.find((generator) => { return generator instanceof TypeScriptTargetGenerator; })!;
     }
 
@@ -105,7 +107,7 @@ export const createLegacyConfiguration = (parameters: IToolParameters): IToolCon
             generateInterpreterData: true,
 
             // Declaration files (e.g. C++ headers) were always generated for targets which use them.
-            generateDeclarationFile: generator.needsDeclarationFile === true,
+            generateDeclarationFile: generator?.needsDeclarationFile === true,
         },
         messageFormatOptions: {
             longMessages: parameters.longMessages,
@@ -114,7 +116,7 @@ export const createLegacyConfiguration = (parameters: IToolParameters): IToolCon
 
         forceAtn: parameters.forceAtn,
         log: parameters.log,
-        generators: [generator],
+        generators: generator ? [generator] : [],
         grammarOptions: parameters.define,
     });
 };
